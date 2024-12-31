@@ -41,11 +41,3 @@ ui.build: ui.install
 	@set -e;\
 	cd $(UI_PATH);\
 	yarn build;
-
-.PHONY: config-init
-config-init:
-	@echo "开始备份配置文件并替换敏感配置信息..."
-	# 备份原始配置文件
-	@cp hack/config.example.yaml hack/config.yaml
-	@cp manifest/config/config.example.yaml manifest/config/config.yaml
-	@echo "success"
