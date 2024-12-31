@@ -14,7 +14,7 @@ gfcli:
     packDst: "internal/packed/packed.go"   # 打包后生成的Go文件路径，一般使用相对路径指定到本项目目录中
     path: "./bin"
     extra: " -ldflags \"-s -w\" "
-    version: v0.0.1
+    version: v1.0.0
     cgo: 0
   docker:
     build: "-a amd64 -s linux -p temp -ew"

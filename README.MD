@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="https://doc.devinggo.com/logo.svg" width="120" />
+  <img src="web/system/public/logo.svg" width="120" />
 </p>
 <p align="center">
-  <img src="https://svg.hamm.cn/badge.svg?key=License&value=MIT" />
-  <img src="https://svg.hamm.cn/badge.svg?key=Version&value=2.0%20LTS" />
+ <img src="https://svg.hamm.cn/badge.svg?key=License&value=Apache-2.0" />
+  <img src="https://svg.hamm.cn/badge.svg?key=Version&value=1.0.0%20LTS" />
 </p>
 
 ## 简介
