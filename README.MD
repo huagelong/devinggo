@@ -4,6 +4,9 @@
 <p align="center">
  <img src="https://svg.hamm.cn/badge.svg?key=License&value=Apache-2.0" />
   <img src="https://svg.hamm.cn/badge.svg?key=Version&value=1.0.0%20LTS" />
+	<img src="https://img.shields.io/badge/goframe-2.7-green" alt="goframe">
+	<img src="https://img.shields.io/badge/vue.js-vue3.4-green" alt="vue">
+	<img src="https://img.shields.io/badge/vite-%3E5.1.4-yellow" alt="vite">
 </p>
 
 ## 简介
