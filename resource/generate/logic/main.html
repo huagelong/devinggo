@@ -1,0 +1,304 @@
+// Package {% .table.PackageName %}
+// @Link  https://github.com/huagelong/devinggo
+// @Copyright  Copyright (c) 2024 devinggo
+// @Author  Kai <hpuwang@gmail.com>
+// @License  https://github.com/huagelong/devinggo/blob/master/LICENSE
+
+package {% .table.PackageName %}
+
+import (
+    "devinggo/internal/dao"
+    "devinggo/internal/logic/base"
+    "devinggo/internal/model"
+    "devinggo/internal/model/do"
+    "devinggo/internal/model/entity"
+    "devinggo/modules/{% .table.ModuleName %}/model/req"
+    "devinggo/modules/{% .table.ModuleName %}/model/res"
+    "devinggo/modules/{% .table.ModuleName %}/pkg/handler"
+    "devinggo/modules/{% .table.ModuleName %}/pkg/hook"
+    "devinggo/modules/{% .table.ModuleName %}/pkg/orm"
+    "devinggo/modules/{% .table.ModuleName %}/pkg/utils"
+    "devinggo/modules/{% .table.ModuleName %}/service"
+    "context"
+    "github.com/gogf/gf/v2/database/gdb"
+    "github.com/gogf/gf/v2/frame/g"
+    "github.com/gogf/gf/v2/util/gconv"
+)
+
+type s{% .tableCaseCamelName %} struct {
+    base.BaseService
+}
+
+func init() {
+    service.Register{% .tableCaseCamelName %}(New{% .tableCaseCamelName %}())
+}
+
+func New{% .tableCaseCamelName %}() *s{% .tableCaseCamelName %} {
+    return &s{% .tableCaseCamelName %}{}
+}
+
+func (s *s{% .tableCaseCamelName %}) Model(ctx context.Context) *gdb.Model {
+    return dao.{% .tableCaseCamelName %}.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+}
+
+
+func (s *s{% .tableCaseCamelName %}) handleSearch(ctx context.Context, in *req.{% .tableCaseCamelName %}Search) (m *gdb.Model) {
+    m = s.Model(ctx)
+{% range $index, $elem := .columns %}
+    {%if eq $elem.IsQuery 2 %}
+        {%if eq $elem.QueryType "eq" %}
+            if !g.IsEmpty(in.{% caseCamel $elem.ColumnName %}) {
+                m = m.Where("{% $elem.ColumnName %}", in.{% caseCamel $elem.ColumnName %})
+            }
+        {%end%}
+        {%if eq $elem.QueryType "like" %}
+            if !g.IsEmpty(in.{% caseCamel $elem.ColumnName %}) {
+            m = m.Where("{% $elem.ColumnName %} like ? ", "%"+in.{% caseCamel $elem.ColumnName %}+"%")
+            }
+        {%end%}
+        {%if eq $elem.QueryType "between" %}
+            if !g.IsEmpty(in.{% caseCamel $elem.ColumnName %}) {
+                if len(in.{% caseCamel $elem.ColumnName %}) > 0 {
+                    m = m.WhereGTE("{% $elem.ColumnName %}", in.{% caseCamel $elem.ColumnName %}[0]+" 00:00:00")
+                }
+                if len(in.CreatedAt) > 1 {
+                    m = m.WhereLTE("{% $elem.ColumnName %}", in.{% caseCamel $elem.ColumnName %}[1]+"23:59:59")
+                }
+            }
+        {%end%}
+        {%if eq $elem.QueryType "neq" %}
+            if !g.IsEmpty(in.{% caseCamel $elem.ColumnName %}) {
+                m = m.WhereNot("{% $elem.ColumnName %}", in.{% caseCamel $elem.ColumnName %})
+            }
+        {%end%}
+        {%if eq $elem.QueryType "gt" %}
+            if !g.IsEmpty(in.{% caseCamel $elem.ColumnName %}) {
+                m = m.WhereGT("{% $elem.ColumnName %}", in.{% caseCamel $elem.ColumnName %})
+            }
+        {%end%}
+        {%if eq $elem.QueryType "gte" %}
+            if !g.IsEmpty(in.{% caseCamel $elem.ColumnName %}) {
+                m = m.WhereGTE("{% $elem.ColumnName %}", in.{% caseCamel $elem.ColumnName %})
+            }
+        {%end%}
+        {%if eq $elem.QueryType "lt" %}
+            if !g.IsEmpty(in.{% caseCamel $elem.ColumnName %}) {
+                m = m.WhereLT("{% $elem.ColumnName %}", in.{% caseCamel $elem.ColumnName %})
+            }
+        {%end%}
+        {%if eq $elem.QueryType "lte" %}
+            if !g.IsEmpty(in.{% caseCamel $elem.ColumnName %}) {
+                m = m.WhereLTE("{% $elem.ColumnName %}", in.{% caseCamel $elem.ColumnName %})
+            }
+        {%end%}
+        {%if eq $elem.QueryType "in" %}
+            if !g.IsEmpty(in.{% caseCamel $elem.ColumnName %}) {
+                m = m.WhereIn("{% $elem.ColumnName %}", in.{% caseCamel $elem.ColumnName %})
+            }
+        {%end%}
+        {%if eq $elem.QueryType "notin" %}
+            if !g.IsEmpty(in.{% caseCamel $elem.ColumnName %}) {
+                m = m.WhereNotIn("{% $elem.ColumnName %}", in.{% caseCamel $elem.ColumnName %})
+            }
+        {%end%}
+    {%end%}
+{% end %}
+    return
+}
+
+{% if eq .table.Type "single"  %}
+func (s *s{% .tableCaseCamelName %}) GetList(ctx context.Context,inReq *model.ListReq, in *req.{% .tableCaseCamelName %}Search) (out []*res.{% .tableCaseCamelName %}, err error) {
+    m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
+    m = orm.GetList(m, inReq)
+    err = m.Scan(&out)
+    if utils.IsError(err) {
+        return
+    }
+    return
+}
+
+func (s *s{% .tableCaseCamelName %}) GetPageList(ctx context.Context, req *model.PageListReq, in *req.{% .tableCaseCamelName %}Search) (rs []*res.{% .tableCaseCamelName %}, total int, err error) {
+    m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
+    var entity []*entity.{% .tableCaseCamelName %}
+    err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+    if utils.IsError(err) {
+        return nil, 0, err
+    }
+    rs = make([]*res.{% .tableCaseCamelName %}, 0)
+    if !g.IsEmpty(entity) {
+        if err = gconv.Structs(entity, &rs); err != nil {
+            return nil, 0, err
+        }
+    }
+    return
+}
+{% end %}
+
+{% if eq .table.Type "tree"  %}
+func (s *s{% .tableCaseCamelName %}) GetTreeList(ctx context.Context, inReq *model.ListReq, in *req.{% .tableCaseCamelName %}Search) (tree []*res.{% .tableCaseCamelName %}Tree, err error) {
+    m := s.handleSearch(ctx, in)
+    m = orm.GetList(m, inReq)
+    entity := []entity.{% .tableCaseCamelName %}{}
+    err = m.Scan(&entity)
+    if utils.IsError(err) {
+        return
+    }
+    if g.IsEmpty(entity) {
+        return
+    }
+    tree = s.treeItemList(ctx, entity)
+    return
+}
+
+func (s *s{% .tableCaseCamelName %}) treeItemList(ctx context.Context, nodes []entity.{% .tableCaseCamelName %}) (tree []*res.{% .tableCaseCamelName %}Tree) {
+    type itemTree map[uint64]*res.{% .tableCaseCamelName %}Tree
+    itemList := make(itemTree)
+    for _, entity := range nodes {
+        var item *res.{% .tableCaseCamelName %}Tree
+        if err := gconv.Struct(entity, &item); err != nil {
+            continue
+        }
+        item.Children = make([]*res.{% .tableCaseCamelName %}Tree, 0)
+        if !g.IsEmpty(itemList[item.ParentId]) {
+            itemList[item.ParentId].Children = append(itemList[item.ParentId].Children, item)
+        } else {
+            tree = append(tree, item)
+        }
+            itemList[entity.Id] = item
+    }
+    return
+}
+
+func (s *s{% .tableCaseCamelName %}) treeSelectList(nodes []entity.{% .tableCaseCamelName %}) (tree []*res.{% .tableCaseCamelName %}SelectTree) {
+    type itemTree map[uint64]*res.{% .tableCaseCamelName %}SelectTree
+    itemList := make(itemTree)
+    for _, entity := range nodes {
+        var item res.{% .tableCaseCamelName %}SelectTree
+        item.ParentId = entity.ParentId
+        item.Id = entity.Id
+        item.Label = entity.Name
+        item.Value = entity.Id
+        item.Children = make([]*res.{% .tableCaseCamelName %}SelectTree, 0)
+        if !g.IsEmpty(itemList[item.ParentId]) {
+            itemList[item.ParentId].Children = append(itemList[item.ParentId].Children, &item)
+        } else {
+            tree = append(tree, &item)
+        }
+        itemList[entity.Id] = &item
+    }
+    return
+}
+
+func (s *s{% .tableCaseCamelName %}) GetSelectTree(ctx context.Context, inReq *model.ListReq, in *req.{% .tableCaseCamelName %}Search ) (routes []*res.{% .tableCaseCamelName %}SelectTree, err error) {
+    m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
+    m = orm.GetList(m, inReq)
+    entity := []entity.{% .tableCaseCamelName %}{}
+    err = m.Scan(&entity)
+    if utils.IsError(err) {
+        return
+    }
+    routes = s.treeSelectList(entity)
+    return
+}
+{% end %}
+
+{% if contains .generateMenus "save"  %}
+func (s *s{% .tableCaseCamelName %}) Save(ctx context.Context, in *req.{% .tableCaseCamelName %}Save) (id uint64, err error) {
+    var saveData *do.{% .tableCaseCamelName %}
+    if err = gconv.Struct(in, &saveData); err != nil {
+        return
+    }
+    rs, err := s.Model(ctx).OmitEmptyData().Data(saveData).Save()
+    if utils.IsError(err) {
+        return
+    }
+    tmpId, err := rs.LastInsertId()
+    if err != nil {
+        return
+    }
+    id = gconv.Uint64(tmpId)
+    return
+}
+{% end %}
+
+{% if contains .generateMenus "read"  %}
+func (s *s{% .tableCaseCamelName %}) GetById(ctx context.Context, id uint64) (res *res.{% .tableCaseCamelName %}, err error) {
+    err = s.Model(ctx).Where("id", id).Scan(&res)
+    if utils.IsError(err) {
+        return
+    }
+    return
+}
+{% end %}
+
+{% if contains .generateMenus "update"  %}
+func (s *s{% .tableCaseCamelName %}) Update(ctx context.Context, in *req.{% .tableCaseCamelName %}Update) (err error) {
+    var updateData *do.{% .tableCaseCamelName %}
+    if err = gconv.Struct(in, &updateData); err != nil {
+        return
+    }
+    _, err = s.Model(ctx).OmitEmptyData().Data(updateData).Where("id", in.Id).Update()
+    if utils.IsError(err) {
+        return
+    }
+    return
+}
+{% end %}
+
+{% if contains .generateMenus "delete"  %}
+func (s *s{% .tableCaseCamelName %}) Delete(ctx context.Context, ids []uint64) (err error) {
+    _, err = s.Model(ctx).WhereIn("id", ids).Delete()
+    if utils.IsError(err) {
+        return err
+    }
+    return
+}
+
+func (s *s{% .tableCaseCamelName %}) RealDelete(ctx context.Context, ids []uint64) (err error) {
+    _, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
+    if utils.IsError(err) {
+        return
+    }
+    return
+}
+{% end %}
+{% if contains .generateMenus "recycle"  %}
+func (s *s{% .tableCaseCamelName %}) Recovery(ctx context.Context, ids []uint64) (err error) {
+    _, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
+    if utils.IsError(err) {
+        return err
+    }
+    return
+}
+{% end %}
+{% if contains .generateMenus "changeStatus"  %}
+func (s *s{% .tableCaseCamelName %}) ChangeStatus(ctx context.Context, id uint64, status int) (err error) {
+    _, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
+    if utils.IsError(err) {
+        return err
+    }
+    return
+}
+{% end %}
+
+{% if contains .generateMenus "numberOperation"  %}
+func (s *s{% .tableCaseCamelName %}) NumberOperation(ctx context.Context, id uint64, numberName string, numberValue int) (err error) {
+    _, err = s.Model(ctx).Data(g.Map{numberName: numberValue}).Where("id", id).Update()
+    if utils.IsError(err) {
+        return err
+    }
+    return
+}
+{% end %}
+
+{% if contains .generateMenus "export"  %}
+func (s *s{% .tableCaseCamelName %}) GetExportList(ctx context.Context, req *model.ListReq, in *req.{% .tableCaseCamelName %}Search) (res []*res.{% .tableCaseCamelName %}Excel, err error) {
+    m := s.handleSearch(ctx, in)
+    err = orm.GetList(m, req).Scan(&res)
+    if utils.IsError(err) {
+        return
+    }
+    return
+}
+{% end %}
+

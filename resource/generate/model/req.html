@@ -1,0 +1,35 @@
+// Package req
+// @Link  https://github.com/huagelong/devinggo
+// @Copyright  Copyright (c) 2024 devinggo
+// @Author  Kai <hpuwang@gmail.com>
+// @License  https://github.com/huagelong/devinggo/blob/master/LICENSE
+
+package req
+
+{%if .hasGtime %}
+import "github.com/gogf/gf/v2/os/gtime"
+{% end %}
+
+type {% .tableCaseCamelName %}Search struct {
+{% range $index, $elem := .columns %}
+ {%if eq $elem.IsQuery 2 %}
+  {% caseCamel $elem.ColumnName %}  {% parseColumnType $elem %} `json:"{% $elem.ColumnName %}" description:"{% $elem.ColumnComment %}" `
+ {%end %}
+{% end %}
+}
+
+type {% .tableCaseCamelName %}Save struct {
+{% range $index, $elem := .columns %}
+ {%if eq $elem.IsInsert 2 %}
+  {% caseCamel $elem.ColumnName %}  {% parseColumnType $elem %} `json:"{% $elem.ColumnName %}" {%if eq $elem.IsRequired 2 %} v:"required" {%end %} description:"{% $elem.ColumnComment %}" `
+ {%end %}
+{% end %}
+}
+
+type {% .tableCaseCamelName %}Update struct {
+{% range $index, $elem := .columns %}
+ {%if or (eq $elem.IsEdit 2) (eq $elem.IsPk 2) %}
+  {% caseCamel $elem.ColumnName %}  {% parseColumnType $elem %} `json:"{% $elem.ColumnName %}" {%if eq $elem.IsRequired 2 %} v:"required" {%end %} description:"{% $elem.ColumnComment %}" `
+ {%end %}
+{% end %}
+}

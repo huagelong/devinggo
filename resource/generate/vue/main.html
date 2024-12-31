@@ -1,0 +1,50 @@
+<!--vue.js template for generating resource-->
+<!--@Link  https://github.com/huagelong/devinggo-->
+<!--@Copyright  Copyright (c) 2024 devinggo-->
+<!--@Author Kai <hpuwang@gmail.com>-->
+<!--@License  https://github.com/huagelong/devinggo/blob/master/LICENSE-->
+
+<template>
+    <div class="ma-content-block lg:flex justify-between p-4">
+        <!-- CRUD 组件 -->
+        <ma-crud :options="options" :columns="columns" ref="crudRef">
+            {% if contains .generateMenus "numberOperation"  %}
+                <template #sort="{ record }">
+                    <a-input-number :default-value="record.sort" mode="button" @change="changeSort($event,record.id,record.sort)" :min="0"
+                                    :max="1000" />
+                </template>
+            {% end %}
+            {% if contains .generateMenus "changeStatus"  %}
+            <template #status="{ record }">
+                <a-switch :checked-value="1" unchecked-value="2" @change="switchStatus($event, record)"
+                          :default-checked="record.status == 1" />
+            </template>
+            {% end %}
+        </ma-crud>
+    </div>
+</template>
+<script setup>
+    import { ref, reactive } from 'vue'
+    import {% .tableCaseCamelLowerName %} from '@/api/{% .table.ModuleName %}/{% .tableCaseCamelLowerName %}'
+    import { Message } from '@arco-design/web-vue'
+    import tool from '@/utils/tool'
+    import * as common from '@/utils/common'
+    const crudRef = ref()
+    {% if contains .generateMenus "numberOperation"  %}
+    const numberOperation = (newValue, id, numberName) => {
+        {% .tableCaseCamelLowerName %}.numberOperation({ id, numberName, numberValue: newValue }).then( res => {
+            res.success && Message.success(res.message)
+        }).catch( e => { console.log(e) } )
+    }
+    {% end %}
+    {% if contains .generateMenus "changeStatus"  %}
+    const switchStatus = (status, record) => {
+        {% .tableCaseCamelLowerName %}.changeStatus({ id: record.id, status }).then( res => {
+            res.success && Message.success(res.message)
+        }).catch( e => { console.log(e) } )
+    }
+    {% end %}
+    {% .OptionsView %}
+    {% .columnsView %}
+</script>
+<script> export default { name: '{% .authCode %}' } </script>

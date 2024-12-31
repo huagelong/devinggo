@@ -1,0 +1,23 @@
+{
+  "OK": "操作成功",
+  "Internal Error": "内部错误",
+  "Validation Failed": "验证失败",
+  "Database Operation Error": "数据库操作错误",
+  "Invalid Parameter": "无效参数",
+  "Missing Parameter": "缺少参数",
+  "Invalid Operation": "无效操作",
+  "Invalid Configuration": "无效配置",
+  "Missing Configuration": "缺少配置",
+  "Not Implemented": "未实现",
+  "Not Supported": "不支持",
+  "Operation Failed": "操作失败",
+  "Not Authorized": "未授权",
+  "Security Reason": "安全原因",
+  "Server Is Busy": "服务器繁忙",
+  "Unknown Error": "未知错误",
+  "Not Found": "未找到",
+  "Invalid Request": "无效请求",
+  "Necessary Package Not Import": "必要包未导入",
+  "Internal Panic": "内部错误",
+  "Business Validation Failed": "业务验证失败"
+}

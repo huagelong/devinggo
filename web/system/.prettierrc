@@ -1,0 +1,12 @@
+{
+  "arrowParens": "always",
+  "semi": true,
+  "singleQuote": true,
+  "proseWrap": "never",
+  "trailingComma": "all",
+  "jsxSingleQuote": false,
+  "embeddedLanguageFormatting": "auto",
+  "useTabs": false,
+  "printWidth": 80,
+  "tabWidth": 2
+}

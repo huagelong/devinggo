@@ -1,0 +1,11 @@
+[Service]
+Type=simple
+# 启动的脚本命令
+ExecStart=/opt/devinggo/devinggo
+# 重启条件
+Restart=always
+# 几秒后重启
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

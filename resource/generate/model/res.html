@@ -1,0 +1,42 @@
+// Package req
+// @Link  https://github.com/huagelong/devinggo
+// @Copyright  Copyright (c) 2024 devinggo
+// @Author  Kai <hpuwang@gmail.com>
+// @License  https://github.com/huagelong/devinggo/blob/master/LICENSE
+
+package res
+
+{%if .hasGtime %}
+import "github.com/gogf/gf/v2/os/gtime"
+{% end %}
+
+type {% .tableCaseCamelName %} struct {
+{% range $index, $elem := .columns %}
+ {%if eq $elem.IsList 2 %}
+ {% caseCamel $elem.ColumnName %}  {% getModelColumnType $elem %} `json:"{% $elem.ColumnName %}"  description:"{% $elem.ColumnComment %}" `
+ {%end %}
+{%end %}
+}
+
+{% if eq .table.Type "tree"  %}
+type {% .tableCaseCamelName %}Tree struct {
+ {% .tableCaseCamelName %}
+ Children []*{% .tableCaseCamelName %}Tree `json:"children" description:"子菜单"`
+}
+
+type {% .tableCaseCamelName %}SelectTree struct {
+  Id       uint64            `json:"id"`
+  ParentId uint64            `json:"parent_id"`
+  Value    uint64            `json:"value"`
+  Label    string            `json:"label"`
+  Children []*{% .tableCaseCamelName %}SelectTree `json:"children"`
+}
+{%end %}
+
+type {% .tableCaseCamelName %}Excel struct {
+{% range $index, $elem := .columns %}
+{%if eq $elem.IsInsert 2 %}
+    {% caseCamel $elem.ColumnName %}  {% parseColumnType $elem %} `json:"{% $elem.ColumnName %}" {%if eq $elem.IsRequired 2 %} v:"required" {%end %} description:"{% $elem.ColumnComment %}" {% if or (contains $.generateMenus "export")  (contains $.generateMenus "import") %} excelName:"{% $elem.ColumnComment %}" excelIndex:"{% $index %}" {%end %} `
+{%end %}
+{% end %}
+}

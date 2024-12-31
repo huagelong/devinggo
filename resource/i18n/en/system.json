@@ -1,0 +1,23 @@
+{
+  "OK": "operation successful",
+  "Internal Error": "internal error",
+  "Validation Failed": "validation failed",
+  "Database Operation Error": "database operation error",
+  "Invalid Parameter": "invalid parameter",
+  "Missing Parameter": "missing parameter",
+  "Invalid Operation": "invalid operation",
+  "Invalid Configuration": "invalid configuration",
+  "Missing Configuration": "missing configuration",
+  "Not Implemented": "not implemented",
+  "Not Supported": "not supported",
+  "Operation Failed": "operation failed",
+  "Not Authorized": "not authorized",
+  "Security Reason": "security reason",
+  "Server Is Busy": "server is busy",
+  "Unknown Error": "unknown error",
+  "Not Found": "not found",
+  "Invalid Request": "invalid request",
+  "Necessary Package Not Import": "necessary package not import",
+  "Internal Panic": "internal panic",
+  "Business Validation Failed": "business validation failed"
+}

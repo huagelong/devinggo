@@ -1,0 +1,347 @@
+// Package {% .table.PackageName %}
+// @Link  https://github.com/huagelong/devinggo
+// @Copyright  Copyright (c) 2024 devinggo
+// @Author  Kai <hpuwang@gmail.com>
+// @License  https://github.com/huagelong/devinggo/blob/master/LICENSE
+
+package {% .table.PackageName %}
+
+import (
+"devinggo/internal/controller/base"
+"devinggo/modules/{% .table.ModuleName %}/api/{% .table.PackageName %}"
+"devinggo/modules/{% .table.ModuleName %}/model/req"
+"devinggo/modules/{% .table.ModuleName %}/model/res"
+"devinggo/modules/{% .table.ModuleName %}/pkg/orm"
+"devinggo/modules/{% .table.ModuleName %}/pkg/utils/request"
+"devinggo/modules/{% .table.ModuleName %}/service"
+"context"
+"github.com/gogf/gf/v2/container/gmap"
+"github.com/gogf/gf/v2/frame/g"
+{% if or (contains .generateMenus "export")  (contains .generateMenus "import")  %}
+"devinggo/modules/system/pkg/excel"
+{% end %}
+{% if contains .generateMenus "import"  %}
+"devinggo/internal/dao"
+"github.com/gogf/gf/v2/database/gdb"
+"devinggo/internal/model/do"
+"devinggo/modules/{% .table.ModuleName %}/pkg/utils"
+"devinggo/modules/{% .table.ModuleName %}/myerror"
+"github.com/gogf/gf/v2/util/gconv"
+{% end %}
+)
+
+var (
+    {% .tableCaseCamelName %}Controller = {% .tableCaseCamelLowerName %}Controller{}
+)
+
+type {% .tableCaseCamelLowerName %}Controller struct {
+    base.BaseController
+}
+
+{% if eq .table.Type "single"  %}
+func (c *{% .tableCaseCamelLowerName %}Controller) Index(ctx context.Context, in *{% .table.PackageName %}.Index{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Index{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.Index{% .tableCaseCamelName %}Res{}
+    items, totalCount, err := service.{% .tableCaseCamelName %}().GetPageList(ctx, &in.PageListReq, &in.{% .tableCaseCamelName %}Search)
+    if err != nil {
+        return
+    }
+
+    if !g.IsEmpty(items) {
+        for _, item := range items {
+            out.Items = append(out.Items, *item)
+        }
+    } else {
+        out.Items = make([]res.{% .tableCaseCamelName %}, 0)
+    }
+   out.PageRes.Pack(in, totalCount)
+   return
+}
+
+func (c *{% .tableCaseCamelLowerName %}Controller) Recycle(ctx context.Context, in *{% .table.PackageName %}.Recycle{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Recycle{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.Recycle{% .tableCaseCamelName %}Res{}
+    pageListReq := &in.PageListReq
+    pageListReq.Recycle = true
+    items, totalCount, err := service.{% .tableCaseCamelName %}().GetPageList(ctx, pageListReq, &in.{% .tableCaseCamelName %}Search)
+    if err != nil {
+        return
+    }
+
+    if !g.IsEmpty(items) {
+        for _, item := range items {
+            out.Items = append(out.Items, *item)
+        }
+    } else {
+        out.Items = make([]res.{% .tableCaseCamelName %}, 0)
+    }
+  out.PageRes.Pack(in, totalCount)
+    return
+}
+
+func (c *{% .tableCaseCamelLowerName %}Controller) List(ctx context.Context, in *{% .table.PackageName %}.List{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.List{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.List{% .tableCaseCamelName %}Res{}
+    rs, err := service.{% .tableCaseCamelName %}().GetList(ctx, &in.ListReq, &req.{% .tableCaseCamelName %}Search{})
+    if err != nil {
+        return
+    }
+
+    if !g.IsEmpty(rs) {
+        for _, v := range rs {
+            out.Data = append(out.Data, *v)
+        }
+    } else {
+        out.Data = make([]res.{% .tableCaseCamelName %}, 0)
+    }
+    return
+}
+{% end %}
+
+{% if eq .table.Type "tree"  %}
+func (c *{% .tableCaseCamelLowerName %}Controller) TreeIndex(ctx context.Context, in *{% .table.PackageName %}.TreeIndex{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.TreeIndex{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.TreeIndex{% .tableCaseCamelName %}Res{}
+    items, err := service.{% .tableCaseCamelName %}().GetTreeList(ctx,&in.ListReq, &in.{% .tableCaseCamelName %}Search)
+    if err != nil {
+        return
+    }
+    if !g.IsEmpty(items) {
+    for _, item := range items {
+        out.Data = append(out.Data, *item)
+    }
+    } else {
+        out.Data = make([]res.{% .tableCaseCamelName %}Tree, 0)
+    }
+    return
+}
+
+func (c *{% .tableCaseCamelLowerName %}Controller) TreeRecycle(ctx context.Context, in *{% .table.PackageName %}.TreeRecycle{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.TreeRecycle{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.TreeRecycle{% .tableCaseCamelName %}Res{}
+    listReq := &in.ListReq
+    listReq.Recycle = true
+    items, err := service.{% .tableCaseCamelName %}().GetTreeList(ctx, listReq, &in.{% .tableCaseCamelName %}Search)
+    if err != nil {
+        return
+    }
+    if !g.IsEmpty(items) {
+    for _, item := range items {
+        out.Data = append(out.Data, *item)
+    }
+    } else {
+        out.Data = make([]res.{% .tableCaseCamelName %}Tree, 0)
+    }
+    return
+}
+
+func (c *{% .tableCaseCamelLowerName %}Controller) Tree(ctx context.Context, in *{% .table.PackageName %}.Tree{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Tree{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.Tree{% .tableCaseCamelName %}Res{}
+    items, err := service.{% .tableCaseCamelName %}().GetSelectTree(ctx, &in.ListReq, &in.{% .tableCaseCamelName %}Search)
+    if err != nil {
+        return
+    }
+    if !g.IsEmpty(items) {
+    for _, item := range items {
+        out.Data = append(out.Data, *item)
+    }
+    } else {
+        out.Data = make([]res.{% .tableCaseCamelName %}SelectTree, 0)
+    }
+    return
+}
+{% end %}
+
+{% if contains .generateMenus "save"  %}
+func (c *{% .tableCaseCamelLowerName %}Controller) Save(ctx context.Context, in *{% .table.PackageName %}.Save{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Save{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.Save{% .tableCaseCamelName %}Res{}
+    id, err := service.{% .tableCaseCamelName %}().Save(ctx, &in.{% .tableCaseCamelName %}Save)
+    if err != nil {
+        return
+    }
+    out.Id = id
+   return
+}
+{% end %}
+
+{% if contains .generateMenus "read"  %}
+func (c *{% .tableCaseCamelLowerName %}Controller) Read(ctx context.Context, in *{% .table.PackageName %}.Read{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Read{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.Read{% .tableCaseCamelName %}Res{}
+    info, err := service.{% .tableCaseCamelName %}().GetById(ctx, in.Id)
+    if err != nil {
+        return
+    }
+    out.Data = *info
+    return
+}
+{% end %}
+{% if contains .generateMenus "update"  %}
+func (c *{% .tableCaseCamelLowerName %}Controller) Update(ctx context.Context, in *{% .table.PackageName %}.Update{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Update{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.Update{% .tableCaseCamelName %}Res{}
+    err = service.{% .tableCaseCamelName %}().Update(ctx, &in.{% .tableCaseCamelName %}Update)
+    if err != nil {
+        return
+    }
+    return
+}
+{% end %}
+{% if contains .generateMenus "delete"  %}
+func (c *{% .tableCaseCamelLowerName %}Controller) Delete(ctx context.Context, in *{% .table.PackageName %}.Delete{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Delete{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.Delete{% .tableCaseCamelName %}Res{}
+    err = service.{% .tableCaseCamelName %}().Delete(ctx, in.Ids)
+    if err != nil {
+        return
+    }
+    return
+}
+func (c *{% .tableCaseCamelLowerName %}Controller) RealDelete(ctx context.Context, in *{% .table.PackageName %}.RealDelete{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.RealDelete{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.RealDelete{% .tableCaseCamelName %}Res{}
+    err = service.{% .tableCaseCamelName %}().RealDelete(ctx, in.Ids)
+    if err != nil {
+        return
+    }
+    return
+}
+{% end %}
+{% if contains .generateMenus "recycle"  %}
+func (c *{% .tableCaseCamelLowerName %}Controller) Recovery(ctx context.Context, in *{% .table.PackageName %}.Recovery{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Recovery{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.Recovery{% .tableCaseCamelName %}Res{}
+    err = service.{% .tableCaseCamelName %}().Recovery(ctx, in.Ids)
+    if err != nil {
+        return
+    }
+    return
+}
+{% end %}
+
+{% if contains .generateMenus "changeStatus"  %}
+func (c *{% .tableCaseCamelLowerName %}Controller) ChangeStatus(ctx context.Context, in *{% .table.PackageName %}.ChangeStatus{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.ChangeStatus{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.ChangeStatus{% .tableCaseCamelName %}Res{}
+    err = service.{% .tableCaseCamelName %}().ChangeStatus(ctx, in.Id, in.Status)
+    if err != nil {
+        return
+    }
+    return
+}
+{% end %}
+{% if contains .generateMenus "numberOperation"  %}
+func (c *{% .tableCaseCamelLowerName %}Controller) NumberOperation(ctx context.Context, in *{% .table.PackageName %}.NumberOperation{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.NumberOperation{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.NumberOperation{% .tableCaseCamelName %}Res{}
+    err = service.{% .tableCaseCamelName %}().NumberOperation(ctx, in.Id, in.NumberName, in.NumberValue)
+    if err != nil {
+        return
+    }
+    return
+}
+{% end %}
+
+{% if contains .generateMenus "export"  %}
+func (c *{% .tableCaseCamelLowerName %}Controller) Export(ctx context.Context, in *{% .table.PackageName %}.Export{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Export{% .tableCaseCamelName %}Res, err error) {
+    var (
+        fileName  = "{% .tableCaseCamelLowerName %}"
+        sheetName = "Sheet1"
+    )
+    exports, err := service.{% .tableCaseCamelName %}().GetExportList(ctx, &in.ListReq, &in.{% .tableCaseCamelName %}Search)
+    if err != nil {
+        return
+    }
+    //创建导出对象
+    export := excel.NewExcelExport(sheetName, res.{% .tableCaseCamelName %}Excel{})
+    //销毁对象
+    defer export.Close()
+    newExports := []res.{% .tableCaseCamelName %}Excel{}
+    if !g.IsEmpty(exports) {
+        for _, item := range exports {
+            newExports = append(newExports, *item)
+        }
+    }
+    err = export.ExportSmallExcelByStruct(newExports).Download(ctx, fileName).Error()
+    if err != nil {
+        return
+    }
+    return
+}
+{% end %}
+
+{% if contains .generateMenus "import"  %}
+func (c *{% .tableCaseCamelLowerName %}Controller) Import(ctx context.Context, in *{% .table.PackageName %}.Import{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Import{% .tableCaseCamelName %}Res, err error) {
+    tmpPath := utils.GetTmpDir()
+    fileName, err := in.File.Save(tmpPath, true)
+    if err != nil {
+        return nil, err
+    }
+    localPath := tmpPath + "/" + fileName
+    var result []res.{% .tableCaseCamelName %}Excel
+    importFile := excel.NewExcelImportFile(localPath, res.{% .tableCaseCamelName %}Excel{})
+    defer importFile.Close()
+
+    err = importFile.ImportDataToStruct(&result).Error()
+    if err != nil {
+        return nil, err
+    } else {
+        if !g.IsEmpty(result) {
+            err = dao.{% .tableCaseCamelName %}.Transaction(ctx, func(ctx context.Context, tx gdb.TX) (err error) {
+                for _, item := range result {
+                    var saveData *do.{% .tableCaseCamelName %}
+                    if err = gconv.Struct(item, &saveData); err != nil {
+                        return
+                    }
+                    _, err = service.{% .tableCaseCamelName %}().Model(ctx).OmitEmptyData().Data(saveData).Save()
+                    if err != nil {
+                        return err
+                    }
+                }
+                return
+            })
+            if err != nil {
+                return
+            }
+        } else {
+            err = myerror.ValidationFailed(ctx, "没有数据!")
+        }
+    }
+    return
+}
+
+func (c *{% .tableCaseCamelLowerName %}Controller) DownloadTemplate(ctx context.Context, in *{% .table.PackageName %}.DownloadTemplate{% .tableCaseCamelName %}Req) (out *system.DownloadTemplate{% .tableCaseCamelName %}Res, err error) {
+    var (
+        fileName  = "{% .tableCaseCamelLowerName %}_template"
+        sheetName = "Sheet1"
+        exports   = make([]res.{% .tableCaseCamelName %}Excel, 0)
+    )
+    export := excel.NewExcelExport(sheetName, res.{% .tableCaseCamelName %}Excel{})
+    defer export.Close()
+    err = export.ExportSmallExcelByStruct(exports).Download(ctx, fileName).Error()
+    if err != nil {
+        return
+    }
+    return
+}
+
+{% end %}
+
+func (c *{% .tableCaseCamelLowerName %}Controller) Remote(ctx context.Context, in *{% .table.PackageName %}.Remote{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Remote{% .tableCaseCamelName %}Res, err error) {
+    out = &{% .table.ModuleName %}.Remote{% .tableCaseCamelName %}Res{}
+    r := request.GetHttpRequest(ctx)
+    params := gmap.NewStrAnyMapFrom(r.GetMap())
+    m := service.{% .tableCaseCamelName %}().Model(ctx)
+    var rs res.{% .tableCaseCamelName %}
+    remote := orm.NewRemote(m, rs)
+    openPage := params.GetVar("openPage")
+    items, totalCount, err := remote.GetRemote(ctx, params)
+    if err != nil {
+        return
+    }
+    if !g.IsEmpty(openPage) && openPage.Bool() {
+        if !g.IsEmpty(items) {
+            for _, item := range items {
+                out.Items = append(out.Items, item)
+            }
+        } else {
+            out.Items = make([]res.{% .tableCaseCamelName %}, 0)
+        }
+        out.PageRes.Pack(in, totalCount)
+    } else {
+        if !g.IsEmpty(items) {
+            out.Data = items
+        } else {
+            out.Data = make([]res.{% .tableCaseCamelName %}, 0)
+        }
+    }
+    return
+}
