@@ -47,14 +47,14 @@
 - [x] 支持websocket：支持websocket通信,websocket支持分布式服务器
 - [x] 支持docker部署
 
-### 环境要求
+## 环境要求
 
 - Go >= 1.18
 - Node >= 16
 - MySQL >= 5.7
 - Redis >= 6.0
 
-### 快速开始
+## 快速开始
 
 > 以windows10为例
 
@@ -67,16 +67,15 @@ choco install make
 choco install sed
 ```
 2. 安装golang
-```
-详见官网对应
-```
+
 3. 修改配置文件（mysql,redis配置）
 - `manifest/config/config.example.yaml` 复制为 `manifest/config/config.yaml`
 - `manifest/config/config.yaml` # 修改redis,mysql配置
 - `hack/config.example.yaml` 复制为 `hack/config.yaml` # 开发时使用
 - `hack/config.yaml` # 开发时使用
-```
+
 4. 初始化
+
 ```
 make build
 ```
@@ -91,13 +90,15 @@ gf run main.go
 7. 访问
 ```
 http://localhost:8070/system
-#账号 superAdmin 密码 admin123
+账号 superAdmin 密码 admin123
 ```
 
-### 鸣谢
-- [GoFrame](https://github.com/gogf/gf)
-- [MineAdmin-Vue V2](https://github.com/mineadmin/MineAdmin-Vue)
-- [Arco Design](https://arco.design/)
-- [Pinia](https://pinia.vuejs.org/)
-- [Vue3](https://v3.cn.vuejs.org/)
-- [Vite5](https://cn.vitejs.dev/)
+
+## 鸣谢
+
+1. [GoFrame](https://github.com/gogf/gf)
+2. [MineAdmin-Vue V2](https://github.com/mineadmin/MineAdmin-Vue)
+3. [Arco Design](https://arco.design/)
+4. [Pinia](https://pinia.vuejs.org/)
+5. [Vue3](https://v3.cn.vuejs.org/)
+6. [Vite5](https://cn.vitejs.dev/)
