@@ -4,7 +4,7 @@
 <p align="center">
  <img src="https://svg.hamm.cn/badge.svg?key=License&value=Apache-2.0" />
   <img src="https://svg.hamm.cn/badge.svg?key=Version&value=1.0.0%20LTS" />
-	<img src="https://img.shields.io/badge/goframe-2.7-green" alt="goframe">
+	<img src="https://img.shields.io/badge/goframe-2.8-green" alt="goframe">
 	<img src="https://img.shields.io/badge/vue.js-vue3.4-green" alt="vue">
 	<img src="https://img.shields.io/badge/vite-%3E5.1.4-yellow" alt="vite">
 </p>
@@ -15,8 +15,8 @@
 
 ## 演示地址
 - 后台管理系统：http://106.14.10.255:8070/system
-- 账号密码：superAdmin  admin123
-- 每小时重置一次
+- 账号密码：superAdmin/admin123
+- 数据每小时重置一次
 
 ## 技术栈
 
