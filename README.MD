@@ -77,11 +77,11 @@ make build
 ```
 5. 导入数据库
 ```
-make install
+go run main.go migrate:up
 ```
 6. 启动
 ```
-gf run main.go
+go run main.go
 ```
 7. 访问
 ```

@@ -11,7 +11,7 @@ endif
 .PHONY: run
 run: dao service
 	@echo "******** gf run ********"
-	@go mod tidy && gf run main.go
+	@go mod tidy && go run main.go
 
 # Build binary using configuration from hack/config.yaml.
 .PHONY: build
