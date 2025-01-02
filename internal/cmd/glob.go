@@ -7,9 +7,9 @@
 package cmd
 
 import (
+	"context"
 	"devinggo/modules/system/pkg/cache"
 	"devinggo/modules/system/pkg/utils/config"
-	"context"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcfg"
 	"github.com/gogf/gf/v2/os/gcmd"
@@ -38,6 +38,8 @@ func CmdInit(ctx context.Context, parser *gcmd.Parser) {
 			if !g.IsEmpty(gmodeConfig) {
 				gmode.Set(gmodeConfig)
 			}
+		} else {
+			gmode.Set(gmode.PRODUCT)
 		}
 		g.Log().Debug(ctx, "gmode:", gmode.Mode())
 
