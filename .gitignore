@@ -21,6 +21,7 @@ internal/packed/packed.go
 internal/packed/build_pack_data.go
 /logs/
 **/*.log
+.init.lock
 
 /resource/public/system/
 /resource/public/uploads/image/
