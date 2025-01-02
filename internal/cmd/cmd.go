@@ -38,7 +38,7 @@ var (
 		---------------------------------------------------------------------------------
 		启动服务
 		>> 所有服务  [go run main.go]   热编译  [gf run main.go]
-		>> 初始化配置文件  [go run main.go init]
+		>> 初始化配置以及其他必要文件  [go run main.go unpack]
 		>> 迁移数据库文件  [go run main.go migrate:xxx]
 		  migrate:create -name name Create a set of timestamped up/down migrations titled NAME
 		  migrate:goto -v version      Migrate to version V
@@ -81,7 +81,7 @@ var (
 )
 
 func init() {
-	if err := Main.AddCommand(All, Http, Version, Worker, Init, MigrateUp, MigrateDown, MigrateGoto, MigrateCreate, MigrateForce, Help); err != nil {
+	if err := Main.AddCommand(All, Http, Version, Worker, Unpack, MigrateUp, MigrateDown, MigrateGoto, MigrateCreate, MigrateForce, Help); err != nil {
 		panic(err)
 	}
 }

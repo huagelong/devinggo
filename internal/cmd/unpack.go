@@ -14,9 +14,9 @@ import (
 )
 
 var (
-	Init = &gcmd.Command{
-		Name:        "init",
-		Brief:       "initializes config files for the project",
+	Unpack = &gcmd.Command{
+		Name:        "unpack",
+		Brief:       "unpack the config files and generate the necessary files for the project",
 		Description: ``,
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
 			CmdInit(ctx, parser)
