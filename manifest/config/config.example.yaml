@@ -158,3 +158,5 @@ settings:
   cors:
     allowDomain: "*" # 允许的域名，默认允许所有
     allowHeaders: "X-App-Id,X-Tenant-Id"
+  snowflake:
+    workerId: 1 # 机器ID

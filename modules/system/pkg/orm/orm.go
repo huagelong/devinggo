@@ -7,9 +7,9 @@
 package orm
 
 import (
+	"context"
 	"devinggo/modules/system/pkg/utils/config"
 	"devinggo/modules/system/pkg/utils/slice"
-	"context"
 	"github.com/gogf/gf/v2/database/gdb"
 	"reflect"
 	"time"
@@ -22,7 +22,7 @@ func GetTableName(m *gdb.Model) string {
 }
 
 func SetCacheOption(ctx context.Context, duration ...time.Duration) gdb.CacheOption {
-	globalCache := config.GetConfigBool(ctx, "setting.enableGlobalDbCache", false)
+	globalCache := config.GetConfigBool(ctx, "settings.enableGlobalDbCache", false)
 	var dura time.Duration
 	if globalCache {
 		if len(duration) > 0 {

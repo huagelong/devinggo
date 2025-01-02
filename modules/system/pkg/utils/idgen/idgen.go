@@ -7,15 +7,15 @@
 package idgen
 
 import (
-	"devinggo/modules/system/pkg/utils/config"
 	"context"
+	"devinggo/modules/system/pkg/utils/config"
 
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/yitter/idgenerator-go/idgen"
 )
 
 func NextId(ctx context.Context) int64 {
-	workerIdInt := config.GetConfigInt(ctx, "setting.snowflake.workerId")
+	workerIdInt := config.GetConfigInt(ctx, "settings.snowflake.workerId")
 	workerId := gconv.Uint16(workerIdInt)
 	var options = idgen.NewIdGeneratorOptions(workerId)
 	options.WorkerIdBitLength = 10

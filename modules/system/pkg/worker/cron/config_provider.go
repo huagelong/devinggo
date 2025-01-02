@@ -7,16 +7,15 @@
 package cron
 
 import (
+	"context"
 	"devinggo/internal/dao"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/hook"
+	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
-	"context"
-	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/hibiken/asynq"
-	"time"
 )
 
 type ConfigProvider struct {
@@ -36,7 +35,7 @@ func (p *ConfigProvider) GetConfigs() ([]*asynq.PeriodicTaskConfig, error) {
 		CacheEvict:           &defaultCacheEvict,
 		UserRelate:           &defaultUserRelate,
 		AutoCreatedUpdatedBy: &defaultAutoCreatedUpdatedBy,
-	})).Cache(gdb.CacheOption{Duration: time.Hour * 24, Force: false}).Where("status", 1).Scan(&dbCrons)
+	})).Cache(orm.SetCacheOption(p.Ctx)).Where("status", 1).Scan(&dbCrons)
 	if utils.IsError(err) {
 		return nil, err
 	}

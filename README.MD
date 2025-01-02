@@ -86,7 +86,7 @@ go run main.go migrate:up
 ```
 6. 启动
 ```
-go run main.go
+gf run main.go
 ```
 7. 访问
 ```
