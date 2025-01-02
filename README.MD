@@ -68,8 +68,8 @@ choco install sed
 3. 修改配置文件（mysql,redis配置）
 - `manifest/config/config.example.yaml` 复制为 `manifest/config/config.yaml`
 - `manifest/config/config.yaml` # 修改redis,mysql配置
-- `hack/config.example.yaml` 复制为 `hack/config.yaml` # 如果需要开发
-- `hack/config.yaml` # 修改mysql配置,如果需要开发
+- `hack/config.example.yaml` 复制为 `hack/config.yaml` # 开发时使用
+- `hack/config.yaml` # 开发时使用
 ```
 4. 初始化
 ```

@@ -18,6 +18,7 @@ temp/
 temp.yaml
 bin
 internal/packed/packed.go
+internal/packed/build_pack_data.go
 /logs/
 **/*.log
 

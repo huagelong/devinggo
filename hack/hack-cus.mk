@@ -16,11 +16,11 @@ run: dao service
 # Build binary using configuration from hack/config.yaml.
 .PHONY: build
 build: cli.install ui.build
-	@rm -rf $(PLATFORM_RESOURCE_PATH)
+	@if [ -d $(PLATFORM_RESOURCE_PATH) ]; then rm -rf $(PLATFORM_RESOURCE_PATH); fi
 	@mkdir $(PLATFORM_RESOURCE_PATH)
-	@cd $(UI_PATH) && \cp -rf ./dist/*  ../../$(PLATFORM_RESOURCE_PATH)
+	@if [ -d $(UI_PATH)/dist ]; then cd $(UI_PATH) && \cp -rf ./dist/* ../../$(PLATFORM_RESOURCE_PATH); fi
 	@${SED} -i '/^      version:/s/version:.*/version: ${VERSION}/' hack/config.yaml
-	@rm -rf internal/packed/packed.go
+	@if [ -f internal/packed/packed.go ]; then rm -rf internal/packed/packed.go; fi
 	@gf build -ew
 
 .PHONY: install
