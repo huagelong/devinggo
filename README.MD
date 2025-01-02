@@ -83,7 +83,8 @@ make install
 ```
 make run
 ```
-7. 访问服务端
+7. 访问
 ```
-http://localhost:8070
+http://localhost:8070/system
+#账号 superAdmin 密码 admin123
 ```

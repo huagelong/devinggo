@@ -9,7 +9,6 @@ package main
 import (
 	"devinggo/internal/cmd"
 	_ "devinggo/internal/logic"
-	_ "devinggo/internal/packed"
 	_ "devinggo/modules/_/logic"
 	_ "devinggo/modules/system/pkg/orm/driver"
 	_ "github.com/gogf/gf/contrib/nosql/redis/v2"

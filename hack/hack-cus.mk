@@ -9,7 +9,7 @@ ifneq ($(shell go env GOOS),windows)
 endif
 ##   run: Run devinggo for development environment
 .PHONY: run
-run: dao service
+run:
 	@echo "******** gf run ********"
 	@go mod tidy && gf run main.go
 

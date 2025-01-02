@@ -15,6 +15,7 @@ require (
 	github.com/huagelong/goss v0.0.0-20241220083339-d62d982ab671
 	github.com/mholt/archives v0.0.0-20241216060121-23e0af8fe73d
 	github.com/mileusna/useragent v1.3.5
+	github.com/redis/go-redis/v9 v9.6.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/xiaoqidun/qqwry v0.0.0-20240620014500-698a12cf0369
 	github.com/xuri/excelize/v2 v2.9.0
@@ -75,7 +76,6 @@ require (
 	github.com/nwaples/rardecode/v2 v2.0.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
-	github.com/redis/go-redis/v9 v9.6.1 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.4 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
