@@ -1,5 +1,6 @@
 [Service]
 Type=simple
+WorkingDirectory=/opt/devinggo/
 # 启动的脚本命令
 ExecStart=/opt/devinggo/devinggo -gf.gmode=product
 # 重启条件
