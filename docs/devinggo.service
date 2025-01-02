@@ -1,7 +1,7 @@
 [Service]
 Type=simple
 # 启动的脚本命令
-ExecStart=/opt/devinggo/devinggo
+ExecStart=/opt/devinggo/devinggo -gf.gmode=product
 # 重启条件
 Restart=always
 # 几秒后重启

@@ -7,6 +7,7 @@
 package system
 
 import (
+	"context"
 	"devinggo/internal/controller/base"
 	"devinggo/internal/dao"
 	"devinggo/internal/model/entity"
@@ -23,11 +24,11 @@ import (
 	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/pkg/utils/secure"
 	"devinggo/modules/system/service"
-	"context"
 	"github.com/gogf/gf/v2/container/gmap"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/gogf/gf/v2/util/gmode"
 )
 
 var (
@@ -82,6 +83,12 @@ func (c *userController) ModifyPassword(ctx context.Context, in *system.ModifyPa
 
 	if g.IsEmpty(userInfo) {
 		err = myerror.ValidationFailed(ctx, "用户不存在")
+		return
+	}
+
+	isSuperAdmin, _ := service.SystemUser().IsSuperAdmin(ctx, userId)
+	if isSuperAdmin && (gmode.Mode() == gmode.DEVELOP) {
+		err = myerror.ValidationFailed(ctx, "超级管理员开发环境不允许修改密码")
 		return
 	}
 
