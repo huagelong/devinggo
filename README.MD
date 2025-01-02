@@ -81,7 +81,7 @@ make install
 ```
 6. 启动
 ```
-make run
+gf run main.go
 ```
 7. 访问
 ```

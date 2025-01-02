@@ -9,7 +9,7 @@ ifneq ($(shell go env GOOS),windows)
 endif
 ##   run: Run devinggo for development environment
 .PHONY: run
-run:
+run: dao service
 	@echo "******** gf run ********"
 	@go mod tidy && gf run main.go
 
@@ -21,6 +21,7 @@ build: cli.install ui.build
 	@if [ -d $(UI_PATH)/dist ]; then cd $(UI_PATH) && \cp -rf ./dist/* ../../$(PLATFORM_RESOURCE_PATH); fi
 	@${SED} -i '/^      version:/s/version:.*/version: ${VERSION}/' hack/config.yaml
 	@if [ -f internal/packed/packed.go ]; then rm -rf internal/packed/packed.go; fi
+	@go mod tidy
 	@gf build -ew
 
 .PHONY: install
