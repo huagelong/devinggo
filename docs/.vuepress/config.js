@@ -5,18 +5,13 @@ const htmlModules = require('./config/htmlModules.js');
 module.exports = {
 
   theme: 'vdoing', // 使用依赖包主题
-  // theme: require.resolve('../../vdoing'), // 使用本地主题 (先将vdoing主题文件下载到本地：https://github.com/xugaoyi/vuepress-theme-vdoing)
-
-  title: "vuepress-theme-vdoing",
-  description: '一个基于VuePress的 知识管理&博客 主题',
+  title: "devinggo",
+  description: '一款基于 Vue 和 Goframe v2 的全栈开发平台，集成 JWT 鉴权、动态路由、消息队列等功能，提供丰富场景模板，助您快速构建企业级应用，专注业务开发。',
   // base: '/', // 默认'/'。如果你想将你的网站部署到如 https://foo.github.io/bar/，那么 base 应该被设置成 "/bar/",（否则页面将失去样式等文件）
   head: [ // 注入到页面<head> 中的标签，格式[tagName, { attrName: attrValue }, innerHTML?]
     ['link', { rel: 'icon', href: '/img/favicon.ico' }], //favicons，资源放在public文件夹
-    ['meta', { name: 'keywords', content: 'vuepress,theme,blog,vdoing' }],
+    ['meta', { name: 'keywords', content: 'golang,Goframe,vue,Arco Design' }],
     ['meta', { name: 'theme-color', content: '#11a8cd' }], // 移动浏览器主题颜色
-
-    ['meta', { name: 'wwads-cn-verify', content: '6c4b761a28b734fe93831e3fb400ce87' }], // 广告相关，你可以去掉
-    ['script', { src: 'https://cdn.wwads.cn/js/makemoney.js', type: 'text/javascript' }], // 广告相关，你可以去掉
   ],
 
   // 主题配置
@@ -64,7 +59,7 @@ module.exports = {
     ],
     sidebarDepth: 2, // 侧边栏显示深度，默认1，最大2（显示到h3标题）
     logo: '/img/logo.png', // 导航栏logo
-    repo: 'xugaoyi/vuepress-theme-vdoing', // 导航栏右侧生成Github链接
+    repo: 'huagelong/devinggo', // 导航栏右侧生成Github链接
     searchMaxSuggestions: 10, // 搜索结果显示最大数
     lastUpdated: '上次更新', // 更新的时间，及前缀文字   string | boolean (取值为git提交时间)
 
@@ -95,85 +90,40 @@ module.exports = {
     // archive: false, // 是否打开归档功能，默认true。 如打开，会做的事情有：1.自动生成归档页面（在@pages文件夹）。如关闭，则反之。
 
     author: { // 文章默认的作者信息，可在md文件中单独配置此信息 String | {name: String, href: String}
-      name: 'Evan Xu', // 必需
-      href: 'https://github.com/xugaoyi' // 可选的
+      name: 'Kai', // 必需
+      href: 'https://github.com/huagelong' // 可选的
     },
     social: { // 社交图标，显示于博主信息栏和页脚栏
       // iconfontCssFile: '//at.alicdn.com/t/font_1678482_u4nrnp8xp6g.css', // 可选，阿里图标库在线css文件地址，对于主题没有的图标可自由添加
       icons: [
         {
-          iconClass: 'icon-youjian',
-          title: '发邮件',
-          link: 'mailto:894072666@qq.com'
-        },
-        {
           iconClass: 'icon-github',
           title: 'GitHub',
-          link: 'https://github.com/xugaoyi'
-        },
-        {
-          iconClass: 'icon-erji',
-          title: '听音乐',
-          link: 'https://music.163.com/#/playlist?id=755597173'
+          link: 'https://github.com/huagelong'
         }
       ]
     },
     footer: { // 页脚信息
-      createYear: 2019, // 博客创建年份
-      copyrightInfo: 'Evan Xu | MIT License', // 博客版权信息，支持a标签
+      createYear: 2025, // 博客创建年份
+      copyrightInfo: 'Kai', // 博客版权信息，支持a标签
     },
     htmlModules,
   },
 
   // 插件
   plugins: [
-    // [require('./plugins/love-me'), { // 鼠标点击爱心特效
-    //   color: '#11a8cd', // 爱心颜色，默认随机色
-    //   excludeClassName: 'theme-vdoing-content' // 要排除元素的class, 默认空''
-    // }],
-
     ['fulltext-search'], // 全文搜索
-
-    // ['thirdparty-search', { // 可以添加第三方搜索链接的搜索框（原官方搜索框的参数仍可用）
-    //   thirdparty: [ // 可选，默认 []
-    //     {
-    //       title: '在GitHub中搜索',
-    //       frontUrl: 'https://github.com/search?q=', // 搜索链接的前面部分
-    //       behindUrl: '' // 搜索链接的后面部分，可选，默认 ''
-    //     },
-    //     {
-    //       title: '在npm中搜索',
-    //       frontUrl: 'https://www.npmjs.com/search?q=',
-    //     },
-    //     {
-    //       title: '在Bing中搜索',
-    //       frontUrl: 'https://cn.bing.com/search?q='
-    //     }
-    //   ]
-    // }],
-
     [
       'vuepress-plugin-baidu-tongji', // 百度统计
       {
         hm: baiduCode || '01293bffa6c3962016c08ba685c79d78'
       }
     ],
-
     ['one-click-copy', { // 代码块复制按钮
       copySelector: ['div[class*="language-"] pre', 'div[class*="aside-code"] aside'], // String or Array
       copyMessage: '复制成功', // default is 'Copy successfully and then paste it for use.'
       duration: 1000, // prompt message display time.
       showInMobile: false // whether to display on the mobile side, default: false.
-    }],
-    ['demo-block', { // demo演示模块 https://github.com/xiguaxigua/vuepress-plugin-demo-block
-      settings: {
-        // jsLib: ['http://xxx'], // 在线示例(jsfiddle, codepen)中的js依赖
-        // cssLib: ['http://xxx'], // 在线示例中的css依赖
-        // vue: 'https://jsd.cdn.zzko.cn/npm/vue/dist/vue.min.js', // 在线示例中的vue依赖
-        jsfiddle: false, // 是否显示 jsfiddle 链接
-        codepen: true, // 是否显示 codepen 链接
-        horizontal: false // 是否展示为横向样式
-      }
     }],
     [
       'vuepress-plugin-zooming', // 放大图片

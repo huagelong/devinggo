@@ -18,9 +18,6 @@ features: # 可选的
 # 文章列表显示方式: detailed 默认，显示详细版文章列表（包括作者、分类、标签、摘要、分页等）| simple => 显示简约版文章列表（仅标题和日期）| none 不显示文章列表
 postList: none
 ---
-<p align="center">
-  <a class="become-sponsor" href="/pages/1b12ed/">支持这个项目</a>
-</p>
 
 <style>
 .become-sponsor {
@@ -51,27 +48,3 @@ postList: none
 你也可以在Issue查看别人提的问题和给出解决方案。
 
 或者加入我们的QQ交流群：483122520
-
-<!-- AD -->
-<div class="wwads-cn wwads-horizontal page-wwads" data-id="136"></div>
-<style>
-  .page-wwads{
-    width:100%!important;
-    min-height: 0;
-    margin: 0;
-  }
-  .page-wwads .wwads-img img{
-    width:80px!important;
-  }
-  .page-wwads .wwads-poweredby{
-    width: 40px;
-    position: absolute;
-    right: 25px;
-    bottom: 3px;
-  }
-  .wwads-content .wwads-text, .page-wwads .wwads-text{
-    height: 100%;
-    padding-top: 5px;
-    display: block;
-  }
-</style>

@@ -1,10 +1,8 @@
-<p align="center"><a href="https://xugaoyi.com/" target="_blank" rel="noopener noreferrer"><img width="180" src="https://jsd.cdn.zzko.cn/gh/xugaoyi/image_store/blog/20200409124835.png" alt="logo"></a></p>
+<p align="center"><a href="https://devinggo.devinghub.com/" target="_blank" rel="noopener noreferrer"><img width="180" src="/img/logo.png" alt="logo"></a></p>
 
 
-<h2 align="center">vuepress-theme-vdoing</h2>
+<h2 align="center">devinggo</h2>
 
-[在线文档(国内源)](https://doc.xugaoyi.com/)
+[主仓库](https://github.com/huagelong/devinggo)
 
-[主题仓库](https://github.com/xugaoyi/vuepress-theme-vdoing)
-
-[本仓库的gitee镜像](https://gitee.com/xugaoyi/vuepress-theme-vdoing-doc)
+[本仓库的gitee镜像](https://gitee.com/huagelong/devinggo)
