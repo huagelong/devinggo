@@ -92,6 +92,9 @@ http://localhost:8070/system
 账号 superAdmin 密码 admin123
 ```
 
+## 交流社区
+
+- QQ群：483122520
 
 ## 鸣谢
 
