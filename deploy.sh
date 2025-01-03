@@ -15,10 +15,8 @@ yarn build:win
 # 进入生成的文件夹
 cp -r $dist_path ./dist
 
-git init
 git add -A
 git commit -m "deploy, $commit_info"
-git push -f $push_addr $push_branch
+git push -f $push_addr
 
-cd -
 rm -rf $dist_path
