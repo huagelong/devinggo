@@ -18,6 +18,10 @@
 - 账号密码：superAdmin/admin123
 - 数据每小时重置一次
 
+## 文档
+
+- [文档](https://devinggo.devinghub.com/)
+
 ## 技术栈
 
 - **后端**：GoFrame v2、MySQL、Redis
