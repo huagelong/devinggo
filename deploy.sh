@@ -13,7 +13,7 @@ push_branch=gh-pages
 yarn build:win
 
 # 进入生成的文件夹
-cp -r $dist_path ./dist
+cp -r $dist_path ./
 
 git add -A
 git commit -m "deploy, $commit_info"
