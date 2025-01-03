@@ -10,6 +10,7 @@ dist_path=docs/.vuepress/dist
 push_branch=gh-pages
 
 # 生成静态文件
+yarn install
 yarn build:win
 
 # 进入生成的文件夹
