@@ -4,7 +4,7 @@
 set -e
 
 
-push_addr=`git remote get-url --push origin`
+push_addr="https://github.com/huagelong/devinggo.git"
 commit_info=`git describe --all --always --long`
 dist_path=docs/.vuepress/dist 
 push_branch=gh-pages
@@ -13,10 +13,11 @@ push_branch=gh-pages
 yarn build:win
 
 # 进入生成的文件夹
-cp -r $dist_path ./
-
+cd $dist_path
+git init
 git add -A
 git commit -m "deploy, $commit_info"
-git push -f $push_addr
+git push -f $push_addr HEAD:$push_branch
 
+cd -
 rm -rf $dist_path
