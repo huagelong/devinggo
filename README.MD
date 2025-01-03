@@ -65,7 +65,12 @@
 choco install make
 choco install sed
 ```
-2. 安装golang
+2. 安装golang,node,yarn
+```
+choco install golang
+choco install nodejs
+choco install yarn
+```
 
 3. 修改配置文件（mysql,redis配置）
 - `manifest/config/config.example.yaml` 复制为 `manifest/config/config.yaml`
