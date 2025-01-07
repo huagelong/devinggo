@@ -49,13 +49,14 @@
 - [x] 支持队列：支持基于redis的队列
 - [x] 支持websocket：支持websocket通信,websocket支持分布式服务器
 - [x] 支持docker部署
+- [x] 支持 migrate 数据库操作
 
 ## 环境要求
 
 - Go >= 1.18
 - Node >= 18
 - MySQL >= 5.7
-- Redis >= 6.0
+- Redis >= 5.0
 
 ## 快速开始
 
