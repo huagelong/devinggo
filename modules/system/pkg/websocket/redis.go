@@ -9,20 +9,34 @@ package websocket
 import (
 	"context"
 	"devinggo/modules/system/pkg/websocket/glob"
+	"github.com/gogf/gf/v2/database/gredis"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
-var groupKey = "websocket"
+// Redis key 常量定义
+const (
+	KeyClientIdHeartbeatTime = "ClientId2HeartbeatTime" // 客户端心跳时间
+	KeyClearExpireLock       = "ClearExpire4Redis"      // 清理过期数据的锁
+	KeyClientId2ServerName   = "ClientId2ServerName:"   // 客户端对应的服务器名称
+	KeyServerNames           = "ServerNames"            // 所有服务器名称集合
+	KeyTopics                = "Topics"                 // 所有主题集合
+	KeyTopic2ClientId        = "Topic2ClientId:"        // 主题对应的客户端集合
+	KeyClientId2Topic        = "ClientId2Topic:"        // 客户端对应的主题集合
+	KeyTopic2ServerName      = "Topic2ServerName:"      // 主题对应的服务器名称集合
+)
+
+func getRedisClient() *gredis.Redis {
+	return g.Redis("websocket")
+}
 
 // 删除心跳数据
 func RemoveClientIdHeartbeatTime4Redis(ctx context.Context, clientId string) (err error) {
 	if g.IsEmpty(clientId) {
 		return
 	}
-	key := "ClientId2HeartbeatTime"
-	_, err = g.Redis(groupKey).Do(ctx, "HDEL", key, clientId)
+	_, err = getRedisClient().Do(ctx, "HDEL", KeyClientIdHeartbeatTime, clientId)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "ClientId2HeartbeatTime HDEL error:", err)
 		return
@@ -35,8 +49,7 @@ func UpdateClientIdHeartbeatTime4Redis(ctx context.Context, clientId string, cur
 	if g.IsEmpty(clientId) {
 		return
 	}
-	key := "ClientId2HeartbeatTime"
-	_, err = g.Redis(groupKey).HSet(ctx, key, g.Map{clientId: currentTime})
+	_, err = getRedisClient().HSet(ctx, KeyClientIdHeartbeatTime, g.Map{clientId: currentTime})
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "ClientId2HeartbeatTime HSET error:", err)
 		return
@@ -46,8 +59,7 @@ func UpdateClientIdHeartbeatTime4Redis(ctx context.Context, clientId string, cur
 
 // 清理心跳过期数据,清除所有客户端数据
 func ClearExpire4Redis(ctx context.Context) (err error) {
-	lockKey := "ClearExpire4Redis"
-	rs, err := g.Redis(groupKey).SetNX(ctx, lockKey, 1)
+	rs, err := getRedisClient().SetNX(ctx, KeyClearExpireLock, 1)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "ClearExpire4Redis SetNX error:", err)
 		return
@@ -55,12 +67,11 @@ func ClearExpire4Redis(ctx context.Context) (err error) {
 	if !rs {
 		return
 	}
-	g.Redis(groupKey).Expire(ctx, lockKey, 3600)
-	key := "ClientId2HeartbeatTime"
-	value, err := g.Redis(groupKey).HGetAll(ctx, key)
+	getRedisClient().Expire(ctx, KeyClearExpireLock, 3600)
+	value, err := getRedisClient().HGetAll(ctx, KeyClientIdHeartbeatTime)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "ClientId2HeartbeatTime HGETALL error:", err)
-		g.Redis(groupKey).Del(ctx, lockKey)
+		getRedisClient().Del(ctx, KeyClearExpireLock)
 		return
 	}
 	for clientId, currentTime := range value.Map() {
@@ -71,7 +82,7 @@ func ClearExpire4Redis(ctx context.Context) (err error) {
 			ClearClientId4Redis(ctx, clientId)
 		}
 	}
-	g.Redis(groupKey).Del(ctx, lockKey)
+	getRedisClient().Del(ctx, KeyClearExpireLock)
 	return
 }
 
@@ -87,8 +98,8 @@ func ClearClientId4Redis(ctx context.Context, clientId string) (err error) {
 
 // 删除客户端订阅数据
 func DeleteServerNameByClientId4Redis(ctx context.Context, clientId string) (err error) {
-	key := "ClientId2ServerName:" + clientId
-	_, err = g.Redis(groupKey).Del(ctx, key)
+	key := KeyClientId2ServerName + clientId
+	_, err = getRedisClient().Del(ctx, key)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "DeleteServerNameByClientId error:", err)
 	}
@@ -97,8 +108,8 @@ func DeleteServerNameByClientId4Redis(ctx context.Context, clientId string) (err
 
 // 获取客户端订阅数据
 func GetServerNameByClientId4Redis(ctx context.Context, clientId string) string {
-	key := "ClientId2ServerName:" + clientId
-	serverName, err := g.Redis(groupKey).Get(ctx, key)
+	key := KeyClientId2ServerName + clientId
+	serverName, err := getRedisClient().Get(ctx, key)
 
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "GetServerNameByClientId4Redis error:", err)
@@ -109,10 +120,9 @@ func GetServerNameByClientId4Redis(ctx context.Context, clientId string) string 
 
 // 添加客户端订阅数据,并确认在那个服务器上
 func AddServerNameClientId4Redis(ctx context.Context, clientId string, serverName string) (err error) {
-	key := "ClientId2ServerName:" + clientId
-	g.Redis(groupKey).Set(ctx, key, serverName)
-	serverNameKey := "ServerNames"
-	_, err = g.Redis(groupKey).Do(ctx, "SADD", serverNameKey, serverName)
+	key := KeyClientId2ServerName + clientId
+	getRedisClient().Set(ctx, key, serverName)
+	_, err = getRedisClient().Do(ctx, "SADD", KeyServerNames, serverName)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "ServerNames SADD error:", err)
 	}
@@ -121,9 +131,7 @@ func AddServerNameClientId4Redis(ctx context.Context, clientId string, serverNam
 
 // 获取所有服务器名称
 func GetAllServerNames(ctx context.Context) []string {
-
-	serverNameKey := "ServerNames"
-	ls, err := g.Redis(groupKey).Do(ctx, "SMEMBERS", serverNameKey)
+	ls, err := getRedisClient().Do(ctx, "SMEMBERS", KeyServerNames)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "ServerNames error:", err)
 		return nil
@@ -136,38 +144,37 @@ func JoinTopic4Redis(ctx context.Context, clientId string, topic string) (err er
 	if g.IsEmpty(topic) {
 		return
 	}
-	g.Redis(groupKey).Do(ctx, "MULTI")
-	keyTopics := "Topics"
-	_, err = g.Redis(groupKey).Do(ctx, "SADD", keyTopics, topic)
+	getRedisClient().Do(ctx, "MULTI")
+	_, err = getRedisClient().Do(ctx, "SADD", KeyTopics, topic)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "Topics SADD error:", err)
-		g.Redis(groupKey).Do(ctx, "DISCARD")
+		getRedisClient().Do(ctx, "DISCARD")
 		return
 	}
 
-	key := "Topic2ClientId:" + topic
-	_, err = g.Redis(groupKey).Do(ctx, "SADD", key, clientId)
+	key := KeyTopic2ClientId + topic
+	_, err = getRedisClient().Do(ctx, "SADD", key, clientId)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "Topic2ClientId SADD error:", err)
-		g.Redis(groupKey).Do(ctx, "DISCARD")
+		getRedisClient().Do(ctx, "DISCARD")
 		return
 	}
 
-	keyCLient2Topic := "ClientId2Topic:" + clientId
-	_, err = g.Redis(groupKey).Do(ctx, "SADD", keyCLient2Topic, topic)
+	keyCLient2Topic := KeyClientId2Topic + clientId
+	_, err = getRedisClient().Do(ctx, "SADD", keyCLient2Topic, topic)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "ClientId2Topic SADD error:", err)
-		g.Redis(groupKey).Do(ctx, "DISCARD")
+		getRedisClient().Do(ctx, "DISCARD")
 		return
 	}
 
-	g.Redis(groupKey).Do(ctx, "EXEC")
+	getRedisClient().Do(ctx, "EXEC")
 
-	keyServername := "Topic2ServerName:" + topic
+	keyServername := KeyTopic2ServerName + topic
 	serverName := GetServerNameByClientId4Redis(ctx, clientId)
 
 	if !g.IsEmpty(serverName) {
-		_, err = g.Redis(groupKey).Do(ctx, "SADD", keyServername, serverName)
+		_, err = getRedisClient().Do(ctx, "SADD", keyServername, serverName)
 		if err != nil {
 			glob.WithWsLog().Warning(ctx, "Topic2ServerName SADD error:", err)
 			return
@@ -181,39 +188,39 @@ func QuitTopic4Redis(ctx context.Context, clientId string, topic string) (err er
 	if g.IsEmpty(topic) {
 		return
 	}
-	key := "Topic2ClientId:" + topic
-	_, err = g.Redis(groupKey).Do(ctx, "SREM", key, clientId)
+	key := KeyTopic2ClientId + topic
+	_, err = getRedisClient().Do(ctx, "SREM", key, clientId)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "Topic2ClientId SREM error:", err)
 		return
 	}
-	keyServername := "Topic2ServerName:" + topic
+
+	keyServername := KeyTopic2ServerName + topic
 	serverName := GetServerNameByClientId4Redis(ctx, clientId)
 	if !g.IsEmpty(serverName) {
-		_, err = g.Redis(groupKey).Do(ctx, "SREM", keyServername, serverName)
+		_, err = getRedisClient().Do(ctx, "SREM", keyServername, serverName)
 		if err != nil {
 			glob.WithWsLog().Warning(ctx, "Topic2ServerName SREM error:", err)
 			return
 		}
 	}
 
-	keyCLient2Topic := "ClientId2Topic:" + clientId
-	_, err = g.Redis(groupKey).Do(ctx, "SREM", keyCLient2Topic, topic)
+	keyCLient2Topic := KeyClientId2Topic + clientId
+	_, err = getRedisClient().Do(ctx, "SREM", keyCLient2Topic, topic)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "ClientId2Topic SADD error:", err)
 		return
 	}
 
-	keyTopic2ClientId := "Topic2ClientId:" + topic
-	count, err := g.Redis(groupKey).Do(ctx, "SCARD", keyTopic2ClientId)
+	keyTopic2ClientId := KeyTopic2ClientId + topic
+	count, err := getRedisClient().Do(ctx, "SCARD", keyTopic2ClientId)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "Topic2ClientId SCARD error:", err)
 		return
 	}
 
 	if gconv.Int(count) == 0 {
-		keyTopics := "Topics"
-		_, err = g.Redis(groupKey).Do(ctx, "SREM", keyTopics, topic)
+		_, err = getRedisClient().Do(ctx, "SREM", KeyTopics, topic)
 		if err != nil {
 			glob.WithWsLog().Warning(ctx, "Topics SREM error:", err)
 			return
@@ -228,8 +235,8 @@ func GetAllServerNameByTopic(ctx context.Context, topic string) []string {
 		return nil
 	}
 
-	keyServername := "Topic2ServerName:" + topic
-	ls, err := g.Redis(groupKey).Do(ctx, "SMEMBERS", keyServername)
+	keyServername := KeyTopic2ServerName + topic
+	ls, err := getRedisClient().Do(ctx, "SMEMBERS", keyServername)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "Topic2ServerName error:", err)
 		return nil
@@ -243,8 +250,8 @@ func GetAllTopicByClientId(ctx context.Context, clientId string) []string {
 		return nil
 	}
 
-	key := "ClientId2Topic:" + clientId
-	ls, err := g.Redis(groupKey).Do(ctx, "SMEMBERS", key)
+	key := KeyClientId2Topic + clientId
+	ls, err := getRedisClient().Do(ctx, "SMEMBERS", key)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "ClientId2Topic SMEMBERS error:", err)
 		return nil
@@ -254,9 +261,7 @@ func GetAllTopicByClientId(ctx context.Context, clientId string) []string {
 
 // 获取所有主题
 func GetAllTopics(ctx context.Context) []string {
-
-	keyTopics := "Topics"
-	ls, err := g.Redis(groupKey).Do(ctx, "SMEMBERS", keyTopics)
+	ls, err := getRedisClient().Do(ctx, "SMEMBERS", KeyTopics)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "Topics SMEMBERS error:", err)
 		return nil
@@ -269,8 +274,7 @@ func isTopicExist(ctx context.Context, topic string) bool {
 	if g.IsEmpty(topic) {
 		return false
 	}
-	keyTopics := "Topics"
-	ls, err := g.Redis(groupKey).Do(ctx, "SISMEMBER", keyTopics, topic)
+	ls, err := getRedisClient().Do(ctx, "SISMEMBER", KeyTopics, topic)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "Topics SMEMBERS error:", err)
 		return false
