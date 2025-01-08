@@ -5,21 +5,4 @@
 
 package service
 
-type (
-	IMiddleware interface{}
-)
-
-var (
-	localMiddleware IMiddleware
-)
-
-func Middleware() IMiddleware {
-	if localMiddleware == nil {
-		panic("implement not found for interface IMiddleware, forgot register?")
-	}
-	return localMiddleware
-}
-
-func RegisterMiddleware(i IMiddleware) {
-	localMiddleware = i
-}
+type ()

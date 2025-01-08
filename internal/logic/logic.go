@@ -3,9 +3,3 @@
 // ==========================================================================
 
 package logic
-
-import (
-	_ "devinggo/internal/logic/base"
-	_ "devinggo/internal/logic/hook"
-	_ "devinggo/internal/logic/middleware"
-)

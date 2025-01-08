@@ -13,8 +13,6 @@ type (
 	IHook interface {
 		BeforeServe(r *ghttp.Request)
 		AfterOutput(r *ghttp.Request)
-		// isIgnoredRequest 是否忽略请求
-		IsIgnoredRequest(r *ghttp.Request) bool
 	}
 )
 

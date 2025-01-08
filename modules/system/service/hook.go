@@ -11,10 +11,10 @@ import (
 
 type (
 	IHook interface {
-		// system 访问日志
-		AccessLog(r *ghttp.Request)
 		BeforeServe(r *ghttp.Request)
 		AfterOutput(r *ghttp.Request)
+		// isIgnoredRequest 是否忽略请求
+		IsIgnoredRequest(r *ghttp.Request) bool
 	}
 )
 

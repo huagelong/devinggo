@@ -7,11 +7,13 @@
 package system
 
 import (
+	"context"
+	"dario.cat/mergo"
 	"devinggo/internal/dao"
-	"devinggo/internal/logic/base"
 	"devinggo/internal/model"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
+	"devinggo/modules/system/logic/base"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/handler"
@@ -19,8 +21,6 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
-	"context"
-	"dario.cat/mergo"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"

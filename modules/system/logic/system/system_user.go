@@ -7,11 +7,13 @@
 package system
 
 import (
+	"context"
+	"database/sql"
 	"devinggo/internal/dao"
-	"devinggo/internal/logic/base"
 	"devinggo/internal/model"
 	"devinggo/internal/model/do"
 	"devinggo/modules/system/consts"
+	"devinggo/modules/system/logic/base"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/myerror"
@@ -23,8 +25,6 @@ import (
 	"devinggo/modules/system/pkg/utils/secure"
 	"devinggo/modules/system/pkg/utils/slice"
 	"devinggo/modules/system/service"
-	"context"
-	"database/sql"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"

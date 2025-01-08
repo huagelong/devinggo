@@ -7,12 +7,14 @@
 package system
 
 import (
+	"context"
+	"crypto/rand"
 	"devinggo/internal/dao"
-	"devinggo/internal/logic/base"
 	"devinggo/internal/model"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
 	"devinggo/modules/system/consts"
+	"devinggo/modules/system/logic/base"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/myerror"
@@ -21,8 +23,6 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
-	"context"
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
 	"github.com/gogf/gf/v2/crypto/gmd5"

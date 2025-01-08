@@ -6,11 +6,11 @@
 package api
 
 import (
+	"context"
 	"devinggo/modules/api/controller"
 	_ "devinggo/modules/api/logic"
 	"devinggo/modules/api/service"
 	"devinggo/modules/system/pkg/modules"
-	"context"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
@@ -27,7 +27,8 @@ func init() {
 
 func (m *apiModule) Start(ctx context.Context, s *ghttp.Server) error {
 	m.Server = s
-	s.BindHookHandler("/api/*", ghttp.HookAfterOutput, service.Hook().ApiAccessLog)
+	s.BindHookHandler("/api/*", ghttp.HookBeforeServe, service.Hook().BeforeServe)
+	s.BindHookHandler("/api/*", ghttp.HookAfterOutput, service.Hook().AfterOutput)
 	s.Group("/api", func(group *ghttp.RouterGroup) {
 		group.Bind(
 			controller.TokenController,

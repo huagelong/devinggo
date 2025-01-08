@@ -26,4 +26,5 @@ func (s *sHook) BeforeServe(r *ghttp.Request) {
 }
 
 func (s *sHook) AfterOutput(r *ghttp.Request) {
+	s.apiAccessLog(r)
 }

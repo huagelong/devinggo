@@ -7,11 +7,11 @@
 package system
 
 import (
-	"devinggo/internal/dao"
-	"devinggo/internal/logic/base"
-	"devinggo/internal/model/do"
-	"devinggo/modules/system/service"
 	"context"
+	"devinggo/internal/dao"
+	"devinggo/internal/model/do"
+	"devinggo/modules/system/logic/base"
+	"devinggo/modules/system/service"
 	"github.com/gogf/gf/v2/database/gdb"
 )
 

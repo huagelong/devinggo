@@ -7,11 +7,12 @@
 package system
 
 import (
+	"context"
 	"devinggo/internal/dao"
-	"devinggo/internal/logic/base"
 	"devinggo/internal/model"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
+	"devinggo/modules/system/logic/base"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/hook"
@@ -19,7 +20,6 @@ import (
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/pkg/utils/slice"
 	"devinggo/modules/system/service"
-	"context"
 	"fmt"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"

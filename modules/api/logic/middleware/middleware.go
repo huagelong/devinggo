@@ -7,9 +7,9 @@
 package middleware
 
 import (
-	"devinggo/modules/api/service"
-	"devinggo/modules/system/pkg/contexts"
 	"context"
+	"devinggo/modules/api/service"
+	systemService "devinggo/modules/system/service"
 )
 
 type sMiddleware struct {
@@ -25,10 +25,10 @@ func NewMiddleware() *sMiddleware {
 
 // IsExceptAuth 是否是不需要验证权限的路由地址
 func (s *sMiddleware) isExceptAuth(ctx context.Context) bool {
-	return contexts.New().GetExceptAuth(ctx)
+	return systemService.Middleware().IsExceptAuth(ctx)
 }
 
 // IsExceptLogin 是否是不需要登录的路由地址
 func (s *sMiddleware) isExceptLogin(ctx context.Context) bool {
-	return contexts.New().GetExceptLogin(ctx)
+	return systemService.Middleware().IsExceptLogin(ctx)
 }

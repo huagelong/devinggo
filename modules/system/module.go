@@ -6,13 +6,13 @@
 package system
 
 import (
+	"context"
 	"devinggo/modules/system/pkg/modules"
 	swebsocket "devinggo/modules/system/pkg/websocket"
 	"devinggo/modules/system/router/system"
 	"devinggo/modules/system/router/websocket"
 	"devinggo/modules/system/service"
 	_ "devinggo/modules/system/worker"
-	"context"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/genv"
@@ -35,7 +35,8 @@ func (m *systemModule) Start(ctx context.Context, s *ghttp.Server) error {
 	serverName := getServerName(ctx)
 	g.Log().Debug(ctx, "serverName:", serverName)
 	swebsocket.StartWebSocket(ctx, serverName)
-	s.BindHookHandler("/system/*", ghttp.HookAfterOutput, service.Hook().AccessLog)
+	s.BindHookHandler("/system/*", ghttp.HookBeforeServe, service.Hook().BeforeServe)
+	s.BindHookHandler("/system/*", ghttp.HookAfterOutput, service.Hook().AfterOutput)
 	s.Group("/", func(group *ghttp.RouterGroup) {
 		system.BindController(group)
 		websocket.BindController(group)

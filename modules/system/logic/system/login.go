@@ -7,11 +7,12 @@
 package system
 
 import (
+	"context"
 	"devinggo/internal/dao"
-	"devinggo/internal/logic/base"
 	"devinggo/internal/model"
 	"devinggo/internal/model/entity"
 	consts2 "devinggo/modules/system/consts"
+	"devinggo/modules/system/logic/base"
 	"devinggo/modules/system/myerror"
 	"devinggo/modules/system/pkg/contexts"
 	"devinggo/modules/system/pkg/utils"
@@ -19,7 +20,6 @@ import (
 	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/pkg/utils/secure"
 	"devinggo/modules/system/service"
-	"context"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"

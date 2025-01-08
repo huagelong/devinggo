@@ -11,7 +11,6 @@ import (
 
 type (
 	IHook interface {
-		ApiAccessLog(r *ghttp.Request)
 		BeforeServe(r *ghttp.Request)
 		AfterOutput(r *ghttp.Request)
 	}

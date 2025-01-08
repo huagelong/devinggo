@@ -7,16 +7,15 @@
 package hook
 
 import (
-	baseService "devinggo/internal/service"
+	"context"
 	"devinggo/modules/system/pkg/contexts"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
-	"context"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
-func (s *sHook) ApiAccessLog(r *ghttp.Request) {
-	if baseService.Hook().IsIgnoredRequest(r) {
+func (s *sHook) apiAccessLog(r *ghttp.Request) {
+	if service.Hook().IsIgnoredRequest(r) {
 		return
 	}
 

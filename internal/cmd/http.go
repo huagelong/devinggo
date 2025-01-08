@@ -7,14 +7,14 @@
 package cmd
 
 import (
-	"devinggo/internal/service"
+	"context"
 	_ "devinggo/modules/_/modules"
 	"devinggo/modules/system/pkg/modules"
 	"devinggo/modules/system/pkg/redis"
 	"devinggo/modules/system/pkg/response"
 	"devinggo/modules/system/pkg/upload"
 	"devinggo/modules/system/pkg/utils/config"
-	"context"
+	systemService "devinggo/modules/system/service"
 	"github.com/gogf/gf/contrib/trace/jaeger/v2"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -40,21 +40,17 @@ var (
 			}
 			s.SetSessionStorage(gsession.NewStorageRedisHashTable(redis.GetRedis()))
 			s.Use(
-				service.Middleware().I18n,
-				service.Middleware().Ctx,
-				service.Middleware().Cors,
-				service.Middleware().TraceID,
-				service.Middleware().NeverDoneCtx,
-				service.Middleware().ResponseHandler,
+				systemService.Middleware().Header,
+				systemService.Middleware().I18n,
+				systemService.Middleware().Ctx,
+				systemService.Middleware().Cors,
+				systemService.Middleware().TraceID,
+				systemService.Middleware().NeverDoneCtx,
+				systemService.Middleware().ResponseHandler,
 			)
 			// static dir setting
 			uploadPath := upload.GetUploadPath(ctx)
 			s.AddStaticPath("/upload", uploadPath)
-
-			// 初始化请求前回调
-			s.BindHookHandler("/*", ghttp.HookBeforeServe, service.Hook().BeforeServe)
-			// 请求响应结束后回调
-			s.BindHookHandler("/*", ghttp.HookAfterOutput, service.Hook().AfterOutput)
 			// doc
 			if gmode.IsDevelop() {
 				enhanceOpenAPIDoc(s)
