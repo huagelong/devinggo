@@ -7,10 +7,10 @@
 package test_task
 
 import (
-	"devinggo/internal/worker/consts"
+	"context"
 	"devinggo/modules/system/pkg/worker/glob"
 	"devinggo/modules/system/pkg/worker/task"
-	"context"
+	"devinggo/modules/system/worker/consts"
 	"github.com/hibiken/asynq"
 )
 

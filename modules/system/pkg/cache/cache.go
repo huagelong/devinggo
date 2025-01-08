@@ -17,7 +17,7 @@ import (
 
 // cache 缓存驱动
 var cache *gcache.Cache
-var clientKey = "cache"
+var groupKey = "cache"
 var cachePrefixSelectCache = "SelectCache:"
 
 //cache:metadata:
@@ -42,11 +42,11 @@ func SetAdapter(ctx context.Context) {
 }
 
 func GetRedisClient() *gredis.Redis {
-	return g.Redis(clientKey)
+	return g.Redis(groupKey)
 }
 
 func GetAdapterRedis() gcache.Adapter {
-	return gcache.NewAdapterRedis(g.Redis(clientKey))
+	return gcache.NewAdapterRedis(g.Redis(groupKey))
 }
 
 func ClearByTable(ctx context.Context, table string) (err error) {

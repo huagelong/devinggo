@@ -113,6 +113,19 @@ redis:
     dialTimeout: 30s
     readTimeout: 30s
     writeTimeout: 30s
+  pubsub:
+    address: 127.0.0.1:6379
+    pass: "123456"
+    db: 7
+    minIdle: 10
+    maxIdle: 1000
+    maxActive: 5000
+    idleTimeout: 600s
+    waitTimeout: 30s
+    dialTimeout: 30s
+    readTimeout: 30s
+    writeTimeout: 30s
+
 jaeger:
   enable: false
   serviceName: devinggo

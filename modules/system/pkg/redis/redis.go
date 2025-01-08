@@ -12,15 +12,15 @@ import (
 	"github.com/gogf/gf/v2/os/gcache"
 )
 
-var clientKey = "default"
+var group = "default"
 
 func GetCacheClient() *gcache.Cache {
 	c := gcache.New()
-	adapter := gcache.NewAdapterRedis(g.Redis(clientKey))
+	adapter := gcache.NewAdapterRedis(g.Redis(group))
 	c.SetAdapter(adapter)
 	return c
 }
 
 func GetRedis() *gredis.Redis {
-	return g.Redis(clientKey)
+	return g.Redis(group)
 }

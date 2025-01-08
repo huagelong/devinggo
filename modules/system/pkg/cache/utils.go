@@ -16,7 +16,7 @@ import (
 )
 
 func getTagCache(ctx context.Context) (*TagCache, error) {
-	return NewTagCache(ctx, g.Redis(clientKey))
+	return NewTagCache(ctx, g.Redis(groupKey))
 }
 
 func Set(ctx context.Context, key interface{}, value interface{}, duration time.Duration, tag ...interface{}) error {
@@ -70,12 +70,12 @@ func SetIfNotExist(ctx context.Context, key interface{}, value interface{}, dura
 			return false, err
 		}
 		defaultKey := gconv.String(key)
-		ok, err = g.Redis(clientKey).SetNX(ctx, defaultKey, value)
+		ok, err = g.Redis(groupKey).SetNX(ctx, defaultKey, value)
 		if err != nil {
 			return ok, err
 		}
 		if ok && duration > 0 {
-			_, err = g.Redis(clientKey).PExpire(ctx, defaultKey, duration.Milliseconds())
+			_, err = g.Redis(groupKey).PExpire(ctx, defaultKey, duration.Milliseconds())
 			if err != nil {
 				return ok, err
 			}
@@ -163,7 +163,7 @@ func Update(ctx context.Context, key interface{}, value interface{}, tag ...inte
 		)
 		defaultKey := gconv.String(key)
 		// TTL.
-		oldPTTL, err = g.Redis(clientKey).PTTL(ctx, defaultKey) // update ttl -> pttl(millisecond)
+		oldPTTL, err = g.Redis(groupKey).PTTL(ctx, defaultKey) // update ttl -> pttl(millisecond)
 		if err != nil {
 			return
 		}
@@ -203,7 +203,7 @@ func UpdateExpire(ctx context.Context, key interface{}, duration time.Duration, 
 			oldPTTL int64
 		)
 		// TTL.
-		oldPTTL, err = g.Redis(clientKey).PTTL(ctx, gconv.String(key))
+		oldPTTL, err = g.Redis(groupKey).PTTL(ctx, gconv.String(key))
 		if err != nil {
 			return
 		}
@@ -217,7 +217,7 @@ func UpdateExpire(ctx context.Context, key interface{}, duration time.Duration, 
 		}
 		// Update the expiration.
 		if duration > 0 {
-			_, err = g.Redis(clientKey).PExpire(ctx, gconv.String(key), duration.Milliseconds())
+			_, err = g.Redis(groupKey).PExpire(ctx, gconv.String(key), duration.Milliseconds())
 			if err != nil {
 				return
 			}
