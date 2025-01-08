@@ -9,10 +9,10 @@ package system
 import (
 	"context"
 	"devinggo/internal/dao"
-	"devinggo/internal/model"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
 	"devinggo/modules/system/logic/base"
+	model2 "devinggo/modules/system/model"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/orm"
@@ -40,7 +40,7 @@ func (s *sSystemQueueMessage) Model(ctx context.Context) *gdb.Model {
 	return dao.SystemQueueMessage.Ctx(ctx)
 }
 
-func (s *sSystemQueueMessage) GetReceiveUserPageList(ctx context.Context, req *model.PageListReq, messageId uint64) (rs []*res.MessageReceiveUser, total int, err error) {
+func (s *sSystemQueueMessage) GetReceiveUserPageList(ctx context.Context, req *model2.PageListReq, messageId uint64) (rs []*res.MessageReceiveUser, total int, err error) {
 	m := service.SystemUser().Model(ctx).Fields(dao.SystemQueueMessageReceive.Table()+".read_status as read_status_int", dao.SystemUser.Table()+".username", dao.SystemUser.Table()+".nickname").InnerJoinOnFields(dao.SystemQueueMessageReceive.Table(), "id", "=", "user_id")
 	m = m.Where(dao.SystemQueueMessageReceive.Table()+".message_id", messageId)
 	m = m.OrderDesc(dao.SystemUser.Table() + ".created_at")
@@ -51,7 +51,7 @@ func (s *sSystemQueueMessage) GetReceiveUserPageList(ctx context.Context, req *m
 	return
 }
 
-func (s *sSystemQueueMessage) GetPageList(ctx context.Context, req *model.PageListReq, userId uint64, params *req.SystemQueueMessageSearch) (rs []*res.SystemQueueMessage, total int, err error) {
+func (s *sSystemQueueMessage) GetPageList(ctx context.Context, req *model2.PageListReq, userId uint64, params *req.SystemQueueMessageSearch) (rs []*res.SystemQueueMessage, total int, err error) {
 	readStatus := params.ReadStatus
 	contentType := params.ContentType
 	title := params.Title
@@ -110,7 +110,7 @@ func (s *sSystemQueueMessage) GetPageList(ctx context.Context, req *model.PageLi
 				continue
 			}
 			if !g.IsEmpty(userInfo) {
-				var userInfoTmp *model.UserRelate
+				var userInfoTmp *model2.UserRelate
 				if errconv := gconv.Struct(userInfo, &userInfoTmp); errconv != nil {
 					g.Log().Error(ctx, errconv)
 					continue
@@ -172,7 +172,7 @@ func (s *sSystemQueueMessage) SendMessage(ctx context.Context, sendReq *req.Syst
 }
 
 func (s *sSystemQueueMessage) sendWs(ctx context.Context, userId uint64) {
-	pageReq := &model.PageListReq{
+	pageReq := &model2.PageListReq{
 		OrderBy:   "created_at",
 		OrderType: "desc",
 	}

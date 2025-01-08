@@ -7,10 +7,10 @@
 package hook
 
 import (
-	"devinggo/internal/dao"
-	"devinggo/internal/model"
-	"devinggo/modules/system/pkg/utils/slice"
 	"context"
+	"devinggo/internal/dao"
+	"devinggo/modules/system/model"
+	"devinggo/modules/system/pkg/utils/slice"
 	"github.com/gogf/gf/v2/container/gvar"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"

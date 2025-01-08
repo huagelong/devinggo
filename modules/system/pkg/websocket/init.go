@@ -7,11 +7,11 @@
 package websocket
 
 import (
-	"devinggo/internal/model"
+	"context"
+	"devinggo/modules/system/model"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/pkg/websocket/glob"
 	"devinggo/modules/system/service"
-	"context"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gtime"

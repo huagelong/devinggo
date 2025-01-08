@@ -7,8 +7,8 @@ package system
 
 import (
 	"context"
-	"devinggo/internal/model"
 	"devinggo/modules/system/logic/base"
+	"devinggo/modules/system/model"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/myerror"

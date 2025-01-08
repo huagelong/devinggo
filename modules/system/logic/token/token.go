@@ -7,7 +7,8 @@
 package token
 
 import (
-	"devinggo/internal/model"
+	"context"
+	"devinggo/modules/system/model"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/myerror"
 	"devinggo/modules/system/pkg/contexts"
@@ -15,7 +16,6 @@ import (
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/pkg/utils/config"
 	"devinggo/modules/system/service"
-	"context"
 	"fmt"
 	"github.com/gogf/gf/v2/crypto/gmd5"
 	"github.com/gogf/gf/v2/database/gredis"

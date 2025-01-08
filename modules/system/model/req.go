@@ -7,7 +7,7 @@
 package model
 
 import (
-	"devinggo/internal/model/page"
+	"devinggo/modules/system/model/page"
 )
 
 type AuthorHeader struct {

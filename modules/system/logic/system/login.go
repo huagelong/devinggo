@@ -9,10 +9,10 @@ package system
 import (
 	"context"
 	"devinggo/internal/dao"
-	"devinggo/internal/model"
 	"devinggo/internal/model/entity"
 	consts2 "devinggo/modules/system/consts"
 	"devinggo/modules/system/logic/base"
+	"devinggo/modules/system/model"
 	"devinggo/modules/system/myerror"
 	"devinggo/modules/system/pkg/contexts"
 	"devinggo/modules/system/pkg/utils"

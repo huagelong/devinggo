@@ -7,8 +7,8 @@
 package orm
 
 import (
-	"devinggo/internal/model"
-	"devinggo/internal/model/page"
+	"devinggo/modules/system/model"
+	"devinggo/modules/system/model/page"
 	"devinggo/modules/system/pkg/handler"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"

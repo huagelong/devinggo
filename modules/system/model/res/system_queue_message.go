@@ -7,7 +7,7 @@
 package res
 
 import (
-	"devinggo/internal/model"
+	"devinggo/modules/system/model"
 	"github.com/gogf/gf/v2/os/gtime"
 )
 

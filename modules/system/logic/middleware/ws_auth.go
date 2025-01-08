@@ -7,7 +7,7 @@
 package middleware
 
 import (
-	"devinggo/internal/model"
+	"devinggo/modules/system/model"
 	"devinggo/modules/system/myerror"
 	websocket2 "devinggo/modules/system/pkg/websocket"
 	"devinggo/modules/system/service"

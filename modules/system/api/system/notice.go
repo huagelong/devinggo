@@ -7,8 +7,8 @@
 package system
 
 import (
-	"devinggo/internal/model"
-	"devinggo/internal/model/page"
+	"devinggo/modules/system/model"
+	"devinggo/modules/system/model/page"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 	"github.com/gogf/gf/v2/frame/g"

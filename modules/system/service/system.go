@@ -8,8 +8,8 @@ package service
 import (
 	"context"
 	"database/sql"
-	"devinggo/internal/model"
 	"devinggo/internal/model/entity"
+	"devinggo/modules/system/model"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 

@@ -7,7 +7,7 @@
 package middleware
 
 import (
-	"devinggo/internal/model"
+	"devinggo/modules/system/model"
 	"devinggo/modules/system/pkg/contexts"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"

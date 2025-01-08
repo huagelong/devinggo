@@ -7,10 +7,10 @@
 package orm
 
 import (
-	"devinggo/internal/model/page"
+	"context"
+	"devinggo/modules/system/model/page"
 	"devinggo/modules/system/pkg/handler"
 	"devinggo/modules/system/pkg/utils"
-	"context"
 	"github.com/gogf/gf/v2/container/gmap"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"

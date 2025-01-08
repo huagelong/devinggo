@@ -8,9 +8,9 @@ package system
 import (
 	"context"
 	"devinggo/internal/dao"
-	"devinggo/internal/model"
 	"devinggo/modules/system/api/system"
 	"devinggo/modules/system/controller/base"
+	"devinggo/modules/system/model"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/utils/config"
 	"devinggo/modules/system/pkg/utils/idgen"

@@ -7,7 +7,7 @@ package service
 
 import (
 	"context"
-	"devinggo/internal/model"
+	"devinggo/modules/system/model"
 	"devinggo/modules/system/model/res"
 
 	"github.com/gogf/gf/v2/net/ghttp"

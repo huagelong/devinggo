@@ -6,7 +6,9 @@
 
 package model
 
-import "github.com/gogf/gf/v2/frame/g"
+import (
+	"github.com/gogf/gf/v2/frame/g"
+)
 
 type Context struct {
 	Module          string    // 应用模块 system｜api｜home｜websocket
