@@ -7,14 +7,14 @@
 package system
 
 import (
-	"devinggo/internal/controller/base"
+	"context"
 	"devinggo/internal/dao"
 	"devinggo/modules/system/api/system"
+	"devinggo/modules/system/controller/base"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/service"
-	"context"
 	"github.com/gogf/gf/v2/container/gmap"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"

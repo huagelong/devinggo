@@ -8,11 +8,11 @@ package system
 
 import (
 	"context"
-	"devinggo/internal/controller/base"
 	"devinggo/internal/dao"
 	"devinggo/internal/model/entity"
 	"devinggo/modules/system/api/system"
 	"devinggo/modules/system/consts"
+	"devinggo/modules/system/controller/base"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/myerror"

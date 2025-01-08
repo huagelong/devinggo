@@ -7,11 +7,11 @@
 package controller
 
 import (
-	"devinggo/internal/controller/base"
+	"context"
 	"devinggo/modules/api/api"
+	"devinggo/modules/system/controller/base"
 	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/service"
-	"context"
 )
 
 var (

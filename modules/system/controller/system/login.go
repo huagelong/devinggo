@@ -7,10 +7,10 @@
 package system
 
 import (
-	"devinggo/internal/controller/base"
-	"devinggo/modules/system/api/system"
-	"devinggo/modules/system/service"
 	"context"
+	"devinggo/modules/system/api/system"
+	"devinggo/modules/system/controller/base"
+	"devinggo/modules/system/service"
 )
 
 var (

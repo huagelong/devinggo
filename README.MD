@@ -50,6 +50,7 @@
 - [x] 支持websocket：支持websocket通信,websocket支持分布式服务器
 - [x] 支持docker部署
 - [x] 支持 migrate 数据库操作
+- [x] 支持 module 模块管理
 
 ## 环境要求
 
@@ -60,11 +61,11 @@
 
 ## 快速开始
 
-> 以windows10为例
+> 以windows10以上系统为例
 
 1. 安装make
 ```
-#make 编译环境安装
+#make 编译环境安装 ，打开powershell（管理员权限）执行
 @powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))" && SET PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin
 
 choco install make

@@ -7,13 +7,13 @@
 package system
 
 import (
-	"devinggo/internal/controller/base"
+	"context"
 	"devinggo/modules/system/api/system"
+	"devinggo/modules/system/controller/base"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/cache"
 	"devinggo/modules/system/service"
-	"context"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
