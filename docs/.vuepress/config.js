@@ -18,6 +18,33 @@ module.exports = {
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
+      { text: '介绍安装', link: '/pages/b665cd/', items: 
+        [
+        { text: '系统介绍', link: '/pages/b665cd/'},
+        { text: '开发环境搭建', link: '/pages/484beb/'},
+        { text: '快速开始', link: '/pages/9bc53d/'},
+        { text: '生产部署', link: '/pages/d8549a/'},
+        { text: '系统安装', link: '/pages/aea41a/'},
+      ]
+      },
+      { text: '系统开发', link: '/pages/78b8c3/', items: 
+        [
+        { text: '目录结构', link: '/pages/78b8c3/'},
+        { text: 'MVC开发', link: '/pages/863e7c/'},
+        { text: '权限控制', link: '/pages/9c7b36/'},
+        { text: '拦截器', link: '/pages/a5fb67/'},
+        { text: '定时任务', link: '/pages/6145e3/'},
+        { text: '消息队列', link: '/pages/b44b12/'},
+        { text: 'websocket服务器', link: '/pages/90e340/'},
+        { text: 'SaaS多租户', link: '/pages/f65e98/'},
+        { text: '缓存', link: '/pages/b3bee3/'},
+        { text: 'module开发', link: '/pages/93d6a3/'},
+        { text: '代码自动生成', link: '/pages/75aedd/'},
+        { text: '命令', link: '/pages/ae3cdb/'},
+      ]
+      },
+      { text: '前端开发', link: '/pages/a94a08/'},
+      { text: '常见问题', link: '/pages/d2fde6/'},
     ],
     sidebarDepth: 2, // 侧边栏显示深度，默认1，最大2（显示到h3标题）
     logo: '/img/logo.png', // 导航栏logo
