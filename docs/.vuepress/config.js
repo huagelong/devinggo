@@ -22,9 +22,8 @@ module.exports = {
         [
         { text: '系统介绍', link: '/pages/b665cd/'},
         { text: '开发环境搭建', link: '/pages/484beb/'},
-        { text: '快速开始', link: '/pages/9bc53d/'},
+        { text: '快速开始', link: '/pages/aea41a/'},
         { text: '生产部署', link: '/pages/d8549a/'},
-        { text: '系统安装', link: '/pages/aea41a/'},
       ]
       },
       { text: '系统开发', link: '/pages/78b8c3/', items: 

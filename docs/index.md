@@ -4,7 +4,7 @@ heroImage: /img/logo.png
 heroText: devinggo
 tagline: 🚀一款基于 Vue 和 Goframe v2 的全栈开发平台，集成 JWT 鉴权、动态路由、消息队列等功能，提供丰富场景模板，助您快速构建企业级应用，专注业务开发。
 actionText: 开始使用 →
-actionLink: /pages/a2f161/
+actionLink: /pages/b665cd/
 bannerBg: none # auto => 网格纹背景(有bodyBgImg时无背景)，默认 | none => 无 | '大图地址' | background: 自定义背景样式       提示：如发现文本颜色不适应你的背景时可以到palette.styl修改$bannerTextColor变量
 
 features: # 可选的
