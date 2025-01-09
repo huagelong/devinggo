@@ -113,7 +113,7 @@ redis:
     dialTimeout: 30s
     readTimeout: 30s
     writeTimeout: 30s
-  pubsub:
+  websocket:
     address: 127.0.0.1:6379
     pass: "123456"
     db: 7
