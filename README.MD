@@ -22,6 +22,13 @@
 
 - [文档](https://devinggo.devinghub.com/)
 
+## 截图
+
+![0.png](docs/screen/0.png)
+![1.png](docs/screen/1.png)
+![2.png](docs/screen/3.png)
+![4.png](docs/screen/4.png)
+
 ## 技术栈
 
 - **后端**：GoFrame v2、MySQL、Redis
