@@ -11,7 +11,6 @@ import (
 	"devinggo/modules/system/pkg/redispubsub"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/pkg/websocket/glob"
-	"github.com/gogf/gf/v2/database/gredis"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/util/gconv"
 )
@@ -21,8 +20,6 @@ type sPubSub struct {
 }
 
 func NewPubSub() *sPubSub {
-	conf, _ := gredis.GetConfig("default")
-	println(conf.Address)
 	pubsub := redispubsub.New(redispubsub.WithRedisGroup("websocket"), redispubsub.WithLoggerName("ws"))
 	//defer pubsub.Close()
 	return &sPubSub{PubSub: pubsub}
