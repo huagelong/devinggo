@@ -118,6 +118,10 @@ http://localhost:8070/system
 
 - QQ群：483122520
 
+## 🎉 关注项目
+
+- 如果项目对您有帮助，请点右上角 "Star" 收藏项目，您的支持是我创作的动力！
+
 ## 鸣谢
 
 1. [GoFrame](https://github.com/gogf/gf)
