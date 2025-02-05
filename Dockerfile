@@ -2,11 +2,10 @@
 #                                build
 ###############################################################################
 FROM golang:1.22-alpine AS builder
-ENV GOPROXY=https://goproxy.cn,direct \
-    CGO_ENABLED=0 \
-    GO111MODULE=auto \
-    GOOS=linux
-
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GO111MODULE=on
+ENV CGO_ENABLED=0
+ENV GOOS=linux
 # 安装 Node.js、Yarn、Make 及其他依赖
 RUN apk add --no-cache nodejs npm yarn make git
 WORKDIR /app
