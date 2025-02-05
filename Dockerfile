@@ -24,7 +24,7 @@ LABEL maintainer="hpuwang@gmail.com"
 # 设置在容器内执行时当前的目录
 ENV WORKDIR /app
 # 添加应用可执行文件，并设置执行权限
-ADD --from=builder /app/bin/v1.0.0/linux_amd64/devinggo   $WORKDIR/devinggo
+COPY --from=builder /app/bin/v1.0.0/linux_amd64/devinggo   $WORKDIR/devinggo
 RUN chmod +x $WORKDIR/devinggo
 ###############################################################################
 #                                   START
