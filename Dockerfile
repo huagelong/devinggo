@@ -8,7 +8,7 @@ ENV GOPROXY=https://goproxy.cn,direct \
     GOOS=linux
 
 # 安装 Node.js、Yarn、Make 及其他依赖
-RUN apk add --no-cache nodejs npm yarn make
+RUN apk add --no-cache nodejs npm yarn make git
 WORKDIR /app
 COPY . ./
 RUN mv ./manifest/config/config.docker.yaml ./manifest/config/config.yaml
