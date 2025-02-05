@@ -25,7 +25,7 @@ LABEL maintainer="hpuwang@gmail.com"
 ENV WORKDIR /app
 # 添加应用可执行文件，并设置执行权限
 COPY --from=builder /app/bin/v1.0.0/linux_amd64/devinggo   $WORKDIR
-RUN chmod +x $WORKDIR/devinggo
+RUN chmod +x $WORKDIR
 ###############################################################################
 #                                   START
 ###############################################################################
