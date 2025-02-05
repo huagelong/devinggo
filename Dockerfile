@@ -1,7 +1,7 @@
 ###############################################################################
 #                                build
 ###############################################################################
-FROM golang:1.21-alpine AS builder
+FROM golang:1.22-alpine AS builder
 ENV GOPROXY=https://goproxy.cn,direct \
     CGO_ENABLED=0 \
     GO111MODULE=auto \
