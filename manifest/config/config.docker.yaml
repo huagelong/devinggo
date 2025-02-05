@@ -75,14 +75,14 @@ database:
 
   # 默认分组
   default:
-    link: "mysql:root:mysql_MMa4z7@tcp(106.14.10.255:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
+    link: "mysql:devinggo:mysql_MMa4z7@tcp(devinggodev-mysql-yrpcfz:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
     debug: true # 默认 false
 
 # doc: https://goframe.org/pages/viewpage.action?pageId=1114217
 redis:
   # 默认分组, 调用方式: g.Redis()
   default:
-    address: 106.14.10.255:6379
+    address: devinggodev-devinggo-redis-kplaji:6379
     pass: "redis_Q2QSYN"
     # 是否强制设置为集群工作模式, 默认值：false.
     # NOTE: 当address是单个endpoint的集群时，系统会自动判定为单实例模式，这时需要设置此项为true.
@@ -102,7 +102,7 @@ redis:
     # 此值应该小于maxConnLifetime, 才有实际意义.
     idleTimeout: 10m
   cache:
-    address: 106.14.10.255:6379
+    address: devinggodev-devinggo-redis-kplaji:6379
     pass: "redis_Q2QSYN"
     db: 1
     minIdle: 10
@@ -114,7 +114,7 @@ redis:
     readTimeout: 30s
     writeTimeout: 30s
   websocket:
-    address: 106.14.10.255:6379
+    address: devinggodev-devinggo-redis-kplaji:6379
     pass: "redis_Q2QSYN"
     db: 7
     minIdle: 10
@@ -144,7 +144,7 @@ worker:
     - default: 3
     - low: 1
   redis:
-    address: 106.14.10.255:6379
+    address: devinggodev-devinggo-redis-kplaji:6379
     pass: "redis_Q2QSYN"
     db: 2
     dialTimeout: 30s
