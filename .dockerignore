@@ -3,3 +3,5 @@ web/system/dist
 resource/public/uploads
 bin
 logs
+hack/config.yaml
+manifest/config/config.yaml
