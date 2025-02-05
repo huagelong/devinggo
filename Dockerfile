@@ -2,10 +2,10 @@
 #                                build
 ###############################################################################
 FROM golang:1.22-alpine AS builder
-ENV GOPROXY=https://goproxy.cn,direct
-ENV GO111MODULE=on
-ENV CGO_ENABLED=0
-ENV GOOS=linux
+ENV GOPROXY https://goproxy.cn,direct
+ENV GO111MODULE on
+ENV CGO_ENABLED 0
+ENV GOOS linux
 # 安装 Node.js、Yarn、Make 及其他依赖
 RUN apk add --no-cache nodejs npm yarn make git wget
 WORKDIR /app
@@ -24,8 +24,8 @@ LABEL maintainer="hpuwang@gmail.com"
 # 设置在容器内执行时当前的目录
 ENV WORKDIR /app
 # 添加应用可执行文件，并设置执行权限
-COPY --from=builder /app/bin/v1.0.0/linux_amd64/devinggo   $WORKDIR
-RUN chmod +x $WORKDIR
+ADD --from=builder /app/bin/v1.0.0/linux_amd64/devinggo   $WORKDIR/devinggo
+RUN chmod +x $WORKDIR/devinggo
 ###############################################################################
 #                                   START
 ###############################################################################
