@@ -11,7 +11,7 @@ RUN apk add --no-cache nodejs npm yarn make git wget
 WORKDIR /app
 COPY . ./
 RUN mv ./manifest/config/config.docker.yaml ./manifest/config/config.yaml
-RUN mv ./hack/config.example.yaml ./hack/config.yaml
+RUN mv ./hack/config.docker.yaml ./hack/config.yaml
 RUN rm -rf ./web/system/.env.production
 RUN mv ./web/system/.env.docker ./web/system/.env.production
 RUN make cli
