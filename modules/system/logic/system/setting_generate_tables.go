@@ -372,6 +372,26 @@ func (s *sSettingGenerateTables) getOneCode(ctx context.Context, id uint64) (rs 
 	if utils.IsError(err) {
 		return
 	}
+	if g.IsEmpty(tables.ModuleName) {
+		tables.ModuleName = "system"
+	}
+
+	if g.IsEmpty(tables.Namespace) {
+		tables.Namespace = ""
+	}
+
+	if g.IsEmpty(tables.BelongMenuId) {
+		tables.BelongMenuId = 1000
+	}
+
+	if g.IsEmpty(tables.PackageName) {
+		tables.PackageName = ""
+	}
+
+	if g.IsEmpty(tables.GenerateMenus) {
+		tables.GenerateMenus = ""
+	}
+
 	err = service.SettingGenerateColumns().Model(ctx).Where("table_id", id).OrderDesc("sort").Scan(&columns)
 	if utils.IsError(err) {
 		return
@@ -630,7 +650,9 @@ func (s *sSettingGenerateTables) generateJsApi(ctx context.Context, view *gview.
 	if err != nil {
 		return
 	}
+
 	requestRoute := gstr.ToLower(tables.ModuleName) + "/" + tableCaseCamelLowerName
+
 	authCode := tables.PackageName + ":" + tableCaseCamelLowerName
 	code, err = view.Parse(context.TODO(), "vue/jsApi.html", g.Map{"table": tables, "requestRoute": requestRoute, "authCode": authCode, "adminId": adminId, "OptionsView": OptionsView, "columnsView": columnsView, "generateMenus": generateMenus, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName})
 	if err != nil {
