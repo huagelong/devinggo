@@ -20,7 +20,7 @@ gfcli:
   gen:
     dao:
       - tablesEx: "system_migrations"
-        link: "mysql:devinggo:mysql_MMwawwww@tcp(db-mysql-rdvips:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
+        link: "mysql:root:97584e743509d0a2f8d3a0ce7e021959@tcp(db:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
         jsonCase: "CamelLower"
         descriptionTag:  true
         noModelComment:  false
