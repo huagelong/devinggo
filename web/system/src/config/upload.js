@@ -1,12 +1,13 @@
+const env = import.meta.env;
 export default {
   storage: {
-    LOCAL: 'http://127.0.0.1:8070',
-    OSS: '',
-    QINIU: '',
-    COS: '',
-    HUAWEICLOUD: '',
-    AWSS3: '',
-    MINIO: 'http://106.14.10.255:8101/devinggo',
+    LOCAL: env.VITE_UPLOAD_LOCAL_URL,
+    OSS: env.VITE_UPLOAD_OSS_URL,
+    QINIU: env.VITE_UPLOAD_QINIU_URL,
+    COS: env.VITE_UPLOAD_COS_URL,
+    HUAWEICLOUD: env.VITE_UPLOAD_HUAWEICLOUD_URL,
+    AWSS3: env.VITE_UPLOAD_AWSS3_URL,
+    MINIO: env.VITE_UPLOAD_MINIO_URL,
   },
 
   storageMode: {
