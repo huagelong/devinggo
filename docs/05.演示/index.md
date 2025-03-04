@@ -5,6 +5,6 @@ permalink: /pages/7acdb6/
 ---
 
 ## 演示地址
-- 后台管理系统：http://106.14.10.255:8070/system
+- 后台管理系统：https://devinggo-dev.devinghub.com/system
 - 账号密码：superAdmin/admin123
 - 数据每小时重置一次
