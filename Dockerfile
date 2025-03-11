@@ -31,4 +31,4 @@ RUN $WORKDIR/devinggo unpack
 #                                   START
 ###############################################################################
 WORKDIR $WORKDIR
-CMD ./devinggo
+CMD ./devinggo unpack && ./devinggo
