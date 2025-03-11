@@ -16,8 +16,8 @@ RUN rm -rf ./web/system/.env.production
 RUN mv ./web/system/.env.docker ./web/system/.env.production
 RUN make cli
 RUN make build
-RUN chmod +x /app/bin/v1.0.0/linux_amd64/devinggo
-RUN /app/bin/v1.0.0/linux_amd64/devinggo unpack
+RUN chmod +x ./bin/v1.0.0/linux_amd64/devinggo
+RUN ./bin/v1.0.0/linux_amd64/devinggo unpack
 ###############################################################################
 #                                INSTALLATION
 ###############################################################################
