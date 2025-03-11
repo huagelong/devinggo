@@ -75,15 +75,15 @@ database:
 
   # 默认分组
   default:
-    link: "mysql:root:97584e743509d0a2f8d3a0ce7e021959@tcp(db:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
+    link: "mysql:devinggo:76ehTQRMPyzJtSyG@tcp(1Panel-mysql-rPsZ:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
     debug: true # 默认 false
 
 # doc: https://goframe.org/pages/viewpage.action?pageId=1114217
 redis:
   # 默认分组, 调用方式: g.Redis()
   default:
-    address: db-redis-99l3yz:6379
-    pass: "redis_Q2weeee"
+    address: 1Panel-redis-j9b9:6379
+    pass: "redis_Hfkbta"
     # 是否强制设置为集群工作模式, 默认值：false.
     # NOTE: 当address是单个endpoint的集群时，系统会自动判定为单实例模式，这时需要设置此项为true.
     cluster: false
@@ -102,8 +102,8 @@ redis:
     # 此值应该小于maxConnLifetime, 才有实际意义.
     idleTimeout: 10m
   cache:
-    address: db-redis-99l3yz:6379
-    pass: "redis_Q2weeee"
+    address: 1Panel-redis-j9b9:6379
+    pass: "redis_Hfkbta"
     db: 1
     minIdle: 10
     maxIdle: 1000
@@ -114,8 +114,8 @@ redis:
     readTimeout: 30s
     writeTimeout: 30s
   websocket:
-    address: db-redis-99l3yz:6379
-    pass: "redis_Q2weeee"
+    address: 1Panel-redis-j9b9:6379
+    pass: "redis_Hfkbta"
     db: 7
     minIdle: 10
     maxIdle: 1000
@@ -144,8 +144,8 @@ worker:
     - default: 3
     - low: 1
   redis:
-    address: db-redis-99l3yz:6379
-    pass: "redis_Q2weeee"
+    address: 1Panel-redis-j9b9:6379
+    pass: "redis_Hfkbta"
     db: 2
     dialTimeout: 30s
     readTimeout: 30s
