@@ -16,6 +16,8 @@ RUN rm -rf ./web/system/.env.production
 RUN mv ./web/system/.env.docker ./web/system/.env.production
 RUN make cli
 RUN make build
+RUN chmod +x /app/bin/v1.0.0/linux_amd64/devinggo
+RUN /app/bin/v1.0.0/linux_amd64/devinggo unpack
 ###############################################################################
 #                                INSTALLATION
 ###############################################################################
@@ -23,12 +25,12 @@ FROM loads/alpine:3.8
 LABEL maintainer="hpuwang@gmail.com"
 # 设置在容器内执行时当前的目录
 ENV WORKDIR /app
+WORKDIR $WORKDIR
 # 添加应用可执行文件，并设置执行权限
-COPY --from=builder /app/bin/v1.0.0/linux_amd64/devinggo   $WORKDIR/devinggo
+COPY --from=builder /app/bin/v1.0.0/linux_amd64/ ./
 RUN chmod +x $WORKDIR/devinggo
-RUN $WORKDIR/devinggo unpack
 ###############################################################################
 #                                   START
 ###############################################################################
-WORKDIR $WORKDIR
-CMD ./devinggo unpack && ./devinggo
+
+CMD ./devinggo
