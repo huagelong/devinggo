@@ -1,1 +1,1 @@
-docker build -t huagelong/devingub .
+docker build -t huagelong/devinggo .
