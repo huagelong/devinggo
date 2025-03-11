@@ -1,1 +1,1 @@
-docker build -t huagelong/devinggo .
+docker build --progress=plain -t huagelong/devinggo .
