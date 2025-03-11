@@ -15,19 +15,18 @@ import (
 	"github.com/gogf/gf/v2/os/gcmd"
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/glog"
-	"github.com/gogf/gf/v2/os/gres"
 	"github.com/gogf/gf/v2/util/gmode"
 )
 
 func CmdInit(ctx context.Context, parser *gcmd.Parser) {
 	once.Do(func() {
+		filePath := "manifest/config/config.yaml"
+		if !gfile.Exists(filePath) {
+			g.Log().Panicf(ctx, "%s：config file not found,please run devinggo unpack", filePath)
+		}
 		configFile := parser.GetOpt("config").String()
 		if configFile != "" {
 			g.Cfg().GetAdapter().(*gcfg.AdapterFile).SetFileName(configFile)
-		} else {
-			if gfile.Exists("./config.yaml") {
-				g.Cfg().GetAdapter().(*gcfg.AdapterFile).SetFileName("./config.yaml")
-			}
 		}
 
 		configPath, _ := g.Cfg().GetAdapter().(*gcfg.AdapterFile).GetFilePath()
@@ -52,41 +51,7 @@ func CmdInit(ctx context.Context, parser *gcmd.Parser) {
 		// 异步打印日志 & 显示打印错误的文件行号, 对访问日志无效
 		g.Log().SetFlags(glog.F_ASYNC | glog.F_TIME_STD | glog.F_FILE_LONG)
 
-		exportDirs := g.SliceStr{"resource", "config.yaml"}
-		for _, dir := range exportDirs {
-			exportDir(ctx, dir)
-		}
 		//设置缓存
 		cache.SetAdapter(ctx)
 	})
-}
-
-func exportDir(ctx context.Context, dir string) {
-	if !gfile.Exists(dir) {
-		if dir == "config.yaml" {
-			configFullPath := "manifest/config"
-			if gfile.Exists(configFullPath) {
-				//g.Log().Debug(ctx, "manifest/config found")
-				return
-			}
-			options := gres.ExportOption{RemovePrefix: "manifest/config/"}
-			err := gres.Export(configFullPath, "./", options)
-			if err != nil {
-				g.Log().Panic(ctx, "export Error:", err)
-			} else {
-				g.Log().Debug(ctx, "export success:", dir)
-			}
-			return
-		}
-		//other file
-		files := gres.ScanDir(dir, "*.*", true)
-		if len(files) > 0 {
-			err := gres.Export(dir, "./")
-			if err != nil {
-				g.Log().Panic(ctx, "export Error:", err)
-			} else {
-				g.Log().Debug(ctx, "export success:", dir)
-			}
-		}
-	}
 }

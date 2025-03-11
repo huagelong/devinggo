@@ -10,7 +10,7 @@ gfcli:
     system: "linux,windows"
     #    system:   "linux,darwin,windows"
     mod: "none"
-    packSrc: "resource,manifest/config"                    # 将resource目录打包进可执行文件，静态资源无需单独部署
+    packSrc: "resource,manifest"                    # 将resource目录打包进可执行文件，静态资源无需单独部署
     packDst: "internal/packed/packed.go"   # 打包后生成的Go文件路径，一般使用相对路径指定到本项目目录中
     path: "./bin"
     extra: " -ldflags \"-s -w\" "
