@@ -75,15 +75,15 @@ database:
 
   # 默认分组
   default:
-    link: "mysql:mysql:7j5szPs2HMECX4Ts2HIHptyY9zcs59dsRdMTeuj52bKXn72RLKfME5vFynRsl6Tj@tcp(mysql-database-s4kw8kssogwscwckw8ss4css:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
+    link: "mysql:devinggo:sr23421423@tcp(db-mysql-nm9d3x:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
     debug: true # 默认 false
 
 # doc: https://goframe.org/pages/viewpage.action?pageId=1114217
 redis:
   # 默认分组, 调用方式: g.Redis()
   default:
-    address: redis-database-m08wcw4ss4csk8gk0ocockos:6379
-    pass: "CqLtmCux7Obkv5F3HBNO0IhZZgNCC9C03CWgrFFzwsvthXxbwavrNIQSb8f4rqAZ"
+    address: db-redis-vg4s9i:6379
+    pass: "ymunc6anyxda7o5o"
     user: "default"
     # 是否强制设置为集群工作模式, 默认值：false.
     # NOTE: 当address是单个endpoint的集群时，系统会自动判定为单实例模式，这时需要设置此项为true.
@@ -103,8 +103,8 @@ redis:
     # 此值应该小于maxConnLifetime, 才有实际意义.
     idleTimeout: 10m
   cache:
-    address: redis-database-m08wcw4ss4csk8gk0ocockos:6379
-    pass: "CqLtmCux7Obkv5F3HBNO0IhZZgNCC9C03CWgrFFzwsvthXxbwavrNIQSb8f4rqAZ"
+    address: db-redis-vg4s9i:6379
+    pass: "ymunc6anyxda7o5o"
     user: "default"
     db: 1
     minIdle: 10
@@ -116,8 +116,8 @@ redis:
     readTimeout: 30s
     writeTimeout: 30s
   websocket:
-    address: redis-database-m08wcw4ss4csk8gk0ocockos:6379
-    pass: "CqLtmCux7Obkv5F3HBNO0IhZZgNCC9C03CWgrFFzwsvthXxbwavrNIQSb8f4rqAZ"
+    address: db-redis-vg4s9i:6379
+    pass: "ymunc6anyxda7o5o"
     user: "default"
     db: 7
     minIdle: 10
@@ -147,8 +147,8 @@ worker:
     - default: 3
     - low: 1
   redis:
-    address: redis-database-m08wcw4ss4csk8gk0ocockos:6379
-    pass: "CqLtmCux7Obkv5F3HBNO0IhZZgNCC9C03CWgrFFzwsvthXxbwavrNIQSb8f4rqAZ"
+    address: db-redis-vg4s9i:6379
+    pass: "ymunc6anyxda7o5o"
     user: "default"
     db: 2
     dialTimeout: 30s
