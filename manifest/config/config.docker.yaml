@@ -75,7 +75,7 @@ database:
 
   # 默认分组
   default:
-    link: "mysql:devinggo:sr23421423@tcp(db-mysql-nm9d3x:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
+    link: "mysql:devinggo:sr23421423@tcp(db-mysql-5se9q4:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
     debug: true # 默认 false
 
 # doc: https://goframe.org/pages/viewpage.action?pageId=1114217
