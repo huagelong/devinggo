@@ -1,5 +1,5 @@
-PLATFORM_RESOURCE_PATH = "./resource/public/system"
-UI_PATH = "./web/system"
+PLATFORM_RESOURCE_PATH = "./resource/public/admin"
+UI_PATH = "./web/admin"
 VERSION = $(shell git describe --tags --always --match='v*')
 SED = sed
 ifneq ($(shell go env GOOS),windows)
