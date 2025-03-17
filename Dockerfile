@@ -12,8 +12,8 @@ WORKDIR /app
 COPY . ./
 RUN mv ./manifest/config/config.docker.yaml ./manifest/config/config.yaml
 RUN mv ./hack/config.docker.yaml ./hack/config.yaml
-RUN rm -rf ./web/system/.env.production
-RUN mv ./web/system/.env.docker ./web/system/.env.production
+RUN rm -rf ./web/admin/.env.production
+RUN mv ./web/admin/.env.docker ./web/admin/.env.production
 RUN make cli
 RUN make build
 RUN chmod +x ./bin/v1.0.0/linux_amd64/devinggo
