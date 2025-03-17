@@ -23,7 +23,7 @@ internal/packed/build_pack_data.go
 **/*.log
 .init.lock
 
-/resource/public/system/
+/resource/public/admin/
 /resource/public/uploads/image/
 /resource/public/uploads/text/
 /resource/public/uploads/zip/
