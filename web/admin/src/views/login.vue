@@ -11,6 +11,9 @@ const Verify = ref(null)
 
 const loading = ref(false)
 
+//先清空token
+tool.local.clear();
+
 let isDevelop =  import.meta.env.VITE_APP_ENV === 'development'
 
 var odata = isDevelop ?
