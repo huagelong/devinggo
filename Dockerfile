@@ -2,7 +2,7 @@
 #                                build
 ###############################################################################
 FROM golang:1.22-alpine AS builder
-ENV GOPROXY https://goproxy.cn,direct
+# ENV GOPROXY https://goproxy.cn,direct
 ENV GO111MODULE on
 ENV CGO_ENABLED 0
 ENV GOOS linux
