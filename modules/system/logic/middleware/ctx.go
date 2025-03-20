@@ -57,13 +57,13 @@ func (s *sMiddleware) Ctx(r *ghttp.Request) {
 	if !g.IsEmpty(tenantIdStr) {
 		contexts.New().SetTenantId(ctx, gconv.Uint64(tenantIdStr))
 	}
+	s.meta(r)
 	error := s.userCtx(r)
 	if error != nil {
 		g.Log().Warning(ctx, error)
 		r.Middleware.Next()
 		return
 	}
-	s.meta(r)
 	r.Middleware.Next()
 }
 
