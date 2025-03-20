@@ -4,6 +4,7 @@ import verifyCode from '@cps/ma-verifyCode/index.vue'
 import { useUserStore } from '@/store'
 import { useTagStore } from '@/store'
 import { useRouter, useRoute } from 'vue-router'
+import tool from '@/utils/tool';
 
 const router = useRouter()
 const route  = useRoute()
