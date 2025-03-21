@@ -75,7 +75,7 @@ database:
 
   # 默认分组
   default:
-    link: "mysql:root:sr23421423@tcp(mysql:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
+    link: "mysql:root:mysql_zbCA5h@tcp(mysql:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
     debug: true # 默认 false
 
 # doc: https://goframe.org/pages/viewpage.action?pageId=1114217
@@ -83,7 +83,7 @@ redis:
   # 默认分组, 调用方式: g.Redis()
   default:
     address: redis:6379
-    pass: "ymunc6anyxda7o5o"
+    pass: "redis_d5KQds"
     user: "default"
     # 是否强制设置为集群工作模式, 默认值：false.
     # NOTE: 当address是单个endpoint的集群时，系统会自动判定为单实例模式，这时需要设置此项为true.
@@ -104,7 +104,7 @@ redis:
     idleTimeout: 10m
   cache:
     address: redis:6379
-    pass: "ymunc6anyxda7o5o"
+    pass: "redis_d5KQds"
     user: "default"
     db: 1
     minIdle: 10
@@ -117,7 +117,7 @@ redis:
     writeTimeout: 30s
   websocket:
     address: redis:6379
-    pass: "ymunc6anyxda7o5o"
+    pass: "redis_d5KQds"
     user: "default"
     db: 7
     minIdle: 10
@@ -148,7 +148,7 @@ worker:
     - low: 1
   redis:
     address: redis:6379
-    pass: "ymunc6anyxda7o5o"
+    pass: "redis_d5KQds"
     user: "default"
     db: 2
     dialTimeout: 30s
