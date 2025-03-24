@@ -101,8 +101,7 @@ type DownloadByHashRes struct {
 }
 
 type ShowFileReq struct {
-	g.Meta `path:"/showFile/{Hash}" method:"get" tags:"文件上传" summary:"输出图片、文件." x-permission:"system:showFile" `
-	model.AuthorHeader
+	g.Meta `path:"/showFile/{Hash}" method:"get" tags:"文件上传" summary:"输出图片、文件." x-exceptAuth:"true" x-exceptLogin:"true" x-permission:"system:showFile" `
 	Hash string `json:"hash" v:"required" dc:"pls input hash"`
 }
 
