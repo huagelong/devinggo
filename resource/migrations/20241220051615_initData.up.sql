@@ -78,13 +78,9 @@ insert  into `system_role_dept`(`role_id`,`dept_id`) values (2,3),(2,4);
 
 insert  into `system_role_menu`(`role_id`,`menu_id`) values (2,1000),(2,1100);
 
-/*Data for the table `system_uploadfile` */
-
-insert  into `system_uploadfile`(`id`,`storage_mode`,`origin_name`,`object_name`,`hash`,`mime_type`,`storage_path`,`suffix`,`size_byte`,`size_info`,`url`,`created_by`,`updated_by`,`created_at`,`updated_at`,`deleted_at`,`remark`) values (8,7,'微信图片_20241220094440.jpg','d6gfkg6hwek0rdobaz.jpg','744b7536a1f7d3bf7a3fb04edad35ac5','image','image/20241220','jpg',68263,'66.00 KB','/uploads/image/20241220/d6gfkg6hwek0rdobaz.jpg',1,1,'2024-12-20 17:46:19','2024-12-20 17:46:19',NULL,NULL);
-
 /*Data for the table `system_user` */
 
-insert  into `system_user`(`id`,`username`,`password`,`user_type`,`nickname`,`phone`,`email`,`avatar`,`signed`,`dashboard`,`status`,`login_ip`,`login_time`,`backend_setting`,`created_by`,`updated_by`,`created_at`,`updated_at`,`deleted_at`,`remark`,`tenant_id`) values (1,'superAdmin','$2a$10$fiqkS4s2yzm4rnBJl4i7DO3PSBjisMsXW6O2Wt76zIS9VY2N1J2Na','100','超级管理员','17621441012','111@qq.com','','超级管理员','',1,'127.0.0.1','2024-12-31 14:27:40','{\"animation\":\"ma-slide-down\",\"color\":\"#165dff\",\"i18n\":false,\"language\":\"zh_CN\",\"layout\":\"mixed\",\"lockScreenPwd\":\"5b1b68a9abf4d2cd155c81a9225fd158\",\"menuCollapse\":false,\"menuWidth\":230,\"mode\":\"light\",\"skin\":\"default\",\"tag\":true,\"ws\":true}',0,1,'2024-08-19 11:29:32','2024-12-31 14:27:40',NULL,'',0);
+insert  into `system_user`(`id`,`username`,`password`,`user_type`,`nickname`,`phone`,`email`,`avatar`,`signed`,`dashboard`,`status`,`login_ip`,`login_time`,`backend_setting`,`created_by`,`updated_by`,`created_at`,`updated_at`,`deleted_at`,`remark`) values (1,'superAdmin','$2a$10$fiqkS4s2yzm4rnBJl4i7DO3PSBjisMsXW6O2Wt76zIS9VY2N1J2Na','100','超级管理员','17621441012','111@qq.com','','超级管理员','',1,'127.0.0.1','2024-12-31 14:27:40','{\"animation\":\"ma-slide-down\",\"color\":\"#165dff\",\"i18n\":false,\"language\":\"zh_CN\",\"layout\":\"mixed\",\"lockScreenPwd\":\"5b1b68a9abf4d2cd155c81a9225fd158\",\"menuCollapse\":false,\"menuWidth\":230,\"mode\":\"light\",\"skin\":\"default\",\"tag\":true,\"ws\":true}',0,1,'2024-08-19 11:29:32','2024-12-31 14:27:40',NULL,'');
 
 /*Data for the table `system_user_dept` */
 

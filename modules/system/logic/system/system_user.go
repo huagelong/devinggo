@@ -44,7 +44,7 @@ func NewSystemUser() *sSystemUser {
 }
 
 func (s *sSystemUser) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemUser.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemUser.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemUser) GetPageList(ctx context.Context, req *model.PageListReq) (res []*res.SystemUser, total int, err error) {
@@ -74,8 +74,8 @@ func (s *sSystemUser) GetOnlineUserPageListForSearch(ctx context.Context, req *m
 	if g.IsEmpty(userApps) {
 		return nil, 0, err
 	}
-	userIds := make([]uint64, 0)
-	userAppMap := make(map[uint64]string)
+	userIds := make([]int64, 0)
+	userAppMap := make(map[int64]string)
 	for _, userApp := range userApps {
 		userIds = append(userIds, userApp.UserId)
 		userAppMap[userApp.UserId] = userApp.AppId
@@ -102,8 +102,8 @@ func (s *sSystemUser) GetExportList(ctx context.Context, req *model.ListReq, in 
 	return
 }
 
-func (s *sSystemUser) GetSupserAdminId(ctx context.Context) uint64 {
-	return config.GetConfigUint64(ctx, "settings.superAdminId", 1)
+func (s *sSystemUser) GetSupserAdminId(ctx context.Context) int64 {
+	return config.GetConfigint64(ctx, "settings.superAdminId", 1)
 }
 
 func (s *sSystemUser) ExistsByUsername(ctx context.Context, username string) (rs bool, err error) {
@@ -162,7 +162,7 @@ func (s *sSystemUser) handleUserSearch(ctx context.Context, in *req.SystemUserSe
 		result, err := service.SystemDept().Model(ctx).Fields(dao.SystemDept.Columns().Id).Where(dao.SystemDept.Columns().Id, in.DeptId).WhereOr("level like  ? ", "%,"+gconv.String(in.DeptId)+",%").Array()
 		if !utils.IsError(err) {
 			if !g.IsEmpty(result) {
-				newDeptIds := gconv.SliceUint64(result)
+				newDeptIds := gconv.SliceInt64(result)
 				m = m.LeftJoinOnFields(dao.SystemUserDept.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserDept.Columns().UserId).WhereIn(dao.SystemUserDept.Columns().DeptId, newDeptIds)
 			}
 		}
@@ -171,7 +171,7 @@ func (s *sSystemUser) handleUserSearch(ctx context.Context, in *req.SystemUserSe
 	return
 }
 
-func (s *sSystemUser) GetInfoById(ctx context.Context, userId uint64) (systemUser *res.SystemUser, err error) {
+func (s *sSystemUser) GetInfoById(ctx context.Context, userId int64) (systemUser *res.SystemUser, err error) {
 	err = s.Model(ctx).Where(dao.SystemUser.Columns().Id, userId).Scan(&systemUser)
 	if utils.IsError(err) {
 		return
@@ -179,7 +179,7 @@ func (s *sSystemUser) GetInfoById(ctx context.Context, userId uint64) (systemUse
 	return
 }
 
-func (s *sSystemUser) GetInfoByIds(ctx context.Context, userIds []uint64) (systemUser []*res.SystemUser, err error) {
+func (s *sSystemUser) GetInfoByIds(ctx context.Context, userIds []int64) (systemUser []*res.SystemUser, err error) {
 	err = s.Model(ctx).WhereIn(dao.SystemUser.Columns().Id, userIds).Scan(&systemUser)
 	if utils.IsError(err) {
 		return
@@ -187,7 +187,7 @@ func (s *sSystemUser) GetInfoByIds(ctx context.Context, userIds []uint64) (syste
 	return
 }
 
-func (s *sSystemUser) GetInfo(ctx context.Context, userId uint64) (systemUserInfo *res.SystemUserInfo, err error) {
+func (s *sSystemUser) GetInfo(ctx context.Context, userId int64) (systemUserInfo *res.SystemUserInfo, err error) {
 	systemUser := res.SystemUser{}
 	systemUserInfo = &res.SystemUserInfo{}
 	err = s.Model(ctx).Where(dao.SystemUser.Columns().Id, userId).Scan(&systemUser)
@@ -252,7 +252,7 @@ func (s *sSystemUser) GetInfo(ctx context.Context, userId uint64) (systemUserInf
 	return
 }
 
-func (s *sSystemUser) IsSuperAdmin(ctx context.Context, userId uint64) (isSuperAdmin bool, err error) {
+func (s *sSystemUser) IsSuperAdmin(ctx context.Context, userId int64) (isSuperAdmin bool, err error) {
 	roleIds, err := service.SystemUser().GetRoles(ctx, userId)
 	if err != nil {
 		return false, err
@@ -273,7 +273,7 @@ func (s *sSystemUser) IsSuperAdmin(ctx context.Context, userId uint64) (isSuperA
 	return false, nil
 }
 
-func (s *sSystemUser) GetRoles(ctx context.Context, userId uint64) (roles []uint64, err error) {
+func (s *sSystemUser) GetRoles(ctx context.Context, userId int64) (roles []int64, err error) {
 	result, err := service.SystemUserRole().Model(ctx).Fields(dao.SystemUserRole.Columns().RoleId).Where(dao.SystemUserRole.Columns().UserId, userId).Array()
 	if utils.IsError(err) {
 		return
@@ -283,11 +283,11 @@ func (s *sSystemUser) GetRoles(ctx context.Context, userId uint64) (roles []uint
 		return
 	}
 
-	roles = gconv.SliceUint64(result)
+	roles = gconv.SliceInt64(result)
 	return
 }
 
-func (s *sSystemUser) GetDepts(ctx context.Context, userId uint64) (depts []uint64, err error) {
+func (s *sSystemUser) GetDepts(ctx context.Context, userId int64) (depts []int64, err error) {
 	result, err := service.SystemUserDept().Model(ctx).Fields(dao.SystemUserDept.Columns().DeptId).Where(dao.SystemUserDept.Columns().UserId, userId).Array()
 	if utils.IsError(err) {
 		return
@@ -297,11 +297,11 @@ func (s *sSystemUser) GetDepts(ctx context.Context, userId uint64) (depts []uint
 		return
 	}
 
-	depts = gconv.SliceUint64(result)
+	depts = gconv.SliceInt64(result)
 	return
 }
 
-func (s *sSystemUser) Update(ctx context.Context, req *req.SystemUser, userId ...uint64) (rs sql.Result, err error) {
+func (s *sSystemUser) Update(ctx context.Context, req *req.SystemUser, userId ...int64) (rs sql.Result, err error) {
 	var systemUser *do.SystemUser
 	if err = gconv.Struct(req, &systemUser); err != nil {
 		return
@@ -323,7 +323,7 @@ func (s *sSystemUser) Update(ctx context.Context, req *req.SystemUser, userId ..
 	return
 }
 
-func (s *sSystemUser) SetHomePage(ctx context.Context, id uint64, dashboard string) (out sql.Result, err error) {
+func (s *sSystemUser) SetHomePage(ctx context.Context, id int64, dashboard string) (out sql.Result, err error) {
 	systemUser := &do.SystemUser{
 		Dashboard: dashboard,
 	}
@@ -334,7 +334,7 @@ func (s *sSystemUser) SetHomePage(ctx context.Context, id uint64, dashboard stri
 	return
 }
 
-func (s *sSystemUser) InitUserPassword(ctx context.Context, id uint64, password string) (out sql.Result, err error) {
+func (s *sSystemUser) InitUserPassword(ctx context.Context, id int64, password string) (out sql.Result, err error) {
 	password, err = secure.PasswordHash(password)
 	if err != nil {
 		return
@@ -400,7 +400,7 @@ func (s *sSystemUser) UpdateSimple(ctx context.Context, in *req.SystemUserUpdate
 	return
 }
 
-func (s *sSystemUser) Save(ctx context.Context, in *req.SystemUserSave) (id uint64, err error) {
+func (s *sSystemUser) Save(ctx context.Context, in *req.SystemUserSave) (id int64, err error) {
 	userNameExists, err := service.SystemUser().ExistsByUsername(ctx, in.Username)
 	if err != nil {
 		return
@@ -437,7 +437,7 @@ func (s *sSystemUser) Save(ctx context.Context, in *req.SystemUserSave) (id uint
 	if err != nil {
 		return
 	}
-	id = gconv.Uint64(tmpId)
+	id = gconv.Int64(tmpId)
 
 	if !g.IsEmpty(in.RoleIds) {
 		for _, roleId := range in.RoleIds {
@@ -469,7 +469,7 @@ func (s *sSystemUser) Save(ctx context.Context, in *req.SystemUserSave) (id uint
 	return
 }
 
-func (s *sSystemUser) GetFullInfoById(ctx context.Context, id uint64) (out *res.SystemUserFullInfo, err error) {
+func (s *sSystemUser) GetFullInfoById(ctx context.Context, id int64) (out *res.SystemUserFullInfo, err error) {
 	err = s.Model(ctx).Where("id", id).Scan(&out)
 	if utils.IsError(err) {
 		return
@@ -500,7 +500,7 @@ func (s *sSystemUser) GetFullInfoById(ctx context.Context, id uint64) (out *res.
 	return
 }
 
-func (s *sSystemUser) Delete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemUser) Delete(ctx context.Context, ids []int64) (err error) {
 	superAdminId := s.GetSupserAdminId(ctx)
 	if err != nil {
 		return
@@ -515,7 +515,7 @@ func (s *sSystemUser) Delete(ctx context.Context, ids []uint64) (err error) {
 	return
 }
 
-func (s *sSystemUser) RealDelete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemUser) RealDelete(ctx context.Context, ids []int64) (err error) {
 	superAdminId := s.GetSupserAdminId(ctx)
 	if err != nil {
 		return
@@ -530,7 +530,7 @@ func (s *sSystemUser) RealDelete(ctx context.Context, ids []uint64) (err error) 
 	return
 }
 
-func (s *sSystemUser) Recovery(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemUser) Recovery(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
 		return err
@@ -538,7 +538,7 @@ func (s *sSystemUser) Recovery(ctx context.Context, ids []uint64) (err error) {
 	return
 }
 
-func (s *sSystemUser) ChangeStatus(ctx context.Context, id uint64, status int) (err error) {
+func (s *sSystemUser) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err

@@ -5,20 +5,20 @@ const routes = [
     name: 'layout',
     path: '/',
     component: () => import('@/layout/index.vue'),
-    redirect: 'dashboard',
+    redirect: { name: 'dashboard' },
     children: homePageRoutes,
   },
   {
     name: 'login',
-    path: '/login',
+    path:'/login',
     component: () => import('@/views/login.vue'),
     meta: { title: '登录' },
   },
   {
     name: 'formLayout',
-    path: '/formLayout',
+    path:'/formLayout',
     component: () => import('@/layout/index.vue'),
-    redirect: 'openForm',
+    redirect: { name: 'openForm' },
     children: [
       {
         name: 'openForm',
@@ -32,7 +32,7 @@ const routes = [
     ],
   },
   {
-    path: '/:pathMatch(.*)*',
+    path:'/:pathMatch(.*)*',
     hidden: true,
     meta: { title: '访问的页面不存在' },
     component: () => import('@/layout/404.vue'),

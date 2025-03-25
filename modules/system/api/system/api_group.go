@@ -59,13 +59,13 @@ type SaveApiGroupReq struct {
 
 type SaveApiGroupRes struct {
 	g.Meta `mime:"application/json"`
-	Id     uint64 `json:"id" dc:"接口分组 id"`
+	Id     int64 `json:"id" dc:"接口分组 id"`
 }
 
 type ReadApiGroupReq struct {
 	g.Meta `path:"/apiGroup/read/{Id}" method:"get" tags:"接口分组" summary:"更新接口分组." x-permission:"system:apiGroup:read"`
 	model.AuthorHeader
-	Id uint64 `json:"id" dc:"接口分组 id" v:"required|min:1#接口分组Id不能为空"`
+	Id int64 `json:"id" dc:"接口分组 id" v:"required|min:1#接口分组Id不能为空"`
 }
 
 type ReadApiGroupRes struct {
@@ -86,7 +86,7 @@ type UpdateApiGroupRes struct {
 type DeleteApiGroupReq struct {
 	g.Meta `path:"/apiGroup/delete" method:"delete" tags:"接口分组" summary:"删除接口分组" x-permission:"system:apiGroup:delete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#接口分组Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#接口分组Id不能为空"`
 }
 
 type DeleteApiGroupRes struct {
@@ -96,7 +96,7 @@ type DeleteApiGroupRes struct {
 type RealDeleteApiGroupReq struct {
 	g.Meta `path:"/apiGroup/realDelete" method:"delete" tags:"接口分组" summary:"单个或批量真实删除接口分组 （清空回收站）." x-permission:"system:apiGroup:realDelete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#接口分组Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#接口分组Id不能为空"`
 }
 
 type RealDeleteApiGroupRes struct {
@@ -106,7 +106,7 @@ type RealDeleteApiGroupRes struct {
 type RecoveryApiGroupReq struct {
 	g.Meta `path:"/apiGroup/recovery" method:"put" tags:"接口分组" summary:"单个或批量恢复在回收站的接口分组." x-permission:"system:apiGroup:recovery"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#接口分组Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#接口分组Id不能为空"`
 }
 
 type RecoveryApiGroupRes struct {
@@ -116,8 +116,8 @@ type RecoveryApiGroupRes struct {
 type ChangeStatusApiGroupReq struct {
 	g.Meta `path:"/apiGroup/changeStatus" method:"put" tags:"接口分组" summary:"更改状态" x-permission:"system:apiGroup:update"`
 	model.AuthorHeader
-	Id     uint64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
-	Status int    `json:"status" dc:"status" v:"min:1#状态不能为空"`
+	Id     int64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
+	Status int   `json:"status" dc:"status" v:"min:1#状态不能为空"`
 }
 
 type ChangeStatusApiGroupRes struct {

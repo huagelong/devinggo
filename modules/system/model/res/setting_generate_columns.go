@@ -8,8 +8,8 @@ package res
 import "github.com/gogf/gf/v2/os/gtime"
 
 type SettingGenerateColumns struct {
-	Id            uint64      `json:"id"                         description:"主键"`                                                                                 // 主键
-	TableId       uint64      `json:"table_id"              description:"所属表ID"`                                                                                   // 所属表ID
+	Id            int64       `json:"id"                         description:"主键"`                                                                                 // 主键
+	TableId       int64       `json:"table_id"              description:"所属表ID"`                                                                                   // 所属表ID
 	ColumnName    string      `json:"column_name"        description:"字段名称"`                                                                                       // 字段名称
 	ColumnComment string      `json:"column_comment"  description:"字段注释"`                                                                                          // 字段注释
 	ColumnType    string      `json:"column_type"        description:"字段类型"`                                                                                       // 字段类型
@@ -26,7 +26,7 @@ type SettingGenerateColumns struct {
 	AllowRoles    string      `json:"allow_roles"        description:"允许查看该字段的角色"`                                                                                 // 允许查看该字段的角色
 	Options       string      `json:"options"               description:"字段其他设置"`                                                                                  // 字段其他设置
 	Extra         string      `json:"extra"                   description:"字段扩展信息"`                                                                                // 字段扩展信息
-	Sort          uint        `json:"sort"                     description:"排序"`                                                                                   // 排序
+	Sort          int         `json:"sort"                     description:"排序"`                                                                                   // 排序
 	CreatedBy     int64       `json:"created_by"          description:"创建者"`                                                                                       // 创建者
 	UpdatedBy     int64       `json:"updated_by"          description:"更新者"`                                                                                       // 更新者
 	CreatedAt     *gtime.Time `json:"created_at"          description:"创建时间"`                                                                                      // 创建时间

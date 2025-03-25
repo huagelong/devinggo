@@ -30,7 +30,7 @@ type ReceiveListRes struct {
 type UpdateReadStatusReq struct {
 	g.Meta `path:"/queueMessage/updateReadStatus" method:"put" tags:"消息中心" summary:"更新状态到已读" x-exceptAuth:"true" x-permission:"system:queueMessage:updateReadStatus"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" v:"required" dc:"message ids"`
+	Ids []int64 `json:"ids" v:"required" dc:"message ids"`
 }
 
 type UpdateReadStatusRes struct {
@@ -40,7 +40,7 @@ type UpdateReadStatusRes struct {
 type DeletesReq struct {
 	g.Meta `path:"/queueMessage/deletes" method:"delete" tags:"消息中心" summary:"单个或批量删除数据到回收站" x-exceptAuth:"true" x-permission:"system:queueMessage:deletes"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" v:"required" dc:"message ids"`
+	Ids []int64 `json:"ids" v:"required" dc:"message ids"`
 }
 
 type DeletesRes struct {

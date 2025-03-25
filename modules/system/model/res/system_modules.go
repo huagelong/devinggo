@@ -9,7 +9,7 @@ package res
 import "github.com/gogf/gf/v2/os/gtime"
 
 type SystemModules struct {
-	Id uint64 `json:"id"  description:"ID" `
+	Id int64 `json:"id"  description:"ID" `
 
 	Name string `json:"name"  description:"模块名称" `
 
@@ -25,7 +25,7 @@ type SystemModules struct {
 }
 
 type SystemModulesExcel struct {
-	Id uint64 `json:"id"  description:"ID"  `
+	Id int64 `json:"id"  description:"ID"  `
 
 	Name string `json:"name"  v:"required"  description:"模块名称"  `
 

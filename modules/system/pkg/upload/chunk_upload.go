@@ -7,12 +7,12 @@
 package upload
 
 import (
+	"context"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/myerror"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
-	"context"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -82,7 +82,7 @@ func ChunkUpload(ctx context.Context, in *req.ChunkUploadInput) (*res.SystemUplo
 	return nil, nil
 }
 
-func combineChunks(totalChunks uint64, outputFilePath string, tempDir string, hash string) error {
+func combineChunks(totalChunks int64, outputFilePath string, tempDir string, hash string) error {
 	// 创建最终文件
 	outputFile, err := os.Create(outputFilePath)
 	if err != nil {

@@ -9,7 +9,7 @@ package res
 import "github.com/gogf/gf/v2/os/gtime"
 
 type SystemDictType struct {
-	Id        uint64      `json:"id"                 description:"主键"`       // 主键
+	Id        int64       `json:"id"                 description:"主键"`       // 主键
 	Name      string      `json:"name"             description:"字典名称"`       // 字典名称
 	Code      string      `json:"code"             description:"字典标示"`       // 字典标示
 	Status    int         `json:"status"         description:"状态 (1正常 2停用)"` // 状态 (1正常 2停用)

@@ -29,5 +29,5 @@ func NewSystemUserDept() *sSystemUserDept {
 }
 
 func (s *sSystemUserDept) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemUserDept.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemUserDept.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("user_id", "dept_id")
 }

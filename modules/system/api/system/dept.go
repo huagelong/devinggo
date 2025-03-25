@@ -67,7 +67,7 @@ type SaveReq struct {
 
 type SaveRes struct {
 	g.Meta `mime:"application/json"`
-	Id     uint64 `json:"id" dc:"dept id"`
+	Id     int64 `json:"id" dc:"dept id"`
 }
 
 type AddLeaderReq struct {
@@ -83,8 +83,8 @@ type AddLeaderRes struct {
 type DelLeaderReq struct {
 	g.Meta `path:"/dept/delLeader" method:"delete" tags:"部门" summary:"删除部门领导" x-permission:"system:dept:delete"`
 	model.AuthorHeader
-	Id  uint64   `json:"id" dc:"dept id" v:"min:1#部门Id不能为空"`
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#用户Id不能为空"`
+	Id  int64   `json:"id" dc:"dept id" v:"min:1#部门Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#用户Id不能为空"`
 }
 
 type DelLeaderRes struct {
@@ -104,7 +104,7 @@ type UpdateRes struct {
 type DeleteReq struct {
 	g.Meta `path:"/dept/delete" method:"delete" tags:"部门" summary:"删除部门" x-permission:"system:dept:delete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#部门Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#部门Id不能为空"`
 }
 
 type DeleteRes struct {
@@ -114,7 +114,7 @@ type DeleteRes struct {
 type RealDeleteReq struct {
 	g.Meta `path:"/dept/realDelete" method:"delete" tags:"部门" summary:"单个或批量真实删除部门 （清空回收站）." x-permission:"system:dept:realDelete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#部门Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#部门Id不能为空"`
 }
 
 type RealDeleteRes struct {
@@ -124,7 +124,7 @@ type RealDeleteRes struct {
 type RecoveryReq struct {
 	g.Meta `path:"/dept/recovery" method:"put" tags:"部门" summary:"单个或批量恢复在回收站的部门." x-permission:"system:dept:recovery"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#部门Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#部门Id不能为空"`
 }
 
 type RecoveryRes struct {
@@ -134,8 +134,8 @@ type RecoveryRes struct {
 type ChangeStatusReq struct {
 	g.Meta `path:"/dept/changeStatus" method:"put" tags:"部门" summary:"更改部门状态" x-permission:"system:dept:changeStatus"`
 	model.AuthorHeader
-	Id     uint64 `json:"id" dc:"ids" v:"min:1#部门Id不能为空"`
-	Status int    `json:"status" dc:"dept status" v:"min:1#部门状态不能为空"`
+	Id     int64 `json:"id" dc:"ids" v:"min:1#部门Id不能为空"`
+	Status int   `json:"status" dc:"dept status" v:"min:1#部门状态不能为空"`
 }
 
 type ChangeStatusRes struct {
@@ -145,7 +145,7 @@ type ChangeStatusRes struct {
 type NumberOperationReq struct {
 	g.Meta `path:"/dept/numberOperation" method:"put" tags:"部门" summary:"数字运算操作." x-permission:"system:dept:update"`
 	model.AuthorHeader
-	Id          uint64 `json:"id" dc:"ids" v:"min:1#部门Id不能为空"`
+	Id          int64  `json:"id" dc:"ids" v:"min:1#部门Id不能为空"`
 	NumberName  string `json:"numberName" dc:"numberName" v:"required#名称不能为空"`
 	NumberValue int    `json:"numberValue" dc:"number Value" d:"1" v:"min:1#数字不能为空"`
 }

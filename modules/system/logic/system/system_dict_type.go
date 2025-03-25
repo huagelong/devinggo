@@ -39,7 +39,7 @@ func NewSystemDictType() *sSystemDictType {
 }
 
 func (s *sSystemDictType) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemDictType.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemDictType.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemDictType) GetPageList(ctx context.Context, req *model.PageListReq, in *req.SystemDictTypeSearch) (rs []*res.SystemDictType, total int, err error) {
@@ -72,14 +72,14 @@ func (s *sSystemDictType) GetList(ctx context.Context, listReq *model.ListReq, i
 	return
 }
 
-func (s *sSystemDictType) Save(ctx context.Context, in *req.SystemDictTypeSave) (id uint64, err error) {
+func (s *sSystemDictType) Save(ctx context.Context, in *req.SystemDictTypeSave) (id int64, err error) {
 	saveData := do.SystemDictType{
 		Name:   in.Name,
 		Status: in.Status,
 		Code:   in.Code,
 		Remark: in.Remark,
 	}
-	rs, err := s.Model(ctx).Data(saveData).Save()
+	rs, err := s.Model(ctx).Data(saveData).Insert()
 	if utils.IsError(err) {
 		return
 	}
@@ -87,11 +87,11 @@ func (s *sSystemDictType) Save(ctx context.Context, in *req.SystemDictTypeSave) 
 	if err != nil {
 		return
 	}
-	id = gconv.Uint64(tmpId)
+	id = gconv.Int64(tmpId)
 	return
 }
 
-func (s *sSystemDictType) GetById(ctx context.Context, id uint64) (res *res.SystemDictType, err error) {
+func (s *sSystemDictType) GetById(ctx context.Context, id int64) (res *res.SystemDictType, err error) {
 	err = s.Model(ctx).Where("id", id).Scan(&res)
 	if utils.IsError(err) {
 		return
@@ -118,7 +118,7 @@ func (s *sSystemDictType) Update(ctx context.Context, in *req.SystemDictTypeUpda
 	return
 }
 
-func (s *sSystemDictType) Delete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemDictType) Delete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return err
@@ -130,7 +130,7 @@ func (s *sSystemDictType) Delete(ctx context.Context, ids []uint64) (err error) 
 	return
 }
 
-func (s *sSystemDictType) RealDelete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemDictType) RealDelete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return
@@ -142,7 +142,7 @@ func (s *sSystemDictType) RealDelete(ctx context.Context, ids []uint64) (err err
 	return
 }
 
-func (s *sSystemDictType) Recovery(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemDictType) Recovery(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
 		return err
@@ -150,7 +150,7 @@ func (s *sSystemDictType) Recovery(ctx context.Context, ids []uint64) (err error
 	return
 }
 
-func (s *sSystemDictType) ChangeStatus(ctx context.Context, id uint64, status int) (err error) {
+func (s *sSystemDictType) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err

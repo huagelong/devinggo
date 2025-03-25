@@ -20,22 +20,22 @@ type SystemOperLogDao struct {
 
 // SystemOperLogColumns defines and stores column names for table system_oper_log.
 type SystemOperLogColumns struct {
-	Id           string // 主键
-	Username     string // 用户名
-	Method       string // 请求方式
-	Router       string // 请求路由
-	ServiceName  string // 业务名称
-	Ip           string // 请求IP地址
-	IpLocation   string // IP所属地
-	RequestData  string // 请求数据
-	ResponseCode string // 响应状态码
-	ResponseData string // 响应数据
-	CreatedBy    string // 创建者
-	UpdatedBy    string // 更新者
-	CreatedAt    string // 创建时间
-	UpdatedAt    string // 更新时间
-	DeletedAt    string // 删除时间
-	Remark       string // 备注
+	Id           string //
+	Username     string //
+	Method       string //
+	Router       string //
+	ServiceName  string //
+	Ip           string //
+	IpLocation   string //
+	RequestData  string //
+	ResponseCode string //
+	ResponseData string //
+	CreatedBy    string //
+	UpdatedBy    string //
+	CreatedAt    string //
+	UpdatedAt    string //
+	DeletedAt    string //
+	Remark       string //
 }
 
 // systemOperLogColumns holds the columns for table system_oper_log.

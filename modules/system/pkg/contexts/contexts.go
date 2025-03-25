@@ -69,7 +69,7 @@ func (s *sContexts) GetUser(ctx context.Context) *model2.Identity {
 }
 
 // GetUserId 获取用户ID
-func (s *sContexts) GetUserId(ctx context.Context) uint64 {
+func (s *sContexts) GetUserId(ctx context.Context) int64 {
 	user := s.GetUser(ctx)
 	if user == nil {
 		return 0
@@ -209,7 +209,7 @@ func (s *sContexts) SetExceptAccessLog(ctx context.Context, exceptAccessLog bool
 	c.ExceptAccessLog = exceptAccessLog
 }
 
-func (s *sContexts) SetTenantId(ctx context.Context, tenantId uint64) {
+func (s *sContexts) SetTenantId(ctx context.Context, tenantId int64) {
 	c := s.Get(ctx)
 	if c == nil {
 		g.Log().Warning(ctx, "contexts.SetTenantId, c == nil ")
@@ -218,7 +218,7 @@ func (s *sContexts) SetTenantId(ctx context.Context, tenantId uint64) {
 	c.TenantId = tenantId
 }
 
-func (s *sContexts) GetTenantId(ctx context.Context) uint64 {
+func (s *sContexts) GetTenantId(ctx context.Context) int64 {
 	c := s.Get(ctx)
 	if c == nil {
 		panic("TenantId is empty")
@@ -230,7 +230,7 @@ func (s *sContexts) GetTenantId(ctx context.Context) uint64 {
 			panic("TenantId is empty")
 		}
 	} else {
-		return gconv.Uint64(consts.DefaultTenantId)
+		return gconv.Int64(consts.DefaultTenantId)
 	}
 	return c.TenantId
 }

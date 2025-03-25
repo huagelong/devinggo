@@ -31,7 +31,7 @@ type SaveConfigGroupReq struct {
 
 type SaveConfigGroupRes struct {
 	g.Meta `mime:"application/json"`
-	Id     uint64 `json:"id" dc:"id"`
+	Id     int64 `json:"id" dc:"id"`
 }
 
 type UpdateConfigGroupReq struct {
@@ -47,7 +47,7 @@ type UpdateConfigGroupRes struct {
 type DeleteConfigGroupReq struct {
 	g.Meta `path:"/setting/configGroup/delete" method:"delete" tags:"配置" summary:"删除" x-permission:"system:config:delete"`
 	model.AuthorHeader
-	Id uint64 `json:"id" dc:"id" v:"min:1#Id不能为空"`
+	Id int64 `json:"id" dc:"id" v:"min:1#Id不能为空"`
 }
 
 type DeleteConfigGroupRes struct {
@@ -73,7 +73,7 @@ type SaveConfigReq struct {
 
 type SaveConfigRes struct {
 	g.Meta `mime:"application/json"`
-	Id     uint64 `json:"id" dc:"id"`
+	Id     int64 `json:"id" dc:"id"`
 }
 
 type UpdateConfigReq struct {

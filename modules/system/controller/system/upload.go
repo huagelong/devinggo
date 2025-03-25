@@ -213,6 +213,9 @@ func (c *uploadController) GetFileInfoById(ctx context.Context, in *system.GetFi
 	if err != nil {
 		return nil, err
 	}
+	if g.IsEmpty(fileInfo) {
+		return 
+	}
 	out.Data = *fileInfo
 	return
 }
@@ -222,6 +225,9 @@ func (c *uploadController) GetFileInfoByHash(ctx context.Context, in *system.Get
 	fileInfo, err := service.SystemUploadfile().GetFileInfoByHash(ctx, in.Hash)
 	if err != nil {
 		return nil, err
+	}
+	if g.IsEmpty(fileInfo) {
+		return 
 	}
 	out.Data = *fileInfo
 	return

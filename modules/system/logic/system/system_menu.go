@@ -40,10 +40,10 @@ func NewSystemMenu() *sSystemMenu {
 }
 
 func (s *sSystemMenu) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemMenu.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemMenu.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
-func (s *sSystemMenu) GetRoutersByIds(ctx context.Context, menuIds []uint64) (routes []*res.Router, err error) {
+func (s *sSystemMenu) GetRoutersByIds(ctx context.Context, menuIds []int64) (routes []*res.Router, err error) {
 	systemMenuEntity := []entity.SystemMenu{}
 	err = s.Model(ctx).WhereIn(dao.SystemMenu.Columns().Id, menuIds).Where(dao.SystemMenu.Columns().Status, 1).Order("parent_id, sort desc").Scan(&systemMenuEntity)
 	if utils.IsError(err) {
@@ -64,7 +64,7 @@ func (s *sSystemMenu) GetSuperAdminRouters(ctx context.Context) (routes []*res.R
 }
 
 func (s *sSystemMenu) treeList(nodes []entity.SystemMenu) (tree []*res.Router) {
-	type itemTree map[uint64]*res.Router
+	type itemTree map[int64]*res.Router
 	itemList := make(itemTree)
 	for _, systemMenuEntity := range nodes {
 		var item res.Router
@@ -95,7 +95,7 @@ func (s *sSystemMenu) treeList(nodes []entity.SystemMenu) (tree []*res.Router) {
 	return
 }
 
-func (s *sSystemMenu) GetMenuCode(ctx context.Context, menuIds []uint64) (menuCodes []string, err error) {
+func (s *sSystemMenu) GetMenuCode(ctx context.Context, menuIds []int64) (menuCodes []string, err error) {
 	result, err := s.Model(ctx).Fields(dao.SystemMenu.Columns().Code).WhereIn(dao.SystemMenu.Columns().Id, menuIds).Array()
 	if utils.IsError(err) {
 		return
@@ -108,7 +108,7 @@ func (s *sSystemMenu) GetMenuCode(ctx context.Context, menuIds []uint64) (menuCo
 	return
 }
 
-func (s *sSystemMenu) GetMenuByPermission(ctx context.Context, permission string, menuIds ...[]uint64) (systemMenuEntity *entity.SystemMenu, err error) {
+func (s *sSystemMenu) GetMenuByPermission(ctx context.Context, permission string, menuIds ...[]int64) (systemMenuEntity *entity.SystemMenu, err error) {
 	m := s.Model(ctx).Where(dao.SystemMenu.Columns().Code, permission).Where(dao.SystemMenu.Columns().Status, 1)
 
 	if len(menuIds) > 0 {
@@ -210,7 +210,7 @@ func (s *sSystemMenu) GetRecycleTreeList(ctx context.Context, in *req.SystemMenu
 }
 
 func (s *sSystemMenu) treeItemList(ctx context.Context, nodes []entity.SystemMenu) (tree []*res.SystemMenuTree) {
-	type itemTree map[uint64]*res.SystemMenuTree
+	type itemTree map[int64]*res.SystemMenuTree
 	itemList := make(itemTree)
 	for _, systemMenuEntity := range nodes {
 		var item *res.SystemMenuTree
@@ -230,7 +230,7 @@ func (s *sSystemMenu) treeItemList(ctx context.Context, nodes []entity.SystemMen
 }
 
 func (s *sSystemMenu) treeSelectList(nodes []entity.SystemMenu) (tree []*res.SystemDeptSelectTree) {
-	type itemTree map[uint64]*res.SystemDeptSelectTree
+	type itemTree map[int64]*res.SystemDeptSelectTree
 	itemList := make(itemTree)
 	for _, systemMenuEntity := range nodes {
 		var item res.SystemDeptSelectTree
@@ -249,7 +249,7 @@ func (s *sSystemMenu) treeSelectList(nodes []entity.SystemMenu) (tree []*res.Sys
 	return
 }
 
-func (s *sSystemMenu) GetSelectTree(ctx context.Context, userId uint64, onlyMenu, scope bool) (routes []*res.SystemDeptSelectTree, err error) {
+func (s *sSystemMenu) GetSelectTree(ctx context.Context, userId int64, onlyMenu, scope bool) (routes []*res.SystemDeptSelectTree, err error) {
 	m := s.Model(ctx).Where(dao.SystemMenu.Columns().Status, 1).Order("parent_id, sort desc")
 	isSuperAdmin, err := service.SystemUser().IsSuperAdmin(ctx, userId)
 	if err != nil {
@@ -316,7 +316,7 @@ func (s *sSystemMenu) handleData(ctx context.Context, data *req.SystemMenuSave) 
 	return
 }
 
-func (s *sSystemMenu) Save(ctx context.Context, in *req.SystemMenuSave) (id uint64, err error) {
+func (s *sSystemMenu) Save(ctx context.Context, in *req.SystemMenuSave) (id int64, err error) {
 	data, err := s.handleData(ctx, in)
 	if err != nil {
 		return
@@ -336,7 +336,7 @@ func (s *sSystemMenu) Save(ctx context.Context, in *req.SystemMenuSave) (id uint
 		Redirect:  data.Redirect,
 		IsHidden:  data.IsHidden,
 	}
-	rs, err := s.Model(ctx).Data(saveData).Save()
+	rs, err := s.Model(ctx).Data(saveData).Insert()
 	if utils.IsError(err) {
 		return
 	}
@@ -344,7 +344,7 @@ func (s *sSystemMenu) Save(ctx context.Context, in *req.SystemMenuSave) (id uint
 	if err != nil {
 		return
 	}
-	id = gconv.Uint64(tmpId)
+	id = gconv.Int64(tmpId)
 
 	if data.Type == "M" && data.Restful == "1" {
 		s.genButton(ctx, id, data.Name, data.Code)
@@ -353,7 +353,7 @@ func (s *sSystemMenu) Save(ctx context.Context, in *req.SystemMenuSave) (id uint
 	return
 }
 
-func (s *sSystemMenu) genButton(ctx context.Context, id uint64, name, code string) {
+func (s *sSystemMenu) genButton(ctx context.Context, id int64, name, code string) {
 	m := make([]g.Map, 0)
 	m = append(m, g.Map{
 		"name": name + "列表",
@@ -474,7 +474,7 @@ func (s *sSystemMenu) Update(ctx context.Context, in *req.SystemMenuSave) (err e
 	return
 }
 
-func (s *sSystemMenu) checkChildrenExists(ctx context.Context, id uint64) bool {
+func (s *sSystemMenu) checkChildrenExists(ctx context.Context, id int64) bool {
 	count, err := s.Model(ctx).Unscoped().Where("parent_id", id).Count()
 	if utils.IsError(err) {
 		return false
@@ -485,7 +485,7 @@ func (s *sSystemMenu) checkChildrenExists(ctx context.Context, id uint64) bool {
 	return false
 }
 
-func (s *sSystemMenu) checkChildrenUnscopedAllExists(ctx context.Context, id uint64, ids []uint64) bool {
+func (s *sSystemMenu) checkChildrenUnscopedAllExists(ctx context.Context, id int64, ids []int64) bool {
 	var menus []*entity.SystemMenu
 	err := s.Model(ctx).Unscoped().Where("parent_id", id).Scan(&menus)
 	if utils.IsError(err) {
@@ -502,7 +502,7 @@ func (s *sSystemMenu) checkChildrenUnscopedAllExists(ctx context.Context, id uin
 	return hasAllChildrenExists
 }
 
-func (s *sSystemMenu) checkChildrenAllExists(ctx context.Context, id uint64, ids []uint64) bool {
+func (s *sSystemMenu) checkChildrenAllExists(ctx context.Context, id int64, ids []int64) bool {
 	var menus []*entity.SystemMenu
 	err := s.Model(ctx).Where("parent_id", id).Scan(&menus)
 	if utils.IsError(err) {
@@ -519,9 +519,9 @@ func (s *sSystemMenu) checkChildrenAllExists(ctx context.Context, id uint64, ids
 	return hasAllChildrenExists
 }
 
-func (s *sSystemMenu) Delete(ctx context.Context, ids []uint64) (names []string, err error) {
+func (s *sSystemMenu) Delete(ctx context.Context, ids []int64) (names []string, err error) {
 
-	ctuIds := make([]uint64, 0)
+	ctuIds := make([]int64, 0)
 	for _, id := range ids {
 		if s.checkChildrenAllExists(ctx, id, ids) {
 			_, err = s.Model(ctx).Where("id", id).Delete()
@@ -545,8 +545,8 @@ func (s *sSystemMenu) Delete(ctx context.Context, ids []uint64) (names []string,
 	return
 }
 
-func (s *sSystemMenu) RealDelete(ctx context.Context, ids []uint64) (names []string, err error) {
-	ctuIds := make([]uint64, 0)
+func (s *sSystemMenu) RealDelete(ctx context.Context, ids []int64) (names []string, err error) {
+	ctuIds := make([]int64, 0)
 	for _, id := range ids {
 		if s.checkChildrenUnscopedAllExists(ctx, id, ids) {
 			_, err = s.Model(ctx).Unscoped().Where("id", id).Delete()
@@ -571,7 +571,7 @@ func (s *sSystemMenu) RealDelete(ctx context.Context, ids []uint64) (names []str
 	return
 }
 
-func (s *sSystemMenu) Recovery(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemMenu) Recovery(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
 		return err
@@ -579,7 +579,7 @@ func (s *sSystemMenu) Recovery(ctx context.Context, ids []uint64) (err error) {
 	return
 }
 
-func (s *sSystemMenu) ChangeStatus(ctx context.Context, id uint64, status int) (err error) {
+func (s *sSystemMenu) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err
@@ -587,7 +587,7 @@ func (s *sSystemMenu) ChangeStatus(ctx context.Context, id uint64, status int) (
 	return
 }
 
-func (s *sSystemMenu) NumberOperation(ctx context.Context, id uint64, numberName string, numberValue int) (err error) {
+func (s *sSystemMenu) NumberOperation(ctx context.Context, id int64, numberName string, numberValue int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{numberName: numberValue}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err

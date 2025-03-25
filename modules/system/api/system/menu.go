@@ -55,7 +55,7 @@ type SaveMenuReq struct {
 
 type SaveMenuRes struct {
 	g.Meta `mime:"application/json"`
-	Id     uint64 `json:"id" dc:"菜单 id"`
+	Id     int64 `json:"id" dc:"菜单 id"`
 }
 
 type UpdateMenuReq struct {
@@ -71,7 +71,7 @@ type UpdateMenuRes struct {
 type DeleteMenuReq struct {
 	g.Meta `path:"/menu/delete" method:"delete" tags:"菜单" summary:"删除菜单" x-permission:"system:menu:delete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#菜单Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#菜单Id不能为空"`
 }
 
 type DeleteMenuRes struct {
@@ -81,7 +81,7 @@ type DeleteMenuRes struct {
 type RealDeleteMenuReq struct {
 	g.Meta `path:"/menu/realDelete" method:"delete" tags:"菜单" summary:"单个或批量真实删除菜单 （清空回收站）." x-permission:"system:menu:realDelete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#菜单Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#菜单Id不能为空"`
 }
 
 type RealDeleteMenuRes struct {
@@ -91,7 +91,7 @@ type RealDeleteMenuRes struct {
 type RecoveryMenuReq struct {
 	g.Meta `path:"/menu/recovery" method:"put" tags:"菜单" summary:"单个或批量恢复在回收站的菜单." x-permission:"system:menu:recovery"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#菜单Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#菜单Id不能为空"`
 }
 
 type RecoveryMenuRes struct {
@@ -101,8 +101,8 @@ type RecoveryMenuRes struct {
 type ChangeStatusMenuReq struct {
 	g.Meta `path:"/menu/changeStatus" method:"put" tags:"菜单" summary:"更改菜单状态" x-permission:"system:menu:changeStatus"`
 	model.AuthorHeader
-	Id     uint64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
-	Status int    `json:"status" dc:"status" v:"min:1#菜单状态不能为空"`
+	Id     int64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
+	Status int   `json:"status" dc:"status" v:"min:1#菜单状态不能为空"`
 }
 
 type ChangeStatusMenuRes struct {
@@ -112,7 +112,7 @@ type ChangeStatusMenuRes struct {
 type NumberOperationMenuReq struct {
 	g.Meta `path:"/menu/numberOperation" method:"put" tags:"菜单" summary:"数字运算操作." x-permission:"system:menu:update"`
 	model.AuthorHeader
-	Id          uint64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
+	Id          int64  `json:"id" dc:"ids" v:"min:1#Id不能为空"`
 	NumberName  string `json:"numberName" dc:"numberName" v:"required#名称不能为空"`
 	NumberValue int    `json:"numberValue" dc:"number Value" d:"1" v:"min:1#数字不能为空"`
 }

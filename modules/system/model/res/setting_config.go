@@ -15,6 +15,6 @@ type SettingConfig struct {
 	Name             string      `json:"name"                            description:"配置名称"`  // 配置名称
 	InputType        string      `json:"input_type"                 description:"数据输入类型"`     // 数据输入类型
 	ConfigSelectData *gjson.Json `json:"config_select_data"  description:"配置选项数据"`            // 配置选项数据
-	Sort             uint        `json:"sort"                            description:"排序"`    // 排序
+	Sort             int         `json:"sort"                            description:"排序"`    // 排序
 	Remark           string      `json:"remark"                        description:"备注"`      // 备注
 }

@@ -21,7 +21,7 @@ type LoadTableNames struct {
 }
 
 type TableAndColumnsUpdate struct {
-	Id            uint64                         `json:"id"  v:"required" description:"主键"`
+	Id            int64                          `json:"id"  v:"required" description:"主键"`
 	GenerateType  int                            `json:"generate_type"   v:"required#生成类型不能为空" description:"生成类型"`
 	BuildMenu     int                            `json:"build_menu"   v:"required#是否生成菜单不能为空" description:"是否生成菜单"`
 	GenerateMenus []string                       `json:"generate_menus"   v:"required#生成菜单不能为空" description:"生成菜单"`
@@ -33,7 +33,7 @@ type TableAndColumnsUpdate struct {
 	ComponentType int                            `json:"component_type"   v:"required#组件类型不能为空" description:"组件类型"`
 	Columns       []SettingGenerateColumnsUpdate `json:"columns"   v:"required#列不能为空" description:"列"`
 	PackageName   string                         `json:"package_name"    description:"包名"`
-	BelongMenuId  uint64                         `json:"belong_menu_id"  description:"所属菜单ID"`
+	BelongMenuId  int64                          `json:"belong_menu_id"  description:"所属菜单ID"`
 	Options       string                         `json:"options"    description:"其他配置"`
 	Remark        string                         `json:"remark"    description:"备注"`
 }

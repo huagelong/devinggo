@@ -38,7 +38,7 @@ func NewSystemPost() *sSystemPost {
 }
 
 func (s *sSystemPost) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemPost.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemPost.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemPost) handlePostSearch(ctx context.Context, in *req.SystemPostSearch) (m *gdb.Model) {
@@ -94,7 +94,7 @@ func (s *sSystemPost) GetPageList(ctx context.Context, req *model.PageListReq, i
 	return
 }
 
-func (s *sSystemPost) Save(ctx context.Context, in *req.SystemPostSave) (id uint64, err error) {
+func (s *sSystemPost) Save(ctx context.Context, in *req.SystemPostSave) (id int64, err error) {
 	saveData := do.SystemPost{
 		Name:   in.Name,
 		Sort:   in.Sort,
@@ -102,7 +102,7 @@ func (s *sSystemPost) Save(ctx context.Context, in *req.SystemPostSave) (id uint
 		Code:   in.Code,
 		Remark: in.Remark,
 	}
-	rs, err := s.Model(ctx).Data(saveData).Save()
+	rs, err := s.Model(ctx).Data(saveData).Insert()
 	if utils.IsError(err) {
 		return
 	}
@@ -110,11 +110,11 @@ func (s *sSystemPost) Save(ctx context.Context, in *req.SystemPostSave) (id uint
 	if err != nil {
 		return
 	}
-	id = gconv.Uint64(tmpId)
+	id = gconv.Int64(tmpId)
 	return
 }
 
-func (s *sSystemPost) GetById(ctx context.Context, id uint64) (res *res.SystemPost, err error) {
+func (s *sSystemPost) GetById(ctx context.Context, id int64) (res *res.SystemPost, err error) {
 	err = s.Model(ctx).Where("id", id).Scan(&res)
 	if utils.IsError(err) {
 		return
@@ -137,7 +137,7 @@ func (s *sSystemPost) Update(ctx context.Context, in *req.SystemPostSave) (err e
 	return
 }
 
-func (s *sSystemPost) Delete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemPost) Delete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return err
@@ -145,7 +145,7 @@ func (s *sSystemPost) Delete(ctx context.Context, ids []uint64) (err error) {
 	return
 }
 
-func (s *sSystemPost) RealDelete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemPost) RealDelete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return
@@ -153,7 +153,7 @@ func (s *sSystemPost) RealDelete(ctx context.Context, ids []uint64) (err error) 
 	return
 }
 
-func (s *sSystemPost) Recovery(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemPost) Recovery(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
 		return err
@@ -161,7 +161,7 @@ func (s *sSystemPost) Recovery(ctx context.Context, ids []uint64) (err error) {
 	return
 }
 
-func (s *sSystemPost) ChangeStatus(ctx context.Context, id uint64, status int) (err error) {
+func (s *sSystemPost) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err
@@ -169,7 +169,7 @@ func (s *sSystemPost) ChangeStatus(ctx context.Context, id uint64, status int) (
 	return
 }
 
-func (s *sSystemPost) NumberOperation(ctx context.Context, id uint64, numberName string, numberValue int) (err error) {
+func (s *sSystemPost) NumberOperation(ctx context.Context, id int64, numberName string, numberValue int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{numberName: numberValue}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err

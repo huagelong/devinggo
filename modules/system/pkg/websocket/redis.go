@@ -45,7 +45,7 @@ func RemoveClientIdHeartbeatTime4Redis(ctx context.Context, clientId string) (er
 }
 
 // 更新心跳数据
-func UpdateClientIdHeartbeatTime4Redis(ctx context.Context, clientId string, currentTime uint64) (err error) {
+func UpdateClientIdHeartbeatTime4Redis(ctx context.Context, clientId string, currentTime int64) (err error) {
 	if g.IsEmpty(clientId) {
 		return
 	}
@@ -75,8 +75,8 @@ func ClearExpire4Redis(ctx context.Context) (err error) {
 		return
 	}
 	for clientId, currentTime := range value.Map() {
-		now := uint(gtime.Now().Unix())
-		currentTimeInt := gconv.Uint(currentTime)
+		now := int(gtime.Now().Unix())
+		currentTimeInt := gconv.Int(currentTime)
 		glob.WithWsLog().Debug(ctx, "ClearExpire4Redis:", clientId)
 		if heartbeatExpirationTime+currentTimeInt <= now {
 			ClearClientId4Redis(ctx, clientId)

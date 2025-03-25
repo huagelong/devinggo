@@ -1,13 +1,14 @@
 module devinggo
 
-go 1.22.2
+go 1.23.4
 
 require (
 	dario.cat/mergo v1.0.0
-	github.com/gogf/gf/contrib/drivers/mysql/v2 v2.8.3
-	github.com/gogf/gf/contrib/nosql/redis/v2 v2.8.3
+	github.com/gogf/gf/contrib/drivers/mysql/v2 v2.9.0
+	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.9.0
+	github.com/gogf/gf/contrib/nosql/redis/v2 v2.9.0
 	github.com/gogf/gf/contrib/trace/jaeger/v2 v2.7.4
-	github.com/gogf/gf/v2 v2.8.3
+	github.com/gogf/gf/v2 v2.9.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.17.1
 	github.com/gorilla/websocket v1.5.3
@@ -15,18 +16,17 @@ require (
 	github.com/huagelong/goss v0.0.0-20241220083339-d62d982ab671
 	github.com/mholt/archives v0.0.0-20241216060121-23e0af8fe73d
 	github.com/mileusna/useragent v1.3.5
-	github.com/redis/go-redis/v9 v9.7.0
+	github.com/redis/go-redis/v9 v9.7.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/xiaoqidun/qqwry v0.0.0-20240620014500-698a12cf0369
 	github.com/xuri/excelize/v2 v2.9.0
-	github.com/xwb1989/sqlparser v0.0.0-20180606152119-120387863bf2
 	github.com/yitter/idgenerator-go v1.3.3
-	golang.org/x/crypto v0.31.0
+	golang.org/x/crypto v0.36.0
 )
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/BurntSushi/toml v1.4.0 // indirect
+	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/STARRY-S/zip v0.2.1 // indirect
 	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.32.7 // indirect
@@ -59,7 +59,7 @@ require (
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-sql-driver/mysql v1.8.1 // indirect
+	github.com/go-sql-driver/mysql v1.9.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grokify/html-strip-tags-go v0.1.0 // indirect
@@ -68,8 +68,9 @@ require (
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 	github.com/magiconair/properties v1.8.9 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
@@ -87,16 +88,16 @@ require (
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
 	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
-	go.opentelemetry.io/otel v1.33.0 // indirect
+	go.opentelemetry.io/otel v1.35.0 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.17.0 // indirect
-	go.opentelemetry.io/otel/metric v1.33.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.33.0 // indirect
-	go.opentelemetry.io/otel/trace v1.33.0 // indirect
+	go.opentelemetry.io/otel/metric v1.35.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.35.0 // indirect
+	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
-	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

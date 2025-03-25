@@ -48,13 +48,13 @@ type SaveNoticeReq struct {
 
 type SaveNoticeRes struct {
 	g.Meta `mime:"application/json"`
-	Id     uint64 `json:"id" dc:"通知 id"`
+	Id     int64 `json:"id" dc:"通知 id"`
 }
 
 type ReadNoticeReq struct {
 	g.Meta `path:"/notice/read/{Id}" method:"get" tags:"通知" summary:"更新通知." x-permission:"system:notice:read"`
 	model.AuthorHeader
-	Id uint64 `json:"id" dc:"通知 id" v:"required|min:1#通知Id不能为空"`
+	Id int64 `json:"id" dc:"通知 id" v:"required|min:1#通知Id不能为空"`
 }
 
 type ReadNoticeRes struct {
@@ -75,7 +75,7 @@ type UpdateNoticeRes struct {
 type DeleteNoticeReq struct {
 	g.Meta `path:"/notice/delete" method:"delete" tags:"通知" summary:"删除通知" x-permission:"system:notice:delete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#通知Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#通知Id不能为空"`
 }
 
 type DeleteNoticeRes struct {
@@ -85,7 +85,7 @@ type DeleteNoticeRes struct {
 type RealDeleteNoticeReq struct {
 	g.Meta `path:"/notice/realDelete" method:"delete" tags:"通知" summary:"单个或批量真实删除通知 （清空回收站）." x-permission:"system:notice:realDelete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#通知Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#通知Id不能为空"`
 }
 
 type RealDeleteNoticeRes struct {
@@ -95,7 +95,7 @@ type RealDeleteNoticeRes struct {
 type RecoveryNoticeReq struct {
 	g.Meta `path:"/notice/recovery" method:"put" tags:"通知" summary:"单个或批量恢复在回收站的通知." x-permission:"system:notice:recovery"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#通知Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#通知Id不能为空"`
 }
 
 type RecoveryNoticeRes struct {

@@ -43,7 +43,6 @@ func (p *ConfigProvider) GetConfigs() ([]*asynq.PeriodicTaskConfig, error) {
 	if g.IsEmpty(dbCrons) {
 		return nil, nil
 	}
-
 	var configs []*asynq.PeriodicTaskConfig
 	for _, cronItem := range bindCron {
 		typeName := cronItem.GetType()

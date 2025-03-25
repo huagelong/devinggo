@@ -37,12 +37,12 @@ func NewSystemSettingConfig() *sSettingConfig {
 }
 
 func (s *sSettingConfig) Model(ctx context.Context) *gdb.Model {
-	return dao.SettingConfig.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SettingConfig.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("key")
 }
 
 func (s *sSettingConfig) GetConfigByKey(ctx context.Context, key string, groupKey ...string) (rs string, err error) {
 	gkey := ""
-	var groupId uint64
+	var groupId int64
 	if !g.IsEmpty(groupKey) && len(groupKey) > 0 {
 		gkey = groupKey[0]
 		var settingConfigGroup *entity.SettingConfigGroup
@@ -84,7 +84,7 @@ func (s *sSettingConfig) GetList(ctx context.Context, in *req.SettingConfigSearc
 	return
 }
 
-func (s *sSettingConfig) SaveConfig(ctx context.Context, data *req.SettingConfigSave) (id uint64, err error) {
+func (s *sSettingConfig) SaveConfig(ctx context.Context, data *req.SettingConfigSave) (id int64, err error) {
 	saveData := do.SettingConfig{
 		Name:             data.Name,
 		GroupId:          data.GroupId,
@@ -95,7 +95,7 @@ func (s *sSettingConfig) SaveConfig(ctx context.Context, data *req.SettingConfig
 		Sort:             data.Sort,
 		Remark:           data.Remark,
 	}
-	rs, err := s.Model(ctx).Data(saveData).Save()
+	rs, err := s.Model(ctx).Data(saveData).Insert()
 	if utils.IsError(err) {
 		return
 	}
@@ -103,7 +103,7 @@ func (s *sSettingConfig) SaveConfig(ctx context.Context, data *req.SettingConfig
 	if err != nil {
 		return
 	}
-	id = gconv.Uint64(tmpId)
+	id = gconv.Int64(tmpId)
 	return
 }
 

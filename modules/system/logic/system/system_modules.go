@@ -38,7 +38,7 @@ func NewSystemModules() *sSystemModules {
 }
 
 func (s *sSystemModules) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemModules.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemModules.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemModules) handleSearch(ctx context.Context, in *req.SystemModulesSearch) (m *gdb.Model) {
@@ -102,12 +102,12 @@ func (s *sSystemModules) GetPageList(ctx context.Context, req *model.PageListReq
 	return
 }
 
-func (s *sSystemModules) Save(ctx context.Context, in *req.SystemModulesSave) (id uint64, err error) {
+func (s *sSystemModules) Save(ctx context.Context, in *req.SystemModulesSave) (id int64, err error) {
 	var saveData *do.SystemModules
 	if err = gconv.Struct(in, &saveData); err != nil {
 		return
 	}
-	rs, err := s.Model(ctx).OmitEmptyData().Data(saveData).Save()
+	rs, err := s.Model(ctx).OmitEmptyData().Data(saveData).Insert()
 	if utils.IsError(err) {
 		return
 	}
@@ -115,11 +115,11 @@ func (s *sSystemModules) Save(ctx context.Context, in *req.SystemModulesSave) (i
 	if err != nil {
 		return
 	}
-	id = gconv.Uint64(tmpId)
+	id = gconv.Int64(tmpId)
 	return
 }
 
-func (s *sSystemModules) GetById(ctx context.Context, id uint64) (res *res.SystemModules, err error) {
+func (s *sSystemModules) GetById(ctx context.Context, id int64) (res *res.SystemModules, err error) {
 	err = s.Model(ctx).Where("id", id).Scan(&res)
 	if utils.IsError(err) {
 		return
@@ -139,7 +139,7 @@ func (s *sSystemModules) Update(ctx context.Context, in *req.SystemModulesUpdate
 	return
 }
 
-func (s *sSystemModules) Delete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemModules) Delete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return err
@@ -147,7 +147,7 @@ func (s *sSystemModules) Delete(ctx context.Context, ids []uint64) (err error) {
 	return
 }
 
-func (s *sSystemModules) RealDelete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemModules) RealDelete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return
@@ -155,7 +155,7 @@ func (s *sSystemModules) RealDelete(ctx context.Context, ids []uint64) (err erro
 	return
 }
 
-func (s *sSystemModules) Recovery(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemModules) Recovery(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
 		return err
@@ -163,7 +163,7 @@ func (s *sSystemModules) Recovery(ctx context.Context, ids []uint64) (err error)
 	return
 }
 
-func (s *sSystemModules) ChangeStatus(ctx context.Context, id uint64, status int) (err error) {
+func (s *sSystemModules) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err

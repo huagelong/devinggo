@@ -43,10 +43,10 @@ func NewSystemRole() *sSystemRole {
 }
 
 func (s *sSystemRole) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemRole.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemRole.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
-func (s *sSystemRole) GetByIds(ctx context.Context, ids []uint64) (res []*entity.SystemRole, err error) {
+func (s *sSystemRole) GetByIds(ctx context.Context, ids []int64) (res []*entity.SystemRole, err error) {
 	err = s.Model(ctx).WhereIn(dao.SystemRole.Columns().Id, ids).Scan(&res)
 	return
 }
@@ -159,7 +159,7 @@ func (s *sSystemRole) GetPageList(ctx context.Context, req *model.PageListReq, i
 	return
 }
 
-func (s *sSystemRole) Save(ctx context.Context, in *req.SystemRoleSave) (id uint64, err error) {
+func (s *sSystemRole) Save(ctx context.Context, in *req.SystemRoleSave) (id int64, err error) {
 	if s.checkRoleCode(ctx, in.Code) {
 		return 0, myerror.ValidationFailed(ctx, "角色标识已存在")
 	}
@@ -170,7 +170,7 @@ func (s *sSystemRole) Save(ctx context.Context, in *req.SystemRoleSave) (id uint
 		Code:   in.Code,
 		Remark: in.Remark,
 	}
-	rs, err := s.Model(ctx).Data(saveData).Save()
+	rs, err := s.Model(ctx).Data(saveData).Insert()
 	if utils.IsError(err) {
 		return
 	}
@@ -178,7 +178,7 @@ func (s *sSystemRole) Save(ctx context.Context, in *req.SystemRoleSave) (id uint
 	if err != nil {
 		return
 	}
-	id = gconv.Uint64(tmpId)
+	id = gconv.Int64(tmpId)
 
 	superAdminId, _ := s.GetSuperAdminId(ctx)
 	if id == superAdminId {
@@ -207,15 +207,15 @@ func (s *sSystemRole) Save(ctx context.Context, in *req.SystemRoleSave) (id uint
 func (s *sSystemRole) checkRoleCode(ctx context.Context, code string) bool {
 	count, err := s.Model(ctx).Where("code", code).Count()
 	if utils.IsError(err) {
-		return false
+		return true
 	}
 	if count > 0 {
-		return false
+		return true
 	}
-	return true
+	return false
 }
 
-func (s *sSystemRole) GetSuperAdminId(ctx context.Context) (id uint64, err error) {
+func (s *sSystemRole) GetSuperAdminId(ctx context.Context) (id int64, err error) {
 	var role *entity.SystemRole
 	err = s.Model(ctx).Where("code", consts.SuperRoleKey).Scan(&role)
 	if utils.IsError(err) {
@@ -225,7 +225,7 @@ func (s *sSystemRole) GetSuperAdminId(ctx context.Context) (id uint64, err error
 	return
 }
 
-func (s *sSystemRole) GetById(ctx context.Context, id uint64) (res *res.SystemRole, err error) {
+func (s *sSystemRole) GetById(ctx context.Context, id int64) (res *res.SystemRole, err error) {
 	err = s.Model(ctx).Where("id", id).Scan(&res)
 	if utils.IsError(err) {
 		return
@@ -275,7 +275,7 @@ func (s *sSystemRole) Update(ctx context.Context, in *req.SystemRoleSave) (err e
 	return
 }
 
-func (s *sSystemRole) Delete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemRole) Delete(ctx context.Context, ids []int64) (err error) {
 	superAdminId, err := s.GetSuperAdminId(ctx)
 	if err != nil {
 		return
@@ -290,7 +290,7 @@ func (s *sSystemRole) Delete(ctx context.Context, ids []uint64) (err error) {
 	return
 }
 
-func (s *sSystemRole) RealDelete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemRole) RealDelete(ctx context.Context, ids []int64) (err error) {
 	superAdminId, err := s.GetSuperAdminId(ctx)
 	if err != nil {
 		return
@@ -307,7 +307,7 @@ func (s *sSystemRole) RealDelete(ctx context.Context, ids []uint64) (err error) 
 	return
 }
 
-func (s *sSystemRole) Recovery(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemRole) Recovery(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
 		return err
@@ -315,7 +315,7 @@ func (s *sSystemRole) Recovery(ctx context.Context, ids []uint64) (err error) {
 	return
 }
 
-func (s *sSystemRole) ChangeStatus(ctx context.Context, id uint64, status int) (err error) {
+func (s *sSystemRole) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err
@@ -323,7 +323,7 @@ func (s *sSystemRole) ChangeStatus(ctx context.Context, id uint64, status int) (
 	return
 }
 
-func (s *sSystemRole) NumberOperation(ctx context.Context, id uint64, numberName string, numberValue int) (err error) {
+func (s *sSystemRole) NumberOperation(ctx context.Context, id int64, numberName string, numberValue int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{numberName: numberValue}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err
@@ -331,7 +331,7 @@ func (s *sSystemRole) NumberOperation(ctx context.Context, id uint64, numberName
 	return
 }
 
-func (s *sSystemRole) GetMenuByRoleIds(ctx context.Context, ids []uint64) (out []*res.SystemRoleMenus, err error) {
+func (s *sSystemRole) GetMenuByRoleIds(ctx context.Context, ids []int64) (out []*res.SystemRoleMenus, err error) {
 	for _, id := range ids {
 		systemRoleMenus := &res.SystemRoleMenus{}
 		var roleMenuEntity []*entity.SystemRoleMenu
@@ -358,7 +358,7 @@ func (s *sSystemRole) GetMenuByRoleIds(ctx context.Context, ids []uint64) (out [
 	return
 }
 
-func (s *sSystemRole) GetDeptByRole(ctx context.Context, ids []uint64) (out []*res.SystemRoleDepts, err error) {
+func (s *sSystemRole) GetDeptByRole(ctx context.Context, ids []int64) (out []*res.SystemRoleDepts, err error) {
 	for _, id := range ids {
 		systemRoleDepts := &res.SystemRoleDepts{}
 		var roleDeptEntity []*entity.SystemRoleDept

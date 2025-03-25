@@ -7,8 +7,8 @@
 package glob
 
 import (
-	"devinggo/modules/system/pkg/utils/config"
 	"context"
+	"devinggo/modules/system/pkg/utils/config"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/hibiken/asynq"
 	"runtime"
@@ -16,7 +16,7 @@ import (
 
 type Payload struct {
 	Data      interface{}  `json:"data"`
-	CrontabId uint64       `json:"crontab_id"`
+	CrontabId int64        `json:"crontab_id"`
 	Time      asynq.Option `json:"time"`
 	QueueName string       `json:"queue_name"` // 队列名称, 默认为default
 	TaskID    string       `json:"task_id"`    // 任务ID, 用于唯一标识一个任务
@@ -52,7 +52,7 @@ func GetPayload(ctx context.Context, t *asynq.Task) (data *Payload, err error) {
 		//	return nil, err
 		//}
 		data.Data = j.Get("data")
-		data.CrontabId = j.Get("crontab_id").Uint64()
+		data.CrontabId = j.Get("crontab_id").Int64()
 		data.QueueName = j.Get("queue_name").String()
 		data.TaskID = j.Get("task_id").String()
 		return data, nil

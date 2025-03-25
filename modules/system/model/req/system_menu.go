@@ -16,9 +16,9 @@ type SystemMenuSearch struct {
 }
 
 type SystemMenuSave struct {
-	Id        uint64 `json:"id"`
+	Id        int64  `json:"id"`
 	Level     string `json:"level"`
-	ParentId  uint64 `json:"parent_id"`
+	ParentId  int64  `json:"parent_id"`
 	Type      string `json:"type"`
 	Sort      int    `json:"sort"`
 	IsHidden  int    `json:"is_hidden"`

@@ -7,9 +7,9 @@
 package hook
 
 import (
-	"devinggo/modules/system/pkg/cache"
 	"context"
 	"database/sql"
+	"devinggo/modules/system/pkg/cache"
 	"fmt"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
@@ -46,6 +46,7 @@ func CleanCache[T gdb.HookInsertInput | gdb.HookUpdateInput | gdb.HookDeleteInpu
 		table = gstr.Replace(table, "\"", "")
 		table = gstr.Replace(table, "`", "")
 		cache.ClearByTable(ctx, table)
+		g.Log().Debug(ctx, "clean cache by table:", table)
 	}
 	return
 }

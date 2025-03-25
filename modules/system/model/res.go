@@ -7,7 +7,7 @@
 package model
 
 type UserRelate struct {
-	Id       uint64 `json:"id"                 description:"user id"`
+	Id       int64  `json:"id"                 description:"user id"`
 	Nickname string `json:"nickname"           description:"nickname"`
 	Username string `json:"username"           description:"account"`
 	Avatar   string `json:"avatar"             description:"avatar"`

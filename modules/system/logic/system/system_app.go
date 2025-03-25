@@ -49,7 +49,7 @@ func NewSystemApp() *sSystemApp {
 }
 
 func (s *sSystemApp) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemApp.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemApp.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemApp) GetAppId(ctx context.Context) (string, error) {
@@ -77,7 +77,7 @@ func (s *sSystemApp) GetAppSecret(ctx context.Context) (string, error) {
 	return base64Str, nil
 }
 
-func (s *sSystemApp) BindApp(ctx context.Context, Id uint64, ApiIds []uint64) (err error) {
+func (s *sSystemApp) BindApp(ctx context.Context, Id int64, ApiIds []int64) (err error) {
 	_, err = service.SystemAppApi().Model(ctx).Where("app_id", Id).Delete()
 	if utils.IsError(err) {
 		return err
@@ -110,13 +110,13 @@ func (s *sSystemApp) GetPageListForSearch(ctx context.Context, req *model.PageLi
 	return
 }
 
-func (s *sSystemApp) GetApiList(ctx context.Context, id uint64) (out []uint64, err error) {
+func (s *sSystemApp) GetApiList(ctx context.Context, id int64) (out []int64, err error) {
 	result, err := service.SystemAppApi().Model(ctx).Fields("api_id").Where("app_id", id).Array()
 	if utils.IsError(err) {
 		return nil, err
 	}
 	if !g.IsEmpty(result) {
-		out = gconv.SliceUint64(result)
+		out = gconv.SliceInt64(result)
 	}
 	return
 }
@@ -141,7 +141,7 @@ func (s *sSystemApp) handleSearch(ctx context.Context, in *req.SystemAppSearch) 
 	return
 }
 
-func (s *sSystemApp) Save(ctx context.Context, in *req.SystemAppSave, userId uint64) (id uint64, err error) {
+func (s *sSystemApp) Save(ctx context.Context, in *req.SystemAppSave, userId int64) (id int64, err error) {
 	saveData := do.SystemApp{
 		GroupId:     in.GroupId,
 		AppSecret:   in.AppSecret,
@@ -151,7 +151,7 @@ func (s *sSystemApp) Save(ctx context.Context, in *req.SystemAppSave, userId uin
 		Description: in.Description,
 		Remark:      in.Remark,
 	}
-	rs, err := s.Model(ctx).Data(saveData).Save()
+	rs, err := s.Model(ctx).Data(saveData).Insert()
 	if utils.IsError(err) {
 		return
 	}
@@ -159,11 +159,11 @@ func (s *sSystemApp) Save(ctx context.Context, in *req.SystemAppSave, userId uin
 	if err != nil {
 		return
 	}
-	id = gconv.Uint64(tmpId)
+	id = gconv.Int64(tmpId)
 	return
 }
 
-func (s *sSystemApp) GetById(ctx context.Context, id uint64) (res *res.SystemApp, err error) {
+func (s *sSystemApp) GetById(ctx context.Context, id int64) (res *res.SystemApp, err error) {
 	err = s.Model(ctx).Where("id", id).Scan(&res)
 	if utils.IsError(err) {
 		return
@@ -188,7 +188,7 @@ func (s *sSystemApp) Update(ctx context.Context, in *req.SystemAppUpdate) (err e
 	return
 }
 
-func (s *sSystemApp) Delete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemApp) Delete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return err
@@ -196,7 +196,7 @@ func (s *sSystemApp) Delete(ctx context.Context, ids []uint64) (err error) {
 	return
 }
 
-func (s *sSystemApp) RealDelete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemApp) RealDelete(ctx context.Context, ids []int64) (err error) {
 	var res []*res.SystemApp
 	err = s.Model(ctx).Unscoped().WhereIn("id", ids).Scan(&res)
 	if utils.IsError(err) {
@@ -205,7 +205,7 @@ func (s *sSystemApp) RealDelete(ctx context.Context, ids []uint64) (err error) {
 	return
 }
 
-func (s *sSystemApp) Recovery(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemApp) Recovery(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
 		return err
@@ -213,7 +213,7 @@ func (s *sSystemApp) Recovery(ctx context.Context, ids []uint64) (err error) {
 	return
 }
 
-func (s *sSystemApp) ChangeStatus(ctx context.Context, id uint64, status int) (err error) {
+func (s *sSystemApp) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err
@@ -336,7 +336,7 @@ func (s *sSystemApp) GetSignature(appSecret string, params map[string]interface{
 	return hash
 }
 
-func (s *sSystemApp) checkAppHasBindApi(ctx context.Context, appId, apiId uint64) (bool, error) {
+func (s *sSystemApp) checkAppHasBindApi(ctx context.Context, appId, apiId int64) (bool, error) {
 	count, err := service.SystemAppApi().Model(ctx).Where("app_id", appId).Where("api_id", apiId).Count()
 	if utils.IsError(err) {
 		return false, err
@@ -348,7 +348,7 @@ func (s *sSystemApp) checkAppHasBindApi(ctx context.Context, appId, apiId uint64
 }
 
 // 复杂模式
-func (s *sSystemApp) verifyNormalMode(ctx context.Context, token string, apiId uint64) (check bool, err error) {
+func (s *sSystemApp) verifyNormalMode(ctx context.Context, token string, apiId int64) (check bool, err error) {
 	identity, err := service.Token().ParseToken(ctx, token)
 	if err != nil {
 		return false, err
@@ -383,7 +383,7 @@ func (s *sSystemApp) verifyNormalMode(ctx context.Context, token string, apiId u
 	return true, nil
 }
 
-func (s *sSystemApp) VerifyPre(ctx context.Context, appId string, apiId uint64) (check bool, app *entity.SystemApp, err error) {
+func (s *sSystemApp) VerifyPre(ctx context.Context, appId string, apiId int64) (check bool, app *entity.SystemApp, err error) {
 	err = s.Model(ctx).Where("app_id", appId).Scan(&app)
 	if utils.IsError(err) {
 		return false, app, err
@@ -413,7 +413,7 @@ func (s *sSystemApp) VerifyPre(ctx context.Context, appId string, apiId uint64) 
 }
 
 // 简单模式
-func (s *sSystemApp) VerifyEasyMode(ctx context.Context, appId string, signature string, apiId uint64) (check bool, err error) {
+func (s *sSystemApp) VerifyEasyMode(ctx context.Context, appId string, signature string, apiId int64) (check bool, err error) {
 	check, app, err := s.VerifyPre(ctx, appId, apiId)
 	if err != nil {
 		return false, err

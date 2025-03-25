@@ -128,14 +128,14 @@ func UnsubscribeController(ctx context.Context, client *Client, req *Request) {
 }
 
 func PingController(ctx context.Context, client *Client, req *Request) {
-	currentTime := uint64(gtime.Now().Unix())
+	currentTime := int64(gtime.Now().Unix())
 	client.Heartbeat(currentTime)
 	UpdateClientIdHeartbeatTime4Redis(ctx, client.ID, currentTime)
 	client.ResponseSuccess(ctx, Ping, req.RequestId)
 }
 
 func PongController(ctx context.Context, client *Client, req *Request) {
-	currentTime := uint64(gtime.Now().Unix())
+	currentTime := int64(gtime.Now().Unix())
 	client.Heartbeat(currentTime)
 	UpdateClientIdHeartbeatTime4Redis(ctx, client.ID, currentTime)
 	client.ResponseSuccess(ctx, Pong, req.RequestId)

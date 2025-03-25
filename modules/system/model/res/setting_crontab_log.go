@@ -9,8 +9,8 @@ package res
 import "github.com/gogf/gf/v2/os/gtime"
 
 type SettingCrontabLog struct {
-	Id            uint64      `json:"id"                         description:"主键"`         // 主键
-	CrontabId     uint64      `json:"crontab_id"          description:"任务ID"`              // 任务ID
+	Id            int64       `json:"id"                         description:"主键"`         // 主键
+	CrontabId     int64       `json:"crontab_id"          description:"任务ID"`              // 任务ID
 	Name          string      `json:"name"                     description:"任务名称"`         // 任务名称
 	Target        string      `json:"target"                 description:"任务调用目标字符串"`      // 任务调用目标字符串
 	Parameter     string      `json:"parameter"           description:"任务调用参数"`            // 任务调用参数

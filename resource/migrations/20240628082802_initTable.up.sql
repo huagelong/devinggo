@@ -12,7 +12,7 @@ CREATE TABLE `setting_config` (
                                   `name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '配置名称',
                                   `input_type` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '数据输入类型',
                                   `config_select_data` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '配置选项数据',
-                                  `sort` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT '排序',
+                                  `sort` smallint(5)  NOT NULL DEFAULT '0' COMMENT '排序',
                                   `remark` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
                                   PRIMARY KEY (`key`),
                                   KEY `setting_config_group_id_index` (`group_id`)
@@ -22,7 +22,7 @@ CREATE TABLE `setting_config` (
 -- Table structure for setting_config_group
 -- ----------------------------
 CREATE TABLE `setting_config_group` (
-                                        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                        `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
                                         `name` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '配置组名称',
                                         `code` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '配置组标识',
                                         `created_by` bigint(20) DEFAULT NULL COMMENT '创建者',
@@ -37,7 +37,7 @@ CREATE TABLE `setting_config_group` (
 -- Table structure for setting_crontab
 -- ----------------------------
 CREATE TABLE `setting_crontab` (
-                                   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
                                    `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '任务名称',
                                    `type` smallint(6) DEFAULT '4' COMMENT '任务类型 (1 command, 2 class, 3 url, 4 eval)',
                                    `target` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '调用任务字符串',
@@ -57,8 +57,8 @@ CREATE TABLE `setting_crontab` (
 -- Table structure for setting_crontab_log
 -- ----------------------------
 CREATE TABLE `setting_crontab_log` (
-                                       `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                       `crontab_id` bigint(20) unsigned NOT NULL COMMENT '任务ID',
+                                       `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                       `crontab_id` bigint(20) NOT NULL COMMENT '任务ID',
                                        `name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '任务名称',
                                        `target` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '任务调用目标字符串',
                                        `parameter` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '任务调用参数',
@@ -72,8 +72,8 @@ CREATE TABLE `setting_crontab_log` (
 -- Table structure for setting_generate_columns
 -- ----------------------------
 CREATE TABLE `setting_generate_columns` (
-                                            `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                            `table_id` bigint(20) unsigned NOT NULL COMMENT '所属表ID',
+                                            `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                            `table_id` bigint(20) NOT NULL COMMENT '所属表ID',
                                             `column_name` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '字段名称',
                                             `column_comment` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '字段注释',
                                             `column_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '字段类型',
@@ -90,7 +90,7 @@ CREATE TABLE `setting_generate_columns` (
                                             `allow_roles` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '允许查看该字段的角色',
                                             `options` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '字段其他设置',
                                             `extra` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '字段扩展信息',
-                                            `sort` tinyint(3) unsigned DEFAULT '0' COMMENT '排序',
+                                            `sort` tinyint(3)  DEFAULT '0' COMMENT '排序',
                                             `created_by` bigint(20) DEFAULT NULL COMMENT '创建者',
                                             `updated_by` bigint(20) DEFAULT NULL COMMENT '更新者',
                                             `created_at` timestamp NULL DEFAULT NULL COMMENT '创建时间',
@@ -103,7 +103,7 @@ CREATE TABLE `setting_generate_columns` (
 -- Table structure for setting_generate_tables
 -- ----------------------------
 CREATE TABLE `setting_generate_tables` (
-                                           `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                           `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
                                            `table_name` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '表名称',
                                            `table_comment` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '表注释',
                                            `module_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '所属模块',
@@ -130,8 +130,8 @@ CREATE TABLE `setting_generate_tables` (
 -- Table structure for system_api
 -- ----------------------------
 CREATE TABLE `system_api` (
-                              `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-                              `group_id` bigint(20) unsigned NOT NULL COMMENT '接口组ID',
+                              `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                              `group_id` bigint(20) NOT NULL COMMENT '接口组ID',
                               `name` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '接口名称',
                               `access_name` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '接口访问名称',
                               `auth_mode` smallint(6) NOT NULL DEFAULT '1' COMMENT '认证模式 (1简易 2复杂)',
@@ -152,7 +152,7 @@ CREATE TABLE `system_api` (
 -- Table structure for system_api_group
 -- ----------------------------
 CREATE TABLE `system_api_group` (
-                                    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
                                     `name` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '接口组名称',
                                     `status` smallint(6) DEFAULT '1' COMMENT '状态 (1正常 2停用)',
                                     `created_by` bigint(20) DEFAULT NULL COMMENT '创建者',
@@ -168,8 +168,8 @@ CREATE TABLE `system_api_group` (
 -- Table structure for system_api_log
 -- ----------------------------
 CREATE TABLE `system_api_log` (
-                                  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                  `api_id` bigint(20) unsigned NOT NULL COMMENT 'api ID',
+                                  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                  `api_id` bigint(20) NOT NULL COMMENT 'api ID',
                                   `api_name` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '接口名称',
                                   `access_name` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '接口访问名称',
                                   `request_data` text COLLATE utf8mb4_unicode_ci COMMENT '请求数据',
@@ -187,8 +187,8 @@ CREATE TABLE `system_api_log` (
 -- Table structure for system_app
 -- ----------------------------
 CREATE TABLE `system_app` (
-                              `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-                              `group_id` bigint(20) unsigned NOT NULL COMMENT '应用组ID',
+                              `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                              `group_id` bigint(20) NOT NULL COMMENT '应用组ID',
                               `app_name` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '应用名称',
                               `app_id` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '应用ID',
                               `app_secret` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '应用密钥',
@@ -208,8 +208,8 @@ CREATE TABLE `system_app` (
 -- Table structure for system_app_api
 -- ----------------------------
 CREATE TABLE `system_app_api` (
-                                  `app_id` bigint(20) unsigned NOT NULL COMMENT '应用ID',
-                                  `api_id` bigint(20) unsigned NOT NULL COMMENT 'API—ID',
+                                  `app_id` bigint(20) NOT NULL COMMENT '应用ID',
+                                  `api_id` bigint(20) NOT NULL COMMENT 'API—ID',
                                   PRIMARY KEY (`app_id`,`api_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='应用和api关联表';
 
@@ -217,7 +217,7 @@ CREATE TABLE `system_app_api` (
 -- Table structure for system_app_group
 -- ----------------------------
 CREATE TABLE `system_app_group` (
-                                    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
                                     `name` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '应用组名称',
                                     `status` smallint(6) DEFAULT '1' COMMENT '状态 (1正常 2停用)',
                                     `created_by` bigint(20) DEFAULT NULL COMMENT '创建者',
@@ -233,14 +233,14 @@ CREATE TABLE `system_app_group` (
 -- Table structure for system_dept
 -- ----------------------------
 CREATE TABLE `system_dept` (
-                               `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-                               `parent_id` bigint(20) unsigned NOT NULL COMMENT '父ID',
+                               `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                               `parent_id` bigint(20) NOT NULL COMMENT '父ID',
                                `level` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '组级集合',
                                `name` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '部门名称',
                                `leader` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '负责人',
                                `phone` varchar(11) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '联系电话',
                                `status` smallint(6) DEFAULT '1' COMMENT '状态 (1正常 2停用)',
-                               `sort` smallint(5) unsigned DEFAULT '0' COMMENT '排序',
+                               `sort` smallint(5)  DEFAULT '0' COMMENT '排序',
                                `created_by` bigint(20) DEFAULT NULL COMMENT '创建者',
                                `updated_by` bigint(20) DEFAULT NULL COMMENT '更新者',
                                `created_at` timestamp NULL DEFAULT NULL COMMENT '创建时间',
@@ -255,8 +255,8 @@ CREATE TABLE `system_dept` (
 -- Table structure for system_dept_leader
 -- ----------------------------
 CREATE TABLE `system_dept_leader` (
-                                      `dept_id` bigint(20) unsigned NOT NULL COMMENT '部门主键',
-                                      `user_id` bigint(20) unsigned NOT NULL COMMENT '用户主键',
+                                      `dept_id` bigint(20) NOT NULL COMMENT '部门主键',
+                                      `user_id` bigint(20) NOT NULL COMMENT '用户主键',
                                       `username` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户名',
                                       `created_at` timestamp NOT NULL COMMENT '添加时间',
                                       PRIMARY KEY (`dept_id`,`user_id`)
@@ -266,12 +266,12 @@ CREATE TABLE `system_dept_leader` (
 -- Table structure for system_dict_data
 -- ----------------------------
 CREATE TABLE `system_dict_data` (
-                                    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                    `type_id` bigint(20) unsigned NOT NULL COMMENT '字典类型ID',
+                                    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                    `type_id` bigint(20) NOT NULL COMMENT '字典类型ID',
                                     `label` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '字典标签',
                                     `value` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '字典值',
                                     `code` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '字典标示',
-                                    `sort` smallint(5) unsigned DEFAULT '0' COMMENT '排序',
+                                    `sort` smallint(5)  DEFAULT '0' COMMENT '排序',
                                     `status` smallint(6) DEFAULT '1' COMMENT '状态 (1正常 2停用)',
                                     `created_by` bigint(20) DEFAULT NULL COMMENT '创建者',
                                     `updated_by` bigint(20) DEFAULT NULL COMMENT '更新者',
@@ -287,7 +287,7 @@ CREATE TABLE `system_dict_data` (
 -- Table structure for system_dict_type
 -- ----------------------------
 CREATE TABLE `system_dict_type` (
-                                    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
                                     `name` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '字典名称',
                                     `code` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '字典标示',
                                     `status` smallint(6) DEFAULT '1' COMMENT '状态 (1正常 2停用)',
@@ -304,7 +304,7 @@ CREATE TABLE `system_dict_type` (
 -- Table structure for system_login_log
 -- ----------------------------
 CREATE TABLE `system_login_log` (
-                                    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
                                     `username` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户名',
                                     `ip` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '登录IP地址',
                                     `ip_location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP所属地',
@@ -322,8 +322,8 @@ CREATE TABLE `system_login_log` (
 -- Table structure for system_menu
 -- ----------------------------
 CREATE TABLE `system_menu` (
-                               `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
-                               `parent_id` bigint(20) unsigned NOT NULL COMMENT '父ID',
+                               `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                               `parent_id` bigint(20) NOT NULL COMMENT '父ID',
                                `level` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '组级集合',
                                `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '菜单名称',
                                `code` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '菜单标识代码',
@@ -334,7 +334,7 @@ CREATE TABLE `system_menu` (
                                `is_hidden` smallint(6) NOT NULL DEFAULT '1' COMMENT '是否隐藏 (1是 2否)',
                                `type` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '菜单类型, (M菜单 B按钮 L链接 I iframe)',
                                `status` smallint(6) DEFAULT '1' COMMENT '状态 (1正常 2停用)',
-                               `sort` smallint(5) unsigned DEFAULT '0' COMMENT '排序',
+                               `sort` smallint(5)  DEFAULT '0' COMMENT '排序',
                                `created_by` bigint(20) DEFAULT NULL COMMENT '创建者',
                                `updated_by` bigint(20) DEFAULT NULL COMMENT '更新者',
                                `created_at` timestamp NULL DEFAULT NULL,
@@ -348,7 +348,7 @@ CREATE TABLE `system_menu` (
 -- Table structure for system_modules
 -- ----------------------------
 CREATE TABLE `system_modules` (
-                                  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
                                   `created_at` timestamp NULL DEFAULT NULL COMMENT '创建时间',
                                   `updated_at` timestamp NULL DEFAULT NULL COMMENT '更新时间',
                                   `created_by` bigint(20) DEFAULT NULL COMMENT '创建者',
@@ -366,7 +366,7 @@ CREATE TABLE `system_modules` (
 -- Table structure for system_notice
 -- ----------------------------
 CREATE TABLE `system_notice` (
-                                 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                 `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
                                  `message_id` bigint(20) NOT NULL COMMENT '消息ID',
                                  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '标题',
                                  `type` smallint(6) NOT NULL COMMENT '公告类型（1通知 2公告）',
@@ -386,7 +386,7 @@ CREATE TABLE `system_notice` (
 -- Table structure for system_oper_log
 -- ----------------------------
 CREATE TABLE `system_oper_log` (
-                                   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
                                    `username` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户名',
                                    `method` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '请求方式',
                                    `router` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '请求路由',
@@ -410,10 +410,10 @@ CREATE TABLE `system_oper_log` (
 -- Table structure for system_post
 -- ----------------------------
 CREATE TABLE `system_post` (
-                               `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                               `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
                                `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '岗位名称',
                                `code` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '岗位代码',
-                               `sort` smallint(5) unsigned DEFAULT '0' COMMENT '排序',
+                               `sort` smallint(5)  DEFAULT '0' COMMENT '排序',
                                `status` smallint(6) DEFAULT '1' COMMENT '状态 (1正常 2停用)',
                                `created_by` bigint(20) DEFAULT NULL COMMENT '创建者',
                                `updated_by` bigint(20) DEFAULT NULL COMMENT '更新者',
@@ -428,10 +428,10 @@ CREATE TABLE `system_post` (
 -- Table structure for system_queue_message
 -- ----------------------------
 CREATE TABLE `system_queue_message` (
-                                        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                        `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
                                         `content_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '内容类型',
                                         `title` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '消息标题',
-                                        `send_by` bigint(20) unsigned DEFAULT NULL COMMENT '发送人',
+                                        `send_by` bigint(20) DEFAULT NULL COMMENT '发送人',
                                         `content` longtext COLLATE utf8mb4_unicode_ci COMMENT '消息内容',
                                         `created_by` bigint(20) DEFAULT NULL COMMENT '创建者',
                                         `updated_by` bigint(20) DEFAULT NULL COMMENT '更新者',
@@ -446,8 +446,8 @@ CREATE TABLE `system_queue_message` (
 -- Table structure for system_queue_message_receive
 -- ----------------------------
 CREATE TABLE `system_queue_message_receive` (
-                                                `message_id` bigint(20) unsigned NOT NULL COMMENT '队列消息主键',
-                                                `user_id` bigint(20) unsigned NOT NULL COMMENT '接收用户主键',
+                                                `message_id` bigint(20) NOT NULL COMMENT '队列消息主键',
+                                                `user_id` bigint(20) NOT NULL COMMENT '接收用户主键',
                                                 `read_status` smallint(6) DEFAULT '1' COMMENT '已读状态 (1未读 2已读)',
                                                 PRIMARY KEY (`message_id`,`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='队列消息接收人表';
@@ -456,12 +456,12 @@ CREATE TABLE `system_queue_message_receive` (
 -- Table structure for system_role
 -- ----------------------------
 CREATE TABLE `system_role` (
-                               `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                               `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
                                `name` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '角色名称',
                                `code` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '角色代码',
                                `data_scope` smallint(6) DEFAULT '1' COMMENT '数据范围（1：全部数据权限 2：自定义数据权限 3：本部门数据权限 4：本部门及以下数据权限 5：本人数据权限）',
                                `status` smallint(6) DEFAULT '1' COMMENT '状态 (1正常 2停用)',
-                               `sort` smallint(5) unsigned DEFAULT '0' COMMENT '排序',
+                               `sort` smallint(5)  DEFAULT '0' COMMENT '排序',
                                `created_by` bigint(20) DEFAULT NULL COMMENT '创建者',
                                `updated_by` bigint(20) DEFAULT NULL COMMENT '更新者',
                                `created_at` timestamp NULL DEFAULT NULL COMMENT '创建时间',
@@ -475,8 +475,8 @@ CREATE TABLE `system_role` (
 -- Table structure for system_role_dept
 -- ----------------------------
 CREATE TABLE `system_role_dept` (
-                                    `role_id` bigint(20) unsigned NOT NULL COMMENT '角色主键',
-                                    `dept_id` bigint(20) unsigned NOT NULL COMMENT '部门主键',
+                                    `role_id` bigint(20) NOT NULL COMMENT '角色主键',
+                                    `dept_id` bigint(20) NOT NULL COMMENT '部门主键',
                                     PRIMARY KEY (`role_id`,`dept_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色与部门关联表';
 
@@ -484,8 +484,8 @@ CREATE TABLE `system_role_dept` (
 -- Table structure for system_role_menu
 -- ----------------------------
 CREATE TABLE `system_role_menu` (
-                                    `role_id` bigint(20) unsigned NOT NULL COMMENT '角色主键',
-                                    `menu_id` bigint(20) unsigned NOT NULL COMMENT '菜单主键',
+                                    `role_id` bigint(20) NOT NULL COMMENT '角色主键',
+                                    `menu_id` bigint(20) NOT NULL COMMENT '菜单主键',
                                     PRIMARY KEY (`role_id`,`menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色与菜单关联表';
 
@@ -493,7 +493,7 @@ CREATE TABLE `system_role_menu` (
 -- Table structure for system_uploadfile
 -- ----------------------------
 CREATE TABLE `system_uploadfile` (
-                                     `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
                                      `storage_mode` smallint(6) DEFAULT '1' COMMENT '存储模式 (1 本地 2 阿里云 3 七牛云 4 腾讯云)',
                                      `origin_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '原文件名',
                                      `object_name` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '新文件名',
@@ -519,7 +519,7 @@ CREATE TABLE `system_uploadfile` (
 -- Table structure for system_user
 -- ----------------------------
 CREATE TABLE `system_user` (
-                               `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '用户ID，主键',
+                               `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户ID，主键',
                                `username` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户名',
                                `password` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密码',
                                `user_type` varchar(3) COLLATE utf8mb4_unicode_ci DEFAULT '100' COMMENT '用户类型：(100系统用户)',
@@ -539,7 +539,6 @@ CREATE TABLE `system_user` (
                                `updated_at` timestamp NULL DEFAULT NULL COMMENT '更新时间',
                                `deleted_at` timestamp NULL DEFAULT NULL COMMENT '删除时间',
                                `remark` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
-                               `tenant_id` bigint(20) DEFAULT '0',
                                PRIMARY KEY (`id`),
                                UNIQUE KEY `system_user_username_unique` (`username`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户信息表';
@@ -548,8 +547,8 @@ CREATE TABLE `system_user` (
 -- Table structure for system_user_dept
 -- ----------------------------
 CREATE TABLE `system_user_dept` (
-                                    `user_id` bigint(20) unsigned NOT NULL COMMENT '用户主键',
-                                    `dept_id` bigint(20) unsigned NOT NULL COMMENT '部门主键',
+                                    `user_id` bigint(20) NOT NULL COMMENT '用户主键',
+                                    `dept_id` bigint(20) NOT NULL COMMENT '部门主键',
                                     PRIMARY KEY (`user_id`,`dept_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户与部门关联表';
 
@@ -557,8 +556,8 @@ CREATE TABLE `system_user_dept` (
 -- Table structure for system_user_post
 -- ----------------------------
 CREATE TABLE `system_user_post` (
-                                    `user_id` bigint(20) unsigned NOT NULL COMMENT '用户主键',
-                                    `post_id` bigint(20) unsigned NOT NULL COMMENT '岗位主键',
+                                    `user_id` bigint(20) NOT NULL COMMENT '用户主键',
+                                    `post_id` bigint(20) NOT NULL COMMENT '岗位主键',
                                     PRIMARY KEY (`user_id`,`post_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户与岗位关联表';
 
@@ -566,8 +565,8 @@ CREATE TABLE `system_user_post` (
 -- Table structure for system_user_role
 -- ----------------------------
 CREATE TABLE `system_user_role` (
-                                    `user_id` bigint(20) unsigned NOT NULL COMMENT '用户主键',
-                                    `role_id` bigint(20) unsigned NOT NULL COMMENT '角色主键',
+                                    `user_id` bigint(20) NOT NULL COMMENT '用户主键',
+                                    `role_id` bigint(20) NOT NULL COMMENT '角色主键',
                                     PRIMARY KEY (`user_id`,`role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户与角色关联表';
 

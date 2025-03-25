@@ -20,15 +20,15 @@ type SystemAppGroupDao struct {
 
 // SystemAppGroupColumns defines and stores column names for table system_app_group.
 type SystemAppGroupColumns struct {
-	Id        string // 主键
-	Name      string // 应用组名称
-	Status    string // 状态 (1正常 2停用)
-	CreatedBy string // 创建者
-	UpdatedBy string // 更新者
-	CreatedAt string // 创建时间
-	UpdatedAt string // 更新时间
-	DeletedAt string // 删除时间
-	Remark    string // 备注
+	Id        string //
+	Name      string //
+	Status    string //
+	CreatedBy string //
+	UpdatedBy string //
+	CreatedAt string //
+	UpdatedAt string //
+	DeletedAt string //
+	Remark    string //
 }
 
 // systemAppGroupColumns holds the columns for table system_app_group.

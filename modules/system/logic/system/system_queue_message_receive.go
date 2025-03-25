@@ -28,10 +28,10 @@ func NewSystemQueueMessageReceive() *sSystemQueueMessageReceive {
 }
 
 func (s *sSystemQueueMessageReceive) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemQueueMessageReceive.Ctx(ctx)
+	return dao.SystemQueueMessageReceive.Ctx(ctx).OnConflict("message_id", "user_id")
 }
 
-func (s *sSystemQueueMessageReceive) UpdateReadStatus(ctx context.Context, ids []uint64, userId uint64, value int) (err error) {
+func (s *sSystemQueueMessageReceive) UpdateReadStatus(ctx context.Context, ids []int64, userId int64, value int) (err error) {
 	data := &do.SystemQueueMessageReceive{
 		ReadStatus: value,
 	}

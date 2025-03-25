@@ -7,9 +7,9 @@
 package websocket
 
 import (
+	"context"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/pkg/websocket/glob"
-	"context"
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gctx"
@@ -29,15 +29,15 @@ type Client struct {
 	Socket        *websocket.Conn // 用户连接
 	Send          chan *WResponse // 待发送的数据
 	SendClose     bool            // 发送是否关闭
-	FirstTime     uint64          // 首次连接事件
-	HeartbeatTime uint64          // 用户上次心跳时间
-	LoginTime     uint64          // 登录时间 登录以后才有
+	FirstTime     int64           // 首次连接事件
+	HeartbeatTime int64           // 用户上次心跳时间
+	LoginTime     int64           // 登录时间 登录以后才有
 	ServerName    string
 	topics        garray.StrArray // 标签
 }
 
 // NewClient 初始化
-func NewClient(addr string, clientId string, socket *websocket.Conn, firstTime uint64) (client *Client) {
+func NewClient(addr string, clientId string, socket *websocket.Conn, firstTime int64) (client *Client) {
 	client = &Client{
 		Addr:          addr,
 		ID:            clientId,
@@ -178,13 +178,13 @@ func (c *Client) ResponseFail(ctx context.Context, event string, requestId strin
 }
 
 // Heartbeat 心跳更新
-func (c *Client) Heartbeat(currentTime uint64) {
+func (c *Client) Heartbeat(currentTime int64) {
 	c.HeartbeatTime = currentTime
 	return
 }
 
 // IsHeartbeatTimeout 心跳是否超时
-func (c *Client) IsHeartbeatTimeout(currentTime uint64) (timeout bool) {
+func (c *Client) IsHeartbeatTimeout(currentTime int64) (timeout bool) {
 	if c.HeartbeatTime+heartbeatExpirationTime <= currentTime {
 		timeout = true
 	}

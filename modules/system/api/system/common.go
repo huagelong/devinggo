@@ -74,7 +74,7 @@ type ClearAllCacheRes struct {
 type GetUserInfoByIdsReq struct {
 	g.Meta `path:"/common/getUserInfoByIds" method:"post" tags:"公共方法" summary:"通过 id 列表获取用户基础信息." x-exceptAuth:"true" x-permission:"system:common:getUserInfoByIds"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"id list" v:"required" `
+	Ids []int64 `json:"ids" dc:"id list" v:"required" `
 }
 
 type GetUserInfoByIdsRes struct {

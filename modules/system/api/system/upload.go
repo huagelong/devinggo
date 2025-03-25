@@ -61,7 +61,7 @@ type SaveNetworkImageRes struct {
 type GetFileInfoByIdReq struct {
 	g.Meta `path:"/getFileInfoById" method:"get" tags:"文件上传" summary:"通过ID获取文件信息." x-permission:"system:getFileInfoById" `
 	model.AuthorHeader
-	Id uint64 `json:"id" v:"required" dc:"pls input id"`
+	Id int64 `json:"id" v:"required" dc:"pls input id"`
 }
 
 type GetFileInfoByIdRes struct {
@@ -83,7 +83,7 @@ type GetFileInfoByHashRes struct {
 type DownloadByIdReq struct {
 	g.Meta `path:"/downloadById" method:"get" tags:"文件上传" summary:"根据id下载文件." x-permission:"system:downloadById" `
 	model.AuthorHeader
-	Id uint64 `json:"id" v:"required" dc:"pls input id"`
+	Id int64 `json:"id" v:"required" dc:"pls input id"`
 }
 
 type DownloadByIdRes struct {

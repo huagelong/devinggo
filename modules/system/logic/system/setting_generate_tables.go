@@ -45,7 +45,7 @@ func NewSystemSettingGenerateTables() *sSettingGenerateTables {
 }
 
 func (s *sSettingGenerateTables) Model(ctx context.Context) *gdb.Model {
-	return dao.SettingGenerateTables.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SettingGenerateTables.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSettingGenerateTables) GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SettingGenerateTablesSearch) (rs []*res.SettingGenerateTables, total int, err error) {
@@ -130,7 +130,7 @@ func (s *sSettingGenerateTables) LoadTable(ctx context.Context, in *req.LoadTabl
 	return
 }
 
-func (s *sSettingGenerateTables) GetById(ctx context.Context, id uint64) (res *res.SettingGenerateTables, err error) {
+func (s *sSettingGenerateTables) GetById(ctx context.Context, id int64) (res *res.SettingGenerateTables, err error) {
 	err = s.Model(ctx).Where("id", id).Scan(&res)
 	if utils.IsError(err) {
 		return nil, err
@@ -138,7 +138,7 @@ func (s *sSettingGenerateTables) GetById(ctx context.Context, id uint64) (res *r
 	return
 }
 
-func (s *sSettingGenerateTables) Delete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSettingGenerateTables) Delete(ctx context.Context, ids []int64) (err error) {
 	for _, id := range ids {
 		_, err = s.Model(ctx).Unscoped().Where("id", id).Delete()
 		if utils.IsError(err) {
@@ -152,7 +152,7 @@ func (s *sSettingGenerateTables) Delete(ctx context.Context, ids []uint64) (err 
 	return
 }
 
-func (s *sSettingGenerateTables) SyncCode(ctx context.Context, id uint64) (err error) {
+func (s *sSettingGenerateTables) SyncCode(ctx context.Context, id int64) (err error) {
 	var entity *entity.SettingGenerateTables
 	err = s.Model(ctx).Where("id", id).Scan(&entity)
 	if utils.IsError(err) {
@@ -173,7 +173,7 @@ func (s *sSettingGenerateTables) SyncCode(ctx context.Context, id uint64) (err e
 		return
 	}
 
-	columnIds := gconv.SliceUint64(result)
+	columnIds := gconv.SliceInt64(result)
 
 	_, err = service.SettingGenerateColumns().Model(ctx).WhereIn("id", columnIds).Delete()
 
@@ -304,7 +304,7 @@ func (s *sSettingGenerateTables) UpdateTableAndColumns(ctx context.Context, in *
 	return
 }
 
-func (s *sSettingGenerateTables) GenerateCode(ctx context.Context, ids []uint64) (filePath string, err error) {
+func (s *sSettingGenerateTables) GenerateCode(ctx context.Context, ids []int64) (filePath string, err error) {
 	generatePath := utils.GetRootPath() + "/resource/runtime/generate"
 	err = s.generateCodeInit(ctx, generatePath)
 	if err != nil {
@@ -367,7 +367,7 @@ func (s *sSettingGenerateTables) generateCodeInit(ctx context.Context, dirPath s
 	return
 }
 
-func (s *sSettingGenerateTables) getOneCode(ctx context.Context, id uint64) (rs *gmap.StrStrMap, tables *entity.SettingGenerateTables, columns []*entity.SettingGenerateColumns, view *gview.View, err error) {
+func (s *sSettingGenerateTables) getOneCode(ctx context.Context, id int64) (rs *gmap.StrStrMap, tables *entity.SettingGenerateTables, columns []*entity.SettingGenerateColumns, view *gview.View, err error) {
 	err = s.Model(ctx).Where("id", id).Scan(&tables)
 	if utils.IsError(err) {
 		return
@@ -449,7 +449,7 @@ func (s *sSettingGenerateTables) getOneCode(ctx context.Context, id uint64) (rs 
 	return
 }
 
-func (s *sSettingGenerateTables) Preview(ctx context.Context, id uint64) (rs []res.PreviewTable, err error) {
+func (s *sSettingGenerateTables) Preview(ctx context.Context, id int64) (rs []res.PreviewTable, err error) {
 	rs = make([]res.PreviewTable, 0)
 	coders, tables, _, _, err := s.getOneCode(ctx, id)
 	if err != nil {
@@ -475,7 +475,7 @@ func (s *sSettingGenerateTables) Preview(ctx context.Context, id uint64) (rs []r
 	return
 }
 
-func (s *sSettingGenerateTables) generateOneCode(ctx context.Context, codePath string, id uint64) (err error) {
+func (s *sSettingGenerateTables) generateOneCode(ctx context.Context, codePath string, id int64) (err error) {
 	coders, tables, _, _, err := s.getOneCode(ctx, id)
 	if err != nil {
 		return
@@ -1018,7 +1018,7 @@ func (s *sSettingGenerateTables) getModelColumnType(entity entity.SettingGenerat
 	case "double":
 		return "float64"
 	case "bigint":
-		return "uint64"
+		return "int64"
 	case "int", "tinyint", "smallint", "mediumint":
 		return "int"
 	case "datetime", "timestamp":

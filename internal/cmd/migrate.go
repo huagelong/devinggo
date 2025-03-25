@@ -7,14 +7,16 @@
 package cmd
 
 import (
-	"devinggo/modules/system/pkg/utils"
 	"context"
+	"devinggo/modules/system/pkg/utils"
 	"fmt"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcmd"
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"os"
 	"path/filepath"
@@ -152,7 +154,14 @@ var (
 				name := opts.String()
 				var version string
 				var err error
-				directory := utils.GetRootPath() + "/resource/migrations"
+
+				dbType := utils.GetDbType()
+
+				directory := "./resource/migrations"
+				if dbType == "postgres" {
+					directory = "./resource/migrations_pgsql"
+				}
+
 				dir := filepath.Clean(directory)
 				ext := ".sql"
 				startTime := time.Now()
@@ -204,40 +213,56 @@ func createFile(filename string) error {
 }
 
 func migrateDB(ctx context.Context) (m *migrate.Migrate) {
-
 	db, err := g.DB().Master()
 	if err != nil {
 		g.Log().Panic(ctx, err)
 	}
+
+	dbConfig := g.DB().GetConfig()
+	link := dbConfig.Link
+	dbType := utils.GetDbType()
+
 	dbName := ""
-	link := g.DB().GetConfig().Link
 	if g.IsEmpty(link) {
-		dbName = g.DB().GetConfig().Name
+		dbName = dbConfig.Name
 	} else {
 		dbName, err = utils.GetConnectDbName(link)
 		if err != nil {
 			g.Log().Panic(ctx, err)
 		}
 	}
+
 	g.Log().Debug(ctx, "dbName:", dbName)
 	if g.IsEmpty(dbName) {
 		g.Log().Fatal(ctx, "migrateDB error: dbName is null")
 	}
+
 	conn, err := db.Conn(ctx)
+	if err != nil {
+		g.Log().Panic(ctx, err)
+	}
+
+	var driver database.Driver
+	migrationsDir := "file://resource/migrations"
+	if dbType == "postgres" {
+		driver, err = postgres.WithConnection(ctx, conn, &postgres.Config{
+			MigrationsTable: "system_migrations",
+			DatabaseName:    dbName,
+		})
+		migrationsDir = "file://resource/migrations_pgsql"
+	} else {
+		driver, err = mysql.WithConnection(ctx, conn, &mysql.Config{
+			MigrationsTable: "system_migrations",
+			DatabaseName:    dbName,
+		})
+	}
 
 	if err != nil {
 		g.Log().Panic(ctx, err)
 	}
-	driver, err := mysql.WithConnection(ctx, conn, &mysql.Config{
-		MigrationsTable: "system_migrations",
-		DatabaseName:    dbName,
-	})
 
-	if err != nil {
-		g.Log().Panic(ctx, err)
-	}
 	m, err = migrate.NewWithDatabaseInstance(
-		"file://resource/migrations",
+		migrationsDir,
 		dbName, driver)
 	if err != nil {
 		g.Log().Panic(ctx, err)

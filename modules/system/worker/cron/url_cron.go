@@ -7,11 +7,11 @@
 package cron
 
 import (
+	"context"
 	"devinggo/modules/system/pkg/worker/cron"
 	glob2 "devinggo/modules/system/pkg/worker/glob"
 	"devinggo/modules/system/pkg/worker/task"
 	"devinggo/modules/system/worker/consts"
-	"context"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/hibiken/asynq"
@@ -34,7 +34,7 @@ type UrlCronData struct {
 	Method      string                 `json:"method"`
 	Headers     map[string]string      `json:"headers"`
 	Params      map[string]interface{} `json:"params"`
-	Timeout     uint64                 `json:"timeout"`
+	Timeout     int64                  `json:"timeout"`
 	Retry       int                    `json:"retry"`
 	Cookies     map[string]string      `json:"cookie"`
 	ContentType string                 `json:"content_type"`

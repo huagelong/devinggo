@@ -12,8 +12,8 @@ import (
 // SystemDeptLeader is the golang structure of table system_dept_leader for DAO operations like Where/Data.
 type SystemDeptLeader struct {
 	g.Meta    `orm:"table:system_dept_leader, do:true"`
-	DeptId    interface{} // 部门主键
-	UserId    interface{} // 用户主键
-	Username  interface{} // 用户名
-	CreatedAt *gtime.Time // 添加时间
+	DeptId    interface{} //
+	UserId    interface{} //
+	Username  interface{} //
+	CreatedAt *gtime.Time //
 }

@@ -7,7 +7,7 @@
 package req
 
 type SystemModulesSearch struct {
-	Id uint64 `json:"id" description:"ID" `
+	Id int64 `json:"id" description:"ID" `
 
 	Name string `json:"name" description:"模块名称" `
 
@@ -21,7 +21,7 @@ type SystemModulesSearch struct {
 }
 
 type SystemModulesSave struct {
-	Id uint64 `json:"id"  description:"ID" `
+	Id int64 `json:"id"  description:"ID" `
 
 	Name string `json:"name"  v:"required"  description:"模块名称" `
 
@@ -35,7 +35,7 @@ type SystemModulesSave struct {
 }
 
 type SystemModulesUpdate struct {
-	Id uint64 `json:"id"  description:"ID" `
+	Id int64 `json:"id"  description:"ID" `
 
 	Name string `json:"name"  v:"required"  description:"模块名称" `
 

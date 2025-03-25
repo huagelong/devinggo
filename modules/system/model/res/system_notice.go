@@ -9,7 +9,7 @@ package res
 import "github.com/gogf/gf/v2/os/gtime"
 
 type SystemNotice struct {
-	Id        uint64      `json:"id"                description:"主键"`        // 主键
+	Id        int64       `json:"id"                description:"主键"`        // 主键
 	MessageId int64       `json:"message_id"  description:"消息ID"`            // 消息ID
 	Title     string      `json:"title"           description:"标题"`          // 标题
 	Type      int         `json:"type"          description:"公告类型（1通知 2公告）"` // 公告类型（1通知 2公告）

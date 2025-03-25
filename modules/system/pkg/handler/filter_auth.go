@@ -7,13 +7,13 @@
 package handler
 
 import (
+	"context"
 	"devinggo/internal/dao"
 	"devinggo/internal/model/entity"
 	"devinggo/modules/system/consts"
 	"devinggo/modules/system/pkg/contexts"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/pkg/utils/slice"
-	"context"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/text/gstr"
@@ -54,7 +54,7 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 			return m
 		}
 
-		getUserRoleIds := func(ctx context.Context, userId uint64) (roles []uint64) {
+		getUserRoleIds := func(ctx context.Context, userId int64) (roles []int64) {
 			result, err := dao.SystemUserRole.Ctx(ctx).Fields(dao.SystemUserRole.Columns().RoleId).Where(dao.SystemUserRole.Columns().UserId, userId).Array()
 			if utils.IsError(err) {
 				g.Log().Panicf(ctx, "get user roleIds err:%+v", err)
@@ -65,11 +65,11 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 				return
 			}
 
-			roles = gconv.SliceUint64(result)
+			roles = gconv.SliceInt64(result)
 			return
 		}
 
-		getUserDeptIds := func(ctx context.Context, userId uint64) (depts []uint64) {
+		getUserDeptIds := func(ctx context.Context, userId int64) (depts []int64) {
 			result, err := dao.SystemUserDept.Ctx(ctx).Fields(dao.SystemUserDept.Columns().DeptId).Where(dao.SystemUserDept.Columns().UserId, userId).Array()
 			if utils.IsError(err) {
 				g.Log().Panicf(ctx, "get user deptIds err:%+v", err)
@@ -80,7 +80,7 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 				return
 			}
 
-			depts = gconv.SliceUint64(result)
+			depts = gconv.SliceInt64(result)
 			return
 		}
 
@@ -103,7 +103,7 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 			}
 		}
 
-		getFromDeptIds := func(ctx context.Context, in []uint64) []uint64 {
+		getFromDeptIds := func(ctx context.Context, in []int64) []int64 {
 			result, err := dao.SystemUserDept.Ctx(ctx).Fields(dao.SystemUserDept.Columns().UserId).WhereIn(dao.SystemUserDept.Columns().DeptId, in).Array()
 			if utils.IsError(err) {
 				g.Log().Panic(ctx, "failed to get member dept data", err)
@@ -114,10 +114,10 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 				return nil
 			}
 
-			return gconv.SliceUint64(result)
+			return gconv.SliceInt64(result)
 		}
 
-		getFromRoles := func(ctx context.Context, in []uint64) []uint64 {
+		getFromRoles := func(ctx context.Context, in []int64) []int64 {
 			deptIds, err := dao.SystemRoleDept.Ctx(ctx).Fields(dao.SystemRoleDept.Columns().DeptId).WhereIn(dao.SystemRoleDept.Columns().RoleId, in).Array()
 			if utils.IsError(err) {
 				g.Log().Panic(ctx, "failed to get role_dept dept data")
@@ -132,14 +132,14 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 				return nil
 			}
 
-			return gconv.SliceUint64(result)
+			return gconv.SliceInt64(result)
 		}
 
-		getDeptIdsAndSub := func(ctx context.Context, in []uint64) []uint64 {
-			deptIds := make([]uint64, 0)
+		getDeptIdsAndSub := func(ctx context.Context, in []int64) []int64 {
+			deptIds := make([]int64, 0)
 			if len(in) > 0 {
 				for _, deptId := range in {
-					newDeptIds := make([]uint64, 0)
+					newDeptIds := make([]int64, 0)
 					result, err := dao.SystemDept.Ctx(ctx).Fields(dao.SystemDept.Columns().Id).Where(dao.SystemDept.Columns().Id, deptId).WhereOr("level like  ? ", "%,"+gconv.String(deptId)+",%").Array()
 					if utils.IsError(err) {
 						g.Log().Panic(ctx, "failed to get system_dept dept data")
@@ -147,7 +147,7 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 					if g.IsEmpty(result) {
 						continue
 					}
-					newDeptIds = gconv.SliceUint64(result)
+					newDeptIds = gconv.SliceInt64(result)
 					deptIds = append(deptIds, newDeptIds...)
 				}
 			}
@@ -157,7 +157,7 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 		/**
 		数据范围（1：全部数据权限 2：自定义数据权限 3：本部门数据权限 4：本部门及以下数据权限 5：本人数据权限）
 		*/
-		userIds := make([]uint64, 0)
+		userIds := make([]int64, 0)
 		for _, role := range roles {
 			switch role.DataScope {
 			case 1:

@@ -9,8 +9,8 @@ package res
 import "github.com/gogf/gf/v2/os/gtime"
 
 type SystemApp struct {
-	Id          uint64      `json:"id"                    description:"主键"`       // 主键
-	GroupId     uint64      `json:"group_id"         description:"应用组ID"`         // 应用组ID
+	Id          int64       `json:"id"                    description:"主键"`       // 主键
+	GroupId     int64       `json:"group_id"         description:"应用组ID"`         // 应用组ID
 	AppName     string      `json:"app_name"         description:"应用名称"`          // 应用名称
 	AppId       string      `json:"app_id"             description:"应用ID"`        // 应用ID
 	AppSecret   string      `json:"app_secret"     description:"应用密钥"`            // 应用密钥

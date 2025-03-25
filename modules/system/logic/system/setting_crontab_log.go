@@ -37,7 +37,7 @@ func NewSystemSettingCrontabLog() *sSettingCrontabLog {
 }
 
 func (s *sSettingCrontabLog) Model(ctx context.Context) *gdb.Model {
-	return dao.SettingCrontabLog.Ctx(ctx)
+	return dao.SettingCrontabLog.Ctx(ctx).OnConflict("id")
 }
 
 func (s *sSettingCrontabLog) GetPageList(ctx context.Context, req *model.PageListReq, in *req.SettingCrontabLogSearch) (rs []*res.SettingCrontabLog, total int, err error) {
@@ -66,7 +66,7 @@ func (s *sSettingCrontabLog) handleSearch(ctx context.Context, in *req.SettingCr
 	return
 }
 
-func (s *sSettingCrontabLog) Delete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSettingCrontabLog) Delete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return err
@@ -74,7 +74,7 @@ func (s *sSettingCrontabLog) Delete(ctx context.Context, ids []uint64) (err erro
 	return
 }
 
-func (s *sSettingCrontabLog) AddLog(ctx context.Context, id uint64, status int, exceptionInfo string) (err error) {
+func (s *sSettingCrontabLog) AddLog(ctx context.Context, id int64, status int, exceptionInfo string) (err error) {
 	var entity *entity.SettingCrontab
 	err = service.SettingCrontab().Model(ctx).Where("id", id).Scan(&entity)
 	if utils.IsError(err) {

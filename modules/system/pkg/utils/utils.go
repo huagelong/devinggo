@@ -228,3 +228,15 @@ func ZipDirectory(ctx context.Context, source, target string) error {
 
 	return nil
 }
+
+func GetDbType() string {
+	dbConfig := g.DB().GetConfig()
+	link := dbConfig.Link
+	dbType := "mysql" // 默认为MySQL
+
+	// 判断数据库类型
+	if strings.HasPrefix(link, "postgres:") || strings.HasPrefix(link, "postgresql:") || strings.HasPrefix(link, "pgsql:") {
+		dbType = "postgres"
+	}
+	return dbType
+}

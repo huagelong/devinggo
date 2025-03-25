@@ -203,7 +203,7 @@ func (s *sToken) Logout(r *ghttp.Request) (err error) {
 }
 
 // 强退用户
-func (s *sToken) Kick(r *ghttp.Request, userId uint64, appId string) (err error) {
+func (s *sToken) Kick(r *ghttp.Request, userId int64, appId string) (err error) {
 	ctx := r.Context()
 	bindKey := s.GetBindKey(appId, userId)
 	tokenKeyArr, err := redis.GetCacheClient().Get(ctx, bindKey)
@@ -224,7 +224,7 @@ func (s *sToken) Kick(r *ghttp.Request, userId uint64, appId string) (err error)
 }
 
 // 强退所有app用户
-func (s *sToken) KickAll(r *ghttp.Request, userId uint64) (err error) {
+func (s *sToken) KickAll(r *ghttp.Request, userId int64) (err error) {
 	ctx := r.Context()
 	match := fmt.Sprintf("%v:*", "token_bind")
 	iterator := uint64(0)
@@ -245,7 +245,7 @@ func (s *sToken) KickAll(r *ghttp.Request, userId uint64) (err error) {
 		dataSlice := gconv.SliceStr(keys)
 		for _, value := range dataSlice {
 			tmp := gstr.Split(value, ":")
-			userIdTmp := gconv.Uint64(tmp[2])
+			userIdTmp := gconv.Int64(tmp[2])
 			appId := tmp[1]
 			if userIdTmp == userId {
 				s.Kick(r, userIdTmp, appId)
@@ -284,7 +284,7 @@ func (s *sToken) GetAllUserIds(r *ghttp.Request) (userApps []res.SystemUserApp, 
 			tmp := gstr.Split(value, ":")
 			userApps = append(userApps, res.SystemUserApp{
 				AppId:  tmp[1],
-				UserId: gconv.Uint64(tmp[2]),
+				UserId: gconv.Int64(tmp[2]),
 			})
 		}
 
@@ -448,6 +448,6 @@ func (s *sToken) GetTokenKey(appId, authKey string) string {
 }
 
 // GetBindKey 令牌身份绑定key
-func (s *sToken) GetBindKey(appId string, userId uint64) string {
+func (s *sToken) GetBindKey(appId string, userId int64) string {
 	return fmt.Sprintf("%v:%v:%v", CacheTokenBind, appId, userId)
 }

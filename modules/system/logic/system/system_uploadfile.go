@@ -37,7 +37,7 @@ func NewSystemUploadfile() *sSystemUploadfile {
 }
 
 func (s *sSystemUploadfile) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemUploadfile.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemUploadfile.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemUploadfile) GetPageList(ctx context.Context, in *model.PageListReq, params *req.SystemUploadFileSearch) (out []*res.SystemUploadFile, total int, err error) {
@@ -70,7 +70,7 @@ func (s *sSystemUploadfile) GetPageList(ctx context.Context, in *model.PageListR
 	return
 }
 
-func (s *sSystemUploadfile) SaveDb(ctx context.Context, in *res.SystemUploadFileRes, createdBy uint64) (rs uint64, err error) {
+func (s *sSystemUploadfile) SaveDb(ctx context.Context, in *res.SystemUploadFileRes, createdBy int64) (rs int64, err error) {
 	data := do.SystemUploadfile{
 		StorageMode: in.StorageMode,
 		OriginName:  in.OriginName,
@@ -92,7 +92,7 @@ func (s *sSystemUploadfile) SaveDb(ctx context.Context, in *res.SystemUploadFile
 	if err != nil {
 		return
 	}
-	rs = gconv.Uint64(rsTmp)
+	rs = gconv.Int64(rsTmp)
 	return
 }
 
@@ -113,7 +113,7 @@ func (s *sSystemUploadfile) GetByHash(ctx context.Context, hash string) (rs *res
 	return
 }
 
-func (s *sSystemUploadfile) GetFileInfoById(ctx context.Context, id uint64) (rs *res.SystemUploadFile, err error) {
+func (s *sSystemUploadfile) GetFileInfoById(ctx context.Context, id int64) (rs *res.SystemUploadFile, err error) {
 	var fileInfo *entity.SystemUploadfile
 	err = s.Model(ctx).Where("id", id).Scan(&fileInfo)
 	if utils.IsError(err) {
@@ -142,7 +142,7 @@ func (s *sSystemUploadfile) GetFileInfoByHash(ctx context.Context, hash string) 
 	return
 }
 
-func (s *sSystemUploadfile) Delete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemUploadfile) Delete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return err
@@ -150,7 +150,7 @@ func (s *sSystemUploadfile) Delete(ctx context.Context, ids []uint64) (err error
 	return
 }
 
-func (s *sSystemUploadfile) RealDelete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemUploadfile) RealDelete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return
@@ -159,7 +159,7 @@ func (s *sSystemUploadfile) RealDelete(ctx context.Context, ids []uint64) (err e
 	return
 }
 
-func (s *sSystemUploadfile) Recovery(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemUploadfile) Recovery(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
 		return err

@@ -10,7 +10,7 @@ type SettingGenerateColumnsSearch struct {
 }
 
 type SettingGenerateColumnsUpdate struct {
-	Id            uint64 `json:"id"`
+	Id            int64  `json:"id"`
 	IsInsert      bool   `json:"is_insert" d:"false" `
 	IsEdit        bool   `json:"is_edit"  d:"false" `
 	IsList        bool   `json:"is_list"  d:"false" `

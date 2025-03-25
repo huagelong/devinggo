@@ -21,9 +21,9 @@ type (
 		GenerateUserToken(ctx context.Context, scene, appId string, user *model.Identity) (string, int64, error)
 		Logout(r *ghttp.Request) (err error)
 		// 强退用户
-		Kick(r *ghttp.Request, userId uint64, appId string) (err error)
+		Kick(r *ghttp.Request, userId int64, appId string) (err error)
 		// 强退所有app用户
-		KickAll(r *ghttp.Request, userId uint64) (err error)
+		KickAll(r *ghttp.Request, userId int64) (err error)
 		GetAllUserIds(r *ghttp.Request) (userApps []res.SystemUserApp, err error)
 		// ParseLoginUser 解析登录用户信息
 		ParseLoginUser(r *ghttp.Request, appId string) (*model.Identity, error)
@@ -33,7 +33,7 @@ type (
 		// GetTokenKey 令牌缓存key
 		GetTokenKey(appId, authKey string) string
 		// GetBindKey 令牌身份绑定key
-		GetBindKey(appId string, userId uint64) string
+		GetBindKey(appId string, userId int64) string
 	}
 )
 

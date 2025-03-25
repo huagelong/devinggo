@@ -39,7 +39,7 @@ func NewSystemDictData() *sSystemDictData {
 }
 
 func (s *sSystemDictData) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemDictData.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemDictData.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemDictData) GetList(ctx context.Context, listReq *model.ListReq, in *req.SystemDictDataSearch) (out []*res.SystemDictData, err error) {
@@ -49,7 +49,12 @@ func (s *sSystemDictData) GetList(ctx context.Context, listReq *model.ListReq, i
 	}
 
 	mergo.Merge(&listReq, inReq)
-	listReq.Select = "id, label as title, `value` as `key`,code"
+	dbType := utils.GetDbType()
+	if dbType == "mysql" {
+		listReq.Select = "id, `label` as `title`, `value` as `key`,code"
+	} else {
+		listReq.Select = "id, label as title, value as key,code"
+	}
 	m := s.handleSearch(ctx, in)
 	err = orm.GetList(m, listReq).Scan(&out)
 	if utils.IsError(err) {
@@ -74,14 +79,14 @@ func (s *sSystemDictData) GetPageList(ctx context.Context, req *model.PageListRe
 	return
 }
 
-func (s *sSystemDictData) Save(ctx context.Context, in *req.SystemDictDataSave) (id uint64, err error) {
+func (s *sSystemDictData) Save(ctx context.Context, in *req.SystemDictDataSave) (id int64, err error) {
 	saveData := do.SystemDictData{
 		TypeId: in.TypeId,
 		Value:  in.Value,
 		Code:   in.Code,
 		Label:  in.Label,
 	}
-	rs, err := s.Model(ctx).Data(saveData).Save()
+	rs, err := s.Model(ctx).Data(saveData).Insert()
 	if utils.IsError(err) {
 		return
 	}
@@ -89,11 +94,11 @@ func (s *sSystemDictData) Save(ctx context.Context, in *req.SystemDictDataSave) 
 	if err != nil {
 		return
 	}
-	id = gconv.Uint64(tmpId)
+	id = gconv.Int64(tmpId)
 	return
 }
 
-func (s *sSystemDictData) GetById(ctx context.Context, id uint64) (res *res.SystemDictDataFull, err error) {
+func (s *sSystemDictData) GetById(ctx context.Context, id int64) (res *res.SystemDictDataFull, err error) {
 	err = s.Model(ctx).Where("id", id).Scan(&res)
 	if utils.IsError(err) {
 		return
@@ -114,7 +119,7 @@ func (s *sSystemDictData) Update(ctx context.Context, in *req.SystemDictDataUpda
 	return
 }
 
-func (s *sSystemDictData) Delete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemDictData) Delete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return err
@@ -122,7 +127,7 @@ func (s *sSystemDictData) Delete(ctx context.Context, ids []uint64) (err error) 
 	return
 }
 
-func (s *sSystemDictData) RealDelete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemDictData) RealDelete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return
@@ -130,7 +135,7 @@ func (s *sSystemDictData) RealDelete(ctx context.Context, ids []uint64) (err err
 	return
 }
 
-func (s *sSystemDictData) Recovery(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemDictData) Recovery(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
 		return err
@@ -138,7 +143,7 @@ func (s *sSystemDictData) Recovery(ctx context.Context, ids []uint64) (err error
 	return
 }
 
-func (s *sSystemDictData) ChangeStatus(ctx context.Context, id uint64, status int) (err error) {
+func (s *sSystemDictData) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err
@@ -146,7 +151,7 @@ func (s *sSystemDictData) ChangeStatus(ctx context.Context, id uint64, status in
 	return
 }
 
-func (s *sSystemDictData) NumberOperation(ctx context.Context, id uint64, numberName string, numberValue int) (err error) {
+func (s *sSystemDictData) NumberOperation(ctx context.Context, id int64, numberName string, numberValue int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{numberName: numberValue}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err

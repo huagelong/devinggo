@@ -13,15 +13,15 @@ type SystemNoticeSearch struct {
 }
 
 type SystemNoticeSave struct {
-	Title   string   `json:"title" v:"required"`
-	Type    int      `json:"type" v:"required"`
-	Content string   `json:"content" v:"required"`
-	Remark  string   `json:"remark"`
-	Users   []uint64 `json:"users"`
+	Title   string  `json:"title" v:"required"`
+	Type    int     `json:"type" v:"required"`
+	Content string  `json:"content" v:"required"`
+	Remark  string  `json:"remark"`
+	Users   []int64 `json:"users"`
 }
 
 type SystemNoticeUpdate struct {
-	Id      uint64 `json:"id" v:"required"`
+	Id      int64  `json:"id" v:"required"`
 	Title   string `json:"title" v:"required"`
 	Type    int    `json:"type" v:"required"`
 	Content string `json:"content" v:"required"`

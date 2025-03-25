@@ -17,10 +17,10 @@ type SystemDeptSearch struct {
 }
 
 type SystemDeptSave struct {
-	Id       uint64 `json:"id"`
+	Id       int64  `json:"id"`
 	Sort     int    `json:"sort"`
 	Status   string `json:"status"`
-	ParentId uint64 `json:"parent_id"`
+	ParentId int64  `json:"parent_id"`
 	Name     string `json:"name" v:"required|length:1,30#请输入部门名称|部门名称长度必须在1到30之间"`
 	Leader   string `json:"leader"`
 	Phone    string `json:"phone"`
@@ -29,6 +29,6 @@ type SystemDeptSave struct {
 }
 
 type SystemDeptAddLeader struct {
-	Id    uint64       `json:"id" v:"required"`
+	Id    int64        `json:"id" v:"required"`
 	Users []SystemUser `json:"users" v:"required"`
 }

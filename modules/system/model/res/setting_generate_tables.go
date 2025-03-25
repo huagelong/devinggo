@@ -8,7 +8,7 @@ package res
 import "github.com/gogf/gf/v2/os/gtime"
 
 type SettingGenerateTables struct {
-	Id            uint64      `json:"id"                         description:"主键"`                                             // 主键
+	Id            int64       `json:"id"                         description:"主键"`                                             // 主键
 	TableName     string      `json:"table_name"          description:"表名称"`                                                   // 表名称
 	TableComment  string      `json:"table_comment"    description:"表注释"`                                                      // 表注释
 	ModuleName    string      `json:"module_name"        description:"所属模块"`                                                   // 所属模块

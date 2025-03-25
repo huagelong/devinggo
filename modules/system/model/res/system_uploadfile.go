@@ -22,11 +22,11 @@ type SystemUploadFileRes struct {
 	SizeInfo    string `json:"size_info"    description:"文件大小"`                          // 文件大小
 	Url         string `json:"url"          description:"url地址"`                         // url地址
 	LocalPath   string `json:"local_path"   description:"本地路径"`                          // 本地路径
-	Chunk       uint64 `json:"chunk" `
+	Chunk       int64  `json:"chunk" `
 }
 
 type SystemUploadFile struct {
-	Id          uint64      `json:"id"           description:"主键"`                            // 主键
+	Id          int64       `json:"id"           description:"主键"`                            // 主键
 	StorageMode int         `json:"storage_mode" description:"存储模式 (1 本地 2 阿里云 3 七牛云 4 腾讯云)"` // 存储模式 (1 本地 2 阿里云 3 七牛云 4 腾讯云)
 	OriginName  string      `json:"origin_name"  description:"原文件名"`                          // 原文件名
 	ObjectName  string      `json:"object_name"  description:"新文件名"`                          // 新文件名

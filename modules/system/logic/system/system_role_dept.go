@@ -29,5 +29,5 @@ func NewSystemRoleDept() *sSystemRoleDept {
 }
 
 func (s *sSystemRoleDept) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemRoleDept.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemRoleDept.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("role_id", "dept_id")
 }

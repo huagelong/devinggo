@@ -11,6 +11,6 @@ import (
 // SystemAppApi is the golang structure of table system_app_api for DAO operations like Where/Data.
 type SystemAppApi struct {
 	g.Meta `orm:"table:system_app_api, do:true"`
-	AppId  interface{} // 应用ID
-	ApiId  interface{} // API—ID
+	AppId  interface{} //
+	ApiId  interface{} //
 }

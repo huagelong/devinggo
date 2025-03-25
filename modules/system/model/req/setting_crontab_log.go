@@ -7,5 +7,5 @@
 package req
 
 type SettingCrontabLogSearch struct {
-	CrontabId uint64 `json:"crontab_id"`
+	CrontabId int64 `json:"crontab_id"`
 }

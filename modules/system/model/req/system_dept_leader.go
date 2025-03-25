@@ -7,7 +7,7 @@
 package req
 
 type SystemDeptLeaderSearch struct {
-	DeptId   uint64 `json:"dept_id" v:"required|integer"`
+	DeptId   int64  `json:"dept_id" v:"required|integer"`
 	Username string `json:"username"`
 	Nickname string `json:"nickname"`
 	Status   int    `json:"status"`

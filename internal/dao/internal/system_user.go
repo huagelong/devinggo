@@ -20,27 +20,26 @@ type SystemUserDao struct {
 
 // SystemUserColumns defines and stores column names for table system_user.
 type SystemUserColumns struct {
-	Id             string // 用户ID，主键
-	Username       string // 用户名
-	Password       string // 密码
-	UserType       string // 用户类型：(100系统用户)
-	Nickname       string // 用户昵称
-	Phone          string // 手机
-	Email          string // 用户邮箱
-	Avatar         string // 用户头像
-	Signed         string // 个人签名
-	Dashboard      string // 后台首页类型
-	Status         string // 状态 (1正常 2停用)
-	LoginIp        string // 最后登陆IP
-	LoginTime      string // 最后登陆时间
-	BackendSetting string // 后台设置数据
-	CreatedBy      string // 创建者
-	UpdatedBy      string // 更新者
-	CreatedAt      string // 创建时间
-	UpdatedAt      string // 更新时间
-	DeletedAt      string // 删除时间
-	Remark         string // 备注
-	TenantId       string //
+	Id             string //
+	Username       string //
+	Password       string //
+	UserType       string //
+	Nickname       string //
+	Phone          string //
+	Email          string //
+	Avatar         string //
+	Signed         string //
+	Dashboard      string //
+	Status         string //
+	LoginIp        string //
+	LoginTime      string //
+	BackendSetting string //
+	CreatedBy      string //
+	UpdatedBy      string //
+	CreatedAt      string //
+	UpdatedAt      string //
+	DeletedAt      string //
+	Remark         string //
 }
 
 // systemUserColumns holds the columns for table system_user.
@@ -65,7 +64,6 @@ var systemUserColumns = SystemUserColumns{
 	UpdatedAt:      "updated_at",
 	DeletedAt:      "deleted_at",
 	Remark:         "remark",
-	TenantId:       "tenant_id",
 }
 
 // NewSystemUserDao creates and returns a new DAO object for table data access.

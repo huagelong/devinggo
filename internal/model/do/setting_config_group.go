@@ -12,12 +12,12 @@ import (
 // SettingConfigGroup is the golang structure of table setting_config_group for DAO operations like Where/Data.
 type SettingConfigGroup struct {
 	g.Meta    `orm:"table:setting_config_group, do:true"`
-	Id        interface{} // 主键
-	Name      interface{} // 配置组名称
-	Code      interface{} // 配置组标识
-	CreatedBy interface{} // 创建者
-	UpdatedBy interface{} // 更新者
+	Id        interface{} //
+	Name      interface{} //
+	Code      interface{} //
+	CreatedBy interface{} //
+	UpdatedBy interface{} //
 	CreatedAt *gtime.Time //
 	UpdatedAt *gtime.Time //
-	Remark    interface{} // 备注
+	Remark    interface{} //
 }

@@ -20,8 +20,8 @@ type SystemRoleDeptDao struct {
 
 // SystemRoleDeptColumns defines and stores column names for table system_role_dept.
 type SystemRoleDeptColumns struct {
-	RoleId string // 角色主键
-	DeptId string // 部门主键
+	RoleId string //
+	DeptId string //
 }
 
 // systemRoleDeptColumns holds the columns for table system_role_dept.

@@ -20,26 +20,26 @@ type SettingGenerateTablesDao struct {
 
 // SettingGenerateTablesColumns defines and stores column names for table setting_generate_tables.
 type SettingGenerateTablesColumns struct {
-	Id            string // 主键
-	TableName     string // 表名称
-	TableComment  string // 表注释
-	ModuleName    string // 所属模块
-	Namespace     string // 命名空间
-	MenuName      string // 生成菜单名
-	BelongMenuId  string // 所属菜单
-	PackageName   string // controller,api包名
-	Type          string // 生成类型，single 单表CRUD，tree 树表CRUD，parent_sub父子表CRUD
-	GenerateType  string // 1 压缩包下载 2 生成到模块
-	GenerateMenus string // 生成菜单列表
-	BuildMenu     string // 是否构建菜单
-	ComponentType string // 组件显示方式
-	Options       string // 其他业务选项
-	CreatedBy     string // 创建者
-	UpdatedBy     string // 更新者
-	CreatedAt     string // 创建时间
-	UpdatedAt     string // 更新时间
-	Remark        string // 备注
-	Source        string // db连接群组
+	Id            string //
+	TableName     string //
+	TableComment  string //
+	ModuleName    string //
+	Namespace     string //
+	MenuName      string //
+	BelongMenuId  string //
+	PackageName   string //
+	Type          string //
+	GenerateType  string //
+	GenerateMenus string //
+	BuildMenu     string //
+	ComponentType string //
+	Options       string //
+	CreatedBy     string //
+	UpdatedBy     string //
+	CreatedAt     string //
+	UpdatedAt     string //
+	Remark        string //
+	Source        string //
 }
 
 // settingGenerateTablesColumns holds the columns for table setting_generate_tables.

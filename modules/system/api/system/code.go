@@ -50,7 +50,7 @@ type LoadTableRes struct {
 
 type ReadTableReq struct {
 	g.Meta `path:"/code/readTable" method:"get" tags:"代码生成" summary:"读取表数据." x-permission:"system:code:readTable" `
-	Id     uint64 `json:"id" dc:"id"`
+	Id     int64 `json:"id" dc:"id"`
 }
 
 type ReadTableRes struct {
@@ -72,7 +72,7 @@ type GetTableColumnsRes struct {
 type PreviewCodeReq struct {
 	g.Meta `path:"/code/preview" method:"get" tags:"代码生成" summary:"预览代码." x-permission:"system:code:preview" `
 	model2.AuthorHeader
-	Id uint64 `json:"id" dc:"id"`
+	Id int64 `json:"id" dc:"id"`
 }
 
 type PreviewCodeRes struct {
@@ -93,7 +93,7 @@ type UpdateTableAndColumnsRes struct {
 type GenerateCodeReq struct {
 	g.Meta `path:"/code/generate" method:"post" tags:"代码生成" summary:"生成代码."  x-permission:"system:code:generate"`
 	model2.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids"  v:"min-length:1#Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids"  v:"min-length:1#Id不能为空"`
 }
 
 type GenerateCodeRes struct {
@@ -103,7 +103,7 @@ type GenerateCodeRes struct {
 type DeleteCodeReq struct {
 	g.Meta `path:"/code/delete" method:"delete" tags:"代码生成" summary:"删除" x-permission:"system:code:delete"`
 	model2.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
 }
 
 type DeleteCodeRes struct {
@@ -113,7 +113,7 @@ type DeleteCodeRes struct {
 type SyncCodeReq struct {
 	g.Meta `path:"/code/sync/{Id}" method:"put" tags:"代码生成" summary:"同步数据库中的表信息跟字段." x-permission:"system:code:sync"`
 	model2.AuthorHeader
-	Id uint64 `json:"id" dc:"id" v:"required"`
+	Id int64 `json:"id" dc:"id" v:"required"`
 }
 
 type SyncCodeRes struct {

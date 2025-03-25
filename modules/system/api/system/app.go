@@ -37,12 +37,12 @@ type GetAppSecretRes struct {
 type GetApiListReq struct {
 	g.Meta `path:"/app/getApiList" method:"get" tags:"应用管理" summary:"获取绑定接口列表." x-exceptAuth:"true" x-permission:"system:app:getApiList" `
 	model.AuthorHeader
-	Id uint64 `json:"id" dc:"应用Id" v:"required"`
+	Id int64 `json:"id" dc:"应用Id" v:"required"`
 }
 
 type GetApiListRes struct {
 	g.Meta `mime:"application/json"`
-	Data   []uint64 `json:"data" dc:"获取绑定接口id"`
+	Data   []int64 `json:"data" dc:"获取绑定接口id"`
 }
 
 type IndexAppReq struct {
@@ -79,13 +79,13 @@ type SaveAppReq struct {
 
 type SaveAppRes struct {
 	g.Meta `mime:"application/json"`
-	Id     uint64 `json:"id" dc:"应用管理 id"`
+	Id     int64 `json:"id" dc:"应用管理 id"`
 }
 
 type ReadAppReq struct {
 	g.Meta `path:"/app/read/{Id}" method:"get" tags:"应用管理" summary:"更新应用管理." x-permission:"system:app:read"`
 	model.AuthorHeader
-	Id uint64 `json:"id" dc:"应用管理 id" v:"required|min:1#应用管理Id不能为空"`
+	Id int64 `json:"id" dc:"应用管理 id" v:"required|min:1#应用管理Id不能为空"`
 }
 
 type ReadAppRes struct {
@@ -105,8 +105,8 @@ type UpdateAppRes struct {
 type BindAppReq struct {
 	g.Meta `path:"/app/bind/{Id}" method:"put" tags:"应用管理" summary:"更新应用管理." x-permission:"system:app:bind"`
 	model.AuthorHeader
-	Id     uint64   `json:"id" dc:"应用管理 id" v:"required"`
-	ApiIds []uint64 `json:"apiIds" dc:"apiIds" v:"required"`
+	Id     int64   `json:"id" dc:"应用管理 id" v:"required"`
+	ApiIds []int64 `json:"apiIds" dc:"apiIds" v:"required"`
 }
 
 type BindAppRes struct {
@@ -116,7 +116,7 @@ type BindAppRes struct {
 type DeleteAppReq struct {
 	g.Meta `path:"/app/delete" method:"delete" tags:"应用管理" summary:"删除应用管理" x-permission:"system:app:delete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#应用管理Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#应用管理Id不能为空"`
 }
 
 type DeleteAppRes struct {
@@ -126,7 +126,7 @@ type DeleteAppRes struct {
 type RealDeleteAppReq struct {
 	g.Meta `path:"/app/realDelete" method:"delete" tags:"应用管理" summary:"单个或批量真实删除应用管理 （清空回收站）." x-permission:"system:app:realDelete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#应用管理Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#应用管理Id不能为空"`
 }
 
 type RealDeleteAppRes struct {
@@ -136,7 +136,7 @@ type RealDeleteAppRes struct {
 type RecoveryAppReq struct {
 	g.Meta `path:"/app/recovery" method:"put" tags:"应用管理" summary:"单个或批量恢复在回收站的应用管理." x-permission:"system:app:recovery"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#应用管理Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#应用管理Id不能为空"`
 }
 
 type RecoveryAppRes struct {
@@ -145,8 +145,8 @@ type RecoveryAppRes struct {
 type ChangeStatusAppReq struct {
 	g.Meta `path:"/app/changeStatus" method:"put" tags:"应用管理" summary:"更改状态" x-permission:"system:app:update"`
 	model.AuthorHeader
-	Id     uint64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
-	Status int    `json:"status" dc:"status" v:"min:1#状态不能为空"`
+	Id     int64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
+	Status int   `json:"status" dc:"status" v:"min:1#状态不能为空"`
 }
 
 type ChangeStatusAppRes struct {

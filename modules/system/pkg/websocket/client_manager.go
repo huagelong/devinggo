@@ -7,8 +7,8 @@
 package websocket
 
 import (
-	"devinggo/modules/system/pkg/websocket/glob"
 	"context"
+	"devinggo/modules/system/pkg/websocket/glob"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcron"
 	"github.com/gogf/gf/v2/os/gtime"
@@ -125,7 +125,7 @@ func (manager *ClientManager) EventDisconnect(ctx context.Context, client *Clien
 
 // ClearTimeoutConnections 定时清理超时连接
 func (manager *ClientManager) clearTimeoutConnections(ctx context.Context) {
-	currentTime := uint64(gtime.Now().Unix())
+	currentTime := int64(gtime.Now().Unix())
 	clients := clientManager.GetClients()
 	for _, client := range clients {
 		if client.IsHeartbeatTimeout(currentTime) {

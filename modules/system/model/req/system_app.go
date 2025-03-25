@@ -9,14 +9,14 @@ package req
 type SystemAppSearch struct {
 	AppName string `json:"app_name"`
 	AppId   string `json:"app_id"`
-	GroupId uint64 `json:"group_id"`
+	GroupId int64  `json:"group_id"`
 	Status  int    `json:"status"`
 }
 
 type SystemAppSave struct {
 	AppName     string `json:"app_name" v:"required"`
 	AppId       string `json:"app_id"  v:"required"`
-	GroupId     uint64 `json:"group_id"  v:"required"`
+	GroupId     int64  `json:"group_id"  v:"required"`
 	AppSecret   string `json:"app_secret"  v:"required"`
 	Status      int    `json:"status"`
 	Description string `json:"description"`
@@ -24,10 +24,10 @@ type SystemAppSave struct {
 }
 
 type SystemAppUpdate struct {
-	Id          uint64 `json:"id" v:"required"`
+	Id          int64  `json:"id" v:"required"`
 	AppName     string `json:"app_name" v:"required"`
 	AppId       string `json:"app_id"  v:"required"`
-	GroupId     uint64 `json:"group_id"  v:"required"`
+	GroupId     int64  `json:"group_id"  v:"required"`
 	AppSecret   string `json:"app_secret"  v:"required"`
 	Status      int    `json:"status"`
 	Description string `json:"description"`

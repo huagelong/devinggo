@@ -20,25 +20,25 @@ type SystemMenuDao struct {
 
 // SystemMenuColumns defines and stores column names for table system_menu.
 type SystemMenuColumns struct {
-	Id        string // 主键
-	ParentId  string // 父ID
-	Level     string // 组级集合
-	Name      string // 菜单名称
-	Code      string // 菜单标识代码
-	Icon      string // 菜单图标
-	Route     string // 路由地址
-	Component string // 组件路径
-	Redirect  string // 跳转地址
-	IsHidden  string // 是否隐藏 (1是 2否)
-	Type      string // 菜单类型, (M菜单 B按钮 L链接 I iframe)
-	Status    string // 状态 (1正常 2停用)
-	Sort      string // 排序
-	CreatedBy string // 创建者
-	UpdatedBy string // 更新者
+	Id        string //
+	ParentId  string //
+	Level     string //
+	Name      string //
+	Code      string //
+	Icon      string //
+	Route     string //
+	Component string //
+	Redirect  string //
+	IsHidden  string //
+	Type      string //
+	Status    string //
+	Sort      string //
+	CreatedBy string //
+	UpdatedBy string //
 	CreatedAt string //
 	UpdatedAt string //
-	DeletedAt string // 删除时间
-	Remark    string // 备注
+	DeletedAt string //
+	Remark    string //
 }
 
 // systemMenuColumns holds the columns for table system_menu.

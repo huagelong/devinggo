@@ -43,7 +43,7 @@ type RecycleAttachmentRes struct {
 type DeleteAttachmentReq struct {
 	g.Meta `path:"/attachment/delete" method:"delete" tags:"附件" summary:"单个或批量删除" x-permission:"system:attachment:delete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
 }
 
 type DeleteAttachmentRes struct {
@@ -53,7 +53,7 @@ type DeleteAttachmentRes struct {
 type RealDeleteAttachmentReq struct {
 	g.Meta `path:"/attachment/realDelete" method:"delete" tags:"附件" summary:"单个或批量真实删除 （清空回收站）." x-permission:"system:attachment:realDelete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
 }
 
 type RealDeleteAttachmentRes struct {
@@ -63,7 +63,7 @@ type RealDeleteAttachmentRes struct {
 type RecoveryAttachmentReq struct {
 	g.Meta `path:"/attachment/recovery" method:"put" tags:"附件" summary:"单个或批量恢复在回收站的数据." x-permission:"system:attachment:recovery"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
 }
 
 type RecoveryAttachmentRes struct {

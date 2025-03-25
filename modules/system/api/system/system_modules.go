@@ -47,13 +47,13 @@ type SaveSystemModulesReq struct {
 
 type SaveSystemModulesRes struct {
 	g.Meta `mime:"application/json"`
-	Id     uint64 `json:"id" dc:"id"`
+	Id     int64 `json:"id" dc:"id"`
 }
 
 type ReadSystemModulesReq struct {
 	g.Meta `path:"/systemModules/read/{Id}" method:"get" tags:"modules" summary:"获取单个信息" x-permission:"system:systemModules:read"`
 	model.AuthorHeader
-	Id uint64 `json:"id" dc:"modules id" v:"required|min:1#Id不能为空"`
+	Id int64 `json:"id" dc:"modules id" v:"required|min:1#Id不能为空"`
 }
 
 type ReadSystemModulesRes struct {
@@ -74,7 +74,7 @@ type UpdateSystemModulesRes struct {
 type DeleteSystemModulesReq struct {
 	g.Meta `path:"/systemModules/delete" method:"delete" tags:"modules" summary:"删除" x-permission:"system:systemModules:delete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
 }
 
 type DeleteSystemModulesRes struct {
@@ -97,7 +97,7 @@ type RecycleSystemModulesRes struct {
 type RealDeleteSystemModulesReq struct {
 	g.Meta `path:"/systemModules/realDelete" method:"delete" tags:"modules" summary:"单个或批量真实删除 （清空回收站）" x-permission:"system:systemModules:realDelete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
 }
 
 type RealDeleteSystemModulesRes struct {
@@ -107,7 +107,7 @@ type RealDeleteSystemModulesRes struct {
 type RecoverySystemModulesReq struct {
 	g.Meta `path:"/systemModules/recovery" method:"put" tags:"modules" summary:"单个或批量恢复在回收站的" x-permission:"system:systemModules:recovery"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
 }
 
 type RecoverySystemModulesRes struct {
@@ -117,8 +117,8 @@ type RecoverySystemModulesRes struct {
 type ChangeStatusSystemModulesReq struct {
 	g.Meta `path:"/systemModules/changeStatus" method:"put" tags:"modules" summary:"更改状态" x-permission:"system:systemModules:changeStatus"`
 	model.AuthorHeader
-	Id     uint64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
-	Status int    `json:"status" dc:"status" v:"min:1#状态不能为空"`
+	Id     int64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
+	Status int   `json:"status" dc:"status" v:"min:1#状态不能为空"`
 }
 
 type ChangeStatusSystemModulesRes struct {

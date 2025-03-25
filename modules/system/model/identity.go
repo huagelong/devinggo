@@ -7,11 +7,11 @@
 package model
 
 type Identity struct {
-	Id       uint64   `json:"id"              description:"用户ID"`
-	Username string   `json:"username"        description:"用户名"`
-	AppId    string   `json:"app_id"           description:"应用ID"`
-	RoleIds  []uint64 `json:"roleIds"      description:"角色ID列表"`
-	DeptIds  []uint64 `json:"deptIds"      description:"部门ID列表"`
+	Id       int64   `json:"id"              description:"用户ID"`
+	Username string  `json:"username"        description:"用户名"`
+	AppId    string  `json:"app_id"           description:"应用ID"`
+	RoleIds  []int64 `json:"roleIds"      description:"角色ID列表"`
+	DeptIds  []int64 `json:"deptIds"      description:"部门ID列表"`
 }
 
 type NormalIdentity struct {

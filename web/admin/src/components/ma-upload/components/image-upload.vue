@@ -4,7 +4,7 @@
     <a-space wrap>
       <div
           :class="'image-list ' + (config.rounded ? 'rounded-full' : '')"
-          v-if="! config.multiple && currentItem?.url && config.showList"
+          v-if="! config.multiple && currentItem?.url && config.showList && !uploading"
       >
         <a-button
             class="delete"
@@ -22,7 +22,7 @@
         />
       </div>
       <!-- 多图显示 -->
-      <template v-else-if="config.multiple && config.showList">
+      <template v-else-if="config.multiple && config.showList && !uploading">
         <div
             :class="'image-list ' + (config.rounded ? 'rounded-full' : '')"
             v-for="(image, idx) in showImgList" :key="idx"
@@ -95,9 +95,14 @@ const storageMode = inject('storageMode')
 const showImgList = ref([])
 const signImage = ref()
 const currentItem = ref({})
+const uploading = ref(false)
 
 const uploadImageHandler = async(options) => {
-  if(!options.fileItem) return
+  uploading.value = true
+  if(!options.fileItem) {
+    uploading.value = false
+    return
+  }
   if(!config.multiple) {
     currentItem.value = options.fileItem
   }
@@ -105,6 +110,7 @@ const uploadImageHandler = async(options) => {
   if(file.size > config.size) {
     Message.warning(file.name + ' ' + t('upload.sizeLimit'))
     currentItem.value = {}
+    uploading.value = false
     return
   }
 
@@ -124,6 +130,7 @@ const uploadImageHandler = async(options) => {
       emit('update:modelValue', files)
     }
   }
+  uploading.value = false
 }
 
 const removeSignImage = () => {

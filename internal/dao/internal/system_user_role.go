@@ -20,8 +20,8 @@ type SystemUserRoleDao struct {
 
 // SystemUserRoleColumns defines and stores column names for table system_user_role.
 type SystemUserRoleColumns struct {
-	UserId string // 用户主键
-	RoleId string // 角色主键
+	UserId string //
+	RoleId string //
 }
 
 // systemUserRoleColumns holds the columns for table system_user_role.

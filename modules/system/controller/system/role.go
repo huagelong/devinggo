@@ -166,7 +166,7 @@ func (c *roleController) DataPermissionRole(ctx context.Context, in *system.Data
 
 func (c *roleController) GetMenuByRole(ctx context.Context, in *system.GetMenuByRoleReq) (out *system.GetMenuByRoleRes, err error) {
 	out = &system.GetMenuByRoleRes{}
-	ids := make([]uint64, 0)
+	ids := make([]int64, 0)
 	ids = append(ids, in.Id)
 	data, err := service.SystemRole().GetMenuByRoleIds(ctx, ids)
 	if err != nil {
@@ -178,7 +178,7 @@ func (c *roleController) GetMenuByRole(ctx context.Context, in *system.GetMenuBy
 
 func (c *roleController) GetDeptByRole(ctx context.Context, in *system.GetDeptByRoleReq) (out *system.GetDeptByRoleRes, err error) {
 	out = &system.GetDeptByRoleRes{}
-	ids := make([]uint64, 0)
+	ids := make([]int64, 0)
 	ids = append(ids, in.Id)
 	data, err := service.SystemRole().GetDeptByRole(ctx, ids)
 	if err != nil {

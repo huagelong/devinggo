@@ -29,5 +29,5 @@ func NewSystemUserRole() *sSystemUserRole {
 }
 
 func (s *sSystemUserRole) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemUserRole.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemUserRole.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("user_id", "role_id")
 }

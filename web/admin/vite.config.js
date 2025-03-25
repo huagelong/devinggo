@@ -42,6 +42,9 @@ export default ({ mode }) => {
           rewrite: (path) => path.replace(new RegExp(`^${proxyPrefix}`), ''),
         },
       },
+      cors: {
+        origin: env.VITE_APP_BASE_URL,
+      },
     },
   });
 };

@@ -29,5 +29,5 @@ func NewSystemUserPost() *sSystemUserPost {
 }
 
 func (s *sSystemUserPost) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemUserPost.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemUserPost.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("user_id", "post_id")
 }

@@ -58,13 +58,13 @@ type SaveAppGroupReq struct {
 
 type SaveAppGroupRes struct {
 	g.Meta `mime:"application/json"`
-	Id     uint64 `json:"id" dc:"应用分组 id"`
+	Id     int64 `json:"id" dc:"应用分组 id"`
 }
 
 type ReadAppGroupReq struct {
 	g.Meta `path:"/appGroup/read/{Id}" method:"get" tags:"应用分组" summary:"更新应用分组." x-permission:"system:appGroup:read"`
 	model.AuthorHeader
-	Id uint64 `json:"id" dc:"应用分组 id" v:"required|min:1#应用分组Id不能为空"`
+	Id int64 `json:"id" dc:"应用分组 id" v:"required|min:1#应用分组Id不能为空"`
 }
 
 type ReadAppGroupRes struct {
@@ -85,7 +85,7 @@ type UpdateAppGroupRes struct {
 type DeleteAppGroupReq struct {
 	g.Meta `path:"/appGroup/delete" method:"delete" tags:"应用分组" summary:"删除应用分组" x-permission:"system:appGroup:delete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#应用分组Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#应用分组Id不能为空"`
 }
 
 type DeleteAppGroupRes struct {
@@ -95,7 +95,7 @@ type DeleteAppGroupRes struct {
 type RealDeleteAppGroupReq struct {
 	g.Meta `path:"/appGroup/realDelete" method:"delete" tags:"应用分组" summary:"单个或批量真实删除应用分组 （清空回收站）." x-permission:"system:appGroup:realDelete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#应用分组Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#应用分组Id不能为空"`
 }
 
 type RealDeleteAppGroupRes struct {
@@ -105,7 +105,7 @@ type RealDeleteAppGroupRes struct {
 type RecoveryAppGroupReq struct {
 	g.Meta `path:"/appGroup/recovery" method:"put" tags:"应用分组" summary:"单个或批量恢复在回收站的应用分组." x-permission:"system:appGroup:recovery"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#应用分组Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#应用分组Id不能为空"`
 }
 
 type RecoveryAppGroupRes struct {
@@ -115,8 +115,8 @@ type RecoveryAppGroupRes struct {
 type ChangeStatusAppGroupReq struct {
 	g.Meta `path:"/appGroup/changeStatus" method:"put" tags:"应用分组" summary:"更改状态" x-permission:"system:appGroup:update"`
 	model.AuthorHeader
-	Id     uint64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
-	Status int    `json:"status" dc:"status" v:"min:1#状态不能为空"`
+	Id     int64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
+	Status int   `json:"status" dc:"status" v:"min:1#状态不能为空"`
 }
 
 type ChangeStatusAppGroupRes struct {

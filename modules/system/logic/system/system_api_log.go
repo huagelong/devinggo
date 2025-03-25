@@ -41,7 +41,7 @@ func NewSystemApiLog() *sSystemApiLog {
 }
 
 func (s *sSystemApiLog) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemApiLog.Ctx(ctx)
+	return dao.SystemApiLog.Ctx(ctx).OnConflict("id")
 }
 
 func (s *sSystemApiLog) handleSearch(ctx context.Context, in *req.SystemApiLogSearch) (m *gdb.Model) {

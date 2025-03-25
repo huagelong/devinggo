@@ -14,13 +14,13 @@ type SystemRoleSearch struct {
 }
 
 type SystemRoleSave struct {
-	Id        uint64   `json:"id"`
-	Name      string   `json:"name"`
-	Code      string   `json:"code"`
-	DataScope int      `json:"data_scope"`
-	Status    int      `json:"status"`
-	Sort      int      `json:"sort"`
-	Remark    string   `json:"remark"`
-	MenuIds   []uint64 `json:"menu_ids"`
-	DeptIds   []uint64 `json:"dept_ids"`
+	Id        int64   `json:"id"`
+	Name      string  `json:"name"`
+	Code      string  `json:"code"`
+	DataScope int     `json:"data_scope"`
+	Status    int     `json:"status"`
+	Sort      int     `json:"sort"`
+	Remark    string  `json:"remark"`
+	MenuIds   []int64 `json:"menu_ids"`
+	DeptIds   []int64 `json:"dept_ids"`
 }

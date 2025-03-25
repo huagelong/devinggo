@@ -19,7 +19,7 @@ type SystemAppGroupSave struct {
 }
 
 type SystemAppGroupUpdate struct {
-	Id     uint64 `json:"id" v:"required"`
+	Id     int64  `json:"id" v:"required"`
 	Name   string `json:"name" v:"required|length:1,32#请输入分组名称|分组名称长度必须在1到32之间"`
 	Status int    `json:"status"`
 	Remark string `json:"remark"`

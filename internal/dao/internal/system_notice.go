@@ -20,18 +20,18 @@ type SystemNoticeDao struct {
 
 // SystemNoticeColumns defines and stores column names for table system_notice.
 type SystemNoticeColumns struct {
-	Id           string // 主键
-	MessageId    string // 消息ID
-	Title        string // 标题
-	Type         string // 公告类型（1通知 2公告）
-	Content      string // 公告内容
-	CreatedBy    string // 创建者
-	UpdatedBy    string // 更新者
-	CreatedAt    string // 创建时间
-	UpdatedAt    string // 更新时间
-	DeletedAt    string // 删除时间
-	Remark       string // 备注
-	ReceiveUsers string // 接收用户id,隔开
+	Id           string //
+	MessageId    string //
+	Title        string //
+	Type         string //
+	Content      string //
+	CreatedBy    string //
+	UpdatedBy    string //
+	CreatedAt    string //
+	UpdatedAt    string //
+	DeletedAt    string //
+	Remark       string //
+	ReceiveUsers string //
 }
 
 // systemNoticeColumns holds the columns for table system_notice.

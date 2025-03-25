@@ -7,11 +7,11 @@
 package cron
 
 import (
+	"context"
 	"devinggo/modules/system/pkg/worker/cron"
 	glob2 "devinggo/modules/system/pkg/worker/glob"
 	"devinggo/modules/system/pkg/worker/task"
 	"devinggo/modules/system/worker/consts"
-	"context"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/hibiken/asynq"
@@ -59,7 +59,7 @@ func (s *ctestCron) SetParams(ctx context.Context, params *gjson.Json) {
 	}
 	data := new(TestCronData)
 	if err := params.Scan(data); err != nil {
-		glob2.WithWorkLog().Errorf(ctx, "[%s] cron SetParams failed:%v", s.Type, err)
+		glob2.WithWorkLog().Errorf(ctx, "[%s] cron SetParams failed:%v data:%s", s.Type, err, data)
 		return
 	}
 	s.Payload.Data = data

@@ -34,7 +34,7 @@ func NewSystemSettingGenerateColumns() *sSettingGenerateColumns {
 }
 
 func (s *sSettingGenerateColumns) Model(ctx context.Context) *gdb.Model {
-	return dao.SettingGenerateColumns.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SettingGenerateColumns.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSettingGenerateColumns) GetList(ctx context.Context, in *req.SettingGenerateColumnsSearch) (out []*res.SettingGenerateColumns, err error) {

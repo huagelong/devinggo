@@ -7,14 +7,14 @@
 package req
 
 type SystemApiSearch struct {
-	GroupId    uint64 `json:"group_id"`
+	GroupId    int64  `json:"group_id"`
 	Name       string `json:"name"`
 	AccessName string `json:"access_name"`
 	Status     int    `json:"status"`
 }
 
 type SystemApiSave struct {
-	GroupId     uint64 `json:"group_id"     v:"required"     description:"接口组ID"`                   // 接口组ID
+	GroupId     int64  `json:"group_id"     v:"required"     description:"接口组ID"`                   // 接口组ID
 	Name        string `json:"name"      v:"required"             description:"接口名称"`               // 接口名称
 	AccessName  string `json:"access_name"   v:"required"   description:"接口访问名称"`                   // 接口访问名称
 	AuthMode    int    `json:"auth_mode"     v:"required"     description:"认证模式 (1简易 2复杂)"`         // 认证模式 (1简易 2复杂)
@@ -24,8 +24,8 @@ type SystemApiSave struct {
 }
 
 type SystemApiUpdate struct {
-	Id          uint64 `json:"id"          v:"required"     description:"接口ID"`                     // 接口ID
-	GroupId     uint64 `json:"group_id"      description:"接口组ID"`                                   // 接口组ID
+	Id          int64  `json:"id"          v:"required"     description:"接口ID"`                     // 接口ID
+	GroupId     int64  `json:"group_id"      description:"接口组ID"`                                   // 接口组ID
 	Name        string `json:"name"      v:"required"             description:"接口名称"`               // 接口名称
 	AccessName  string `json:"access_name"   v:"required"   description:"接口访问名称"`                   // 接口访问名称
 	AuthMode    int    `json:"auth_mode"     v:"required"     description:"认证模式 (1简易 2复杂)"`         // 认证模式 (1简易 2复杂)

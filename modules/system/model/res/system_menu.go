@@ -14,8 +14,8 @@ type SystemMenuTree struct {
 }
 
 type SystemMenuItem struct {
-	Id        uint64      `json:"id"                 description:"主键"`                         // 主键
-	ParentId  uint64      `json:"parent_id"    description:"父ID"`                              // 父ID
+	Id        int64       `json:"id"                 description:"主键"`                         // 主键
+	ParentId  int64       `json:"parent_id"    description:"父ID"`                              // 父ID
 	Level     string      `json:"level"           description:"组级集合"`                          // 组级集合
 	Name      string      `json:"name"             description:"菜单名称"`                         // 菜单名称
 	Code      string      `json:"code"             description:"菜单标识代码"`                       // 菜单标识代码
@@ -26,7 +26,7 @@ type SystemMenuItem struct {
 	IsHidden  int         `json:"is_hidden"    description:"是否隐藏 (1是 2否)"`                     // 是否隐藏 (1是 2否)
 	Type      string      `json:"type"             description:"菜单类型, (M菜单 B按钮 L链接 I iframe)"` // 菜单类型, (M菜单 B按钮 L链接 I iframe)
 	Status    int         `json:"status"         description:"状态 (1正常 2停用)"`                   // 状态 (1正常 2停用)
-	Sort      uint        `json:"sort"             description:"排序"`                           // 排序
+	Sort      int         `json:"sort"             description:"排序"`                           // 排序
 	CreatedBy int64       `json:"created_by"  description:"创建者"`                               // 创建者
 	UpdatedBy int64       `json:"updated_by"  description:"更新者"`                               // 更新者
 	CreatedAt *gtime.Time `json:"created_at"  description:""`                                  //
@@ -41,8 +41,8 @@ type SystemDeptSelectTree struct {
 }
 
 type SystemDeptSelectItem struct {
-	Id       uint64 `json:"id"`
-	ParentId uint64 `json:"parent_id"`
-	Value    uint64 `json:"value"`
+	Id       int64  `json:"id"`
+	ParentId int64  `json:"parent_id"`
+	Value    int64  `json:"value"`
 	Label    string `json:"label"`
 }

@@ -58,13 +58,13 @@ type SavePostReq struct {
 
 type SavePostRes struct {
 	g.Meta `mime:"application/json"`
-	Id     uint64 `json:"id" dc:"岗位 id"`
+	Id     int64 `json:"id" dc:"岗位 id"`
 }
 
 type ReadPostReq struct {
 	g.Meta `path:"/post/read/{Id}" method:"get" tags:"岗位" summary:"获取岗位信息." x-permission:"system:post:read"`
 	model.AuthorHeader
-	Id uint64 `json:"id" dc:"岗位 id" v:"required|min:1#岗位Id不能为空"`
+	Id int64 `json:"id" dc:"岗位 id" v:"required|min:1#岗位Id不能为空"`
 }
 
 type ReadPostRes struct {
@@ -85,7 +85,7 @@ type UpdatePostRes struct {
 type DeletePostReq struct {
 	g.Meta `path:"/post/delete" method:"delete" tags:"岗位" summary:"删除岗位" x-permission:"system:post:delete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#岗位Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#岗位Id不能为空"`
 }
 
 type DeletePostRes struct {
@@ -95,7 +95,7 @@ type DeletePostRes struct {
 type RealDeletePostReq struct {
 	g.Meta `path:"/post/realDelete" method:"delete" tags:"岗位" summary:"单个或批量真实删除岗位 （清空回收站）." x-permission:"system:post:realDelete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#岗位Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#岗位Id不能为空"`
 }
 
 type RealDeletePostRes struct {
@@ -105,7 +105,7 @@ type RealDeletePostRes struct {
 type RecoveryPostReq struct {
 	g.Meta `path:"/post/recovery" method:"put" tags:"岗位" summary:"单个或批量恢复在回收站的岗位." x-permission:"system:post:recovery"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#岗位Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#岗位Id不能为空"`
 }
 
 type RecoveryPostRes struct {
@@ -115,8 +115,8 @@ type RecoveryPostRes struct {
 type ChangeStatusPostReq struct {
 	g.Meta `path:"/post/changeStatus" method:"put" tags:"岗位" summary:"更改岗位状态" x-permission:"system:post:changeStatus"`
 	model.AuthorHeader
-	Id     uint64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
-	Status int    `json:"status" dc:"status" v:"min:1#岗位状态不能为空"`
+	Id     int64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
+	Status int   `json:"status" dc:"status" v:"min:1#岗位状态不能为空"`
 }
 
 type ChangeStatusPostRes struct {
@@ -126,7 +126,7 @@ type ChangeStatusPostRes struct {
 type NumberOperationPostReq struct {
 	g.Meta `path:"/post/numberOperation" method:"put" tags:"岗位" summary:"数字运算操作." x-permission:"system:post:update"`
 	model.AuthorHeader
-	Id          uint64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
+	Id          int64  `json:"id" dc:"ids" v:"min:1#Id不能为空"`
 	NumberName  string `json:"numberName" dc:"numberName" v:"required#名称不能为空"`
 	NumberValue int    `json:"numberValue" dc:"number Value" d:"1" v:"min:1#数字不能为空"`
 }

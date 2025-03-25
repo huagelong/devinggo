@@ -25,13 +25,13 @@ type FileUploadInput struct {
 }
 
 type ChunkUploadInput struct {
-	Total       uint64            `json:"total" v:"required"`
-	Index       uint64            `json:"index" v:"required"`
+	Total       int64             `json:"total" v:"required"`
+	Index       int64             `json:"index" v:"required"`
 	Hash        string            `json:"hash" v:"required"`
 	Ext         string            `json:"ext" v:"required"`
 	Type        string            `json:"type" v:"required"`
 	Name        string            `json:"name" v:"required"`
-	Size        uint64            `json:"size" v:"required"`
+	Size        int64             `json:"size" v:"required"`
 	File        *ghttp.UploadFile `json:"package" type:"file"   dc:"pls upload chunk file"`
 	RandomName  bool
 	StorageMode int

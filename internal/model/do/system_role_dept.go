@@ -11,6 +11,6 @@ import (
 // SystemRoleDept is the golang structure of table system_role_dept for DAO operations like Where/Data.
 type SystemRoleDept struct {
 	g.Meta `orm:"table:system_role_dept, do:true"`
-	RoleId interface{} // 角色主键
-	DeptId interface{} // 部门主键
+	RoleId interface{} //
+	DeptId interface{} //
 }

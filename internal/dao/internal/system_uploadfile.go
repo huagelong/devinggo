@@ -20,23 +20,23 @@ type SystemUploadfileDao struct {
 
 // SystemUploadfileColumns defines and stores column names for table system_uploadfile.
 type SystemUploadfileColumns struct {
-	Id          string // 主键
-	StorageMode string // 存储模式 (1 本地 2 阿里云 3 七牛云 4 腾讯云)
-	OriginName  string // 原文件名
-	ObjectName  string // 新文件名
-	Hash        string // 文件hash
-	MimeType    string // 资源类型
-	StoragePath string // 存储目录
-	Suffix      string // 文件后缀
-	SizeByte    string // 字节数
-	SizeInfo    string // 文件大小
-	Url         string // url地址
-	CreatedBy   string // 创建者
-	UpdatedBy   string // 更新者
-	CreatedAt   string // 创建时间
-	UpdatedAt   string // 更新时间
-	DeletedAt   string // 删除时间
-	Remark      string // 备注
+	Id          string //
+	StorageMode string //
+	OriginName  string //
+	ObjectName  string //
+	Hash        string //
+	MimeType    string //
+	StoragePath string //
+	Suffix      string //
+	SizeByte    string //
+	SizeInfo    string //
+	Url         string //
+	CreatedBy   string //
+	UpdatedBy   string //
+	CreatedAt   string //
+	UpdatedAt   string //
+	DeletedAt   string //
+	Remark      string //
 }
 
 // systemUploadfileColumns holds the columns for table system_uploadfile.

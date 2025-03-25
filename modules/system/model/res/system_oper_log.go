@@ -9,7 +9,7 @@ package res
 import "github.com/gogf/gf/v2/os/gtime"
 
 type SystemOperLog struct {
-	Id           uint64      `json:"id"                      description:"主键"`     // 主键
+	Id           int64       `json:"id"                      description:"主键"`     // 主键
 	Username     string      `json:"username"          description:"用户名"`          // 用户名
 	Method       string      `json:"method"              description:"请求方式"`       // 请求方式
 	Router       string      `json:"router"              description:"请求路由"`       // 请求路由

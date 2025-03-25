@@ -1,5 +1,5 @@
 **/node_modules
-web/admin/dist
+web/system/dist
 resource/public/uploads
 bin
 logs

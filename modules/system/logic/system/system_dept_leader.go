@@ -34,7 +34,7 @@ func NewSystemDeptLeader() *sSystemDeptLeader {
 }
 
 func (s *sSystemDeptLeader) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemDeptLeader.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemDeptLeader.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("dept_id", "user_id")
 }
 
 func (s *sSystemDeptLeader) GetPageList(ctx context.Context, req *model.PageListReq, search *req.SystemDeptLeaderSearch) (res []*res.SystemDeptLeaderInfo, total int, err error) {

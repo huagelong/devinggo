@@ -112,4 +112,17 @@ export default {
       data,
     });
   },
+
+/**
+* 更改systemModules数据
+* @returns
+*/
+changeStatus (data = {}) {
+  return request({
+      url: 'system/apiGroup/changeStatus',
+      method: 'put',
+      data
+  })
+},
+
 };

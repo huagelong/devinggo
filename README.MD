@@ -35,6 +35,7 @@
 - **前端**：Vue3、Vite5、Arco Design、Pinia
 
 ## 功能特性
+- [x] 支持mysql,postgresql
 - [x] 支持多语言：支持多语言切换
 - [x] 支持多主题：支持多主题切换
 - [x] 支持队列：支持基于redis的队列
@@ -65,7 +66,7 @@
 
 ## 环境要求
 
-- Go >= 1.18
+- Go >= 1.23.4
 - Node >= 18
 - MySQL >= 5.7
 - Redis >= 5.0

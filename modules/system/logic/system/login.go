@@ -38,7 +38,7 @@ func NewLogin() *sLogin {
 }
 
 func (s *sLogin) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemUser.Ctx(ctx)
+	return dao.SystemUser.Ctx(ctx).OnConflict("id")
 }
 
 func (s *sLogin) Login(ctx context.Context, username, password string) (token string, expire int64, err error) {

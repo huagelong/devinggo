@@ -14,9 +14,9 @@ type SettingConfig struct {
 	GroupId          interface{} // 组id
 	Key              interface{} // 配置键名
 	Value            interface{} // 配置值
-	Name             interface{} // 配置名称
-	InputType        interface{} // 数据输入类型
-	ConfigSelectData interface{} // 配置选项数据
-	Sort             interface{} // 排序
-	Remark           interface{} // 备注
+	Name             interface{} //
+	InputType        interface{} //
+	ConfigSelectData interface{} //
+	Sort             interface{} //
+	Remark           interface{} //
 }

@@ -9,7 +9,7 @@ package res
 import "github.com/gogf/gf/v2/os/gtime"
 
 type SystemLoginLog struct {
-	Id         uint64      `json:"id"                   description:"主键"`       // 主键
+	Id         int64       `json:"id"                   description:"主键"`       // 主键
 	Username   string      `json:"username"     description:"用户名"`              // 用户名
 	Ip         string      `json:"ip"                 description:"登录IP地址"`     // 登录IP地址
 	IpLocation string      `json:"ip_location" description:"IP所属地"`             // IP所属地

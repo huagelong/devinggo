@@ -20,14 +20,14 @@ type SettingConfigGroupDao struct {
 
 // SettingConfigGroupColumns defines and stores column names for table setting_config_group.
 type SettingConfigGroupColumns struct {
-	Id        string // 主键
-	Name      string // 配置组名称
-	Code      string // 配置组标识
-	CreatedBy string // 创建者
-	UpdatedBy string // 更新者
+	Id        string //
+	Name      string //
+	Code      string //
+	CreatedBy string //
+	UpdatedBy string //
 	CreatedAt string //
 	UpdatedAt string //
-	Remark    string // 备注
+	Remark    string //
 }
 
 // settingConfigGroupColumns holds the columns for table setting_config_group.

@@ -16,9 +16,9 @@ type Context struct {
 	Data            g.Map     // 自定kv变量 业务模块根据需要设置，不固定
 	AppId           string    // 应用ID
 	Permission      string
-	ExceptAuth      bool   // 是否排除权限验证
-	ExceptLogin     bool   // 是否排除登录验证
-	ExceptAccessLog bool   // 是否排除记录访问日志
-	TenantId        uint64 // 租户ID
+	ExceptAuth      bool  // 是否排除权限验证
+	ExceptLogin     bool  // 是否排除登录验证
+	ExceptAccessLog bool  // 是否排除记录访问日志
+	TenantId        int64 // 租户ID
 	RequestBody     string
 }

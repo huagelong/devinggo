@@ -9,7 +9,7 @@ package res
 import "github.com/gogf/gf/v2/os/gtime"
 
 type SettingConfigGroup struct {
-	Id        uint64      `json:"id"                 description:"主键"`  // 主键
+	Id        int64       `json:"id"                 description:"主键"`  // 主键
 	Name      string      `json:"name"             description:"配置组名称"` // 配置组名称
 	Code      string      `json:"code"             description:"配置组标识"` // 配置组标识
 	CreatedBy int64       `json:"createdBy"  description:"创建者"`         // 创建者

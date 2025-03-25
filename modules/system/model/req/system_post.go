@@ -14,7 +14,7 @@ type SystemPostSearch struct {
 }
 
 type SystemPostSave struct {
-	Id     uint64 `json:"id"`
+	Id     int64  `json:"id"`
 	Sort   int    `json:"sort"`
 	Status int    `json:"status"`
 	Name   string `json:"name"`

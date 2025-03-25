@@ -38,7 +38,7 @@ func NewSystemApiGroup() *sSystemApiGroup {
 }
 
 func (s *sSystemApiGroup) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemApiGroup.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemApiGroup.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemApiGroup) GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemApiGroupSearch) (rs []*res.SystemApiGroup, total int, err error) {
@@ -115,13 +115,13 @@ func (s *sSystemApiGroup) handleSearch(ctx context.Context, in *req.SystemApiGro
 	return
 }
 
-func (s *sSystemApiGroup) Save(ctx context.Context, in *req.SystemApiGroupSave) (id uint64, err error) {
+func (s *sSystemApiGroup) Save(ctx context.Context, in *req.SystemApiGroupSave) (id int64, err error) {
 	saveData := do.SystemApiGroup{
 		Name:   in.Name,
 		Status: in.Status,
 		Remark: in.Remark,
 	}
-	rs, err := s.Model(ctx).Data(saveData).Save()
+	rs, err := s.Model(ctx).Data(saveData).Insert()
 	if utils.IsError(err) {
 		return
 	}
@@ -129,11 +129,11 @@ func (s *sSystemApiGroup) Save(ctx context.Context, in *req.SystemApiGroupSave) 
 	if err != nil {
 		return
 	}
-	id = gconv.Uint64(tmpId)
+	id = gconv.Int64(tmpId)
 	return
 }
 
-func (s *sSystemApiGroup) GetById(ctx context.Context, id uint64) (res *res.SystemApiGroup, err error) {
+func (s *sSystemApiGroup) GetById(ctx context.Context, id int64) (res *res.SystemApiGroup, err error) {
 	err = s.Model(ctx).Where("id", id).Scan(&res)
 	if utils.IsError(err) {
 		return
@@ -154,7 +154,7 @@ func (s *sSystemApiGroup) Update(ctx context.Context, in *req.SystemApiGroupUpda
 	return
 }
 
-func (s *sSystemApiGroup) Delete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemApiGroup) Delete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return err
@@ -162,7 +162,7 @@ func (s *sSystemApiGroup) Delete(ctx context.Context, ids []uint64) (err error) 
 	return
 }
 
-func (s *sSystemApiGroup) RealDelete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemApiGroup) RealDelete(ctx context.Context, ids []int64) (err error) {
 	var res []*res.SystemApiGroup
 	err = s.Model(ctx).Unscoped().WhereIn("id", ids).Scan(&res)
 	if utils.IsError(err) {
@@ -171,7 +171,7 @@ func (s *sSystemApiGroup) RealDelete(ctx context.Context, ids []uint64) (err err
 	return
 }
 
-func (s *sSystemApiGroup) Recovery(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemApiGroup) Recovery(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
 		return err
@@ -179,7 +179,7 @@ func (s *sSystemApiGroup) Recovery(ctx context.Context, ids []uint64) (err error
 	return
 }
 
-func (s *sSystemApiGroup) ChangeStatus(ctx context.Context, id uint64, status int) (err error) {
+func (s *sSystemApiGroup) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err

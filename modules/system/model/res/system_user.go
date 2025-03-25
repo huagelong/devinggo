@@ -7,6 +7,7 @@
 package res
 
 import (
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/os/gtime"
 )
 
@@ -23,8 +24,8 @@ type Router struct {
 }
 
 type SystemMenu struct {
-	Id        uint64 `json:"id"                description:"主键"`   // 主键
-	ParentId  uint64 `json:"parent_id"    description:"父ID"`       // 父ID
+	Id        int64  `json:"id"                description:"主键"`   // 主键
+	ParentId  int64  `json:"parent_id"    description:"父ID"`       // 父ID
 	Name      string `json:"name"            description:"菜单标识代码"` // 菜单标识代码
 	Path      string `json:"path"        description:"路由地址"`       // 路由地址
 	Component string `json:"component"   description:"组件路径"`       // 组件路径
@@ -41,12 +42,12 @@ type Meta struct {
 }
 
 type SystemUserSimple struct {
-	Id       uint64 `json:"id"                   description:"用户ID，主键"` // 用户ID，主键
+	Id       int64  `json:"id"                   description:"用户ID，主键"` // 用户ID，主键
 	Username string `json:"username"             description:"用户名"`     // 用户名
 }
 
 type SystemUser struct {
-	Id             uint64      `json:"id"                   description:"用户ID，主键"`         // 用户ID，主键
+	Id             int64       `json:"id"                   description:"用户ID，主键"`         // 用户ID，主键
 	Username       string      `json:"username"             description:"用户名"`             // 用户名
 	UserType       string      `json:"user_type"           description:"用户类型：(100系统用户)"`   // 用户类型：(100系统用户)
 	Nickname       string      `json:"nickname"            description:"用户昵称"`             // 用户昵称
@@ -58,7 +59,7 @@ type SystemUser struct {
 	Status         int         `json:"status"                  description:"状态 (1正常 2停用)"` // 状态 (1正常 2停用)
 	LoginIp        string      `json:"login_ip"              description:"最后登陆IP"`         // 最后登陆IP
 	LoginTime      *gtime.Time `json:"login_time"         description:"最后登陆时间"`            // 最后登陆时间
-	BackendSetting string      `json:"backend_setting"     description:"后台设置数据"`           // 后台设置数据
+	BackendSetting *gjson.Json `json:"backend_setting"     description:"后台设置数据"`           // 后台设置数据
 	CreatedBy      int64       `json:"created_by"           description:"创建者"`             // 创建者
 	UpdatedBy      int64       `json:"updated_by"           description:"更新者"`             // 更新者
 	CreatedAt      *gtime.Time `json:"created_at"          description:"创建时间"`             // 创建时间
@@ -103,6 +104,6 @@ func (n SystemUserExport) ToDataStatusFormat(status string) int {
 }
 
 type SystemUserApp struct {
-	UserId uint64 `json:"user_id" dc:"用户ID"` // 用户ID
+	UserId int64  `json:"user_id" dc:"用户ID"` // 用户ID
 	AppId  string `json:"app_id" dc:"应用ID"`  // 应用ID
 }

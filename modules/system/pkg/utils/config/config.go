@@ -37,8 +37,8 @@ func GetConfigInt64(ctx context.Context, key string, defaultValue ...int64) int6
 	return g.Cfg().MustGet(ctx, key, defaultValue).Int64()
 }
 
-func GetConfigUint64(ctx context.Context, key string, defaultValue ...uint64) uint64 {
-	return g.Cfg().MustGet(ctx, key, defaultValue).Uint64()
+func GetConfigint64(ctx context.Context, key string, defaultValue ...int64) int64 {
+	return g.Cfg().MustGet(ctx, key, defaultValue).Int64()
 }
 
 func GetConfigInt(ctx context.Context, key string, defaultValue ...int) int {

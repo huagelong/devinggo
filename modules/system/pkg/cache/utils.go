@@ -258,10 +258,12 @@ func RemoveByTag(ctx context.Context, tags ...interface{}) (err error) {
 	if !g.IsEmpty(tags) && len(tags) > 0 {
 		tagCache, err := getTagCache(ctx)
 		if err != nil {
+			g.Log().Debug(ctx, "getTagCacheerr:", err)
 			return err
 		}
 		err = tagCache.InvalidateTags(ctx, gconv.Strings(tags))
 		if err != nil {
+			g.Log().Debug(ctx, "InvalidateTagserr:", err)
 			return err
 		}
 	}

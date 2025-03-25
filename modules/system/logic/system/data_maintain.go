@@ -78,17 +78,23 @@ func (s *sDataMaintain) GetAllTableStatus(ctx context.Context, groupName string)
 		return
 	}
 	dbType := strings.ToLower(db.GetConfig().Type)
-	if dbType == "mysql" {
+	switch dbType {
+	case "mysql":
 		rs, err = s.getMysqlAllTableStatus(ctx, db)
 		if err != nil {
 			return
 		}
 		return
-	} else {
+	case "pgsql":
+		rs, err = s.getPgsqlAllTableStatus(ctx, db)
+		if err != nil {
+			return
+		}
+		return
+	default:
 		err = myerror.ValidationFailed(ctx, "暂不支持该数据库类型")
 		return
 	}
-	return
 }
 
 func (s *sDataMaintain) getMysqlAllTableStatus(ctx context.Context, db gdb.DB) (rs []*res.DataMaintain, err error) {
@@ -103,5 +109,39 @@ func (s *sDataMaintain) getMysqlAllTableStatus(ctx context.Context, db gdb.DB) (
 		return
 	}
 	//g.Log().Info(ctx, "rs:", rs)
+	return
+}
+
+func (s *sDataMaintain) getPgsqlAllTableStatus(ctx context.Context, db gdb.DB) (rs []*res.DataMaintain, err error) {
+	query := `
+		SELECT 
+			tc.table_name as "Name",
+			pg_total_relation_size(quote_ident(tc.table_name)) as "Data_length",
+			obj_description(quote_ident(tc.table_name)::regclass::oid, 'pg_class') as "Comment",
+			to_char(greatest(
+				COALESCE(last_vacuum, '1970-01-01'),
+				COALESCE(last_autovacuum, '1970-01-01')
+			), 'YYYY-MM-DD HH24:MI:SS') as "Update_time",
+			'InnoDB' as "Engine",
+			'utf8mb4_general_ci' as "Collation",
+			0 as "Data_free"
+		FROM 
+			information_schema.tables tc
+			LEFT JOIN pg_stat_user_tables st ON tc.table_name = st.relname
+		WHERE 
+			tc.table_schema = 'public'
+			AND tc.table_type = 'BASE TABLE'
+		ORDER BY 
+			tc.table_name`
+
+	tablesInfo, err := db.GetAll(ctx, query)
+	if err != nil {
+		return
+	}
+
+	err = gconv.Structs(tablesInfo, &rs)
+	if err != nil {
+		return
+	}
 	return
 }

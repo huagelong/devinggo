@@ -58,13 +58,13 @@ type SaveApiReq struct {
 
 type SaveApiRes struct {
 	g.Meta `mime:"application/json"`
-	Id     uint64 `json:"id" dc:"接口 id"`
+	Id     int64 `json:"id" dc:"接口 id"`
 }
 
 type ReadApiReq struct {
 	g.Meta `path:"/api/read/{Id}" method:"get" tags:"接口" summary:"更新接口." x-permission:"system:api:read"`
 	model.AuthorHeader
-	Id uint64 `json:"id" dc:"接口 id" v:"required|min:1#接口Id不能为空"`
+	Id int64 `json:"id" dc:"接口 id" v:"required|min:1#接口Id不能为空"`
 }
 
 type ReadApiRes struct {
@@ -85,7 +85,7 @@ type UpdateApiRes struct {
 type DeleteApiReq struct {
 	g.Meta `path:"/api/delete" method:"delete" tags:"接口" summary:"删除接口" x-permission:"system:api:delete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#接口Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#接口Id不能为空"`
 }
 
 type DeleteApiRes struct {
@@ -95,7 +95,7 @@ type DeleteApiRes struct {
 type RealDeleteApiReq struct {
 	g.Meta `path:"/api/realDelete" method:"delete" tags:"接口" summary:"单个或批量真实删除接口 （清空回收站）." x-permission:"system:api:realDelete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#接口Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#接口Id不能为空"`
 }
 
 type RealDeleteApiRes struct {
@@ -105,7 +105,7 @@ type RealDeleteApiRes struct {
 type RecoveryApiReq struct {
 	g.Meta `path:"/api/recovery" method:"put" tags:"接口" summary:"单个或批量恢复在回收站的接口." x-permission:"system:api:recovery"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#接口Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#接口Id不能为空"`
 }
 
 type RecoveryApiRes struct {
@@ -115,8 +115,8 @@ type RecoveryApiRes struct {
 type ChangeStatusApiReq struct {
 	g.Meta `path:"/api/changeStatus" method:"put" tags:"接口" summary:"更改状态" x-permission:"system:api:update"`
 	model.AuthorHeader
-	Id     uint64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
-	Status int    `json:"status" dc:"status" v:"min:1#状态不能为空"`
+	Id     int64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
+	Status int   `json:"status" dc:"status" v:"min:1#状态不能为空"`
 }
 
 type ChangeStatusApiRes struct {

@@ -11,6 +11,6 @@ import (
 // SystemUserPost is the golang structure of table system_user_post for DAO operations like Where/Data.
 type SystemUserPost struct {
 	g.Meta `orm:"table:system_user_post, do:true"`
-	UserId interface{} // 用户主键
-	PostId interface{} // 岗位主键
+	UserId interface{} //
+	PostId interface{} //
 }

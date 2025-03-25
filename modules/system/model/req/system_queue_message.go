@@ -14,7 +14,7 @@ type SystemQueueMessageSearch struct {
 }
 
 type SystemQueueMessagesSend struct {
-	Title   string   `json:"title" v:"required|length:2,50#请输入标题|标题长度为2~50位" dc:"标题"`
-	Users   []uint64 `json:"users" v:"required#请输入选择用户" dc:"用户"`
-	Content string   `json:"content" v:"required#请输入内容" dc:"内容"`
+	Title   string  `json:"title" v:"required|length:2,50#请输入标题|标题长度为2~50位" dc:"标题"`
+	Users   []int64 `json:"users" v:"required#请输入选择用户" dc:"用户"`
+	Content string  `json:"content" v:"required#请输入内容" dc:"内容"`
 }

@@ -20,7 +20,7 @@ type SystemDictTypeSave struct {
 }
 
 type SystemDictTypeUpdate struct {
-	Id     uint64 `json:"id"`
+	Id     int64  `json:"id"`
 	Code   string `json:"code" v:"required"`
 	Name   string `json:"name" v:"required"`
 	Status int    `json:"status"`

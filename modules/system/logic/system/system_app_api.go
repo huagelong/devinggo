@@ -29,5 +29,5 @@ func NewSystemAppApi() *sSystemAppApi {
 }
 
 func (s *sSystemAppApi) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemAppApi.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemAppApi.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("app_id", "api_id")
 }

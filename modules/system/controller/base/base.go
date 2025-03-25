@@ -12,7 +12,7 @@ import (
 )
 
 type BaseController struct {
-	UserId uint64
+	UserId int64
 }
 
 // Init 自动执行的初始化方法

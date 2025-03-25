@@ -81,13 +81,13 @@ type SaveUserReq struct {
 
 type SaveUserRes struct {
 	g.Meta `mime:"application/json"`
-	Id     uint64 `json:"id" dc:"管理员信息 id"`
+	Id     int64 `json:"id" dc:"管理员信息 id"`
 }
 
 type ReadUserReq struct {
 	g.Meta `path:"/user/read/{Id}" method:"get" tags:"管理员信息" summary:"更新管理员信息." x-permission:"system:user:read"`
 	model.AuthorHeader
-	Id uint64 `json:"id" dc:"管理员信息 id" v:"required|min:1#管理员信息Id不能为空"`
+	Id int64 `json:"id" dc:"管理员信息 id" v:"required|min:1#管理员信息Id不能为空"`
 }
 
 type ReadUserRes struct {
@@ -98,7 +98,7 @@ type ReadUserRes struct {
 type ClearCacheReq struct {
 	g.Meta `path:"/user/clearCache" method:"post" tags:"管理员信息" summary:"更新管理员信息." x-permission:"system:user:cache"`
 	model.AuthorHeader
-	Id uint64 `json:"id" dc:"管理员信息 id" v:"required|min:1#管理员信息Id不能为空"`
+	Id int64 `json:"id" dc:"管理员信息 id" v:"required|min:1#管理员信息Id不能为空"`
 }
 
 type ClearCacheRes struct {
@@ -138,7 +138,7 @@ type DownloadTemplateRes struct {
 type SetHomePageReq struct {
 	g.Meta `path:"/user/setHomePage" method:"post" tags:"管理员信息" summary:"设置用户首页." x-permission:"system:user:homePage"`
 	model.AuthorHeader
-	Id        uint64 `json:"id" dc:"管理员信息 id" v:"required|min:1#管理员信息Id不能为空"`
+	Id        int64  `json:"id" dc:"管理员信息 id" v:"required|min:1#管理员信息Id不能为空"`
 	Dashboard string `json:"dashboard" dc:"dashboard" v:"required"`
 }
 
@@ -149,7 +149,7 @@ type SetHomePageRes struct {
 type InitUserPasswordReq struct {
 	g.Meta `path:"/user/initUserPassword" method:"put" tags:"管理员信息" summary:"初始化用户密码." x-permission:"system:user:initUserPassword"`
 	model.AuthorHeader
-	Id uint64 `json:"id" dc:"管理员信息 id" v:"required|min:1#管理员信息Id不能为空"`
+	Id int64 `json:"id" dc:"管理员信息 id" v:"required|min:1#管理员信息Id不能为空"`
 }
 
 type InitUserPasswordRes struct {
@@ -169,7 +169,7 @@ type UpdateUserRes struct {
 type DeleteUserReq struct {
 	g.Meta `path:"/user/delete" method:"delete" tags:"管理员信息" summary:"删除管理员信息" x-permission:"system:user:delete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#管理员信息Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#管理员信息Id不能为空"`
 }
 
 type DeleteUserRes struct {
@@ -179,7 +179,7 @@ type DeleteUserRes struct {
 type RealDeleteUserReq struct {
 	g.Meta `path:"/user/realDelete" method:"delete" tags:"管理员信息" summary:"单个或批量真实删除管理员信息 （清空回收站）." x-permission:"system:user:realDelete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#管理员信息Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#管理员信息Id不能为空"`
 }
 
 type RealDeleteUserRes struct {
@@ -189,7 +189,7 @@ type RealDeleteUserRes struct {
 type RecoveryUserReq struct {
 	g.Meta `path:"/user/recovery" method:"put" tags:"管理员信息" summary:"单个或批量恢复在回收站的管理员信息." x-permission:"system:user:recovery"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#管理员信息Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#管理员信息Id不能为空"`
 }
 
 type RecoveryUserRes struct {
@@ -199,8 +199,8 @@ type RecoveryUserRes struct {
 type ChangeStatusUserReq struct {
 	g.Meta `path:"/user/changeStatus" method:"put" tags:"管理员信息" summary:"更改管理员信息状态" x-permission:"system:user:changeStatus"`
 	model.AuthorHeader
-	Id     uint64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
-	Status int    `json:"status" dc:"status" v:"min:1#管理员信息状态不能为空"`
+	Id     int64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
+	Status int   `json:"status" dc:"status" v:"min:1#管理员信息状态不能为空"`
 }
 
 type ChangeStatusUserRes struct {
@@ -223,7 +223,7 @@ type IndexOnlineUserRes struct {
 type KickUserReq struct {
 	g.Meta `path:"/onlineUser/kick" method:"post" tags:"管理员信息" summary:"强退用户" x-permission:"system:onlineUser:kick"`
 	model.AuthorHeader
-	Id    uint64 `json:"id" dc:"id" v:"min-length:1#管理员信息Id不能为空"`
+	Id    int64  `json:"id" dc:"id" v:"min-length:1#管理员信息Id不能为空"`
 	AppId string `json:"app_id" dc:"app_id"`
 }
 

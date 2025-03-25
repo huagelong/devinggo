@@ -9,7 +9,7 @@ package res
 import "github.com/gogf/gf/v2/os/gtime"
 
 type SystemAppGroup struct {
-	Id        uint64      `json:"id"                 description:"主键"`       // 主键
+	Id        int64       `json:"id"                 description:"主键"`       // 主键
 	Name      string      `json:"name"             description:"应用组名称"`      // 应用组名称
 	Status    int         `json:"status"         description:"状态 (1正常 2停用)"` // 状态 (1正常 2停用)
 	CreatedBy int64       `json:"created_by"  description:"创建者"`             // 创建者

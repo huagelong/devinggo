@@ -9,8 +9,8 @@ package res
 import "github.com/gogf/gf/v2/os/gtime"
 
 type SystemApiLog struct {
-	Id           uint64      `json:"id"                       description:"主键"`     // 主键
-	ApiId        uint64      `json:"api_id"                description:"api ID"`    // api ID
+	Id           int64       `json:"id"                       description:"主键"`     // 主键
+	ApiId        int64       `json:"api_id"                description:"api ID"`    // api ID
 	ApiName      string      `json:"api_name"            description:"接口名称"`        // 接口名称
 	AccessName   string      `json:"access_name"      description:"接口访问名称"`         // 接口访问名称
 	RequestData  string      `json:"request_data"    description:"请求数据"`            // 请求数据

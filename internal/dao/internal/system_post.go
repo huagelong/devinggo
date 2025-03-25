@@ -20,17 +20,17 @@ type SystemPostDao struct {
 
 // SystemPostColumns defines and stores column names for table system_post.
 type SystemPostColumns struct {
-	Id        string // 主键
-	Name      string // 岗位名称
-	Code      string // 岗位代码
-	Sort      string // 排序
-	Status    string // 状态 (1正常 2停用)
-	CreatedBy string // 创建者
-	UpdatedBy string // 更新者
-	CreatedAt string // 创建时间
-	UpdatedAt string // 更新时间
-	DeletedAt string // 删除时间
-	Remark    string // 备注
+	Id        string //
+	Name      string //
+	Code      string //
+	Sort      string //
+	Status    string //
+	CreatedBy string //
+	UpdatedBy string //
+	CreatedAt string //
+	UpdatedAt string //
+	DeletedAt string //
+	Remark    string //
 }
 
 // systemPostColumns holds the columns for table system_post.

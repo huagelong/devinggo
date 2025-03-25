@@ -49,13 +49,13 @@ type SaveCrontabReq struct {
 
 type SaveCrontabRes struct {
 	g.Meta `mime:"application/json"`
-	Id     uint64 `json:"id" dc:"id"`
+	Id     int64 `json:"id" dc:"id"`
 }
 
 type RunCrontabReq struct {
 	g.Meta `path:"setting/crontab/run" method:"post" tags:"定时任务" summary:"立即执行定时任务." x-permission:"system:crontab:run"`
 	model.AuthorHeader
-	Id uint64 `json:"id" dc:"id"`
+	Id int64 `json:"id" dc:"id"`
 }
 
 type RunCrontabRes struct {
@@ -65,7 +65,7 @@ type RunCrontabRes struct {
 type ReadCrontabReq struct {
 	g.Meta `path:"setting/crontab/read/{Id}" method:"get" tags:"定时任务" summary:"立即执行定时任务." x-permission:"system:crontab:read"`
 	model.AuthorHeader
-	Id uint64 `json:"id" dc:"id" v:"required|min:1" `
+	Id int64 `json:"id" dc:"id" v:"required|min:1" `
 }
 
 type ReadCrontabRes struct {
@@ -86,7 +86,7 @@ type UpdateCrontabRes struct {
 type DeleteCrontabReq struct {
 	g.Meta `path:"setting/crontab/delete" method:"delete" tags:"定时任务" summary:"删除" x-permission:"system:crontab:delete"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
 }
 
 type DeleteCrontabRes struct {
@@ -96,7 +96,7 @@ type DeleteCrontabRes struct {
 type DeleteCrontabLogReq struct {
 	g.Meta `path:"setting/crontab/deleteCrontabLog" method:"delete" tags:"定时任务" summary:"删除定时任务日志" x-permission:"system:crontab:deleteCrontabLog"`
 	model.AuthorHeader
-	Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
 }
 
 type DeleteCrontabLogRes struct {
@@ -106,8 +106,8 @@ type DeleteCrontabLogRes struct {
 type ChangeStatusCrontabReq struct {
 	g.Meta `path:"setting/crontab/changeStatus" method:"put" tags:"定时任务" summary:"更改状态" x-permission:"system:crontab:update"`
 	model.AuthorHeader
-	Id     uint64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
-	Status int    `json:"status" dc:"status" v:"min:1#状态不能为空"`
+	Id     int64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
+	Status int   `json:"status" dc:"status" v:"min:1#状态不能为空"`
 }
 
 type ChangeStatusCrontabRes struct {

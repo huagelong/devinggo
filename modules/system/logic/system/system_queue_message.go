@@ -37,10 +37,10 @@ func NewSystemQueueMessage() *sSystemQueueMessage {
 }
 
 func (s *sSystemQueueMessage) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemQueueMessage.Ctx(ctx)
+	return dao.SystemQueueMessage.Ctx(ctx).OnConflict("id")
 }
 
-func (s *sSystemQueueMessage) GetReceiveUserPageList(ctx context.Context, req *model2.PageListReq, messageId uint64) (rs []*res.MessageReceiveUser, total int, err error) {
+func (s *sSystemQueueMessage) GetReceiveUserPageList(ctx context.Context, req *model2.PageListReq, messageId int64) (rs []*res.MessageReceiveUser, total int, err error) {
 	m := service.SystemUser().Model(ctx).Fields(dao.SystemQueueMessageReceive.Table()+".read_status as read_status_int", dao.SystemUser.Table()+".username", dao.SystemUser.Table()+".nickname").InnerJoinOnFields(dao.SystemQueueMessageReceive.Table(), "id", "=", "user_id")
 	m = m.Where(dao.SystemQueueMessageReceive.Table()+".message_id", messageId)
 	m = m.OrderDesc(dao.SystemUser.Table() + ".created_at")
@@ -51,7 +51,7 @@ func (s *sSystemQueueMessage) GetReceiveUserPageList(ctx context.Context, req *m
 	return
 }
 
-func (s *sSystemQueueMessage) GetPageList(ctx context.Context, req *model2.PageListReq, userId uint64, params *req.SystemQueueMessageSearch) (rs []*res.SystemQueueMessage, total int, err error) {
+func (s *sSystemQueueMessage) GetPageList(ctx context.Context, req *model2.PageListReq, userId int64, params *req.SystemQueueMessageSearch) (rs []*res.SystemQueueMessage, total int, err error) {
 	readStatus := params.ReadStatus
 	contentType := params.ContentType
 	title := params.Title
@@ -125,7 +125,7 @@ func (s *sSystemQueueMessage) GetPageList(ctx context.Context, req *model2.PageL
 	return
 }
 
-func (s *sSystemQueueMessage) DeletesRelated(ctx context.Context, ids []uint64, userId uint64) (err error) {
+func (s *sSystemQueueMessage) DeletesRelated(ctx context.Context, ids []int64, userId int64) (err error) {
 	_, err = service.SystemQueueMessageReceive().Model(ctx).Where(dao.SystemQueueMessageReceive.Columns().UserId, userId).WhereIn(dao.SystemQueueMessageReceive.Columns().MessageId, ids).Delete()
 	if utils.IsError(err) {
 		return err
@@ -133,7 +133,7 @@ func (s *sSystemQueueMessage) DeletesRelated(ctx context.Context, ids []uint64, 
 	return
 }
 
-func (s *sSystemQueueMessage) SendMessage(ctx context.Context, sendReq *req.SystemQueueMessagesSend, sendUserId uint64, contentType string) (err error, messageId uint64) {
+func (s *sSystemQueueMessage) SendMessage(ctx context.Context, sendReq *req.SystemQueueMessagesSend, sendUserId int64, contentType string) (err error, messageId int64) {
 	data := do.SystemQueueMessage{
 		ContentType: contentType,
 		Title:       sendReq.Title,
@@ -151,7 +151,7 @@ func (s *sSystemQueueMessage) SendMessage(ctx context.Context, sendReq *req.Syst
 	if err != nil {
 		return
 	}
-	messageId = uint64(messageIdTmp)
+	messageId = int64(messageIdTmp)
 	//异步处理
 	utils.SafeGo(ctx, func(ctx context.Context) {
 		if !g.IsEmpty(sendReq.Users) {
@@ -171,7 +171,7 @@ func (s *sSystemQueueMessage) SendMessage(ctx context.Context, sendReq *req.Syst
 	return
 }
 
-func (s *sSystemQueueMessage) sendWs(ctx context.Context, userId uint64) {
+func (s *sSystemQueueMessage) sendWs(ctx context.Context, userId int64) {
 	pageReq := &model2.PageListReq{
 		OrderBy:   "created_at",
 		OrderType: "desc",
@@ -200,7 +200,7 @@ func (s *sSystemQueueMessage) sendWs(ctx context.Context, userId uint64) {
 	websocket2.PublishIdMessage(ctx, toId, clientIdWResponse)
 }
 
-func (s *sSystemQueueMessage) saveAllUserMessageReceive(ctx context.Context, messageId uint64, page int) (err error) {
+func (s *sSystemQueueMessage) saveAllUserMessageReceive(ctx context.Context, messageId int64, page int) (err error) {
 	var userList []*res.SystemUserSimple
 	pageSize := 100
 	m := service.SystemUser().Model(ctx).Where(dao.SystemUser.Columns().Status, 1).OrderDesc("id")

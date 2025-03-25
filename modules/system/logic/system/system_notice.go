@@ -39,7 +39,7 @@ func NewSystemNotice() *sSystemNotice {
 }
 
 func (s *sSystemNotice) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemNotice.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemNotice.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemNotice) GetPageList(ctx context.Context, req *model.PageListReq) (res []*res.SystemNotice, total int, err error) {
@@ -96,7 +96,7 @@ func (s *sSystemNotice) handleSearch(ctx context.Context, in *req.SystemNoticeSe
 	return
 }
 
-func (s *sSystemNotice) Save(ctx context.Context, in *req.SystemNoticeSave, userId uint64) (id uint64, err error) {
+func (s *sSystemNotice) Save(ctx context.Context, in *req.SystemNoticeSave, userId int64) (id int64, err error) {
 	contentType := ""
 	if in.Type == 1 {
 		contentType = consts.TYPE_NOTICE
@@ -125,7 +125,7 @@ func (s *sSystemNotice) Save(ctx context.Context, in *req.SystemNoticeSave, user
 		saveData.ReceiveUsers = gstr.Join(gconv.Strings(in.Users), ",")
 	}
 
-	rs, err := s.Model(ctx).Data(saveData).Save()
+	rs, err := s.Model(ctx).Data(saveData).Insert()
 	if utils.IsError(err) {
 		return
 	}
@@ -133,11 +133,11 @@ func (s *sSystemNotice) Save(ctx context.Context, in *req.SystemNoticeSave, user
 	if err != nil {
 		return
 	}
-	id = gconv.Uint64(tmpId)
+	id = gconv.Int64(tmpId)
 	return
 }
 
-func (s *sSystemNotice) GetById(ctx context.Context, id uint64) (res *res.SystemNotice, err error) {
+func (s *sSystemNotice) GetById(ctx context.Context, id int64) (res *res.SystemNotice, err error) {
 	err = s.Model(ctx).Where("id", id).Scan(&res)
 	if utils.IsError(err) {
 		return
@@ -164,7 +164,7 @@ func (s *sSystemNotice) Update(ctx context.Context, in *req.SystemNoticeUpdate) 
 	return
 }
 
-func (s *sSystemNotice) Delete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemNotice) Delete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return err
@@ -172,7 +172,7 @@ func (s *sSystemNotice) Delete(ctx context.Context, ids []uint64) (err error) {
 	return
 }
 
-func (s *sSystemNotice) RealDelete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemNotice) RealDelete(ctx context.Context, ids []int64) (err error) {
 	var res []*res.SystemNotice
 	err = s.Model(ctx).Unscoped().WhereIn("id", ids).Scan(&res)
 	if utils.IsError(err) {
@@ -198,7 +198,7 @@ func (s *sSystemNotice) RealDelete(ctx context.Context, ids []uint64) (err error
 	return
 }
 
-func (s *sSystemNotice) Recovery(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemNotice) Recovery(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
 		return err

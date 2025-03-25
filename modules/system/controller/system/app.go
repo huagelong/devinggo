@@ -76,7 +76,7 @@ func (c *appController) GetApiList(ctx context.Context, in *system.GetApiListReq
 	if !g.IsEmpty(rs) {
 		out.Data = rs
 	} else {
-		out.Data = make([]uint64, 0)
+		out.Data = make([]int64, 0)
 	}
 
 	return

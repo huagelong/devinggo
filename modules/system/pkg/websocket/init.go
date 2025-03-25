@@ -96,7 +96,7 @@ func GetConnection(r *ghttp.Request) (conn *websocket.Conn, err error) {
 
 func WsPage(r *ghttp.Request) {
 	ctx := r.GetCtx()
-	currentTime := uint64(gtime.Now().Unix())
+	currentTime := int64(gtime.Now().Unix())
 	glob.WithWsLog().Debugf(ctx, "Connected!currentTime:%d", currentTime)
 	conn, err := GetConnection(r)
 	if err != nil {

@@ -12,10 +12,10 @@ import (
 )
 
 type SystemQueueMessage struct {
-	Id          uint64           `json:"id"                    description:"主键"` // 主键
+	Id          int64            `json:"id"                    description:"主键"` // 主键
 	ContentType string           `json:"content_type" description:"内容类型"`        // 内容类型
 	Title       string           `json:"title"              description:"消息标题"`  // 消息标题
-	SendBy      uint64           `json:"send_by"           description:"发送人"`    // 发送人
+	SendBy      int64            `json:"send_by"           description:"发送人"`    // 发送人
 	Content     string           `json:"content"          description:"消息内容"`    // 消息内容
 	CreatedBy   int64            `json:"created_by"     description:"创建者"`       // 创建者
 	UpdatedBy   int64            `json:"updated_by"     description:"更新者"`       // 更新者

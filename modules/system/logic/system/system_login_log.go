@@ -40,7 +40,7 @@ func NewSystemLoginLog() *sSystemLoginLog {
 }
 
 func (s *sSystemLoginLog) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemLoginLog.Ctx(ctx)
+	return dao.SystemLoginLog.Ctx(ctx).OnConflict("id")
 }
 
 func (s *sSystemLoginLog) GetPageList(ctx context.Context, req *model.PageListReq, username string) (res []*res.SystemLoginLog, total int, err error) {

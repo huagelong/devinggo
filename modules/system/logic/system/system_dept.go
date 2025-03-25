@@ -42,10 +42,10 @@ func NewSystemDept() *sSystemDept {
 }
 
 func (s *sSystemDept) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemDept.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemDept.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
-func (s *sSystemDept) GetSelectTree(ctx context.Context, userId uint64) (tree []*res.SystemDeptTree, err error) {
+func (s *sSystemDept) GetSelectTree(ctx context.Context, userId int64) (tree []*res.SystemDeptTree, err error) {
 	systemDeptEntity := []entity.SystemDept{}
 	err = s.Model(ctx).Handler(handler.FilterAuth).Where(dao.SystemMenu.Columns().Status, 1).Order("parent_id, sort desc").Scan(&systemDeptEntity)
 	if utils.IsError(err) {
@@ -54,13 +54,13 @@ func (s *sSystemDept) GetSelectTree(ctx context.Context, userId uint64) (tree []
 
 	if !g.IsEmpty(systemDeptEntity) {
 		systemDeptEntity2 := []entity.SystemDept{}
-		deptIds := make([]uint64, 0)
+		deptIds := make([]int64, 0)
 		result, err := service.SystemUserDept().Model(ctx).Fields(dao.SystemUserDept.Columns().DeptId).Where(dao.SystemUserDept.Columns().UserId, userId).Array()
 		if utils.IsError(err) {
 			return nil, err
 		}
 		if !g.IsEmpty(result) {
-			deptIds = gconv.SliceUint64(result)
+			deptIds = gconv.SliceInt64(result)
 			err = s.Model(ctx).Where(dao.SystemDept.Columns().Status, 1).WhereIn(dao.SystemDept.Columns().Id, deptIds).Order("parent_id, sort desc").Scan(&systemDeptEntity2)
 			if utils.IsError(err) {
 				return nil, err
@@ -83,7 +83,7 @@ func (s *sSystemDept) compareFunc(item entity.SystemDept) string {
 }
 
 func (s *sSystemDept) treeList(nodes []entity.SystemDept) (tree []*res.SystemDeptTree) {
-	type itemTree map[uint64]*res.SystemDeptTree
+	type itemTree map[int64]*res.SystemDeptTree
 	itemList := make(itemTree)
 	for _, systemDeptEntity := range nodes {
 		var item res.SystemDeptTree
@@ -174,7 +174,7 @@ func (s *sSystemDept) GetRecycleTreeList(ctx context.Context, in *req.SystemDept
 }
 
 func (s *sSystemDept) treeList2(nodes []entity.SystemDept) (tree []*res.SystemListDeptTree) {
-	type itemTree map[uint64]*res.SystemListDeptTree
+	type itemTree map[int64]*res.SystemListDeptTree
 	itemList := make(itemTree)
 	for _, systemDeptEntity := range nodes {
 		var item res.SystemListDeptTree
@@ -245,7 +245,7 @@ func (s *sSystemDept) handleData(ctx context.Context, data *req.SystemDeptSave) 
 	return
 }
 
-func (s *sSystemDept) Save(ctx context.Context, in *req.SystemDeptSave) (id uint64, err error) {
+func (s *sSystemDept) Save(ctx context.Context, in *req.SystemDeptSave) (id int64, err error) {
 	data, err := s.handleData(ctx, in)
 	if err != nil {
 		return
@@ -260,7 +260,7 @@ func (s *sSystemDept) Save(ctx context.Context, in *req.SystemDeptSave) (id uint
 		Phone:    data.Phone,
 		Remark:   data.Remark,
 	}
-	rs, err := s.Model(ctx).Data(saveData).Save()
+	rs, err := s.Model(ctx).Data(saveData).Insert()
 	if utils.IsError(err) {
 		return
 	}
@@ -268,7 +268,7 @@ func (s *sSystemDept) Save(ctx context.Context, in *req.SystemDeptSave) (id uint
 	if err != nil {
 		return
 	}
-	id = gconv.Uint64(tmpId)
+	id = gconv.Int64(tmpId)
 	return
 }
 
@@ -296,7 +296,7 @@ func (s *sSystemDept) AddLeader(ctx context.Context, in *req.SystemDeptAddLeader
 	return
 }
 
-func (s *sSystemDept) DelLeader(ctx context.Context, id uint64, userIds []uint64) (err error) {
+func (s *sSystemDept) DelLeader(ctx context.Context, id int64, userIds []int64) (err error) {
 	_, err = service.SystemDeptLeader().Model(ctx).Where("dept_id", id).WhereIn("user_id", userIds).Delete()
 	if utils.IsError(err) {
 		return err
@@ -348,7 +348,7 @@ func (s *sSystemDept) Update(ctx context.Context, in *req.SystemDeptSave) (err e
 	return
 }
 
-func (s *sSystemDept) checkChildrenExists(ctx context.Context, id uint64) bool {
+func (s *sSystemDept) checkChildrenExists(ctx context.Context, id int64) bool {
 	count, err := s.Model(ctx).Unscoped().Where("parent_id", id).Count()
 	if utils.IsError(err) {
 		return false
@@ -359,7 +359,7 @@ func (s *sSystemDept) checkChildrenExists(ctx context.Context, id uint64) bool {
 	return false
 }
 
-func (s *sSystemDept) checkChildrenUnscopedAllExists(ctx context.Context, id uint64, ids []uint64) bool {
+func (s *sSystemDept) checkChildrenUnscopedAllExists(ctx context.Context, id int64, ids []int64) bool {
 	var depts []*entity.SystemDept
 	err := s.Model(ctx).Unscoped().Where("parent_id", id).Scan(&depts)
 	if utils.IsError(err) {
@@ -376,7 +376,7 @@ func (s *sSystemDept) checkChildrenUnscopedAllExists(ctx context.Context, id uin
 	return hasAllChildrenExists
 }
 
-func (s *sSystemDept) checkChildrenAllExists(ctx context.Context, id uint64, ids []uint64) bool {
+func (s *sSystemDept) checkChildrenAllExists(ctx context.Context, id int64, ids []int64) bool {
 	var depts []*entity.SystemDept
 	err := s.Model(ctx).Where("parent_id", id).Scan(&depts)
 	if utils.IsError(err) {
@@ -393,8 +393,8 @@ func (s *sSystemDept) checkChildrenAllExists(ctx context.Context, id uint64, ids
 	return hasAllChildrenExists
 }
 
-func (s *sSystemDept) Delete(ctx context.Context, ids []uint64) (names []string, err error) {
-	ctuIds := make([]uint64, 0)
+func (s *sSystemDept) Delete(ctx context.Context, ids []int64) (names []string, err error) {
+	ctuIds := make([]int64, 0)
 	for _, id := range ids {
 		if s.checkChildrenAllExists(ctx, id, ids) {
 			_, err = s.Model(ctx).Where("id", id).Delete()
@@ -418,8 +418,8 @@ func (s *sSystemDept) Delete(ctx context.Context, ids []uint64) (names []string,
 	return
 }
 
-func (s *sSystemDept) RealDelete(ctx context.Context, ids []uint64) (names []string, err error) {
-	ctuIds := make([]uint64, 0)
+func (s *sSystemDept) RealDelete(ctx context.Context, ids []int64) (names []string, err error) {
+	ctuIds := make([]int64, 0)
 	for _, id := range ids {
 		if s.checkChildrenUnscopedAllExists(ctx, id, ids) {
 			_, err = s.Model(ctx).Unscoped().Where("id", id).Delete()
@@ -444,7 +444,7 @@ func (s *sSystemDept) RealDelete(ctx context.Context, ids []uint64) (names []str
 	return
 }
 
-func (s *sSystemDept) Recovery(ctx context.Context, ids []uint64) (err error) {
+func (s *sSystemDept) Recovery(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
 		return err
@@ -452,7 +452,7 @@ func (s *sSystemDept) Recovery(ctx context.Context, ids []uint64) (err error) {
 	return
 }
 
-func (s *sSystemDept) ChangeStatus(ctx context.Context, id uint64, status int) (err error) {
+func (s *sSystemDept) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err
@@ -460,7 +460,7 @@ func (s *sSystemDept) ChangeStatus(ctx context.Context, id uint64, status int) (
 	return
 }
 
-func (s *sSystemDept) NumberOperation(ctx context.Context, id uint64, numberName string, numberValue int) (err error) {
+func (s *sSystemDept) NumberOperation(ctx context.Context, id int64, numberName string, numberValue int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{numberName: numberValue}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err

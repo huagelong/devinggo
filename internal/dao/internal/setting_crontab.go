@@ -20,19 +20,19 @@ type SettingCrontabDao struct {
 
 // SettingCrontabColumns defines and stores column names for table setting_crontab.
 type SettingCrontabColumns struct {
-	Id        string // 主键
-	Name      string // 任务名称
-	Type      string // 任务类型 (1 command, 2 class, 3 url, 4 eval)
-	Target    string // 调用任务字符串
-	Parameter string // 调用任务参数
-	Rule      string // 任务执行表达式
-	Singleton string // 是否单次执行 (1 是 2 不是)
-	Status    string // 状态 (1正常 2停用)
-	CreatedBy string // 创建者
-	UpdatedBy string // 更新者
+	Id        string //
+	Name      string //
+	Type      string //
+	Target    string //
+	Parameter string //
+	Rule      string //
+	Singleton string //
+	Status    string //
+	CreatedBy string //
+	UpdatedBy string //
 	CreatedAt string //
 	UpdatedAt string //
-	Remark    string // 备注
+	Remark    string //
 }
 
 // settingCrontabColumns holds the columns for table setting_crontab.

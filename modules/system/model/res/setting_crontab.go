@@ -12,7 +12,7 @@ import (
 )
 
 type SettingCrontab struct {
-	Id        uint64      `json:"id"                 description:"主键"`                                     // 主键
+	Id        int64       `json:"id"                 description:"主键"`                                     // 主键
 	Name      string      `json:"name"             description:"任务名称"`                                     // 任务名称
 	Type      int         `json:"type"             description:"任务类型 (1 command, 2 class, 3 url, 4 eval)"` // 任务类型 (1 command, 2 class, 3 url, 4 eval)
 	Target    string      `json:"target"         description:"调用任务字符串"`                                    // 调用任务字符串
@@ -28,7 +28,7 @@ type SettingCrontab struct {
 }
 
 type SettingCrontabOne struct {
-	Id        uint64      `json:"id"                 description:"主键"`                                     // 主键
+	Id        int64       `json:"id"                 description:"主键"`                                     // 主键
 	Name      string      `json:"name"             description:"任务名称"`                                     // 任务名称
 	Type      int         `json:"type"             description:"任务类型 (1 command, 2 class, 3 url, 4 eval)"` // 任务类型 (1 command, 2 class, 3 url, 4 eval)
 	Target    string      `json:"target"         description:"调用任务字符串"`                                    // 调用任务字符串

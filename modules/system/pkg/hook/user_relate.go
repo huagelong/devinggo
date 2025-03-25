@@ -18,12 +18,12 @@ import (
 
 func UserRelate(ctx context.Context, result gdb.Result, fieldNames []string) (gdb.Result, error) {
 	var (
-		memberIds []uint64
+		memberIds []int64
 	)
 	for _, record := range result {
 		for _, fieldName := range fieldNames {
-			if _, ok := record[fieldName]; ok && (record[fieldName].Uint64() > 0) {
-				memberIds = append(memberIds, record[fieldName].Uint64())
+			if _, ok := record[fieldName]; ok && (record[fieldName].Int64() > 0) {
+				memberIds = append(memberIds, record[fieldName].Int64())
 			}
 		}
 	}
@@ -44,7 +44,7 @@ func UserRelate(ctx context.Context, result gdb.Result, fieldNames []string) (gd
 
 	findMember := func(id *gvar.Var) *model.UserRelate {
 		for _, v := range members {
-			if v.Id == id.Uint64() {
+			if v.Id == id.Int64() {
 				return v
 			}
 		}
@@ -63,7 +63,7 @@ func UserRelate(ctx context.Context, result gdb.Result, fieldNames []string) (gd
 func emptyUserRelate(result gdb.Result, fieldNames []string) gdb.Result {
 	for _, record := range result {
 		for _, fieldName := range fieldNames {
-			if _, ok := record[fieldName]; ok && (record[fieldName].Uint64() > 0) {
+			if _, ok := record[fieldName]; ok && (record[fieldName].Int64() > 0) {
 				cacheName := fieldName + "_relate"
 				record[cacheName] = gvar.New(g.Map{})
 			}

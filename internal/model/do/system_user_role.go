@@ -11,6 +11,6 @@ import (
 // SystemUserRole is the golang structure of table system_user_role for DAO operations like Where/Data.
 type SystemUserRole struct {
 	g.Meta `orm:"table:system_user_role, do:true"`
-	UserId interface{} // 用户主键
-	RoleId interface{} // 角色主键
+	UserId interface{} //
+	RoleId interface{} //
 }

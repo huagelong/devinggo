@@ -9,8 +9,8 @@ package res
 import "github.com/gogf/gf/v2/os/gtime"
 
 type SystemApi struct {
-	Id          uint64      `json:"id"                     description:"主键"`              // 主键
-	GroupId     uint64      `json:"group_id"          description:"接口组ID"`                // 接口组ID
+	Id          int64       `json:"id"                     description:"主键"`              // 主键
+	GroupId     int64       `json:"group_id"          description:"接口组ID"`                // 接口组ID
 	Name        string      `json:"name"                 description:"接口名称"`              // 接口名称
 	AccessName  string      `json:"access_name"    description:"接口访问名称"`                  // 接口访问名称
 	AuthMode    int         `json:"auth_mode"        description:"认证模式 (1简易 2复杂)"`        // 认证模式 (1简易 2复杂)

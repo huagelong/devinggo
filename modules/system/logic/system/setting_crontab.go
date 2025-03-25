@@ -41,7 +41,7 @@ func NewSystemSettingCrontab() *sSettingCrontab {
 }
 
 func (s *sSettingCrontab) Model(ctx context.Context) *gdb.Model {
-	return dao.SettingCrontab.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SettingCrontab.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSettingCrontab) GetValidateCron(ctx context.Context) (rs []*res.SettingCrontabOne, err error) {
@@ -94,7 +94,7 @@ func (s *sSettingCrontab) handleSearch(ctx context.Context, in *req.SettingCront
 	return
 }
 
-func (s *sSettingCrontab) Save(ctx context.Context, in *req.SettingCrontabSave) (id uint64, err error) {
+func (s *sSettingCrontab) Save(ctx context.Context, in *req.SettingCrontabSave) (id int64, err error) {
 	saveData := do.SettingCrontab{
 		Name:      in.Name,
 		Type:      in.Type,
@@ -105,7 +105,7 @@ func (s *sSettingCrontab) Save(ctx context.Context, in *req.SettingCrontabSave) 
 		Status:    in.Status,
 		Singleton: in.Singleton,
 	}
-	rs, err := s.Model(ctx).Data(saveData).Save()
+	rs, err := s.Model(ctx).Data(saveData).Insert()
 	if utils.IsError(err) {
 		return
 	}
@@ -113,11 +113,11 @@ func (s *sSettingCrontab) Save(ctx context.Context, in *req.SettingCrontabSave) 
 	if err != nil {
 		return
 	}
-	id = gconv.Uint64(tmpId)
+	id = gconv.Int64(tmpId)
 	return
 }
 
-func (s *sSettingCrontab) GetById(ctx context.Context, id uint64) (res *res.SettingCrontab, err error) {
+func (s *sSettingCrontab) GetById(ctx context.Context, id int64) (res *res.SettingCrontab, err error) {
 	err = s.Model(ctx).Where("id", id).Scan(&res)
 	if utils.IsError(err) {
 		return
@@ -125,7 +125,7 @@ func (s *sSettingCrontab) GetById(ctx context.Context, id uint64) (res *res.Sett
 	return
 }
 
-func (s *sSettingCrontab) Run(ctx context.Context, id uint64) (err error) {
+func (s *sSettingCrontab) Run(ctx context.Context, id int64) (err error) {
 	var dbCrons *res.SettingCrontabOne
 	err = s.Model(ctx).Where("id", id).Scan(&dbCrons)
 	if utils.IsError(err) {
@@ -167,7 +167,7 @@ func (s *sSettingCrontab) Update(ctx context.Context, in *req.SettingCrontabUpda
 	return
 }
 
-func (s *sSettingCrontab) Delete(ctx context.Context, ids []uint64) (err error) {
+func (s *sSettingCrontab) Delete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return err
@@ -175,7 +175,7 @@ func (s *sSettingCrontab) Delete(ctx context.Context, ids []uint64) (err error) 
 	return
 }
 
-func (s *sSettingCrontab) ChangeStatus(ctx context.Context, id uint64, status int) (err error) {
+func (s *sSettingCrontab) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err

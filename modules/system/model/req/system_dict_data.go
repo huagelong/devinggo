@@ -7,7 +7,7 @@
 package req
 
 type SystemDictDataSearch struct {
-	TypeId    uint64   `json:"type_id"`
+	TypeId    int64    `json:"type_id"`
 	Code      string   `json:"code"`
 	Codes     string   `json:"codes"`
 	Status    int      `json:"status"`
@@ -17,14 +17,14 @@ type SystemDictDataSearch struct {
 }
 
 type SystemDictDataSave struct {
-	TypeId uint64 `json:"type_id" v:"required"`
+	TypeId int64  `json:"type_id" v:"required"`
 	Code   string `json:"code" v:"required"`
 	Value  string `json:"value" v:"required"`
 	Label  string `json:"label" v:"required"`
 }
 
 type SystemDictDataUpdate struct {
-	Id    uint64 `json:"id" v:"required"`
+	Id    int64  `json:"id" v:"required"`
 	Code  string `json:"code" v:"required"`
 	Value string `json:"value" v:"required"`
 	Label string `json:"label" v:"required"`

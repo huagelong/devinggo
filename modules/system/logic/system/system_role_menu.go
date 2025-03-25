@@ -32,10 +32,10 @@ func NewSystemRoleMenu() *sSystemRoleMenu {
 }
 
 func (s *sSystemRoleMenu) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemRoleMenu.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+	return dao.SystemRoleMenu.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("role_id", "menu_id")
 }
 
-func (s *sSystemRoleMenu) GetMenuIdsByRoleIds(ctx context.Context, roleIds []uint64) (rmenuIds []uint64, err error) {
+func (s *sSystemRoleMenu) GetMenuIdsByRoleIds(ctx context.Context, roleIds []int64) (rmenuIds []int64, err error) {
 	menuIdsResult, err := s.Model(ctx).Fields("menu_id").WhereIn(dao.SystemRoleMenu.Columns().RoleId, roleIds).Array()
 	if utils.IsError(err) {
 		return
@@ -44,7 +44,7 @@ func (s *sSystemRoleMenu) GetMenuIdsByRoleIds(ctx context.Context, roleIds []uin
 		return
 	}
 
-	menuIds := gconv.SliceUint64(menuIdsResult)
+	menuIds := gconv.SliceInt64(menuIdsResult)
 	rmenuIdsResult, err := service.SystemMenu().Model(ctx).Fields("id").WhereIn(dao.SystemMenu.Columns().Id, menuIds).Where(dao.SystemMenu.Columns().Status, 1).OrderDesc(dao.SystemMenu.Columns().Sort).Array()
 	if utils.IsError(err) {
 		return
@@ -54,6 +54,6 @@ func (s *sSystemRoleMenu) GetMenuIdsByRoleIds(ctx context.Context, roleIds []uin
 		return
 	}
 
-	rmenuIds = gconv.SliceUint64(rmenuIdsResult)
+	rmenuIds = gconv.SliceInt64(rmenuIdsResult)
 	return
 }
