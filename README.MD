@@ -90,7 +90,7 @@ choco install nodejs
 choco install yarn
 ```
 
-3. 修改配置文件（mysql,redis配置）
+3. 修改配置文件（mysql or postgresql,redis配置）
 - `manifest/config/config.example.yaml` 复制为 `manifest/config/config.yaml`
 - `manifest/config/config.yaml` # 修改redis,mysql配置
 - `hack/config.example.yaml` 复制为 `hack/config.yaml` # 开发时使用
