@@ -35,7 +35,6 @@ module.exports = {
         { text: '定时任务', link: '/pages/6145e3/'},
         { text: '消息队列', link: '/pages/b44b12/'},
         { text: 'websocket服务器', link: '/pages/90e340/'},
-        { text: 'SaaS多租户', link: '/pages/f65e98/'},
         { text: '缓存', link: '/pages/b3bee3/'},
         { text: 'module开发', link: '/pages/93d6a3/'},
         { text: '代码自动生成', link: '/pages/75aedd/'},
