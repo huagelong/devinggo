@@ -238,7 +238,7 @@ func (s *sSettingGenerateTables) UpdateTableAndColumns(ctx context.Context, in *
 	if !g.IsEmpty(in.GenerateMenus) {
 		updateData.GenerateMenus = gstr.Join(in.GenerateMenus, ",")
 	}
-	_, err = s.Model(ctx).Data(updateData).Where("id", in.Id).Update()
+	_, err = s.Model(ctx).Data(updateData).OmitEmptyData().Where("id", in.Id).Update()
 	if utils.IsError(err) {
 		return
 	}
@@ -295,7 +295,7 @@ func (s *sSettingGenerateTables) UpdateTableAndColumns(ctx context.Context, in *
 				Sort:          column.Sort,
 				ViewType:      column.ViewType,
 			}
-			_, err = service.SettingGenerateColumns().Model(ctx).Data(updateColumnData).Where("id", column.Id).Update()
+			_, err = service.SettingGenerateColumns().Model(ctx).Data(updateColumnData).OmitEmptyData().Where("id", column.Id).Update()
 			if utils.IsError(err) {
 				return
 			}

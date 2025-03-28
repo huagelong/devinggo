@@ -242,7 +242,7 @@ func (s *sSystemRole) Update(ctx context.Context, in *req.SystemRoleSave) (err e
 		Code:      in.Code,
 		Remark:    in.Remark,
 	}
-	_, err = s.Model(ctx).Data(updateData).Where("id", in.Id).Update()
+	_, err = s.Model(ctx).Data(updateData).OmitEmptyData().Where("id", in.Id).Update()
 	if utils.IsError(err) {
 		return
 	}
