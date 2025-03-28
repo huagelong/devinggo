@@ -130,9 +130,9 @@ redis:
     writeTimeout: 30s
 
 jaeger:
-  enable: false
+  enable: true
   serviceName: devinggo
-  udpEndpoint: 127.0.0.1:6831
+  udpEndpoint: jaeger:6831
 
 # 以下为扩展配置
 upload:

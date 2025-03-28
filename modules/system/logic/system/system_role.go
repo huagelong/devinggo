@@ -342,15 +342,14 @@ func (s *sSystemRole) GetMenuByRoleIds(ctx context.Context, ids []int64) (out []
 
 		systemRoleMenus.Id = id
 		systemRoleMenus.Menus = make([]res.MenuIdsArr, 0)
-		if g.IsEmpty(roleMenuEntity) {
-			continue
-		}
-		for _, roleMenu := range roleMenuEntity {
-			menuIdsArr := &res.MenuIdsArr{}
-			menuIdsArr.Id = roleMenu.MenuId
-			menuIdsArr.Pivot.MenuId = roleMenu.MenuId
-			menuIdsArr.Pivot.RoleId = roleMenu.RoleId
-			systemRoleMenus.Menus = append(systemRoleMenus.Menus, *menuIdsArr)
+		if !g.IsEmpty(roleMenuEntity) {
+			for _, roleMenu := range roleMenuEntity {
+				menuIdsArr := &res.MenuIdsArr{}
+				menuIdsArr.Id = roleMenu.MenuId
+				menuIdsArr.Pivot.MenuId = roleMenu.MenuId
+				menuIdsArr.Pivot.RoleId = roleMenu.RoleId
+				systemRoleMenus.Menus = append(systemRoleMenus.Menus, *menuIdsArr)
+			}
 		}
 		out = append(out, systemRoleMenus)
 	}
