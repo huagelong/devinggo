@@ -233,7 +233,9 @@ func GetDbType() string {
 	dbConfig := g.DB().GetConfig()
 	link := dbConfig.Link
 	dbType := "mysql" // 默认为MySQL
-
+	if g.IsEmpty(link) {
+		link = dbConfig.Type
+	}
 	// 判断数据库类型
 	if strings.HasPrefix(link, "postgres:") || strings.HasPrefix(link, "postgresql:") || strings.HasPrefix(link, "pgsql:") {
 		dbType = "postgres"
