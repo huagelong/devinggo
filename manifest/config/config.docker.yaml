@@ -80,7 +80,6 @@ database:
 
 # doc: https://goframe.org/pages/viewpage.action?pageId=1114217
 db-redis-qftqfj:
-  # 默认分组, 调用方式: g.db-redis-qftqfj()
   default:
     address: db-redis-qftqfj:6379
     pass: "redis_d5KQds"
