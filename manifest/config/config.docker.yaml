@@ -79,7 +79,7 @@ database:
     debug: true # 默认 false
 
 # doc: https://goframe.org/pages/viewpage.action?pageId=1114217
-db-redis-qftqfj:
+redis:
   default:
     address: db-redis-qftqfj:6379
     pass: "redis_d5KQds"
