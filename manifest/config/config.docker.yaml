@@ -88,7 +88,7 @@ redis:
     # NOTE: 当address是单个endpoint的集群时，系统会自动判定为单实例模式，这时需要设置此项为true.
     cluster: false
     # 数据库索引(0-15), 默认值: 0.
-    # NOTE: db-redis-qftqfj cluster 不支持index, 将自动忽略该配置.
+    # NOTE: redis cluster 不支持index, 将自动忽略该配置.
     db: 0
     # 连接最长存活时间, 默认值: 30s, 建议设置的长一些.
     # 建立连接后, 可用此连接进行多次reids请求,
@@ -131,7 +131,7 @@ redis:
 jaeger:
   enable: true
   serviceName: devinggo
-  udpEndpoint: jaeger:6831
+  udpEndpoint: tool-jaeger-nuqjzf:6831
 
 # 以下为扩展配置
 upload:
@@ -145,7 +145,7 @@ worker:
     - critical: 6
     - default: 3
     - low: 1
-  db-redis-qftqfj:
+  redis:
     address: db-redis-qftqfj:6379
     pass: "redis_d5KQds"
     user: "default"
