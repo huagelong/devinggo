@@ -8,6 +8,7 @@ package cmd
 
 import (
 	"context"
+	"devinggo/internal/router"
 	_ "devinggo/modules/_/modules"
 	"devinggo/modules/system/pkg/modules"
 	"devinggo/modules/system/pkg/redis"
@@ -57,6 +58,9 @@ var (
 			}
 
 			modules.StartModules(ctx, s)
+			s.Group("/", func(group *ghttp.RouterGroup) {
+				router.BindController(group)
+			})
 
 			jaegerEnable := config.GetConfigBool(ctx, "jaeger.enable", false)
 			if jaegerEnable {
