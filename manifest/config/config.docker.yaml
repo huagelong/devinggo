@@ -75,21 +75,21 @@ database:
 
   # 默认分组
   default:
-    link: "mysql:root:mysql_zbCA5h@tcp(mysql:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
+    link: "mysql:devinggo:mysql_zbCA5h@tcp(db-mysql-8adauv:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
     debug: true # 默认 false
 
 # doc: https://goframe.org/pages/viewpage.action?pageId=1114217
-redis:
-  # 默认分组, 调用方式: g.Redis()
+db-redis-qftqfj:
+  # 默认分组, 调用方式: g.db-redis-qftqfj()
   default:
-    address: redis:6379
+    address: db-redis-qftqfj:6379
     pass: "redis_d5KQds"
     user: "default"
     # 是否强制设置为集群工作模式, 默认值：false.
     # NOTE: 当address是单个endpoint的集群时，系统会自动判定为单实例模式，这时需要设置此项为true.
     cluster: false
     # 数据库索引(0-15), 默认值: 0.
-    # NOTE: redis cluster 不支持index, 将自动忽略该配置.
+    # NOTE: db-redis-qftqfj cluster 不支持index, 将自动忽略该配置.
     db: 0
     # 连接最长存活时间, 默认值: 30s, 建议设置的长一些.
     # 建立连接后, 可用此连接进行多次reids请求,
@@ -103,7 +103,7 @@ redis:
     # 此值应该小于maxConnLifetime, 才有实际意义.
     idleTimeout: 10m
   cache:
-    address: redis:6379
+    address: db-redis-qftqfj:6379
     pass: "redis_d5KQds"
     user: "default"
     db: 1
@@ -116,7 +116,7 @@ redis:
     readTimeout: 30s
     writeTimeout: 30s
   websocket:
-    address: redis:6379
+    address: db-redis-qftqfj:6379
     pass: "redis_d5KQds"
     user: "default"
     db: 7
@@ -146,8 +146,8 @@ worker:
     - critical: 6
     - default: 3
     - low: 1
-  redis:
-    address: redis:6379
+  db-redis-qftqfj:
+    address: db-redis-qftqfj:6379
     pass: "redis_d5KQds"
     user: "default"
     db: 2
