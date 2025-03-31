@@ -67,12 +67,13 @@ func (s *sSystemLoginLog) Push(ctx context.Context, username string, err error) 
 
 	clientIp := location.GetClientIp(r)
 	ipData, localErr := location.GetLocation(ctx, clientIp)
+	area := "本地"
 	if localErr != nil {
 		g.Log().Debugf(ctx, "location.GetLocation clientIp:%v, err:%+v", clientIp, localErr)
-	}
-	area := "本地"
-	if !g.IsEmpty(ipData) {
-		area = ipData.Area
+	} else {
+		if !g.IsEmpty(ipData) {
+			area = ipData.Area
+		}
 	}
 
 	loginStatus := 1

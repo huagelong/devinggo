@@ -74,7 +74,9 @@ func GetAllFilterModules(ctx context.Context) (list map[string]Module, err error
 	list = make(map[string]Module, 0)
 	err = dao.SystemModules.Ctx(ctx).Where("status", 1).Scan(&dbModules)
 	if utils.IsError(err) {
-		return
+		//保留system模块
+		list["system"] = getSystemModule()
+		return list, nil
 	}
 	if !g.IsEmpty(dbModules) {
 		for key, m := range modules {
@@ -86,6 +88,18 @@ func GetAllFilterModules(ctx context.Context) (list map[string]Module, err error
 			}
 		}
 	}
+	if _, ok := list["key"]; !ok {
+		list["system"] = getSystemModule()
+	}
 
 	return
+}
+
+func getSystemModule() Module {
+	for key, m := range modules {
+		if "system" == key {
+			return m
+		}
+	}
+	return nil
 }
