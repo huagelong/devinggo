@@ -31,7 +31,7 @@
 
 ## 技术栈
 
-- **后端**：GoFrame v2、MySQL、Redis
+- **后端**：GoFrame v2、MySQL or Postgresql、Redis
 - **前端**：Vue3、Vite5、Arco Design、Pinia
 
 ## 功能特性
@@ -68,7 +68,7 @@
 
 - Go >= 1.23.4
 - Node >= 18
-- MySQL >= 5.7
+- MySQL >= 5.7 or PostgreSQL >= 13.0
 - Redis >= 5.0
 
 ## 快速开始
