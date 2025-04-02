@@ -129,7 +129,7 @@ redis:
     writeTimeout: 30s
 
 jaeger:
-  enable: true
+  enable: false
   serviceName: devinggo
   udpEndpoint: tool-jaeger-nuqjzf:6831
 
