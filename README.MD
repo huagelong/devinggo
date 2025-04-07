@@ -77,8 +77,10 @@
 
 1. 安装make
 ```
-#make 编译环境安装 ，打开powershell（管理员权限）执行
+#make 编译环境安装 ，打开cmd（管理员权限）执行
 @powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))" && SET PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin
+# or 打开powershell（管理员权限）执行
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
 choco install make
 choco install sed
