@@ -41,7 +41,6 @@ var (
 			}
 			s.SetSessionStorage(gsession.NewStorageRedisHashTable(redis.GetRedis()))
 			s.Use(
-				systemService.Middleware().Header,
 				systemService.Middleware().I18n,
 				systemService.Middleware().Ctx,
 				systemService.Middleware().Cors,
