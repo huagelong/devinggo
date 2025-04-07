@@ -9,7 +9,7 @@ package contexts
 import (
 	"context"
 	"devinggo/modules/system/consts"
-	model2 "devinggo/modules/system/model"
+	"devinggo/modules/system/model"
 	"devinggo/modules/system/pkg/utils/config"
 	"devinggo/modules/system/pkg/utils/request"
 	"github.com/gogf/gf/v2/frame/g"
@@ -27,17 +27,17 @@ func New() *sContexts {
 
 const ContextHTTPKey = "contextHTTPKey"
 
-func (s *sContexts) Init(r *ghttp.Request, customCtx *model2.Context) {
+func (s *sContexts) Init(r *ghttp.Request, customCtx *model.Context) {
 	r.SetCtxVar(ContextHTTPKey, customCtx)
 }
 
 // Get 获得上下文变量，如果没有设置，那么返回nil
-func (s *sContexts) Get(ctx context.Context) *model2.Context {
+func (s *sContexts) Get(ctx context.Context) *model.Context {
 	value := ctx.Value(ContextHTTPKey)
 	if value == nil {
 		return nil
 	}
-	if localCtx, ok := value.(*model2.Context); ok {
+	if localCtx, ok := value.(*model.Context); ok {
 		return localCtx
 	}
 	return nil
@@ -51,7 +51,7 @@ func (s *sContexts) GetModule(ctx context.Context) string {
 	return c.Module
 }
 
-func (s *sContexts) SetUser(ctx context.Context, user *model2.Identity) {
+func (s *sContexts) SetUser(ctx context.Context, user *model.Identity) {
 	c := s.Get(ctx)
 	if c == nil {
 		g.Log().Warning(ctx, "contexts.SetUser, c == nil ")
@@ -60,7 +60,7 @@ func (s *sContexts) SetUser(ctx context.Context, user *model2.Identity) {
 	c.User = user
 }
 
-func (s *sContexts) GetUser(ctx context.Context) *model2.Identity {
+func (s *sContexts) GetUser(ctx context.Context) *model.Identity {
 	c := s.Get(ctx)
 	if c == nil {
 		return nil
