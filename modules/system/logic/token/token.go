@@ -410,7 +410,7 @@ func (s *sToken) ParseLoginUser(r *ghttp.Request, appId string) (*model.Identity
 
 		duration := time.Second * gconv.Duration(expiresConfig)
 
-		if err = redis.GetCacheClient().Set(ctx, tokenKey, token, duration); err != nil {
+		if err = redis.GetCacheClient().Set(ctx, tokenKey, tokenStruct, duration); err != nil {
 			return
 		}
 
