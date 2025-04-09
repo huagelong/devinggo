@@ -1,24 +1,34 @@
 <template>
+      <a-watermark
+      :content="[userStore.user.nickname, currentDate]"
+      :font-size="14"
+      :line-height="14"
+      :gap="[80, 80]"
+      :rotate="-22">
   <a-layout-content class="h-full main-container">
-    <columns-layout v-if="appStore.layout === 'columns'" />
-    <classic-layout v-if="appStore.layout === 'classic'" />
-    <banner-layout v-if="appStore.layout === 'banner'" />
-    <mixed-layout v-if="appStore.layout === 'mixed'" />
 
-    <setting ref="settingRef" />
+      <columns-layout v-if="appStore.layout === 'columns'" />
+      <classic-layout v-if="appStore.layout === 'classic'" />
+      <banner-layout v-if="appStore.layout === 'banner'" />
+      <mixed-layout v-if="appStore.layout === 'mixed'" />
 
-    <transition name="ma-slide-down" mode="out-in">
-      <system-search ref="systemSearchRef" v-show="appStore.searchOpen" />
-    </transition>
+      <setting ref="settingRef" />
 
-    <ma-button-menu />
+      <transition name="ma-slide-down" mode="out-in">
+        <system-search ref="systemSearchRef" v-show="appStore.searchOpen" />
+      </transition>
 
-    <div class="max-size-exit" @click="tagExitMaxSize"><icon-close /></div>
+      <ma-button-menu />
+
+      <div class="max-size-exit" @click="tagExitMaxSize"><icon-close /></div>
+
   </a-layout-content>
+</a-watermark>
 </template>
 <script setup>
-  import { onMounted, ref, watch } from 'vue'
+  import { onMounted, ref, watch, computed } from 'vue'
   import { useAppStore, useUserStore } from '@/store'
+  import dayjs from 'dayjs'
 
   import ColumnsLayout from './components/columns/index.vue'
   import ClassicLayout from './components/classic/index.vue'
@@ -30,6 +40,8 @@
 
   const appStore = useAppStore()
   const userStore = useUserStore()
+
+  const currentDate = computed(() => dayjs().format('YYYY-MM-DD'))
 
   const settingRef = ref()
   const systemSearchRef = ref()
@@ -61,4 +73,17 @@
   })
 
 </script>
-<style scoped lang="less"></style>
+<style scoped lang="less">
+.main-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+a-watermark {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+</style>

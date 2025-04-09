@@ -6,15 +6,21 @@
 import { onMounted, ref, watch, toRaw } from 'vue'
 import { useAppStore } from '@/store'
 import { formatJson } from '@/utils/common'
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
-import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution'
-import 'monaco-editor/esm/vs/basic-languages/php/php.contribution'
-import 'monaco-editor/esm/vs/basic-languages/mysql/mysql.contribution'
-import 'monaco-editor/esm/vs/basic-languages/html/html.contribution'
-import 'monaco-editor/esm/vs/basic-languages/css/css.contribution'
-import 'monaco-editor/esm/vs/editor/contrib/find/browser/findController'
+import loader from '@monaco-editor/loader'
 
 const appStore = useAppStore()
+
+// 动态导入语言包
+const loadLanguageSupport = async (language) => {
+  try {
+    const monaco = await loader.init()
+    // 语言包会自动加载，不需要手动导入
+    return monaco
+  } catch (error) {
+    console.error(`Failed to load language support for ${language}:`, error)
+    return null
+  }
+}
 
 const props = defineProps({
   modelValue: {
@@ -85,13 +91,25 @@ const initEditorValue = () => {
 
 watch( () => props.modelValue, () => initEditorValue() )
 
-onMounted(() => {
+onMounted(async () => {
+  // 先加载对应的语言支持
+  const monaco = await loadLanguageSupport(props.language)
+  if (!monaco) return
+  
   instance = monaco.editor.create(dom.value, options)
   initEditorValue()
 
   instance.onDidBlurEditorText(() => {
     emit('update:modelValue', toRaw(props.valueType === 'value' ? instance.getValue() : instance.getModel()))
   })
+})
+
+// 监听language变化，动态加载语言支持
+watch(() => props.language, async (newLanguage) => {
+  await loadLanguageSupport(newLanguage)
+  if (instance) {
+    instance.updateOptions({ language: newLanguage })
+  }
 })
 
 const getInstance = () => instance
