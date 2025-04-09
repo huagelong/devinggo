@@ -23,6 +23,7 @@ import MaIcon from './ma-icon/index.vue'
 import MaCodeEditor from './ma-codeEditor/index.vue'
 import MaUserInfo from './ma-userInfo/index.vue'
 import MaCityLinkage from './ma-cityLinkage/index.vue'
+import MaWatermarkDrawer from './ma-watermark-drawer/index.vue'
 
 use([
   CanvasRenderer,
@@ -54,5 +55,6 @@ export default {
     Vue.component('MaCodeEditor', MaCodeEditor)
     Vue.component('MaUserInfo', MaUserInfo)
     Vue.component('MaCityLinkage', MaCityLinkage)
+    Vue.component('MaWatermarkDrawer', MaWatermarkDrawer)
   }
 }

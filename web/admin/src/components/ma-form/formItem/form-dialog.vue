@@ -5,13 +5,13 @@
 <script setup>
 import { onMounted, inject, ref, h, computed } from 'vue'
 import { runEvent } from '../js/event.js'
-import { Modal, Drawer } from '@arco-design/web-vue'
+import { Modal } from '@arco-design/web-vue'
+import MaWatermarkDrawer from '@/components/ma-watermark-drawer/index.vue'
 import MaForm from '@/components/ma-form/index.vue'
 import { isFunction } from 'lodash'
 const props = defineProps({
   component: Object,
 })
-
 const visible = ref(false)
 const openDialog = () => visible.value = true
 const getDataIndex = () => props.component?.dataIndex
@@ -50,8 +50,9 @@ const maDialog = (p, ctx) => {
       }
     }
   })
+
   return h(
-    componentProps?.type === 'drawer' ? Drawer : Modal,
+    componentProps?.type === 'drawer' ? MaWatermarkDrawer : Modal,
     {
       ...Object.assign(componentProps, p),
       ...evs

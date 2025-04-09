@@ -118,7 +118,7 @@ const open = () => {
     form.value = {}
     router.push(`/openForm/${options.formOption.tagId}` + tool.httpBuild(queryParams, true))
   } else {
-    componentName.value = options.formOption.viewType === 'drawer' ? 'a-drawer' : 'a-modal'
+    componentName.value = options.formOption.viewType === 'drawer' ? 'ma-watermark-drawer' : 'a-modal'
     dataVisible.value = true
   }
 }

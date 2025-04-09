@@ -4,7 +4,7 @@
     <ma-crud :options="crud" :columns="columns" @row-click="openDetails" ref="crudRef"></ma-crud>
 
     <!-- 抽屉 -->
-    <a-drawer v-model:visible="visible" width="600px" :footer="false">
+    <ma-watermark-drawer v-model:visible="visible" width="600px" :footer="false">
       <template #title>操作日志详细信息</template>
       <div
         class="arco-descriptions arco-descriptions-layout-horizontal arco-descriptions-size-medium arco-descriptions-border">
@@ -67,7 +67,7 @@
           <ma-code-editor v-model="currentRow.response_data" v-if="visible" :height="150" readonly />
         </a-collapse-item>
       </a-collapse>
-    </a-drawer>
+    </ma-watermark-drawer>
   </div>
 </template>
 
@@ -76,7 +76,8 @@
   import maCodeEditor from '@cps/ma-codeEditor/index.vue'
   import operLog from '@/api/system/operLog'
   import { formatJson } from '@/utils/common'
-
+  import MaWatermarkDrawer from '@/components/ma-watermark-drawer/index.vue'
+  
   const crudRef = ref()
   const visible = ref(false)
   const currentRow = ref({ request_data: undefined, response_data: undefined })

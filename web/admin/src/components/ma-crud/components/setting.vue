@@ -1,5 +1,5 @@
 <template>
-  <a-drawer :visible="visible" unmountOnClose :footer="false" :width="950" @cancel="onCancel">
+  <ma-watermark-drawer :visible="visible" unmountOnClose :footer="false" :width="950" @cancel="onCancel">
 
     <template #title>设置</template>
 
@@ -72,11 +72,12 @@
         </a-table-column>
       </template>
     </a-table>
-  </a-drawer>
+  </ma-watermark-drawer>
 </template>
 
 <script setup>
 import { ref, inject } from 'vue'
+import MaWatermarkDrawer from '@/components/ma-watermark-drawer/index.vue'
 
 const options = inject('options')
 const columns = inject('columns')

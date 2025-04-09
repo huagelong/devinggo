@@ -1,5 +1,5 @@
 <template>
-  <a-drawer :footer="false" v-model:visible="visible" width="800px">
+  <ma-watermark-drawer :footer="false" v-model:visible="visible" width="800px">
     <template #title>执行日志</template>
     <!-- CRUD 组件 -->
     <ma-crud :options="crud" :columns="columns" ref="crudRef">
@@ -13,14 +13,15 @@
         <a-link @click="lookException(record)"><icon-eye /> 查看</a-link>
       </template>
     </ma-crud>
-  </a-drawer>
+  </ma-watermark-drawer>
 </template>
 
 <script setup>
   import { ref, reactive, h } from 'vue'
   import crontab from '@/api/system/crontab'
   import { Modal } from '@arco-design/web-vue'
-
+  import MaWatermarkDrawer from '@/components/ma-watermark-drawer/index.vue'
+  
   const crudRef = ref()
   const crontabId = ref()
   const visible = ref(false)
