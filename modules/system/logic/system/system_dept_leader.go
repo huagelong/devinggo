@@ -38,9 +38,8 @@ func (s *sSystemDeptLeader) Model(ctx context.Context) *gdb.Model {
 }
 
 func (s *sSystemDeptLeader) GetPageList(ctx context.Context, req *model.PageListReq, search *req.SystemDeptLeaderSearch) (res []*res.SystemDeptLeaderInfo, total int, err error) {
-
 	m := service.SystemUser().Model(ctx).Fields("system_user.*", "system_dept_leader.created_at as leader_add_time")
-	m = m.InnerJoin("system_dept_leader", "system_user.id = system_dept_leader.user_id")
+	m = m.InnerJoinOnFields("system_dept_leader", "id", "=", "user_id")
 	m = m.Where("system_dept_leader.dept_id =?", search.DeptId)
 	if !g.IsEmpty(search.Username) {
 		m = m.Where("system_user.username like ?", "%"+search.Username+"%")

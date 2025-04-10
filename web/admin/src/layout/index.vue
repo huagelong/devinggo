@@ -104,11 +104,4 @@
   flex-direction: column;
   min-height: 100vh;
 }
-
-a-watermark {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
 </style>
