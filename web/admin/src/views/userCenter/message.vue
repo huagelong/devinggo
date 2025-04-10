@@ -25,7 +25,7 @@
       </ma-crud>
     </div>
 
-    <ma-watermark-drawer v-model:visible="detailVisible" width="1000px" :footer="false">
+    <a-drawer v-model:visible="detailVisible" width="1000px" :footer="false">
       <template #title>消息详情</template>
       <a-spin :loading="detailLoading" tip="数据加载中..." class="block">
         <a-typography :style="{ marginTop: '-30px' }">
@@ -42,7 +42,7 @@
           </a-typography-paragraph>
         </a-typography>
       </a-spin>
-    </ma-watermark-drawer>
+    </a-drawer>
   </div>
 
 </template>
@@ -50,8 +50,7 @@
   import { nextTick, onMounted, ref } from 'vue'
   import commonApi from '@/api/common'
   import queueMessage from '@/api/system/queueMessage'
-  import MaWatermarkDrawer from '@/components/ma-watermark-drawer/index.vue'
-  
+
   const typeIcon = ref({
     receive_box: 'icon-email',
     announcement: 'icon-mobile',

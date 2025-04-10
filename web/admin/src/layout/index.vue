@@ -1,12 +1,15 @@
 <template>
-      <a-watermark
+  <a-watermark
       v-if="watermarkEnabled"
       :content="[userStore.user.nickname, currentDate]"
       :font-size="14"
       :line-height="14"
       :gap="[80, 80]"
-      :rotate="-22">
-  <a-layout-content class="h-full main-container">
+      :z-index="9999"
+      :rotate="-22"
+      class="h-full main-container"
+  >
+  <a-layout-content class="h-full" >
 
       <columns-layout v-if="appStore.layout === 'columns'" />
       <classic-layout v-if="appStore.layout === 'classic'" />
@@ -23,8 +26,8 @@
 
       <div class="max-size-exit" @click="tagExitMaxSize"><icon-close /></div>
 
-  </a-layout-content>
-</a-watermark>
+    </a-layout-content>
+  </a-watermark>
 <a-layout-content v-else class="h-full main-container">
 
       <columns-layout v-if="appStore.layout === 'columns'" />
@@ -98,10 +101,3 @@
   })
 
 </script>
-<style scoped lang="less">
-.main-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-</style>

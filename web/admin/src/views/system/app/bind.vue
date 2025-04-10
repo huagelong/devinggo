@@ -1,5 +1,5 @@
 <template>
-  <ma-watermark-drawer v-model:visible="visible" width="800px" :on-before-ok="save" ok-text="保存绑定">
+  <a-drawer v-model:visible="visible" width="800px" :on-before-ok="save" ok-text="保存绑定">
     <template #title>绑定接口</template>
     <a-spin :loading="loading" tip="数据加载中..." class="w-full h-full">
       <div class="w-full">
@@ -24,7 +24,7 @@
         </div>
       </div>
     </a-spin>
-  </ma-watermark-drawer>
+  </a-drawer>
 </template>
 
 <script setup>
@@ -33,7 +33,6 @@
   import apiGroup from '@/api/system/apiGroup'
   import app from '@/api/system/app'
   import { Message } from '@arco-design/web-vue'
-  import MaWatermarkDrawer from '@/components/ma-watermark-drawer/index.vue'
 
   const visible = ref(false)
   const loading = ref(true)

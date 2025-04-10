@@ -1,5 +1,5 @@
 <template>
-  <ma-watermark-drawer class="backend-setting" v-model:visible="visible" :on-before-ok="save" width="350px"
+  <a-drawer class="backend-setting" v-model:visible="visible" :on-before-ok="save" width="350px"
     :ok-text="$t('sys.saveToBackend')" @cancel="close" unmountOnClose>
     <template #title>{{ $t('sys.backendSettingTitle') }}</template>
     <a-form :model="form" :auto-label-width="true">
@@ -60,7 +60,7 @@
         <a-input-number v-model="form.menuWidth" mode="button" @change="handleMenuWidth" />
       </a-form-item>
     </a-form>
-  </ma-watermark-drawer>
+  </a-drawer>
 
   <Skin ref="skin" />
 </template>
@@ -75,7 +75,6 @@ import skins from '@/config/skins'
 import { useI18n } from 'vue-i18n'
 import { ColorPicker } from 'vue-color-kit'
 import 'vue-color-kit/dist/vue-color-kit.css'
-import MaWatermarkDrawer from '@/components/ma-watermark-drawer/index.vue'
 
 const userStore = useUserStore()
 const appStore  = useAppStore()
