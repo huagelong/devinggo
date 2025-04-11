@@ -73,7 +73,16 @@ var (
 				return err
 			}
 
-			g.Log().Debugf(ctx, "模块 '%s' 创建成功!", moduleName)
+			// 使用更明显的方式输出成功信息和提示
+			successMsg := fmt.Sprintf("模块 '%s' 创建成功!", moduleName)
+			tipMsg := "提示: 请运行 'go run main.go migrate:up' 命令应用迁移"
+			
+			// 记录到日志
+			g.Log().Info(ctx, successMsg)
+			g.Log().Info(ctx, tipMsg)
+			
+			// 同时直接输出到控制台，确保用户能看到
+			fmt.Printf("\n%s\n%s\n\n", successMsg, tipMsg)
 			return nil
 		},
 	}
@@ -241,14 +250,18 @@ func createModuleMigrationFiles(ctx context.Context, moduleName string, tplData 
 	// 替换SQL模板中的特殊变量格式
 	downContent = gstr.Replace(downContent, "{%.moduleName%}", moduleName)
 	downContent = gstr.Replace(downContent, "{%.moduleNameCap%}", tplData["moduleNameCap"].(string))
-	g.Log().Debugf(ctx, "模块 '%s' 的SQL迁移文件创建成功!", moduleName)
-	g.Log().Debug(ctx, "提示: 请运行 'go run main.go migrate:up' 命令应用迁移")
 	if err := gfile.PutContents(downFilename, downContent); err != nil {
 		return gerror.Wrapf(err, "创建SQL迁移文件 '%s' 失败", downFilename)
 	}
 	g.Log().Debugf(ctx, "创建SQL迁移文件: %s", downFilename)
-	g.Log().Debugf(ctx, "模块 '%s' 的SQL迁移文件创建成功!", moduleName)
-	g.Log().Debug(ctx, "提示: 请运行 'go run main.go migrate:up' 命令应用迁移")
+	
+	// 使用更明显的方式输出SQL迁移文件创建成功信息和提示
+	successMsg := fmt.Sprintf("模块 '%s' 的SQL迁移文件创建成功!", moduleName)
+	
+	// 记录到日志
+	g.Log().Info(ctx, successMsg)
+	// 同时直接输出到控制台，确保用户能看到
+	fmt.Printf("\n%s\n%s\n\n", successMsg)
 
 	return nil
 }
