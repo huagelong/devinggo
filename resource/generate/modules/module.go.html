@@ -1,0 +1,46 @@
+// Package {{.moduleName}}
+// @Link  https://github.com/huagelong/devinggo
+// @Copyright  Copyright (c) 2024 devinggo
+// @Author Kai <hpuwang@gmail.com>
+// @License  https://github.com/huagelong/devinggo/blob/master/LICENSE
+package {{.moduleName}}
+
+import (
+	"context"
+	"devinggo/modules/{{.moduleName}}/controller"
+	_ "devinggo/modules/{{.moduleName}}/logic"
+	"devinggo/modules/{{.moduleName}}/service"
+	"devinggo/modules/system/pkg/modules"
+	"github.com/gogf/gf/v2/net/ghttp"
+)
+
+type {{.moduleNameCap}}Module struct {
+	Name   string
+	Server *ghttp.Server
+}
+
+func init() {
+	module := &{{.moduleNameCap}}Module{}
+	module.Name = "{{.moduleName}}"
+	modules.Register(module)
+}
+
+func (m *{{.moduleNameCap}}Module) Start(ctx context.Context, s *ghttp.Server) error {
+	m.Server = s
+	s.BindHookHandler("/{{.moduleName}}/*", ghttp.HookBeforeServe, service.Hook().BeforeServe)
+	s.BindHookHandler("/{{.moduleName}}/*", ghttp.HookAfterOutput, service.Hook().AfterOutput)
+	s.Group("/{{.moduleName}}", func(group *ghttp.RouterGroup) {
+		group.Bind(
+			controller.TestController,
+		).Middleware(service.Middleware().ApiAuth)
+	})
+	return nil
+}
+
+func (m *{{.moduleNameCap}}Module) Stop(ctx context.Context) error {
+	return nil
+}
+
+func (m *{{.moduleNameCap}}Module) GetName() string {
+	return m.Name
+}

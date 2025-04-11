@@ -47,6 +47,7 @@ var (
 		  migrate:force v version  Set version V but don't run migration (ignores dirty state)
 		>> HTTP服务  [go run main.go http]
 		>> 消息队列&定时任务  [go run main.go worker]
+		>> 创建新模块  [go run main.go module:create -name 模块名称]
 		>> 查看帮助  [go run main.go help]
 		>> 查看版本  [go run main.go version]
     `,
@@ -81,7 +82,7 @@ var (
 )
 
 func init() {
-	if err := Main.AddCommand(All, Http, Version, Worker, Unpack, MigrateUp, MigrateDown, MigrateGoto, MigrateCreate, MigrateForce, Help); err != nil {
+	if err := Main.AddCommand(All, Http, Version, Worker, Unpack, MigrateUp, MigrateDown, MigrateGoto, MigrateCreate, MigrateForce, CreateModule, Help); err != nil {
 		panic(err)
 	}
 }
