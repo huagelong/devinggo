@@ -11,7 +11,7 @@
 
 ## 简介
 
-`devinggo` 是一个基于 GoFrame v2 + Vue3 + Arco Design 开发的全栈前后端分离的后台管理系统。前端基于[MineAdmin-Vue V2](https://github.com/mineadmin/MineAdmin-Vue)技术栈，专注于提供一个简洁、高效、安全的开发框架。
+`devinggo` 是一个基于 GoFrame v2 + Vue3 + Arco Design 开发的全栈前后端分离的后台管理系统。前端基于[MineAdmin-Vue V2](https://docv2.mineadmin.com/)技术栈，专注于提供一个简洁、高效、安全的开发框架。
 
 ## 演示地址
 - 后台管理系统：https://devinggo-dev.devinghub.com/admin
@@ -128,7 +128,7 @@ http://localhost:8070/admin
 ## 鸣谢
 
 1. [GoFrame](https://github.com/gogf/gf)
-2. [MineAdmin-Vue V2](https://github.com/mineadmin/MineAdmin-Vue)
+2. [MineAdmin-Vue V2](https://docv2.mineadmin.com/)
 3. [Arco Design](https://arco.design/)
 4. [Pinia](https://pinia.vuejs.org/)
 5. [Vue3](https://v3.cn.vuejs.org/)
