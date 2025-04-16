@@ -57,8 +57,9 @@ func GetKeys(ctx context.Context) (keys []string, err error) {
 	match := "*"
 	keys = make([]string, 0)
 	iterator := uint64(0)
+	var listKeys []string
 	for {
-		iterator, listKeys, err := GetRedisClient().Scan(ctx, iterator, gredis.ScanOption{
+		iterator, listKeys, err = GetRedisClient().Scan(ctx, iterator, gredis.ScanOption{
 			Match: match,
 			Count: scanCount,
 		})
@@ -66,12 +67,9 @@ func GetKeys(ctx context.Context) (keys []string, err error) {
 			g.Log().Error(ctx, "Scan error:", err)
 			break
 		}
-		//g.Log().Debug(ctx, "keys Table cache:", keys)
-		if g.IsEmpty(listKeys) {
-			break
+		if len(listKeys) > 0 {
+			keys = append(keys, listKeys...)
 		}
-		keys = append(keys, listKeys...)
-
 		if iterator == 0 {
 			break
 		}

@@ -39,7 +39,6 @@ func (s *sMiddleware) ResponseHandler(r *ghttp.Request) {
 	var (
 		err = r.GetError()
 	)
-
 	if err == nil && r.Response.BufferLength() > 0 {
 		return
 	}

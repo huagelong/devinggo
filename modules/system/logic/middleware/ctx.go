@@ -111,6 +111,7 @@ func (s *sMiddleware) userCtx(r *ghttp.Request, appId ...string) (err error) {
 	}
 	user, err := service.Token().ParseLoginUser(r, newAppId)
 	if err != nil {
+		contexts.New().DelUser(ctx)
 		return
 	}
 	if !g.IsEmpty(user) {

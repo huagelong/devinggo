@@ -25,7 +25,6 @@ import (
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/golang-jwt/jwt/v5"
-	"time"
 )
 
 type sToken struct {
@@ -135,8 +134,6 @@ func (s *sToken) GenerateUserToken(ctx context.Context, scene, appId string, use
 		tokenKey = s.GetTokenKey(appId, authKey)
 		// 身份绑定
 		bindKey = s.GetBindKey(appId, user.Id)
-		// 有效时长
-		duration = time.Second * gconv.Duration(expiresConfig)
 	)
 
 	tokenStruct := &Token{
@@ -145,13 +142,28 @@ func (s *sToken) GenerateUserToken(ctx context.Context, scene, appId string, use
 		RefreshCount: 0,
 	}
 
-	if err = redis.GetCacheClient().Set(ctx, tokenKey, tokenStruct, duration); err != nil {
+	// 存储 token 到 Redis
+	if err = redis.GetRedis().SetEX(ctx, tokenKey, tokenStruct, expiresConfig); err != nil {
 		return "", now.Unix(), err
 	}
 
-	if err = redis.GetCacheClient().Set(ctx, bindKey, tokenKey, duration); err != nil {
+	multiLogin := config.GetConfigBool(ctx, "token.multiLogin", true)
+	// 统一使用集合存储
+	if !multiLogin {
+		// 单点登录时先清空历史记录
+		if _, err = redis.GetRedis().Del(ctx, bindKey); err != nil {
+			return "", now.Unix(), err
+		}
+	}
+	// 添加当前 tokenKey 到集合
+	if _, err = redis.GetRedis().SAdd(ctx, bindKey, tokenKey); err != nil {
 		return "", now.Unix(), err
 	}
+	// 设置集合过期时间
+	if _, err = redis.GetRedis().Expire(ctx, bindKey, expiresConfig); err != nil {
+		g.Log().Errorf(ctx, "设置集合过期时间失败: %v", err)
+	}
+
 	return token, tokenStruct.ExpireAt, nil
 }
 
@@ -190,15 +202,20 @@ func (s *sToken) Logout(r *ghttp.Request) (err error) {
 	)
 
 	// 删除token
-	if _, err = redis.GetCacheClient().Remove(ctx, tokenKey); err != nil {
+	if _, err = redis.GetRedis().Del(ctx, tokenKey); err != nil {
 		return
 	}
-	multiLogin := config.GetConfigBool(ctx, "token.multiLogin", true)
-	if !multiLogin {
-		if _, err = redis.GetCacheClient().Remove(ctx, bindKey); err != nil {
-			return
+	// 统一从集合中移除 tokenKey
+	if _, err = redis.GetRedis().SRem(ctx, bindKey, tokenKey); err != nil {
+		return err
+	}
+	// 自动清理空集合
+	if count, _ := redis.GetRedis().SCard(ctx, bindKey); count == 0 {
+		if _, err = redis.GetRedis().Del(ctx, bindKey); err != nil {
+			return err
 		}
 	}
+
 	return
 }
 
@@ -206,20 +223,23 @@ func (s *sToken) Logout(r *ghttp.Request) (err error) {
 func (s *sToken) Kick(r *ghttp.Request, userId int64, appId string) (err error) {
 	ctx := r.Context()
 	bindKey := s.GetBindKey(appId, userId)
-	tokenKeyArr, err := redis.GetCacheClient().Get(ctx, bindKey)
+
+	tokenKeys, err := redis.GetRedis().SMembers(ctx, bindKey)
 	if err != nil {
 		return
 	}
-	if !tokenKeyArr.IsEmpty() {
-		if _, err = redis.GetCacheClient().Remove(ctx, tokenKeyArr.String()); err != nil {
-			return
+	if len(tokenKeys) > 0 {
+		// 删除所有关联的 tokenKey
+		for _, tokenKey := range tokenKeys {
+			if _, err = redis.GetRedis().Del(ctx, tokenKey.String()); err != nil {
+				return
+			}
 		}
-
-		if _, err = redis.GetCacheClient().Remove(ctx, bindKey); err != nil {
+		// 删除集合本身
+		if _, err = redis.GetRedis().Del(ctx, bindKey); err != nil {
 			return
 		}
 	}
-
 	return
 }
 
@@ -228,8 +248,9 @@ func (s *sToken) KickAll(r *ghttp.Request, userId int64) (err error) {
 	ctx := r.Context()
 	match := fmt.Sprintf("%v:*", "token_bind")
 	iterator := uint64(0)
+	keys := make([]string, 0)
 	for {
-		iterator, keys, err := redis.GetRedis().Scan(ctx, iterator, gredis.ScanOption{
+		iterator, keys, err = redis.GetRedis().Scan(ctx, iterator, gredis.ScanOption{
 			Match: match,
 			Count: 100,
 		})
@@ -239,16 +260,15 @@ func (s *sToken) KickAll(r *ghttp.Request, userId int64) (err error) {
 			break
 		}
 
-		if g.IsEmpty(keys) {
-			break
-		}
-		dataSlice := gconv.SliceStr(keys)
-		for _, value := range dataSlice {
-			tmp := gstr.Split(value, ":")
-			userIdTmp := gconv.Int64(tmp[2])
-			appId := tmp[1]
-			if userIdTmp == userId {
-				s.Kick(r, userIdTmp, appId)
+		if !g.IsEmpty(keys) {
+			dataSlice := gconv.SliceStr(keys)
+			for _, value := range dataSlice {
+				tmp := gstr.Split(value, ":")
+				userIdTmp := gconv.Int64(tmp[2])
+				appId := tmp[1]
+				if userIdTmp == userId {
+					s.Kick(r, userIdTmp, appId)
+				}
 			}
 		}
 
@@ -265,8 +285,9 @@ func (s *sToken) GetAllUserIds(r *ghttp.Request) (userApps []res.SystemUserApp, 
 	match := fmt.Sprintf("%v:*", "token_bind")
 	iterator := uint64(0)
 	userApps = make([]res.SystemUserApp, 0)
+	keys := make([]string, 0)
 	for {
-		iterator, keys, err := redis.GetRedis().Scan(ctx, iterator, gredis.ScanOption{
+		iterator, keys, err = redis.GetRedis().Scan(ctx, iterator, gredis.ScanOption{
 			Match: match,
 			Count: 100,
 		})
@@ -276,16 +297,15 @@ func (s *sToken) GetAllUserIds(r *ghttp.Request) (userApps []res.SystemUserApp, 
 			break
 		}
 
-		if g.IsEmpty(keys) {
-			break
-		}
-		dataSlice := gconv.SliceStr(keys)
-		for _, value := range dataSlice {
-			tmp := gstr.Split(value, ":")
-			userApps = append(userApps, res.SystemUserApp{
-				AppId:  tmp[1],
-				UserId: gconv.Int64(tmp[2]),
-			})
+		if !g.IsEmpty(keys) {
+			dataSlice := gconv.SliceStr(keys)
+			for _, value := range dataSlice {
+				tmp := gstr.Split(value, ":")
+				userApps = append(userApps, res.SystemUserApp{
+					AppId:  tmp[1],
+					UserId: gconv.Int64(tmp[2]),
+				})
+			}
 		}
 
 		if iterator == 0 {
@@ -335,7 +355,7 @@ func (s *sToken) ParseLoginUser(r *ghttp.Request, appId string) (*model.Identity
 	)
 
 	// 检查token是否存在
-	tk, err := redis.GetCacheClient().Get(ctx, tokenKey)
+	tk, err := redis.GetRedis().Get(ctx, tokenKey)
 	if err != nil {
 		return nil, err
 	}
@@ -365,21 +385,13 @@ func (s *sToken) ParseLoginUser(r *ghttp.Request, appId string) (*model.Identity
 		return nil, err
 	}
 
-	// 是否允许多端登录
-	multiLogin := config.GetConfigBool(ctx, "token.multiLogin", true)
-	if !multiLogin {
-		origin, err := redis.GetCacheClient().Get(ctx, bindKey)
-		if err != nil {
-			return nil, err
-		}
-
-		if origin == nil || origin.IsEmpty() {
-			return nil, myerror.ValidationFailed(ctx, "token验证失败")
-		}
-
-		if tokenKey != origin.String() {
-			return nil, myerror.ValidationFailed(ctx, "token验证失败")
-		}
+	// 统一使用集合验证
+	exist, err := redis.GetRedis().SIsMember(ctx, bindKey, tokenKey)
+	if err != nil {
+		return nil, err
+	}
+	if exist == 0 {
+		return nil, myerror.ValidationFailed(ctx, "token验证失败")
 	}
 
 	// 自动刷新token有效期
@@ -408,15 +420,15 @@ func (s *sToken) ParseLoginUser(r *ghttp.Request, appId string) (*model.Identity
 		tokenStruct.RefreshAt = now.Unix()
 		tokenStruct.RefreshCount += 1
 
-		duration := time.Second * gconv.Duration(expiresConfig)
-
-		if err = redis.GetCacheClient().Set(ctx, tokenKey, tokenStruct, duration); err != nil {
+		if err = redis.GetRedis().SetEX(ctx, tokenKey, tokenStruct, expiresConfig); err != nil {
 			return
 		}
 
-		if err = redis.GetCacheClient().Set(ctx, bindKey, tokenKey, duration); err != nil {
+		// 设置集合过期时间
+		if _, err = redis.GetRedis().Expire(ctx, bindKey, expiresConfig); err != nil {
 			return
 		}
+
 	}
 
 	utils.SafeGo(ctx, func(ctx context.Context) {

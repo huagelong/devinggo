@@ -60,6 +60,13 @@ func (s *sContexts) SetUser(ctx context.Context, user *model.Identity) {
 	c.User = user
 }
 
+func (s *sContexts) DelUser(ctx context.Context) {
+	c := s.Get(ctx)
+	c.User = &model.Identity{
+		Id: 0,
+	}
+}
+
 func (s *sContexts) GetUser(ctx context.Context) *model.Identity {
 	c := s.Get(ctx)
 	if c == nil {
