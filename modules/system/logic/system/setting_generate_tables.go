@@ -18,6 +18,7 @@ import (
 	"devinggo/modules/system/pkg/hook"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
+	"devinggo/modules/system/pkg/utils/idgen"
 	"devinggo/modules/system/pkg/utils/slice"
 	"devinggo/modules/system/service"
 	"github.com/gogf/gf/v2/container/gmap"
