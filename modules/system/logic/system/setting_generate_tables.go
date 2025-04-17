@@ -317,7 +317,9 @@ func (s *sSettingGenerateTables) GenerateCode(ctx context.Context, ids []int64) 
 			return
 		}
 	}
-	filePath, err = s.packageCodeFile(ctx, codePath, generatePath+"/devinggo.zip")
+	randStr := gconv.String(idgen.NextId(ctx))
+	fileName := "devinggo_" + randStr + ".zip"
+	filePath, err = s.packageCodeFile(ctx, codePath, generatePath+"/"+fileName)
 	if err != nil {
 		return
 	}
