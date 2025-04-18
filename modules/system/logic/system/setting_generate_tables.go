@@ -330,7 +330,7 @@ func (s *sSettingGenerateTables) GenerateCode(ctx context.Context, ids []int64) 
 func (s *sSettingGenerateTables) packageCodeFile(ctx context.Context, codePath string, zipFilePath string) (filePath string, err error) {
 	// 打包目录下面所有文件
 	if !gfile.Exists(zipFilePath) {
-		err = gfile.Remove(zipFilePath)
+		err = gfile.RemoveAll(zipFilePath)
 		if err != nil {
 			return
 		}
@@ -340,7 +340,7 @@ func (s *sSettingGenerateTables) packageCodeFile(ctx context.Context, codePath s
 		return
 	}
 	// 删除目录
-	err = gfile.Remove(codePath)
+	err = gfile.RemoveAll(codePath)
 	if err != nil {
 		return
 	}
@@ -357,7 +357,7 @@ func (s *sSettingGenerateTables) generateCodeInit(ctx context.Context, dirPath s
 		}
 	} else {
 		// 如果目录存在，则删除目录中的所有内容
-		err = gfile.Remove(dirPath)
+		err = gfile.RemoveAll(dirPath)
 		if err != nil {
 			return
 		}

@@ -7,9 +7,9 @@
 package upload
 
 import (
+	"context"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/utils"
-	"context"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gfile"
@@ -58,7 +58,7 @@ func SaveNetworkImage(ctx context.Context, storageMode int, url string, randomNa
 	newPath := GetUploadFilePath(ctx, resourceType, dateDirName)
 	newFileName := newPath + "/" + fileName
 	if gfile.Exists(newFileName) {
-		gfile.Remove(tmpFilePath)
+		gfile.RemoveFile(tmpFilePath)
 	} else {
 		if err = gfile.Rename(tmpFilePath, newFileName); err != nil {
 			return nil, err

@@ -6,8 +6,8 @@
 package upload
 
 import (
-	"devinggo/modules/system/service"
 	"context"
+	"devinggo/modules/system/service"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/huagelong/goss"
@@ -88,7 +88,7 @@ func PutFromFile(ctx context.Context, filePath string, remotePath string) error 
 		return err
 	}
 	if !g.IsEmpty(delLocal) && (delLocal == "true") {
-		err := gfile.Remove(filePath)
+		err := gfile.RemoveFile(filePath)
 		if err != nil {
 			return err
 		}
