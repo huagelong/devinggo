@@ -311,7 +311,8 @@ func (s *sSettingGenerateTables) GenerateCode(ctx context.Context, ids []int64) 
 	if err != nil {
 		return
 	}
-	codePath := generatePath + "/code"
+	//codePath := generatePath + "/code"
+	codePath := utils.GetTmpDir() + "/code"
 	for _, id := range ids {
 		err = s.generateOneCode(ctx, codePath, id)
 		if err != nil {

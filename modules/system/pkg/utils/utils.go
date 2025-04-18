@@ -7,6 +7,7 @@
 package utils
 
 import (
+	"archive/zip"
 	"context"
 	"crypto/md5"
 	"database/sql"
@@ -15,7 +16,6 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/glog"
-	"github.com/mholt/archives"
 	"io"
 	"log"
 	"os"
@@ -190,43 +190,90 @@ func ReplaceSubstr(s, oldSubstr, newSubstr string) string {
 
 // ZipDirectory 压缩目录为 ZIP 文件
 func ZipDirectory(ctx context.Context, source, target string) error {
-
-	list, err := gfile.ScanDirFunc(source, "*", true, func(path string) string {
-		return path
-	})
+	// 创建目标ZIP文件
+	zipFile, err := os.Create(target)
 	if err != nil {
 		return err
 	}
-	if !g.IsEmpty(list) {
-		zipPath := map[string]string{}
-		for _, path := range list {
-			relPath, err := filepath.Rel(source, path)
-			if err != nil {
-				return err
-			}
-			relPath = gstr.Replace(relPath, "\\", "/")
-			zipPath[path] = relPath
-		}
-		files, err := archives.FilesFromDisk(ctx, &archives.FromDiskOptions{FollowSymlinks: false, ClearAttributes: false}, zipPath)
-		if err != nil {
-			return err
-		}
-		out, err := os.Create(target)
-		if err != nil {
-			return err
-		}
-		defer out.Close()
-		format := archives.Zip{
-			SelectiveCompression: true,
-			ContinueOnError:      false,
-		}
-		err = format.Archive(ctx, out, files)
-		if err != nil {
-			return err
-		}
-	}
+	defer zipFile.Close()
 
-	return nil
+	// 创建ZIP写入器
+	zipWriter := zip.NewWriter(zipFile)
+	defer zipWriter.Close()
+
+	// 用于追踪已添加路径（处理大小写不敏感文件系统）
+	seenPaths := make(map[string]struct{})
+	basePath := filepath.Clean(source)
+
+	// 递归遍历目录
+	return filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// 跳过根目录自身
+		if path == basePath {
+			return nil
+		}
+
+		// 获取相对路径
+		relPath, err := filepath.Rel(basePath, path)
+		if err != nil {
+			return err
+		}
+
+		// 统一使用斜杠路径格式
+		zipPath := filepath.ToSlash(relPath)
+
+		// 处理空目录（需要单独创建目录条目）
+		if info.IsDir() {
+			zipPath += "/"
+		}
+
+		// 检查路径唯一性（考虑大小写不敏感系统）
+		lowerPath := strings.ToLower(zipPath)
+		if _, exists := seenPaths[lowerPath]; exists {
+			return nil
+		}
+		seenPaths[lowerPath] = struct{}{}
+
+		// 创建文件头
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			return err
+		}
+
+		// 设置压缩方法
+		header.Method = zip.Deflate
+
+		// 修正路径和名称
+		header.Name = zipPath
+		if info.IsDir() {
+			header.Name += "/"
+		}
+
+		// 写入文件头
+		writer, err := zipWriter.CreateHeader(header)
+		if err != nil {
+			return err
+		}
+
+		// 如果是目录，不需要写入内容
+		if info.IsDir() {
+			return nil
+		}
+
+		// 打开源文件
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		// 复制文件内容到ZIP
+		_, err = io.Copy(writer, file)
+		return err
+	})
 }
 
 func GetDbType() string {
