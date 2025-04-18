@@ -78,7 +78,7 @@
     if (response.message && ! response.success) {
       Message.error(response.message)
     } else {
-      tool.download(response, 'devinggo'+tool.generateId+'.zip')
+      tool.download(response, 'devinggo'+tool.generateId()+'.zip')
       Message.success('代码生成成功，开始下载')
     }
   }
