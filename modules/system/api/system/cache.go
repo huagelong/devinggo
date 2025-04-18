@@ -36,7 +36,7 @@ type ViewCacheRes struct {
 type DeleteCacheReq struct {
 	g.Meta `path:"/cache/delete" method:"delete" tags:"缓存" summary:"根据key删除缓存." x-permission:"system:cache:delete" `
 	model.AuthorHeader
-	Key string `json:"key" v:"required"`
+	Key []string `json:"key" v:"required"`
 }
 
 type DeleteCacheRes struct {

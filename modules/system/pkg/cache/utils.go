@@ -243,13 +243,28 @@ func Remove(ctx context.Context, key interface{}) (lastValue *gvar.Var, err erro
 	if err != nil {
 		return nil, err
 	}
-	if lastValue, err = tagCache.Get(ctx, gconv.String(key)); err != nil {
+
+	// 新增数组类型处理逻辑
+	if keys, ok := key.([]interface{}); ok {
+		// 处理多个 key 的情况
+		for _, k := range keys {
+			strKey := gconv.String(k)
+			if lastValue, err = tagCache.Get(ctx, strKey); err != nil {
+				continue
+			}
+			if err = tagCache.Delete(ctx, strKey); err != nil {
+				return lastValue, err
+			}
+		}
+		return lastValue, nil
+	}
+
+	// 原有单个 key 处理逻辑
+	strKey := gconv.String(key)
+	if lastValue, err = tagCache.Get(ctx, strKey); err != nil {
 		return nil, err
 	}
-	err = tagCache.Delete(ctx, gconv.String(key))
-	if err != nil {
-		return nil, err
-	}
+	err = tagCache.Delete(ctx, strKey)
 	return
 }
 

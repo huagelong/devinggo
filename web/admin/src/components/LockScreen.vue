@@ -14,26 +14,29 @@
 </template>
 
 <script setup>
-import { ref,onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import tool from '@/utils/tool';
 import { Message } from '@arco-design/web-vue';
-const emit = defineEmits(['update:visible']); // 定义 emit，并指定事件名称
+const emit = defineEmits(['update:visible']);
 import { useAppStore } from '@/store'
-const appStore  = useAppStore()
+const appStore = useAppStore()
 const lockScreenPwd = appStore.getLockScreenPwd();
-defineProps({
+
+// 修改 props 的定义方式，将其赋值给一个变量
+const props = defineProps({
   visible: {
     type: Boolean,
     required: true,
     default: false,
   }
 });
+
 const password = ref('');
 
 const unlock = () => {
-  if (tool.md5(password.value) === lockScreenPwd) { // Replace with your actual password logic
+  if (tool.md5(password.value) === lockScreenPwd) {
     password.value = '';
-    emit('update:visible', false); // Emit an event to notify the parent to unlock
+    emit('update:visible', false);
     appStore.setIsLocked(false);
   } else {
     Message.error('锁屏密码错误');
@@ -46,10 +49,14 @@ const lockScreen = () => {
 };
 
 const handleKeydown = (event) => {
+  // 使用 props.visible 来访问 visible prop
+  if (!props.visible) return;
+  
   if (event.altKey && event.key === 'n') {
     lockScreen();
   }
   if (event.key === 'Enter') {
+    event.preventDefault();
     unlock();
   }
 };
