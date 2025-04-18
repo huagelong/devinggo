@@ -13,12 +13,10 @@ import (
 	"devinggo/modules/system/model"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/utils/config"
-	"devinggo/modules/system/pkg/utils/idgen"
 	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/service"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/util/gconv"
 )
 
 var (
@@ -132,14 +130,12 @@ func (c *codeController) UpdateTableAndColumns(ctx context.Context, in *system.U
 
 func (c *codeController) GenerateCode(ctx context.Context, in *system.GenerateCodeReq) (out *system.GenerateCodeRes, err error) {
 	out = &system.GenerateCodeRes{}
-	randStr := gconv.String(idgen.NextId(ctx))
-	fileName := "devinggo_" + randStr + ".zip"
 	filePath, err := service.SettingGenerateTables().GenerateCode(ctx, in.Ids)
 	if err != nil {
 		return
 	}
 	r := request.GetHttpRequest(ctx)
-	r.Response.ServeFileDownload(filePath, fileName)
+	r.Response.ServeFileDownload(filePath)
 	return
 }
 
