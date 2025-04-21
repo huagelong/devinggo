@@ -11,6 +11,7 @@ import (
 	"devinggo/modules/system/pkg/utils"
 	"fmt"
 	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/util/gconv"
 	"strings"
 	"time"
 
@@ -189,12 +190,14 @@ func createModuleFiles(ctx context.Context, moduleName string) error {
 	}
 
 	// 生成SQL迁移文件
-	if err := createModuleMigrationFiles(ctx, moduleName, tplData); err != nil {
+	sqlfiles, err := createModuleMigrationFiles(ctx, moduleName, tplData)
+	if err != nil {
 		return err
 	}
 
 	// 创建模块所需的基本文件
-	if err := createModuleConfigFile(ctx, moduleName, tplData); err != nil {
+	err = createModuleConfigFile(ctx, moduleName, sqlfiles)
+	if err != nil {
 		return err
 	}
 
@@ -202,40 +205,37 @@ func createModuleFiles(ctx context.Context, moduleName string) error {
 }
 
 // 创建模块配置文件
-func createModuleConfigFile(ctx context.Context, moduleName string, tplData g.Map) error {
+func createModuleConfigFile(ctx context.Context, moduleName string, sqlfiles []string) error {
 	config := g.Map{
 		"name":      moduleName,
 		"author":    "devinggo",
 		"version":   "1.0.0",
 		"license":   "MIT",
 		"goVersion": "1.23+",
+		"mod":       g.Map{},
 		"files": g.Map{
 			"go": []string{
 				fmt.Sprintf("modules/%s/module.go", moduleName),
-				fmt.Sprintf("modules/%s/logic/logic.go", moduleName),
-				fmt.Sprintf("modules/%s/service/hook.go", moduleName),
-				fmt.Sprintf("modules/%s/service/middleware.go", moduleName),
-				fmt.Sprintf("modules/%s/logic/hook/hook.go", moduleName),
-				fmt.Sprintf("modules/%s/logic/hook/api_access_log.go", moduleName),
-				fmt.Sprintf("modules/%s/logic/middleware/middleware.go", moduleName),
-				fmt.Sprintf("modules/%s/logic/middleware/api_auth.go", moduleName),
-				fmt.Sprintf("modules/%s/api/test.go", moduleName),
-				fmt.Sprintf("modules/%s/controller/test.go", moduleName),
+				fmt.Sprintf("modules/%s/logic", moduleName),
+				fmt.Sprintf("modules/%s/service", moduleName),
+				fmt.Sprintf("modules/%s/worker", moduleName),
+				fmt.Sprintf("modules/%s/api", moduleName),
+				fmt.Sprintf("modules/%s/controller", moduleName),
 				fmt.Sprintf("modules/_/worker/%s.go", moduleName),
 				fmt.Sprintf("modules/_/modules/%s.go", moduleName),
 				fmt.Sprintf("modules/_/logic/%s.go", moduleName),
 			},
+			"sql":    sqlfiles,
 			"static": []string{},
 		},
 	}
 
 	configPath := fmt.Sprintf("./modules/%s/module.json", moduleName)
-	configContent, err := gjson.EncodeString(config)
+	configContent, err := gjson.MarshalIndent(config, "", "    ")
 	if err != nil {
 		return gerror.Wrapf(err, "编码模块配置失败")
 	}
-
-	if err := gfile.PutContents(configPath, configContent); err != nil {
+	if err := gfile.PutContents(configPath, gconv.String(configContent)); err != nil {
 		return gerror.Wrapf(err, "创建模块配置文件 '%s' 失败", configPath)
 	}
 	g.Log().Debugf(ctx, "创建模块配置文件: %s", configPath)
@@ -243,23 +243,24 @@ func createModuleConfigFile(ctx context.Context, moduleName string, tplData g.Ma
 }
 
 // 创建模块的SQL迁移文件
-func createModuleMigrationFiles(ctx context.Context, moduleName string, tplData g.Map) error {
+func createModuleMigrationFiles(ctx context.Context, moduleName string, tplData g.Map) ([]string, error) {
 	// 生成迁移文件名称
+	sqlFiles := make([]string, 0)
 	timezone, err := time.LoadLocation("UTC")
 	if err != nil {
-		return gerror.Wrap(err, "加载时区失败")
+		return sqlFiles, gerror.Wrap(err, "加载时区失败")
 	}
 	version := time.Now().In(timezone).Format("20060102150405")
 	name := fmt.Sprintf("%s_module", gstr.LcFirst(moduleName))
 
 	// 确定迁移文件目录和SQL模板
 	dbType := utils.GetDbType()
-	directory := "./resource/migrations"
+	directory := "resource/migrations"
 	upTemplate := "sql/module_up_mysql.html"
 	downTemplate := "sql/module_down_mysql.html"
 
 	if dbType == "postgres" {
-		directory = "./resource/migrations_pgsql"
+		directory = "resource/migrations_pgsql"
 		upTemplate = "sql/module_up_postgres.html"
 		downTemplate = "sql/module_down_postgres.html"
 	}
@@ -275,7 +276,7 @@ func createModuleMigrationFiles(ctx context.Context, moduleName string, tplData 
 	upFilename := fmt.Sprintf("%s/%s_%s.up.sql", directory, version, name)
 	upContent, err := view.Parse(ctx, upTemplate, tplData)
 	if err != nil {
-		return gerror.Wrapf(err, "渲染SQL模板 '%s' 失败", upTemplate)
+		return sqlFiles, gerror.Wrapf(err, "渲染SQL模板 '%s' 失败", upTemplate)
 	}
 
 	// 替换SQL模板中的特殊变量格式
@@ -283,32 +284,29 @@ func createModuleMigrationFiles(ctx context.Context, moduleName string, tplData 
 	upContent = gstr.Replace(upContent, "{%.moduleNameCap%}", tplData["moduleNameCap"].(string))
 
 	if err := gfile.PutContents(upFilename, upContent); err != nil {
-		return gerror.Wrapf(err, "创建SQL迁移文件 '%s' 失败", upFilename)
+		return sqlFiles, gerror.Wrapf(err, "创建SQL迁移文件 '%s' 失败", upFilename)
 	}
+	sqlFiles = append(sqlFiles, upFilename)
 	g.Log().Debugf(ctx, "创建SQL迁移文件: %s", upFilename)
 
 	// 生成down.sql文件
 	downFilename := fmt.Sprintf("%s/%s_%s.down.sql", directory, version, name)
 	downContent, err := view.Parse(ctx, downTemplate, tplData)
 	if err != nil {
-		return gerror.Wrapf(err, "渲染SQL模板 '%s' 失败", downTemplate)
+		return sqlFiles, gerror.Wrapf(err, "渲染SQL模板 '%s' 失败", downTemplate)
 	}
-
+	sqlFiles = append(sqlFiles, downFilename)
 	// 替换SQL模板中的特殊变量格式
 	downContent = gstr.Replace(downContent, "{%.moduleName%}", moduleName)
 	downContent = gstr.Replace(downContent, "{%.moduleNameCap%}", tplData["moduleNameCap"].(string))
 	if err := gfile.PutContents(downFilename, downContent); err != nil {
-		return gerror.Wrapf(err, "创建SQL迁移文件 '%s' 失败", downFilename)
+		return sqlFiles, gerror.Wrapf(err, "创建SQL迁移文件 '%s' 失败", downFilename)
 	}
 	g.Log().Debugf(ctx, "创建SQL迁移文件: %s", downFilename)
-
 	// 使用更明显的方式输出SQL迁移文件创建成功信息和提示
 	successMsg := fmt.Sprintf("模块 '%s' 的SQL迁移文件创建成功!", moduleName)
-
 	// 记录到日志
 	g.Log().Info(ctx, successMsg)
-	// 同时直接输出到控制台，确保用户能看到
-	fmt.Printf("\n%s\n%s\n\n", successMsg)
 
-	return nil
+	return sqlFiles, nil
 }
