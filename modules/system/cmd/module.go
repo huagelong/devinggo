@@ -88,6 +88,93 @@ var (
 			return nil
 		},
 	}
+	ExportModule = &gcmd.Command{
+		Name:  "module:export",
+		Brief: "导出模块文件",
+		Description: `
+		将模块文件导出为zip压缩包
+		用法: go run main.go module:export -name 模块名称
+		`,
+		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
+			CmdInit(ctx, parser)
+			opts := gcmd.GetOpt("name")
+			if opts == nil {
+				return gerror.New("模块名称必须输入，使用 -name 参数指定")
+			}
+
+			moduleName := opts.String()
+			if moduleName == "" {
+				return gerror.New("模块名称不能为空")
+			}
+
+			if moduleName == "system" {
+				return gerror.New("系统模块不能导出")
+			}
+
+			// 检查模块是否存在
+			modulePath := fmt.Sprintf("./modules/%s", moduleName)
+			if !gfile.Exists(modulePath) {
+				return gerror.Newf("模块 '%s' 不存在", moduleName)
+			}
+
+			// 读取模块配置文件
+			configPath := fmt.Sprintf("./modules/%s/module.json", moduleName)
+			if !gfile.Exists(configPath) {
+				return gerror.Newf("模块 '%s' 配置文件module.json不存在", moduleName)
+			}
+			config, err := gjson.LoadPath(configPath, gjson.Options{
+				Safe: true,
+			})
+			if err != nil {
+				return gerror.Wrapf(err, "读取模块配置文件失败")
+			}
+
+			// 创建临时目录
+			tmpDir := utils.GetTmpDir() + "/" + "module_export_" + moduleName
+			defer gfile.RemoveAll(tmpDir)
+
+			// 复制文件到临时目录
+			files := config.Get("files")
+			for _, paths := range files.Map() {
+				for _, path := range gconv.Strings(paths) {
+					srcPath := path
+					// 确保源文件存在
+					if !gfile.Exists(srcPath) {
+						g.Log().Warningf(ctx, "文件不存在，跳过: %s", srcPath)
+						continue
+					}
+
+					// 计算目标路径
+					relPath := strings.TrimPrefix(srcPath, "./")
+					dstPath := gfile.Join(tmpDir, relPath)
+
+					// 创建目标目录
+					if err := gfile.Mkdir(gfile.Dir(dstPath)); err != nil {
+						return gerror.Wrapf(err, "创建目录失败: %s", dstPath)
+					}
+
+					// 复制文件或目录
+					if gfile.IsDir(srcPath) {
+						if err := gfile.CopyDir(srcPath, dstPath); err != nil {
+							return gerror.Wrapf(err, "复制目录失败: %s", srcPath)
+						}
+					} else {
+						if err := gfile.Copy(srcPath, dstPath); err != nil {
+							return gerror.Wrapf(err, "复制文件失败: %s", srcPath)
+						}
+					}
+				}
+			}
+			version := config.Get("version")
+			// 创建zip文件
+			zipFile := fmt.Sprintf("%s.v%s.zip", moduleName, version)
+			if err := utils.ZipDirectory(ctx, tmpDir, zipFile); err != nil {
+				return gerror.Wrapf(err, "创建zip文件失败")
+			}
+			g.Log().Infof(ctx, "模块 '%s' 导出成功: %s", moduleName, zipFile)
+			return nil
+		},
+	}
 )
 
 // 创建模块所需的基本文件
@@ -225,8 +312,10 @@ func createModuleConfigFile(ctx context.Context, moduleName string, sqlfiles []s
 				fmt.Sprintf("modules/_/modules/%s.go", moduleName),
 				fmt.Sprintf("modules/_/logic/%s.go", moduleName),
 			},
-			"sql":    sqlfiles,
-			"static": []string{},
+			"sql": sqlfiles,
+			"static": []string{
+				fmt.Sprintf("modules/%s/module.json", moduleName),
+			},
 		},
 	}
 

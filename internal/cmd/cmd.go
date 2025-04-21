@@ -49,6 +49,7 @@ var (
 		>> HTTP服务  [go run main.go http]
 		>> 消息队列&定时任务  [go run main.go worker]
 		>> 创建新模块  [go run main.go module:create -name 模块名称]
+		>> 导出新模块  [go run main.go module:export -name 模块名称]
 		>> 查看帮助  [go run main.go help]
 		>> 查看版本  [go run main.go version]
     `,
@@ -83,7 +84,7 @@ var (
 )
 
 func init() {
-	if err := Main.AddCommand(All, cmd.Http, cmd.Version, cmd.Worker, cmd.Unpack, cmd.MigrateUp, cmd.MigrateDown, cmd.MigrateGoto, cmd.MigrateCreate, cmd.MigrateForce, cmd.CreateModule, Help); err != nil {
+	if err := Main.AddCommand(All, cmd.Http, cmd.Version, cmd.Worker, cmd.Unpack, cmd.MigrateUp, cmd.MigrateDown, cmd.MigrateGoto, cmd.MigrateCreate, cmd.MigrateForce, cmd.CreateModule, cmd.ExportModule, Help); err != nil {
 		panic(err)
 	}
 }

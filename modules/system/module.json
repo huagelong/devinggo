@@ -1,0 +1,21 @@
+{
+    "author": "devinggo",
+    "files": {
+        "go": [
+            "modules/system",
+            "modules/_/modules/system.go",
+            "modules/_/logic/system.go"
+        ],
+        "sql": [
+            "resource"
+        ],
+        "static": [
+            "web/admin"
+        ]
+    },
+    "goVersion": "1.23+",
+    "license": "Apache-2.0",
+    "mod": {},
+    "name": "system",
+    "version": "1.0.0"
+}

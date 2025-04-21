@@ -1,0 +1,17 @@
+{
+    "author": "devinggo",
+    "files": {
+        "go": [
+            "modules/api",
+            "modules/_/modules/api.go",
+            "modules/_/logic/api.go"
+        ],
+        "sql": [],
+        "static": []
+    },
+    "goVersion": "1.23+",
+    "license": "Apache-2.0",
+    "mod": {},
+    "name": "api",
+    "version": "1.0.0"
+}
