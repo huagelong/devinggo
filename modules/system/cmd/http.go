@@ -72,14 +72,14 @@ var (
 				defer tp.Shutdown(ctx)
 			}
 
-			serverWg.Add(1)
+			ServerWg.Add(1)
 			// 信号监听
-			signalListen(ctx, signalHandlerForOverall)
+			SignalListen(ctx, SignalHandlerForOverall)
 			s.Run()
-			<-serverCloseSignal
+			<-ServerCloseSignal
 			modules.StopModules(ctx)
 			g.Log().Info(ctx, "http server successfully closed ..")
-			serverWg.Done()
+			ServerWg.Done()
 			return
 		},
 	}

@@ -7,12 +7,12 @@
 package cmd
 
 import (
+	"context"
 	_ "devinggo/modules/_/worker"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/pkg/worker/cron"
 	"devinggo/modules/system/pkg/worker/server"
 	"devinggo/modules/system/pkg/worker/task"
-	"context"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcmd"
 )
@@ -32,15 +32,15 @@ var (
 				cron.Run(ctx)
 			})
 
-			serverWg.Add(1)
+			ServerWg.Add(1)
 
 			// 信号监听
-			signalListen(ctx, signalHandlerForOverall)
+			SignalListen(ctx, SignalHandlerForOverall)
 
-			<-serverCloseSignal
+			<-ServerCloseSignal
 			task.GetClient(ctx).Close()
 			g.Log().Debug(ctx, "worker server successfully closed ..")
-			serverWg.Done()
+			ServerWg.Done()
 			return
 		},
 	}

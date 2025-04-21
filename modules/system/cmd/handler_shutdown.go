@@ -7,10 +7,10 @@
 package cmd
 
 import (
+	"context"
 	"devinggo/modules/system/consts"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/pkg/utils/event"
-	"context"
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/os/gproc"
 	"os"
@@ -18,19 +18,19 @@ import (
 )
 
 var (
-	serverCloseSignal = make(chan struct{}, 1)
-	serverWg          = sync.WaitGroup{}
+	ServerCloseSignal = make(chan struct{}, 1)
+	ServerWg          = sync.WaitGroup{}
 	once              sync.Once
 )
 
 // signalHandlerForOverall 关闭信号处理
-func signalHandlerForOverall(sig os.Signal) {
+func SignalHandlerForOverall(sig os.Signal) {
 	serverCloseEvent(gctx.GetInitCtx())
-	serverCloseSignal <- struct{}{}
+	ServerCloseSignal <- struct{}{}
 }
 
 // signalListen 信号监听
-func signalListen(ctx context.Context, handler ...gproc.SigHandler) {
+func SignalListen(ctx context.Context, handler ...gproc.SigHandler) {
 	utils.SafeGo(ctx, func(ctx context.Context) {
 		gproc.AddSigHandlerShutdown(handler...)
 		gproc.Listen()

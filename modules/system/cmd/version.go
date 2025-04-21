@@ -7,8 +7,8 @@
 package cmd
 
 import (
-	"devinggo/modules/system/pkg/utils"
 	"context"
+	"devinggo/modules/system/pkg/utils"
 	"github.com/gogf/gf/v2/os/gcmd"
 )
 

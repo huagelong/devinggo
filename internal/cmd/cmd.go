@@ -8,6 +8,7 @@ package cmd
 
 import (
 	"context"
+	"devinggo/modules/system/cmd"
 	"devinggo/modules/system/pkg/utils"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcmd"
@@ -58,10 +59,10 @@ var (
 		Brief:       "start all server",
 		Description: "this is the command entry for starting all server",
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
-			CmdInit(ctx, parser)
+			cmd.CmdInit(ctx, parser)
 			g.Log().Debug(ctx, "starting all server")
 			// 需要启动的服务
-			var allServers = []*gcmd.Command{Http, Worker}
+			var allServers = []*gcmd.Command{cmd.Http, cmd.Worker}
 
 			for _, server := range allServers {
 				var cmd = server
@@ -72,9 +73,9 @@ var (
 				})
 			}
 			// 信号监听
-			signalListen(ctx, signalHandlerForOverall)
-			<-serverCloseSignal
-			serverWg.Wait()
+			cmd.SignalListen(ctx, cmd.SignalHandlerForOverall)
+			<-cmd.ServerCloseSignal
+			cmd.ServerWg.Wait()
 			g.Log().Debug(ctx, "all service successfully closed ..")
 			return
 		},
@@ -82,7 +83,7 @@ var (
 )
 
 func init() {
-	if err := Main.AddCommand(All, Http, Version, Worker, Unpack, MigrateUp, MigrateDown, MigrateGoto, MigrateCreate, MigrateForce, CreateModule, Help); err != nil {
+	if err := Main.AddCommand(All, cmd.Http, cmd.Version, cmd.Worker, cmd.Unpack, cmd.MigrateUp, cmd.MigrateDown, cmd.MigrateGoto, cmd.MigrateCreate, cmd.MigrateForce, cmd.CreateModule, Help); err != nil {
 		panic(err)
 	}
 }
