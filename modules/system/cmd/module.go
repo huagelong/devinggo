@@ -10,6 +10,7 @@ import (
 	"context"
 	"devinggo/modules/system/pkg/utils"
 	"fmt"
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"strings"
 	"time"
 
@@ -192,6 +193,52 @@ func createModuleFiles(ctx context.Context, moduleName string) error {
 		return err
 	}
 
+	// 创建模块所需的基本文件
+	if err := createModuleConfigFile(ctx, moduleName, tplData); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// 创建模块配置文件
+func createModuleConfigFile(ctx context.Context, moduleName string, tplData g.Map) error {
+	config := g.Map{
+		"name":      moduleName,
+		"author":    "devinggo",
+		"version":   "1.0.0",
+		"license":   "MIT",
+		"goVersion": "1.23+",
+		"files": g.Map{
+			"go": []string{
+				fmt.Sprintf("modules/%s/module.go", moduleName),
+				fmt.Sprintf("modules/%s/logic/logic.go", moduleName),
+				fmt.Sprintf("modules/%s/service/hook.go", moduleName),
+				fmt.Sprintf("modules/%s/service/middleware.go", moduleName),
+				fmt.Sprintf("modules/%s/logic/hook/hook.go", moduleName),
+				fmt.Sprintf("modules/%s/logic/hook/api_access_log.go", moduleName),
+				fmt.Sprintf("modules/%s/logic/middleware/middleware.go", moduleName),
+				fmt.Sprintf("modules/%s/logic/middleware/api_auth.go", moduleName),
+				fmt.Sprintf("modules/%s/api/test.go", moduleName),
+				fmt.Sprintf("modules/%s/controller/test.go", moduleName),
+				fmt.Sprintf("modules/_/worker/%s.go", moduleName),
+				fmt.Sprintf("modules/_/modules/%s.go", moduleName),
+				fmt.Sprintf("modules/_/logic/%s.go", moduleName),
+			},
+			"static": []string{},
+		},
+	}
+
+	configPath := fmt.Sprintf("./modules/%s/module.json", moduleName)
+	configContent, err := gjson.EncodeString(config)
+	if err != nil {
+		return gerror.Wrapf(err, "编码模块配置失败")
+	}
+
+	if err := gfile.PutContents(configPath, configContent); err != nil {
+		return gerror.Wrapf(err, "创建模块配置文件 '%s' 失败", configPath)
+	}
+	g.Log().Debugf(ctx, "创建模块配置文件: %s", configPath)
 	return nil
 }
 
