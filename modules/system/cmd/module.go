@@ -76,11 +76,11 @@ var (
 			// 使用更明显的方式输出成功信息和提示
 			successMsg := fmt.Sprintf("模块 '%s' 创建成功!", moduleName)
 			tipMsg := "提示: 请运行 'go run main.go migrate:up' 命令应用迁移"
-			
+
 			// 记录到日志
 			g.Log().Info(ctx, successMsg)
 			g.Log().Info(ctx, tipMsg)
-			
+
 			// 同时直接输出到控制台，确保用户能看到
 			fmt.Printf("\n%s\n%s\n\n", successMsg, tipMsg)
 			return nil
@@ -175,7 +175,7 @@ func createModuleFiles(ctx context.Context, moduleName string) error {
 		content = gstr.Replace(content, "{% .table.PackageName %}", moduleName)
 		content = gstr.Replace(content, "{% .tableCaseCamelName %}", moduleNameCap)
 		content = gstr.Replace(content, "{% .tableCaseCamelLowerName %}", moduleName)
-		
+
 		// 处理条件语句，默认保留条件内容
 		content = gstr.Replace(content, "{% if eq .table.Type \"single\"  %}", "")
 		content = gstr.Replace(content, "{% if eq .table.Type \"tree\"  %}", "")
@@ -210,7 +210,7 @@ func createModuleMigrationFiles(ctx context.Context, moduleName string, tplData 
 	directory := "./resource/migrations"
 	upTemplate := "sql/module_up_mysql.html"
 	downTemplate := "sql/module_down_mysql.html"
-	
+
 	if dbType == "postgres" {
 		directory = "./resource/migrations_pgsql"
 		upTemplate = "sql/module_up_postgres.html"
@@ -230,11 +230,11 @@ func createModuleMigrationFiles(ctx context.Context, moduleName string, tplData 
 	if err != nil {
 		return gerror.Wrapf(err, "渲染SQL模板 '%s' 失败", upTemplate)
 	}
-	
+
 	// 替换SQL模板中的特殊变量格式
 	upContent = gstr.Replace(upContent, "{%.moduleName%}", moduleName)
 	upContent = gstr.Replace(upContent, "{%.moduleNameCap%}", tplData["moduleNameCap"].(string))
-	
+
 	if err := gfile.PutContents(upFilename, upContent); err != nil {
 		return gerror.Wrapf(err, "创建SQL迁移文件 '%s' 失败", upFilename)
 	}
@@ -246,7 +246,7 @@ func createModuleMigrationFiles(ctx context.Context, moduleName string, tplData 
 	if err != nil {
 		return gerror.Wrapf(err, "渲染SQL模板 '%s' 失败", downTemplate)
 	}
-	
+
 	// 替换SQL模板中的特殊变量格式
 	downContent = gstr.Replace(downContent, "{%.moduleName%}", moduleName)
 	downContent = gstr.Replace(downContent, "{%.moduleNameCap%}", tplData["moduleNameCap"].(string))
@@ -254,10 +254,10 @@ func createModuleMigrationFiles(ctx context.Context, moduleName string, tplData 
 		return gerror.Wrapf(err, "创建SQL迁移文件 '%s' 失败", downFilename)
 	}
 	g.Log().Debugf(ctx, "创建SQL迁移文件: %s", downFilename)
-	
+
 	// 使用更明显的方式输出SQL迁移文件创建成功信息和提示
 	successMsg := fmt.Sprintf("模块 '%s' 的SQL迁移文件创建成功!", moduleName)
-	
+
 	// 记录到日志
 	g.Log().Info(ctx, successMsg)
 	// 同时直接输出到控制台，确保用户能看到
