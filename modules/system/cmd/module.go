@@ -77,7 +77,7 @@ var (
 
 			// 使用更明显的方式输出成功信息和提示
 			successMsg := fmt.Sprintf("模块 '%s' 创建成功!", moduleName)
-			tipMsg := "提示: 请运行 'go run main.go migrate:up' 命令应用迁移"
+			tipMsg := "提示: 请运行 'go run main.go migrate:up' 命令开启应用"
 
 			// 记录到日志
 			g.Log().Info(ctx, successMsg)
@@ -172,6 +172,107 @@ var (
 				return gerror.Wrapf(err, "创建zip文件失败")
 			}
 			g.Log().Infof(ctx, "模块 '%s' 导出成功: %s", moduleName, zipFile)
+			return nil
+		},
+	}
+	ImportModule = &gcmd.Command{
+		Name:  "module:import",
+		Brief: "导入模块文件",
+		Description: `
+		从zip压缩包导入模块
+		用法: go run main.go module:import -file 模块zip文件路径
+		`,
+		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
+			CmdInit(ctx, parser)
+			opts := gcmd.GetOpt("file")
+			if opts == nil {
+				return gerror.New("模块文件路径必须输入，使用 -file 参数指定")
+			}
+
+			zipPath := opts.String()
+			if zipPath == "" {
+				return gerror.New("模块文件路径不能为空")
+			}
+
+			// 检查zip文件是否存在
+			if !gfile.Exists(zipPath) {
+				return gerror.Newf("模块文件 '%s' 不存在", zipPath)
+			}
+
+			// 创建临时解压目录
+			tmpDir := utils.GetTmpDir() + "/" + "module_import_" + gfile.Name(zipPath)
+			defer gfile.RemoveAll(tmpDir)
+
+			// 解压zip文件
+			if err := utils.UnzipFile(zipPath, tmpDir); err != nil {
+				return gerror.Wrapf(err, "解压模块文件失败")
+			}
+
+			// 读取模块配置文件
+			configPath := gfile.Join(tmpDir, "modules/*/module.json")
+			configFiles, err := gfile.Glob(configPath)
+			if err != nil || len(configFiles) == 0 {
+				return gerror.New("未找到模块配置文件")
+			}
+
+			config, err := gjson.LoadPath(configFiles[0], gjson.Options{
+				Safe: true,
+			})
+			if err != nil {
+				return gerror.Wrapf(err, "读取模块配置文件失败")
+			}
+
+			moduleName := config.Get("name").String()
+			if moduleName == "" {
+				return gerror.New("模块配置文件中未指定模块名称")
+			}
+
+			if moduleName == "system" {
+				return gerror.New("系统模块不能导入")
+			}
+
+			// 目标模块路径
+			modulePath := fmt.Sprintf("./modules/%s", moduleName)
+
+			// 如果模块已存在
+			if gfile.Exists(modulePath) {
+				return gerror.Wrapf(err, "模块 '%s' 已存在", moduleName)
+			}
+
+			// 复制文件到目标位置
+			files := config.Get("files")
+			for _, paths := range files.Map() {
+				for _, path := range gconv.Strings(paths) {
+					srcPath := gfile.Join(tmpDir, path)
+					dstPath := path
+
+					// 确保源文件存在
+					if !gfile.Exists(srcPath) {
+						g.Log().Warningf(ctx, "文件不存在，跳过: %s", srcPath)
+						continue
+					}
+
+					// 创建目标目录
+					if err := gfile.Mkdir(gfile.Dir(dstPath)); err != nil {
+						return gerror.Wrapf(err, "创建目录失败: %s", dstPath)
+					}
+
+					// 复制文件或目录
+					if gfile.IsDir(srcPath) {
+						if err := gfile.CopyDir(srcPath, dstPath); err != nil {
+							return gerror.Wrapf(err, "复制目录失败: %s", srcPath)
+						}
+					} else {
+						if err := gfile.Copy(srcPath, dstPath); err != nil {
+							return gerror.Wrapf(err, "复制文件失败: %s", srcPath)
+						}
+					}
+				}
+			}
+
+			g.Log().Infof(ctx, "模块 '%s' 导入成功!", moduleName)
+			tipMsg := "提示: 请运行 'go run main.go migrate:up' 命令开启应用"
+			g.Log().Infof(ctx, tipMsg)
 			return nil
 		},
 	}
@@ -302,20 +403,14 @@ func createModuleConfigFile(ctx context.Context, moduleName string, sqlfiles []s
 		"mod":       g.Map{},
 		"files": g.Map{
 			"go": []string{
-				fmt.Sprintf("modules/%s/module.go", moduleName),
-				fmt.Sprintf("modules/%s/logic", moduleName),
-				fmt.Sprintf("modules/%s/service", moduleName),
-				fmt.Sprintf("modules/%s/worker", moduleName),
-				fmt.Sprintf("modules/%s/api", moduleName),
-				fmt.Sprintf("modules/%s/controller", moduleName),
+				fmt.Sprintf("modules/%s", moduleName),
 				fmt.Sprintf("modules/_/worker/%s.go", moduleName),
 				fmt.Sprintf("modules/_/modules/%s.go", moduleName),
 				fmt.Sprintf("modules/_/logic/%s.go", moduleName),
 			},
-			"sql": sqlfiles,
-			"static": []string{
-				fmt.Sprintf("modules/%s/module.json", moduleName),
-			},
+			"sql":    sqlfiles,
+			"static": []string{},
+			"other":  []string{},
 		},
 	}
 

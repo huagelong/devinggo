@@ -289,3 +289,75 @@ func GetDbType() string {
 	}
 	return dbType
 }
+
+// UnzipFile 解压ZIP文件到指定目录
+func UnzipFile(zipPath string, destPath string) error {
+	// 打开ZIP文件
+	reader, err := zip.OpenReader(zipPath)
+	if err != nil {
+		return gerror.Wrapf(err, "打开ZIP文件失败: %s", zipPath)
+	}
+	defer reader.Close()
+
+	// 确保目标目录存在
+	if err := os.MkdirAll(destPath, 0755); err != nil {
+		return gerror.Wrapf(err, "创建目标目录失败: %s", destPath)
+	}
+
+	// 用于存储已创建的目录
+	createdDirs := make(map[string]bool)
+
+	// 遍历ZIP文件中的所有文件和目录
+	for _, file := range reader.File {
+		// 构建目标路径
+		path := filepath.Join(destPath, file.Name)
+
+		// 检查路径穿越漏洞
+		if !strings.HasPrefix(path, filepath.Clean(destPath)+string(os.PathSeparator)) {
+			return gerror.Newf("非法的文件路径: %s", file.Name)
+		}
+
+		// 如果是目录
+		if file.FileInfo().IsDir() {
+			if err := os.MkdirAll(path, 0755); err != nil {
+				return gerror.Wrapf(err, "创建目录失败: %s", path)
+			}
+			createdDirs[path] = true
+			continue
+		}
+
+		// 确保父目录存在
+		dir := filepath.Dir(path)
+		if !createdDirs[dir] {
+			if err := os.MkdirAll(dir, 0755); err != nil {
+				return gerror.Wrapf(err, "创建父目录失败: %s", dir)
+			}
+			createdDirs[dir] = true
+		}
+
+		// 创建目标文件
+		dstFile, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
+		if err != nil {
+			return gerror.Wrapf(err, "创建文件失败: %s", path)
+		}
+
+		// 打开ZIP中的源文件
+		srcFile, err := file.Open()
+		if err != nil {
+			dstFile.Close()
+			return gerror.Wrapf(err, "打开ZIP中的文件失败: %s", file.Name)
+		}
+
+		// 复制文件内容
+		_, err = io.Copy(dstFile, srcFile)
+		srcFile.Close()
+		dstFile.Close()
+
+		if err != nil {
+			return gerror.Wrapf(err, "复制文件内容失败: %s", file.Name)
+		}
+	}
+
+	return nil
+}
+

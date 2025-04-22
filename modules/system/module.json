@@ -4,9 +4,10 @@
         "go": [
             "modules/system",
             "modules/_/modules/system.go",
+            "modules/_/worker/system.go",
             "modules/_/logic/system.go"
         ],
-        "sql": [
+        "other": [
             "resource"
         ],
         "static": [

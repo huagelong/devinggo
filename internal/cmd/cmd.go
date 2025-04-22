@@ -84,7 +84,7 @@ var (
 )
 
 func init() {
-	if err := Main.AddCommand(All, cmd.Http, cmd.Version, cmd.Worker, cmd.Unpack, cmd.MigrateUp, cmd.MigrateDown, cmd.MigrateGoto, cmd.MigrateCreate, cmd.MigrateForce, cmd.CreateModule, cmd.ExportModule, Help); err != nil {
+	if err := Main.AddCommand(All, cmd.Http, cmd.Version, cmd.Worker, cmd.Unpack, cmd.MigrateUp, cmd.MigrateDown, cmd.MigrateGoto, cmd.MigrateCreate, cmd.MigrateForce, cmd.CreateModule, cmd.ExportModule,cmd.ImportModule, Help); err != nil {
 		panic(err)
 	}
 }
