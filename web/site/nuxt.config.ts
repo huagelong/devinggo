@@ -63,9 +63,9 @@ export default defineNuxtConfig({
   nitro: {
     routeRules: {
         //使用mock数据先注释
-    //   '/api/**': {
-    //     proxy: `${import.meta.env.SERVER_URL}/api/**`,
-    //   },
+      '/api/**': {
+        proxy: `${import.meta.env.SERVER_URL}/api/**`,
+      },
     },
   },
 
