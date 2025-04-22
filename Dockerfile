@@ -33,8 +33,8 @@ RUN npm install --registry=https://registry.npmmirror.com && npm run build:docke
 FROM loads/alpine:3.8
 LABEL maintainer="hpuwang@gmail.com"
 
-# 安装Node.js运行环境
-RUN apk add --no-cache nodejs npm
+# 安装Node.js运行环境和Nginx
+RUN apk add --no-cache nodejs npm nginx
 
 # 设置在容器内执行时当前的目录
 ENV WORKDIR /app
@@ -46,11 +46,15 @@ COPY --from=go-builder /app/bin/v1.0.0/linux_amd64/ ./
 # 复制Nuxt3应用的构建结果
 COPY --from=site-builder /app/.output /app/site/.output
 
+# 复制Nginx配置文件
+COPY ./docs/nginx.conf /etc/nginx/http.d/default.conf
+
 # 设置权限
 RUN chmod +x $WORKDIR/devinggo
 
 # 创建启动脚本
 RUN echo '#!/bin/sh\n\
+# 启动Nginx\nnginx &\n\
 # 启动Nuxt3应用\ncd /app/site && node ./.output/server/index.mjs &\n\
 # 启动Go应用\ncd /app && ./devinggo\n' > /app/start.sh && chmod +x /app/start.sh
 

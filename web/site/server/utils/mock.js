@@ -1,6 +1,6 @@
-export function formatMockResult(status, data, msg) {
+export function formatMockResult(code, data, msg) {
   return {
-    status,
+    code,
     data,
     msg,
   }
