@@ -20,10 +20,8 @@ export default defineNuxtConfig({
         iframes: true,
         native: true,
         directiveOnly: false,
-
         // Default image must be in the public folder
         // defaultImage: '/images/default-image.jpg',
-
         // To remove class set value to false
         loadingClass: 'isLoading',
         loadedClass: 'isLoaded',

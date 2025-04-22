@@ -34,7 +34,7 @@ function applyOptions(options = {}) {
   return options
 }
 
-function handleError(res) {
+function handleError(response) {
   const err = function (text) {
     if (useHelper.isClient()) {
       AMessage.error(text || '未知错误')
@@ -45,17 +45,18 @@ function handleError(res) {
 
     return false
   }
-  if (!res.data.value.status) {
-    err('请求超时，服务器无响应！')
-    return false
-  }
-  const handleMap = {
-    400() { return err(res.data.value.msg) },
-    404() { return err('接口不存在') },
-    401() { return err('需要登录') },
-  }
-  if (handleMap[res.data.value.status]) {
-    return handleMap[res.data.value.status]()
+  if (response.data.value.code == 1000) {
+      throttle(() => {
+        err('未登录或登录状态已过期，需要重新登录');
+      })();
+  }else if (response.data.code == 65) {
+      err('服务器资源不存在');
+  }else if (response.data.code == 50) {
+      err('服务器内部错误');
+  }else if (response.data.code == 1001 || response.data.code == 61) {
+      err('没有权限访问');
+  }else{
+      err('未知错误');
   }
   return true
 }

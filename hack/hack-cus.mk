@@ -34,11 +34,11 @@ install:
 ui.install: cli.install
 	@set -e;\
 	cd $(UI_PATH);\
-	yarn install;
+	npm install;
 
 #ui build
 .PHONY: ui.build
 ui.build: ui.install
 	@set -e;\
 	cd $(UI_PATH);\
-	yarn build;
+	npm run build;

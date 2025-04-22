@@ -1,13 +1,13 @@
 ###############################################################################
 #                                build
 ###############################################################################
-FROM golang:1.23-alpine AS builder
+FROM golang:1.23-alpine AS go-builder
 # ENV GOPROXY https://goproxy.cn,direct
 ENV GO111MODULE on
 ENV CGO_ENABLED 0
 ENV GOOS linux
-# 安装 Node.js、Yarn、Make 及其他依赖
-RUN apk add --no-cache nodejs npm yarn make git wget
+# 安装 Make 及其他依赖
+RUN apk add --no-cache make git wget
 WORKDIR /app
 COPY . ./
 RUN mv ./manifest/config/config.docker.yaml ./manifest/config/config.yaml
@@ -19,20 +19,43 @@ RUN make build
 RUN chmod +x ./bin/v1.0.0/linux_amd64/devinggo
 RUN cd ./bin/v1.0.0/linux_amd64/ && ./devinggo unpack
 RUN ls -la ./bin/v1.0.0/linux_amd64
+
+# 构建site前端 (Nuxt3)
+FROM node:20-alpine AS site-builder
+WORKDIR /app
+COPY ./web/site ./
+COPY ./web/site/.env.docker ./.env.production
+RUN npm install --registry=https://registry.npmmirror.com && npm run build:docker
+
 ###############################################################################
 #                                INSTALLATION
 ###############################################################################
 FROM loads/alpine:3.8
 LABEL maintainer="hpuwang@gmail.com"
+
+# 安装Node.js运行环境
+RUN apk add --no-cache nodejs npm
+
 # 设置在容器内执行时当前的目录
 ENV WORKDIR /app
 WORKDIR $WORKDIR
-# 添加应用可执行文件，并设置执行权限
-COPY --from=builder /app/bin/v1.0.0/linux_amd64/ ./
-RUN ls -la ./
+
+# 添加Go应用可执行文件，并设置执行权限
+COPY --from=go-builder /app/bin/v1.0.0/linux_amd64/ ./
+
+# 复制Nuxt3应用的构建结果
+COPY --from=site-builder /app/.output /app/site/.output
+
+# 设置权限
 RUN chmod +x $WORKDIR/devinggo
+
+# 创建启动脚本
+RUN echo '#!/bin/sh\n\
+# 启动Nuxt3应用\ncd /app/site && node ./.output/server/index.mjs &\n\
+# 启动Go应用\ncd /app && ./devinggo\n' > /app/start.sh && chmod +x /app/start.sh
+
 ###############################################################################
 #                                   START
 ###############################################################################
 
-CMD ./devinggo
+CMD ["/app/start.sh"]

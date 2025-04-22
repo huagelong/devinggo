@@ -85,11 +85,10 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManage
 choco install make
 choco install sed
 ```
-2. 安装golang,node,yarn
+2. 安装golang,node
 ```
 choco install golang
 choco install nodejs
-choco install yarn
 ```
 
 3. 修改配置文件（mysql or postgresql,redis配置）
