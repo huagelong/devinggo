@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.dh-ct-bg{
+  @apply bg-white dark:bg-dark ;
+}
+.dh-link-1{
+  @apply text-gray-800 dark:text-gray-400 hover:dark:text-gray-400/60 hover:text-gray-800/60;
+}
+.dh-tag-1{
+  @apply whitespace-nowrap rounded-md bg-gray-400 dark:bg-gray-600 px-2.5 py-0.5 text-sm text-gray-700 hover:text-gray-700/60 hover:dark:text-gray-700/60 mr-2;
+}
+.dh-title-1{
+  @apply text-lg font-normal text-gray-800 dark:text-gray-400 hover:text-gray-800/60 hover:dark:text-gray-400/60;
+}
+.dh-text-1{
+  @apply  text-gray-800 dark:text-gray-400;
+}
+.dh-display{
+  @apply hidden sm:hidden md:block;
+}
+.dh-pag-1{
+  @apply inline-flex size-8 items-center justify-center rounded border border-gray-100 dh-ct-bg text-gray-800 dark:text-gray-400 hover:text-gray-800/60 hover:dark:text-gray-400/60 rtl:rotate-180;
+}
+.dh-pag-2{
+  @apply block size-8 rounded border border-gray-100 dh-ct-bg text-center leading-8 text-gray-800 dark:text-gray-400 hover:text-gray-800/60 hover:dark:text-gray-400/60;
+}
+.dh-pag-3{
+  @apply block size-8 rounded border-blue-600 bg-blue-600 text-center leading-8 text-white dark:text-gray-400 hover:dark:text-gray-400/60;
+}
+.dh-card-1{
+  @apply rounded-lg border border-gray-100 dark:border-gray-700 dh-ct-bg p-4 shadow-sm transition hover:shadow-lg sm:p-6
+}
+.dh-tab{
+  @apply text-gray-800 hover:text-gray-400 dark:text-gray-400 ml-2 sm:ml-2 md:ml-0 md:mt-2 px-2 py-2 rounded-md text-center transition hover:bg-blue-600  inline-flex items-center;
+}
+.dh-tab-avtive{
+  @apply text-white hover:text-white/60 dark:text-gray-400 hover:dark:text-gray-400/60 px-2 py-2 rounded-md text-center transition inline-flex items-center bg-blue-600;
+}
+.dh-tab-1{
+  @apply text-gray-800 hover:text-gray-600 dark:text-gray-400 hover:dark:text-gray-400/60 ml-2 sm:ml-2 md:ml-0 md:mt-2 px-4 py-2 rounded-md text-center transition  inline-flex items-center;
+}
+.dh-border-bg{
+  @apply border-gray-300 dark:border-gray-700
+}
+.detailContent p{
+  @apply mb-2 text-pretty text-gray-800 dark:text-gray-400 tracking-tight leading-6 decoration-4;
+}
+.detailContent{
+  @apply text-gray-800 dark:text-gray-400
+}
+.detailContent h1{
+  @apply my-4 text-lg font-bold text-gray-800 dark:text-gray-400 leading-6 tracking-tight hover:underline ;
+}
+
+.detailContent h2{
+  @apply my-4 text-lg font-bold text-gray-800 dark:text-gray-400 leading-6 tracking-tight hover:underline ;
+}
+
+.detailContent h3{
+  @apply my-4 text-lg font-bold text-gray-800 dark:text-gray-400 leading-6 tracking-tight hover:underline ;
+}
+
+
+.detailContent ul{
+  @apply mb-2 text-gray-800 dark:text-gray-400;
+}
+
+.detailContent ul li{
+  @apply mb-2  pl-2 tracking-tight leading-6;
+}

@@ -1,0 +1,37 @@
+{
+  "name": "devinggo",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build --dotenv .env.production",
+    "build:docker": "nuxt build --dotenv .env.docker",
+    "dev": "nuxt dev  --dotenv .env.local",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview --dotenv .env.production",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "ncu": "ncu -u"
+  },
+  "dependencies": {
+    "@arco-design/web-vue": "^2.57.0",
+    "@arco-themes/vue-digitforce": "^0.1.22",
+    "@pinia/nuxt": "^0.11.0",
+    "arco-design-nuxt-module": "^0.2.1",
+    "nuxt": "^3.16.2",
+    "nuxt-lazy-load": "^3.0.5",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^4.12.0",
+    "@nuxtjs/color-mode": "^3.5.2",
+    "@nuxtjs/eslint-module": "^4.1.0",
+    "@nuxtjs/tailwindcss": "^6.13.2",
+    "dotenv": "^16.5.0",
+    "eslint": "^9.25.1",
+    "mockjs": "^1.1.0",
+    "npm-check-updates": "^18.0.0",
+    "sass": "^1.87.0"
+  }
+}

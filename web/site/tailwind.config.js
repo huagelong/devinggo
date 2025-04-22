@@ -1,0 +1,66 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  mode: 'jit',
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        dark: '#242529',
+        blue: {
+          100: '#EFF3FF',
+          200: '#B2C5FF',
+          300: '#9DB6FF',
+          400: '#8AB1FF',
+          500: '#2F58CC',
+          600: '#628CFF',
+          700: '#3C6EFF',
+        },
+        gray: {
+          100: '#FFFFFF',
+          200: '#F6F8FC',
+          300: '#EFF1F7',
+          400: '#E8EBF2',
+          500: '#60646F',
+          600: '#9B9FAB',
+          700: '#33353B',
+        },
+        green: {
+          100: '#E8FFEA',
+          200: '#AFF0B5',
+          300: '#7BE188',
+          400: '#4CD263',
+          500: '#4FDA97',
+          600: '#24D17E',
+          700: '#02BD63',
+        },
+        purple: {
+          100: '#B2C5FF',
+          200: '#9DB6FF',
+          300: '#7BE188',
+          400: '#8C6FFF',
+          500: '#8566E0',
+          600: '#643CFF',
+        },
+        yellow: {
+          100: '#FFF7E8',
+          200: '#FFE4BA',
+          300: '#FFCF8B',
+          400: '#FFB65D',
+          500: '#FF7533',
+          600: '#FF5300',
+          700: '#D94700',
+        },
+        pink: {
+          100: '#FFECE8',
+          200: '#FDCDC5',
+          300: '#FBACA3',
+          400: '#F98981',
+          500: '#FF4762',
+          600: '#FF1A3B',
+          700: '#CC0A26',
+        },
+      },
+    },
+  },
+  plugins: [],
+}
