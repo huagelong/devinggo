@@ -54,9 +54,8 @@ RUN chmod +x $WORKDIR/devinggo
 
 # 创建启动脚本
 RUN echo '#!/bin/sh\n\
-# 启动Nginx\nnginx &\n\
-# 启动Nuxt3应用\ncd /app/site && node ./.output/server/index.mjs &\n\
-# 启动Go应用\ncd /app && ./devinggo\n' > /app/start.sh && chmod +x /app/start.sh
+cd /app/site && node ./.output/server/index.mjs &\n\
+cd /app && ./devinggo\n' > /app/start.sh && chmod +x /app/start.sh
 
 ###############################################################################
 #                                   START
