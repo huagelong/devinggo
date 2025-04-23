@@ -30,11 +30,11 @@ RUN npm install --registry=https://registry.npmmirror.com && npm run build:docke
 ###############################################################################
 #                                INSTALLATION
 ###############################################################################
-FROM loads/alpine:3.8
+FROM node:20-alpine
 LABEL maintainer="hpuwang@gmail.com"
 
-# 安装Node.js运行环境和Nginx
-RUN apk add --no-cache nodejs npm nginx
+# 安装Nginx
+RUN apk add --no-cache nginx
 
 # 设置在容器内执行时当前的目录
 ENV WORKDIR /app
