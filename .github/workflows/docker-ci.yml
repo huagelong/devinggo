@@ -3,7 +3,7 @@ name: Docker Build & Publish
 on:
   push:
     branches:
-      - master # Triggers when code is pushed to the main branch
+      - dev # Triggers when code is pushed to the main branch
     #  tags:
     #   - 'v*'
 
