@@ -16,7 +16,7 @@ useSeoMeta({
       <div class="container mx-auto text-center px-4">
         <h1 class="text-4xl md:text-6xl font-bold mb-4">欢迎来到 Devinggo</h1>
         <p class="text-lg md:text-xl mb-8">基于 GoFrame v2 + Vue3 + Arco Design 开发的全栈前后端分离后台管理系统</p>
-        <NuxtLink to="#" class="bg-white text-indigo-600 font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-gray-100 transition duration-300">
+        <NuxtLink to="https://devinggo-dev.devinghub.com/admin" class="bg-white text-indigo-600 font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-gray-100 transition duration-300">
           开始探索
         </NuxtLink>
       </div>
