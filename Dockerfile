@@ -47,16 +47,14 @@ COPY --from=go-builder /app/bin/v1.0.0/linux_amd64/ ./
 COPY --from=site-builder /app/.output /app/site/.output
 
 # 复制Nginx配置文件
-COPY ./docs/nginx.conf /etc/nginx/http.d/default.conf
+COPY ./docs/docker/nginx.conf /etc/nginx/http.d/default.conf
 
 # 设置权限
 RUN chmod +x $WORKDIR/devinggo
 
+COPY ./docs/docker/start.sh /app/start.sh
 # 创建启动脚本
-RUN echo '#!/bin/sh\n\
-cd /app/site && node ./.output/server/index.mjs &\n\
-cd /app && ./devinggo\n' > /app/start.sh && chmod +x /app/start.sh
-
+RUN chmod +x /app/start.sh
 ###############################################################################
 #                                   START
 ###############################################################################
