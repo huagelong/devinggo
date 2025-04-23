@@ -7,7 +7,7 @@ ENV GO111MODULE on
 ENV CGO_ENABLED 0
 ENV GOOS linux
 # 安装 Make 及其他依赖
-RUN apk add --no-cache make git wget
+RUN apk add --no-cache make git wget nodejs npm
 WORKDIR /app
 COPY . ./
 RUN mv ./manifest/config/config.docker.yaml ./manifest/config/config.yaml
