@@ -52,7 +52,7 @@ COPY ./docs/docker/nginx.conf /etc/nginx/http.d/default.conf
 # 设置权限
 RUN chmod +x $WORKDIR/devinggo
 
-COPY ./docs/docker/start.sh /app/start.sh
+COPY ./docs/docker/start.sh $WORKDIR/start.sh
 # 创建启动脚本
 RUN chmod +x /app/start.sh
 ###############################################################################
