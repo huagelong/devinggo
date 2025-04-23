@@ -42,13 +42,14 @@ WORKDIR $WORKDIR
 
 # 添加Go应用可执行文件，并设置执行权限
 COPY --from=go-builder /app/bin/v1.0.0/linux_amd64/ ./
+COPY --from=go-builder /app/docs/docker/start.sh ./start.sh
+# 复制Nginx配置文件
+COPY --from=go-builder /app/docs/docker/nginx.conf /etc/nginx/http.d/default.conf
 # 复制Nuxt3应用的构建结果
 COPY --from=site-builder /app/.output /app/site/.output
-# 复制Nginx配置文件
-COPY --from=go-builder ./docs/docker/nginx.conf /etc/nginx/http.d/default.conf
 # 设置权限
 RUN chmod +x $WORKDIR/devinggo
-COPY --from=go-builder ./docs/docker/start.sh $WORKDIR/start.sh
+
 # 创建启动脚本
 RUN chmod +x /app/start.sh
 ###############################################################################
