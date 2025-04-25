@@ -12,14 +12,28 @@ import (
 
 type AuthorHeader struct {
 	Authorization string `json:"Authorization" in:"header" v:"required" default:""   dc:"token"`
-	Lang          string `json:"Accept-Language" in:"header" v:"required" default:"zh_CN"  dc:"i18n lang"`
+	Lang          string `json:"Accept-Language" in:"header" default:"zh_CN"  dc:"i18n lang"`
+	Xappid        string `json:"X-App-Id" in:"header" default:"1000"   dc:"app id"`
 }
 
-type SignHeader struct {
-	Xtimestamp string `json:"X-Timestamp" in:"header" v:"required"  default:"1693529263225"    dc:"time stamp"`
-	Xnonce     string `json:"X-Nonce" in:"header" v:"required" default:"617266194"   dc:"rand number"`
-	Xsign      string `json:"X-Sign" in:"header" v:"required" default:"e01844a1413a236a60e0167fbd62283f"    dc:"sign"`
-	Xappid     string `json:"X-Appid" in:"header" v:"required" default:"1000"   dc:"app id"`
+type EasyModeVerify struct {
+	Signature string `json:"signature"  v:"required"  default:""    dc:"sign"`
+	AppId     string `json:"app_id"  v:"required" default:""   dc:"app id"`
+	Lang      string `json:"language" default:"zh_CN"  dc:"i18n lang"`
+}
+
+type NormalModeVerify struct {
+	Authorization string `json:"Authorization" in:"header" v:"required" default:""   dc:"token"`
+	Lang          string `json:"Accept-Language" in:"header" v:"required" default:"zh_CN"  dc:"i18n lang"`
+	Xappid        string `json:"X-App-Id" in:"header" v:"required" default:"1000"   dc:"app id"`
+}
+
+type ApiSign struct {
+	Authorization string `json:"Authorization" in:"header"  default:""   dc:"token"`
+	Lang          string `json:"Accept-Language" in:"header" default:"zh_CN"  dc:"i18n lang"`
+	Xappid        string `json:"X-App-Id" in:"header"  default:"1000"   dc:"app id"`
+	Signature     string `json:"signature"   default:""    dc:"sign"`
+	AppId         string `json:"app_id"  default:""   dc:"app id"`
 }
 
 type PageListReq struct {

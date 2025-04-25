@@ -7,23 +7,29 @@
 package i18n
 
 import (
-	"devinggo/modules/system/pkg/utils/request"
 	"context"
+	"devinggo/modules/system/pkg/utils/request"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/text/gstr"
 )
 
 func InitI18n(ctx context.Context) {
 	r := request.GetHttpRequest(ctx)
-	lang := r.Header.Get("Accept-Language")
-	if g.IsEmpty(lang) {
-		lang = "zh-CN"
-	} else {
-		langarr := gstr.Split(lang, ";")
-		lang = langarr[0]
-		if gstr.Contains(lang, "en") {
-			lang = "en"
+	lang := "zh-CN"
+	langGet := r.Get("lang")
+	if g.IsEmpty(langGet) {
+		headerLang := r.Header.Get("Accept-Language")
+		if !g.IsEmpty(headerLang) {
+			lang = headerLang
 		}
+	} else {
+		lang = langGet.String()
+	}
+
+	langarr := gstr.Split(lang, ";")
+	lang = langarr[0]
+	if gstr.Contains(lang, "en") {
+		lang = "en"
 	}
 	g.I18n().SetPath("resource/i18n")
 	g.I18n().SetLanguage(lang)

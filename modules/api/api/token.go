@@ -12,9 +12,8 @@ import (
 )
 
 type TokenReq struct {
-	g.Meta    `path:"/getToken" method:"get" tags:"token" summary:"获取token." x-exceptAuth:"true" x-exceptLogin:"true" x-permission:"api:token:getToken" `
-	AppId     string `json:"app_id" dc:"app id"`
-	Signature string `json:"signature" dc:"签名"`
+	g.Meta `path:"/getToken" method:"get" tags:"token" summary:"获取token." x-exceptAuth:"true" x-exceptLogin:"true" x-permission:"api:token:getToken" `
+	model.EasyModeVerify
 }
 
 type TokenRes struct {
