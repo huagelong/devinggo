@@ -1,9 +1,9 @@
 export function isClient() {
-  return process.client
+  return typeof window !== 'undefined'
 }
 
 export function isServer() {
-  return process.server
+  return !isClient()
 }
 
 export function isDev() {

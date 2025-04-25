@@ -14,27 +14,27 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     'arco-design-nuxt-module',
     ['nuxt-lazy-load', {
-        images: true,
-        videos: true,
-        audios: true,
-        iframes: true,
-        native: true,
-        directiveOnly: false,
-        // Default image must be in the public folder
-        // defaultImage: '/images/default-image.jpg',
-        // To remove class set value to false
-        loadingClass: 'isLoading',
-        loadedClass: 'isLoaded',
-        appendClass: 'lazyLoad',
+      images: true,
+      videos: true,
+      audios: true,
+      iframes: true,
+      native: true,
+      directiveOnly: false,
+      // Default image must be in the public folder
+      // defaultImage: '/images/default-image.jpg',
+      // To remove class set value to false
+      loadingClass: 'isLoading',
+      loadedClass: 'isLoaded',
+      appendClass: 'lazyLoad',
 
-        observerConfig: {
-          // See IntersectionObserver documentation
-        },
-      }],
+      observerConfig: {
+        // See IntersectionObserver documentation
+      },
+    }],
   ],
 
   colorMode: {
-    classSuffix: ''
+    classSuffix: '',
   },
 
   arco: {
@@ -42,7 +42,7 @@ export default defineNuxtConfig({
     hookPrefix: 'Arco',
     locales: ['getLocale'],
     localePrefix: 'Arco',
-    theme:'@arco-themes/vue-digitforce',
+    theme: '@arco-themes/vue-digitforce',
   },
 
   css: [
@@ -56,15 +56,15 @@ export default defineNuxtConfig({
   imports: {
     autoImport: true,
     dirs: [
-      'stores'
+      'stores',
     ],
   },
 
   nitro: {
     routeRules: {
-        //使用mock数据先注释
+      // 使用mock数据先注释
       '/api/**': {
-        proxy: `${import.meta.env.SERVER_URL}/api/**`,
+        proxy: `${process.env.SERVER_URL}/api/**`,
       },
     },
   },
@@ -72,10 +72,9 @@ export default defineNuxtConfig({
   buildModules: ['@nuxtjs/eslint-module'],
 
   runtimeConfig: {
-    // The private keys which are only available server-side
-    apiSecret: '12121wwwassdfsfde2',
-    env: process.env.NODE_ENV
+    apiSecret: process.env.APP_SECRET,
+    env: process.env.NODE_ENV,
   },
 
-  compatibilityDate: '2025-04-22'
+  compatibilityDate: '2025-04-22',
 })
