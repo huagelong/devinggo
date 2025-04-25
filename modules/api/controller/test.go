@@ -10,8 +10,6 @@ import (
 	"context"
 	"devinggo/modules/api/api"
 	"devinggo/modules/system/controller/base"
-	"devinggo/modules/system/pkg/worker/cron"
-	"devinggo/modules/system/service"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
