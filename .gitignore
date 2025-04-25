@@ -41,3 +41,5 @@ internal/packed/build_pack_data.go
 
 manifest/config/config.yaml
 hack/config.yaml
+.clineignore
+.clinerules
