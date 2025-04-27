@@ -21,7 +21,6 @@ import { isArray, isFunction, get, cloneDeep, isUndefined } from 'lodash'
 import { useRouter } from 'vue-router'
 import tool from '@/utils/tool'
 import { useFormStore } from '@/store/index'
-import { refreshTag } from '@/utils/common'
 
 const columns = inject('columns')
 const options = inject('options')
@@ -67,8 +66,6 @@ const submit = async () => {
   }
   if ( response.success ) {
     Message.success(response.message || `${actionTitle.value}成功！`)
-    // 刷新当前Tag
-    refreshTag()
     emit('success', response)
     return true
   } else if ( response.success === false && (typeof response.code === "undefined" || response.code !== 200) ) {
