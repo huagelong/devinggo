@@ -523,7 +523,7 @@ const tableSetting = () => {
 }
 
 const requestSuccess = async response => {
-  if (response && response.code && response.code === 200) {
+  if (response && response.code == 0) {
     options.value.dataCompleteRefresh && await refresh()
     if (reloadColumn.value) {
       reloadColumn.value = false
