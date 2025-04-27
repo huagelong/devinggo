@@ -10,7 +10,6 @@ import (
 	"context"
 	"devinggo/modules/api/api"
 	"devinggo/modules/system/controller/base"
-	"github.com/gogf/gf/v2/frame/g"
 )
 
 var (
