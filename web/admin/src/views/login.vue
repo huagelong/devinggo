@@ -28,22 +28,27 @@ const userStore = useUserStore()
 
 const redirect = route.query.redirect ? route.query.redirect : '/'
 
-const handleSubmit = async ({ values, errors }) => {
-  if (loading.value) {
-    return
-  }
-  loading.value = true
-  if ((isDevelop || Verify.value.checkResult(form.code)) && (! errors)) {
-    const result = await userStore.login(form)
-    if (! result) {
-      loading.value = false
+  const handleSubmit = async ({ values, errors }) => {
+    if (loading.value) {
       return
     }
-    useTagStore().clearTags()
-    router.push(redirect)
+    loading.value = true
+    if ((isDevelop || Verify.value.checkResult(form.code)) && (! errors)) {
+      // 对密码进行AES加密
+      const encryptedForm = {
+        ...form,
+        password: tool.aes.encode(form.password, import.meta.env.VITE_APP_AES_KEY)
+      }
+      const result = await userStore.login(encryptedForm)
+      if (!result) {
+        loading.value = false
+        return
+      }
+      useTagStore().clearTags()
+      router.push(redirect)
+    }
+    loading.value = false
   }
-  loading.value = false
-}
 </script>
 <template>
   <div id="background" class="fixed"></div>

@@ -14,7 +14,7 @@ import (
 type LoginReq struct {
 	g.Meta   `path:"/login" method:"post" tags:"登录" summary:"登录" x-exceptAuth:"true" x-exceptLogin:"true" x-permission:"system:user:login"`
 	Username string `json:"username" v:"required|length:4,12#请输入用户名|用户名长度为4~12位" dc:"用户名"`
-	Password string `json:"password" v:"required|length:6,20#请输入密码|密码长度为6~20位" dc:"密码" `
+	Password string `json:"password" v:"required#请输入密码" dc:"密码" `
 }
 
 type LoginRes struct {
