@@ -306,7 +306,6 @@ func (s *sSystemUser) Update(ctx context.Context, req *req.SystemUser, userId ..
 	if err = gconv.Struct(req, &systemUser); err != nil {
 		return
 	}
-
 	if g.IsEmpty(req.Id) {
 		if len(userId) > 0 {
 			systemUser.Id = userId[0]
@@ -360,7 +359,7 @@ func (s *sSystemUser) UpdateSimple(ctx context.Context, in *req.SystemUserUpdate
 		return
 	}
 
-	out, err = s.Model(ctx).Data(systemUser).Where(dao.SystemUser.Columns().Id, in.Id).Update()
+	out, err = s.Model(ctx).OmitEmptyData().Data(systemUser).Where(dao.SystemUser.Columns().Id, in.Id).Update()
 	if utils.IsError(err) {
 		return
 	}
