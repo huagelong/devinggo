@@ -1,5 +1,5 @@
 <template>
-  <a-modal v-model:visible="visible" fullscreen :footer="false">
+  <a-modal v-model:visible="visible" width="1200px" :footer="false">
     <template #title>维护 {{ currentRow.name }} 字典数据</template>
     <!-- CRUD 组件 -->
     <ma-crud :options="crud" :columns="columns" ref="crudRef">

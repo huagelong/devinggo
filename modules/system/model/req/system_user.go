@@ -62,11 +62,15 @@ type SystemUserSave struct {
 }
 
 type SystemUserUpdate struct {
-	Id      int64   `json:"id" v:"required" description:"用户ID"`
-	Phone   string  `json:"phone"                 description:"手机"`  // 手机
-	Email   string  `json:"email"                  description:"邮箱"` // 邮箱
-	DeptIds []int64 `json:"dept_ids" v:"required" description:"部门ID列表"`
-	RoleIds []int64 `json:"role_ids" v:"required" description:"角色ID列表"`
-	PostIds []int64 `json:"post_ids" v:"required" description:"岗位ID列表"`
-	Remark  string  `json:"remark"   v:"max-length:255"             description:"备注"` // 备注
+	Id       int64   `json:"id" v:"required" description:"用户ID"`
+	Username string  `json:"username"             description:"用户名"`                   // 用户名
+	UserType string  `json:"user_type"                   description:"用户类型：(100系统用户)"` // 用户类型：(100系统用户)
+	Nickname string  `json:"nickname"            description:"用户昵称"`                   // 用户昵称
+	Phone    string  `json:"phone"                 description:"手机"`                   // 手机
+	Email    string  `json:"email"                  description:"邮箱"`                  // 邮箱
+	Status   int     `json:"status"               description:"状态 (1正常 2停用)"`          // 状态 (1正常 2停用)
+	DeptIds  []int64 `json:"dept_ids" v:"required" description:"部门ID列表"`
+	RoleIds  []int64 `json:"role_ids" v:"required" description:"角色ID列表"`
+	PostIds  []int64 `json:"post_ids" v:"required" description:"岗位ID列表"`
+	Remark   string  `json:"remark"   v:"max-length:255"             description:"备注"` // 备注
 }

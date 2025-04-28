@@ -1,5 +1,5 @@
 <template>
-  <a-modal v-model:visible="visible" fullscreen :footer="false">
+  <a-modal v-model:visible="visible" width="1200px" :footer="false">
     <template #title>部门领导列表</template>
     <a-alert>部门的领导人可以跨部门设置</a-alert>
     <!-- CRUD 组件 -->

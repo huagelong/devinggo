@@ -40,7 +40,7 @@
     </a-tabs>
   </div>
 
-  <a-modal v-model:visible="detailVisible" fullscreen :footer="false">
+  <a-modal v-model:visible="detailVisible" width="1200px" :footer="false">
     <template #title>消息详情</template>
     <a-typography :style="{ marginTop: '-30px' }">
       <a-typography-title class="text-center">
