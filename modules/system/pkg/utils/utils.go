@@ -125,16 +125,26 @@ func FileMd5(filePath string) (string, error) {
 // 根目录
 func GetRootPath() string {
 	// 如果是go run则返回temp目录 go build 则返回当前目录
-	dir := getCurrentAbPathByExecutable()
+	//dir := getCurrentAbPathByExecutable()
+	//tempDir := GetTmpDir()
+	//
+	//// 如果是临时目录执行 从Caller中获取
+	//if strings.Contains(dir, tempDir) || tempDir == "." {
+	//	dir = getCurrentAbPathByCaller()
+	//}
+	//g.Log().Info(context.Background(), "project dir: ", dir)
+	//
+	//return dir
+	selfPath := gfile.SelfPath()
 	tempDir := GetTmpDir()
 
-	// 如果是临时目录执行 从Caller中获取
-	if strings.Contains(dir, tempDir) || tempDir == "." {
-		dir = getCurrentAbPathByCaller()
+	// 判断是否是通过go run运行或位于临时目录
+	if strings.Contains(selfPath, tempDir) || strings.Contains(selfPath, "go-build") {
+		// 返回当前工作目录（项目根目录）
+		return gfile.Pwd()
 	}
-	g.Log().Info(context.Background(), "project dir: ", dir)
-
-	return dir
+	// 返回可执行文件所在目录
+	return gfile.SelfDir()
 }
 
 // 获取系统临时目录，兼容go run
@@ -360,4 +370,3 @@ func UnzipFile(zipPath string, destPath string) error {
 
 	return nil
 }
-

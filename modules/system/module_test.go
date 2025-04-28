@@ -10,7 +10,7 @@ import (
 	_ "devinggo/internal/logic"
 	_ "devinggo/internal/packed"
 	_ "devinggo/modules/_/logic"
-	_ "devinggo/modules/system/pkg/orm/driver"
+	"devinggo/modules/system/pkg/utils"
 	_ "github.com/gogf/gf/contrib/nosql/redis/v2"
 	"github.com/gogf/gf/v2/frame/g"
 	"testing"
@@ -21,5 +21,6 @@ func TestGenerateCode(t *testing.T) {
 	ctx := context.Background()
 	g.Log().Info(ctx, "TestGenerateCode")
 	//t.Log("TestGenerateCode")
+	g.Log().Info(ctx, utils.GetRootPath())
 	t.Log("GenerateCode Success")
 }
