@@ -1,5 +1,5 @@
 <template>
-  <a-modal fullscreen v-model:visible="visible" :footer="false">
+  <a-modal width="1200px" v-model:visible="visible" :footer="false">
     <template #title>管理配置</template>
     <div class="h-full">
       <ma-crud ref="crudRef" :options="crud" :columns="columns" />
@@ -29,8 +29,8 @@ const crud = reactive({
   showIndex: false,
   operationColumn: true,
   operationColumnWidth: 160,
-  edit: { show: true, api: config.update, auth: ['setting:config:update'] },
-  delete: { show: true, api: config.delete, auth: ['setting:config:delete'] },
+  edit: { show: true, api: config.update, auth: ['system:config:update'] },
+  delete: { show: true, api: config.delete, auth: ['system:config:delete'] },
   beforeRequest: (params) => params.group_id = groupId.value,
   beforeEdit: (record) => {
     if (record.config_select_data && typeof record.config_select_data === 'string') {

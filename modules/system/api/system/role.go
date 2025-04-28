@@ -113,7 +113,7 @@ type ChangeStatusRoleRes struct {
 }
 
 type NumberOperationRoleReq struct {
-	g.Meta `path:"/role/numberOperation" method:"put" tags:"角色" summary:"数字运算操作." x-permission:"system:role:update"`
+	g.Meta `path:"/role/numberOperation" method:"put" tags:"角色" summary:"数字运算操作."  x-permission:"system:role:update"`
 	model.AuthorHeader
 	Id          int64  `json:"id" dc:"ids" v:"min:1#Id不能为空"`
 	NumberName  string `json:"numberName" dc:"numberName" v:"required#名称不能为空"`
@@ -145,7 +145,7 @@ type DataPermissionRoleRes struct {
 }
 
 type GetMenuByRoleReq struct {
-	g.Meta `path:"/role/getMenuByRole/{Id}" method:"get" tags:"角色" summary:"通过角色获取菜单." x-permission:"system:role:getMenuByRole"`
+	g.Meta `path:"/role/getMenuByRole/{Id}" method:"get" tags:"角色" summary:"通过角色获取菜单."  x-exceptAuth:"true"  x-permission:"system:role:getMenuByRole"`
 	model.AuthorHeader
 	Id int64 `json:"id" dc:"id" v:"required|min:1#Id不能为空"`
 }
@@ -156,7 +156,7 @@ type GetMenuByRoleRes struct {
 }
 
 type GetDeptByRoleReq struct {
-	g.Meta `path:"/role/getDeptByRole/{Id}" method:"get" tags:"角色" summary:"通过角色获取部门." x-permission:"system:role:getDeptByRole"`
+	g.Meta `path:"/role/getDeptByRole/{Id}" method:"get" tags:"角色" summary:"通过角色获取部门."  x-exceptAuth:"true"  x-permission:"system:role:getDeptByRole"`
 	model.AuthorHeader
 	Id int64 `json:"id" dc:"id" v:"required|min:1#Id不能为空"`
 }

@@ -6,13 +6,13 @@
         <template #extra>
           <a-space>
             <a-tooltip content="添加组">
-              <a-button shape="round" @click="addGroupModal" type="primary" v-auth="['setting:config:save']">
+              <a-button shape="round" @click="addGroupModal" type="primary" v-auth="['system:config:save']">
                 <template #icon><icon-plus /></template>
               </a-button>
             </a-tooltip>
 
             <a-tooltip content="管理该组配置">
-              <a-button shape="round" @click="manageConfigModal" type="primary" v-auth="['setting:config:index']">
+              <a-button shape="round" @click="manageConfigModal" type="primary" v-auth="['system:config:index']">
                 <template #icon><icon-settings /></template>
               </a-button>
             </a-tooltip>
@@ -25,7 +25,7 @@
       </a-tabs>
     </div>
 
-    <div class="ma-content-block p-5 h-full lg:w-1/2 lg:ml-3 mt-3 lg:mt-0" v-if="$common.auth(['setting:config:save'])">
+    <div class="ma-content-block p-5 h-full lg:w-1/2 lg:ml-3 mt-3 lg:mt-0" v-auth="['system:config:save']">
       <add-config @success="addConfigSuccess" />
     </div>
 
@@ -178,7 +178,7 @@
   }
 
   const submit = async (data) => {
-    if (! auth('setting:config:update')) {
+    if (! auth('system:config:update')) {
       Message.info('没有权限修改配置')
       return
     }

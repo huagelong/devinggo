@@ -1,5 +1,5 @@
 <template>
-  <a-modal v-model:visible="visible" fullscreen :footer="false">
+  <a-modal v-model:visible="visible" width="1200px" :footer="false">
     <template #title>
       维护 {{ currentRow.name }} 的{{ currentType == 'request' ? '请求参数' : '响应参数' }}
     </template>
