@@ -137,14 +137,15 @@ func GetRootPath() string {
 	//return dir
 	selfPath := gfile.SelfPath()
 	tempDir := GetTmpDir()
-
+	dir := gfile.SelfDir()
 	// 判断是否是通过go run运行或位于临时目录
 	if strings.Contains(selfPath, tempDir) || strings.Contains(selfPath, "go-build") {
 		// 返回当前工作目录（项目根目录）
-		return gfile.Pwd()
+		dir = gfile.Pwd()
 	}
+	g.Log().Info(context.Background(), "project dir: ", dir)
 	// 返回可执行文件所在目录
-	return gfile.SelfDir()
+	return dir
 }
 
 // 获取系统临时目录，兼容go run
