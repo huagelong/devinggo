@@ -166,6 +166,7 @@ settings:
   superAdminId: 1 # 超级管理员ID
   initPassword: "123456" # 超级管理员初始密码
   enableGlobalDbCache: true # 是否开启全局数据库缓存，默认false
+  aesKey: "1234567890123456" # AES加密密钥，跟web/admin项目VITE_APP_AES_KEY保持一致
   cors:
     allowDomain: "*" # 允许的域名，默认允许所有
     allowHeaders: "X-App-Id,X-Tenant-Id"

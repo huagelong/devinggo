@@ -16,6 +16,7 @@ import (
 	"devinggo/modules/system/myerror"
 	"devinggo/modules/system/pkg/contexts"
 	"devinggo/modules/system/pkg/utils"
+	"devinggo/modules/system/pkg/utils/config"
 	"devinggo/modules/system/pkg/utils/location"
 	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/pkg/utils/secure"
@@ -56,8 +57,21 @@ func (s *sLogin) Login(ctx context.Context, username, password string) (token st
 		err = myerror.ValidationFailed(ctx, "用户不存在")
 		return
 	}
+	// AES解密密码
+	aesKey := config.GetConfigString(ctx, "settings.aesKey")
+	if aesKey == "" {
+		err = myerror.ValidationFailed(ctx, "系统加密配置异常")
+		return
+	}
 
-	if !secure.PasswordVerify(password, userInfo.Password) {
+	decryptedPass, err := secure.AESDecrypt(password, aesKey)
+	if err != nil {
+		g.Log().Errorf(ctx, "AES解密失败: %v", err)
+		err = myerror.ValidationFailed(ctx, "密码解析失败")
+		return
+	}
+
+	if !secure.PasswordVerify(decryptedPass, userInfo.Password) {
 		err = myerror.ValidationFailed(ctx, "用户或者密码错误")
 		return
 	}
