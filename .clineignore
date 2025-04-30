@@ -1,0 +1,8 @@
+# 忽略日志文件
+
+- *.log
+- */node_modules
+- web/system/dist
+- resource/public/uploads
+- bin
+- logs

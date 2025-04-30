@@ -1,0 +1,12 @@
+- **后台前端**
+ - 目录**web/admin**
+ - 使用""vue3+vite+arco design+pinia""
+- **官网前端**
+ - 目录**web/site**
+ - 使用""nuxt3+arco design+pinia""
+- **后端**
+ - 目录**modules**
+ - 使用""goframe+mysql+redis""
+- **样式**
+ - 使用""Tailwind CSS""
+
