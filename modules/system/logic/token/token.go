@@ -93,7 +93,14 @@ func (s *sToken) ParseToken(ctx context.Context, token string) (*model.NormalIde
 	if !ok {
 		return nil, myerror.ValidationFailed(ctx, "token验证失败")
 	}
-	return claims.NormalIdentity, nil
+
+	tokenData := claims.NormalIdentity
+	expire := tokenData.ExpiresAt
+	if expire < gtime.Now().Unix() {
+		return nil, myerror.ApiTokenIsExpire(ctx, "token已过期")
+	}
+
+	return tokenData, nil
 }
 
 func (s *sToken) Refresh(r *ghttp.Request) (string, int64, error) {

@@ -24,10 +24,7 @@ type tokenController struct {
 
 func (c *tokenController) Token(ctx context.Context, in *api.TokenReq) (out *api.TokenRes, err error) {
 	out = &api.TokenRes{}
-	params := make(map[string]interface{})
-	params["app_id"] = in.AppId
-	params["signature"] = in.Signature
-	token, exp, err := service.SystemApp().GetAccessToken(ctx, params)
+	token, exp, err := service.SystemApp().GetAccessToken(ctx)
 	if err != nil {
 		return nil, err
 	}

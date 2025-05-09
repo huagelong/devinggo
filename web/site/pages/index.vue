@@ -1,4 +1,27 @@
 <script setup>
+import { Message } from '@arco-design/web-vue'
+import { test } from '../api/test'
+
+const isLoading = ref(false)
+const helloWord = ref('')
+
+async function handleExperienceClick() {
+  try {
+    isLoading.value = true
+    const res = await test({})
+    Message.success(`接口返回：${JSON.stringify(res.data.value)}`)
+  }
+  catch (error) {
+    Message.error(`请求失败：${error.message}`)
+  }
+  finally {
+    isLoading.value = false
+  }
+}
+
+const res = await test({})
+helloWord.value = res.data.value.data
+
 useSeoMeta({
   // 页面标题
   title: 'Devinggo - 基于 GoFrame v2 + Vue3 + Arco Design 开发的全栈前后端分离后台管理系统',
@@ -81,11 +104,15 @@ useSeoMeta({
           准备好提升您的开发效率了吗？
         </h2>
         <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">
-          立即使用 Devinggo，体验全栈开发的便捷与高效！
+          {{ helloWord }}
         </p>
-        <NuxtLink to="https://devinggo-dev.devinghub.com/admin" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition duration-300">
-          立即体验
-        </NuxtLink>
+        <button
+          class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition duration-300"
+          :disabled="isLoading"
+          @click="handleExperienceClick"
+        >
+          {{ isLoading ? '请求中...' : '立即体验' }}
+        </button>
       </div>
     </section>
   </div>

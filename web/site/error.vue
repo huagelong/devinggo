@@ -1,10 +1,25 @@
 <script setup>
+import hljs from 'highlight.js/lib/core'
+import json from 'highlight.js/lib/languages/json'
+import 'highlight.js/styles/atom-one-dark.css'
+
 defineProps({
   error: {
     type: Object,
     default: null,
   },
 })
+
+hljs.registerLanguage('json', json)
+hljs.configure({ ignoreUnescapedHTML: true })
+const vHighlight = {
+  mounted(el) {
+    hljs.highlightElement(el)
+  },
+  updated(el) {
+    hljs.highlightElement(el)
+  },
+}
 
 definePageMeta({
   layout: 'default',
@@ -23,11 +38,6 @@ const isDev = useHelper.isDev()
       <a-result v-if="error.statusCode === 404" class="result" status="404" subtitle="页面没找到" />
       <a-result v-if="error.statusCode === 403" class="result" status="403" subtitle="Forbidden" />
       <a-result v-if="error.statusCode === 500" class="result" status="500" subtitle="服务器错误" />
-      <!-- <a-result v-else class="result" status="error" subtitle="异常">
-        <div v-if="error.message">
-          {{ error.message }}
-        </div>
-      </a-result> -->
       <a-button
         key="back"
         type="primary" size="small"
@@ -35,9 +45,9 @@ const isDev = useHelper.isDev()
       >
         返回首页
       </a-button>
-      <div v-if="error.message && isDev">
-        {{ error }}
-      </div>
+      <pre v-if="error.message && isDev" v-highlight>
+        <code class="language-javascript">{{ error }}</code>
+      </pre>
     </div>
   </div>
 </template>

@@ -19,6 +19,8 @@ type AuthorHeader struct {
 type EasyModeVerify struct {
 	Signature string `json:"signature"  v:"required"  default:""    dc:"sign"`
 	AppId     string `json:"app_id"  v:"required" default:""   dc:"app id"`
+	Timestamp string `json:"timestamp"  v:"required" default:""    dc:"timestamp"`
+	Nonce     string `json:"nonce"  v:"required" default:""    dc:"nonce"`
 	Lang      string `json:"language" default:"zh_CN"  dc:"i18n lang"`
 }
 

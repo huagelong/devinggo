@@ -7,9 +7,9 @@
 package myerror
 
 import (
+	"context"
 	"devinggo/modules/system/codes"
 	"devinggo/modules/system/pkg/i18n"
-	"context"
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 )
@@ -39,6 +39,10 @@ func InvalidParameter(ctx context.Context, message string, params ...string) err
 
 func ValidationFailed(ctx context.Context, message string, params ...string) error {
 	return NewCodef(ctx, gcode.CodeValidationFailed, message, params...)
+}
+
+func ApiTokenIsExpire(ctx context.Context, message string, params ...string) error {
+	return NewCodef(ctx, codes.ApiTokenIsExpire, message, params...)
 }
 
 func NotAuthorized(ctx context.Context) error {

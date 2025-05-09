@@ -2,6 +2,15 @@
 console.log('process.argv: ', process.argv)
 console.log('process.env.NODE_ENV: ', process.env.NODE_ENV)
 export default defineNuxtConfig({
+  runtimeConfig: {
+    public: {
+      baseURL: process.env.NUXT_PUBLIC_BASE_URL,
+    },
+    app: {
+      appId: process.env.NUXT_APP_ID,
+      appSecret: process.env.NUXT_APP_SECRET,
+    },
+  },
   ssr: true,
   devtools: { enabled: true },
   experimental: {
@@ -9,6 +18,7 @@ export default defineNuxtConfig({
   },
 
   modules: [
+    // '@nuxtjs/eslint-module',
     '@nuxtjs/tailwindcss',
     '@nuxtjs/color-mode',
     '@pinia/nuxt',
@@ -50,7 +60,7 @@ export default defineNuxtConfig({
   ],
 
   pinia: {
-    autoImports: ['defineStore', 'storeToRefs'],
+    storesDirs: ['./stores/**'],
   },
 
   imports: {
@@ -61,19 +71,13 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    routeRules: {
-      // 使用mock数据先注释
-      '/api/**': {
-        proxy: `${process.env.SERVER_URL}/api/**`,
+    devProxy: {
+      '/api': {
+        target: process.env.NUXT_PUBLIC_BASE_URL,
+        changeOrigin: true,
+        prependPath: true,
       },
     },
-  },
-
-  buildModules: ['@nuxtjs/eslint-module'],
-
-  runtimeConfig: {
-    apiSecret: process.env.APP_SECRET,
-    env: process.env.NODE_ENV,
   },
 
   compatibilityDate: '2025-04-22',

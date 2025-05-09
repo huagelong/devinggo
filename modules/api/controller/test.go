@@ -22,6 +22,6 @@ type testController struct {
 
 func (c *testController) Index(ctx context.Context, in *api.IndexReq) (out *api.IndexRes, err error) {
 	out = &api.IndexRes{}
-	out.Data = "Hello, World!"
+	out.Data = "立即使用 Devinggo，体验全栈开发的便捷与高效！"
 	return
 }

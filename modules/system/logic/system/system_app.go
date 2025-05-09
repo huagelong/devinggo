@@ -18,10 +18,12 @@ import (
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/myerror"
+	"devinggo/modules/system/pkg/cache"
 	"devinggo/modules/system/pkg/contexts"
 	"devinggo/modules/system/pkg/hook"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
+	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/service"
 	"encoding/base64"
 	"encoding/hex"
@@ -34,6 +36,7 @@ import (
 	"net/url"
 	"sort"
 	"strings"
+	"time"
 )
 
 type sSystemApp struct {
@@ -234,14 +237,9 @@ func (s *sSystemApp) Verify(r *ghttp.Request) (bool, error) {
 		return false, err
 	}
 	authMode := api.AuthMode
-	if authMode == 1 { //简易模式
-		signatureRs := r.Get("signature")
-		if g.IsEmpty(signatureRs) {
-			return false, myerror.MissingParameter(ctx, "参数不存在: signature")
-		}
-		signature := signatureRs.String()
+	if authMode == 1 { //简易模式   HMAC（Hash-based Message Authentication Code）签名 + 时间戳防重放攻击
 		appId := contexts.New().GetAppId(ctx)
-		check, err := s.VerifyEasyMode(ctx, appId, signature, api.Id)
+		check, err := s.VerifyEasyMode(ctx, appId, api.Id)
 		if err != nil {
 			return false, err
 		}
@@ -252,7 +250,7 @@ func (s *sSystemApp) Verify(r *ghttp.Request) (bool, error) {
 	} else if authMode == 2 { //复杂模式
 		token := service.Token().GetAuthorization(r)
 		if g.IsEmpty(token) {
-			return false, myerror.MissingParameter(ctx, "参数不存在: token")
+			return false, myerror.MissingParameter(ctx, "参数不存在: Authorization token")
 		}
 		check, err := s.verifyNormalMode(ctx, token, api.Id)
 		if err != nil {
@@ -268,19 +266,8 @@ func (s *sSystemApp) Verify(r *ghttp.Request) (bool, error) {
 }
 
 // getAccessToken 获取access_token
-func (s *sSystemApp) GetAccessToken(ctx context.Context, params map[string]interface{}) (token string, exp int64, err error) {
-	now := gtime.Now()
-	if appIdRs, ok := params["app_id"]; !ok || g.IsEmpty(appIdRs) {
-		return "", now.Unix(), myerror.MissingParameter(ctx, "参数不存在：app_id")
-	}
-
-	if signatureRs, ok := params["signature"]; !ok || g.IsEmpty(signatureRs) {
-		return "", now.Unix(), myerror.MissingParameter(ctx, "参数不存在：signature")
-	}
-
-	appId := gconv.String(params["app_id"])
-	signature := gconv.String(params["signature"])
-
+func (s *sSystemApp) GetAccessToken(ctx context.Context) (token string, exp int64, err error) {
+	appId := contexts.New().GetAppId(ctx)
 	var app *entity.SystemApp
 	err = s.Model(ctx).Where("app_id", appId).Scan(&app)
 	if utils.IsError(err) {
@@ -292,13 +279,17 @@ func (s *sSystemApp) GetAccessToken(ctx context.Context, params map[string]inter
 		return
 	}
 
-	newSignature := s.GetSignature(app.AppSecret, params)
-	g.Log().Info(ctx, "newSignature:", newSignature)
-	if newSignature != signature {
-		err = myerror.ValidationFailed(ctx, "签名验证失败")
+	check, err := s.VerifyEasyMode(ctx, appId, 0)
+	if err != nil {
+		err = myerror.ValidationFailed(ctx, err.Error())
 		return
 	}
-	delete(params, "signature")
+	if !check {
+		err = myerror.ValidationFailed(ctx, "接口鉴权失败")
+		return
+	}
+	params := make(map[string]interface{})
+	params["app_id"] = appId
 	scene := consts.ApiScene + "_" + appId
 	token, exp, err = service.Token().GetToken(ctx, scene, params)
 	return
@@ -399,6 +390,10 @@ func (s *sSystemApp) VerifyPre(ctx context.Context, appId string, apiId int64) (
 		return false, app, err
 	}
 
+	if apiId == 0 {
+		return true, app, nil
+	}
+
 	check, err = s.checkAppHasBindApi(ctx, app.Id, apiId)
 	if err != nil {
 		err = myerror.ValidationFailed(ctx, "接口未绑定")
@@ -413,7 +408,46 @@ func (s *sSystemApp) VerifyPre(ctx context.Context, appId string, apiId int64) (
 }
 
 // 简单模式
-func (s *sSystemApp) VerifyEasyMode(ctx context.Context, appId string, signature string, apiId int64) (check bool, err error) {
+func (s *sSystemApp) VerifyEasyMode(ctx context.Context, appId string, apiId int64) (check bool, err error) {
+	r := request.GetHttpRequest(ctx)
+	if g.IsNil(r) {
+		err = myerror.ValidationFailed(ctx, "上下文错误")
+		return false, err
+	}
+
+	signatureRs := r.Get("signature")
+	if g.IsEmpty(signatureRs) {
+		return false, myerror.MissingParameter(ctx, "参数不存在: signature")
+	}
+	timestamp := r.Get("timestamp")
+	if g.IsEmpty(timestamp) {
+		return false, myerror.MissingParameter(ctx, "参数不存在: timestamp")
+	}
+	nonceRes := r.Get("nonce")
+	if g.IsEmpty(nonceRes) {
+		return false, myerror.MissingParameter(ctx, "参数不存在: nonce")
+	}
+	signature := signatureRs.String()
+	nonce := nonceRes.String()
+
+	timestampInt := gconv.Int64(timestamp)
+	timestampStr := gconv.String(timestampInt)
+	redisKey := "signCheck:" + appId + ":" + nonce
+	diffTime := 60
+	nowDiff := gconv.Int(gtime.Timestamp() - timestampInt)
+	if nowDiff > diffTime {
+		return false, myerror.ValidationFailed(ctx, "Request Expired!")
+	}
+	result, err := cache.SetIfNotExist(ctx, redisKey, 1, gconv.Duration(diffTime)*time.Second)
+	if err != nil {
+		g.Log().Error(ctx, "err:", err)
+		return false, myerror.ValidationFailed(ctx, err.Error())
+	}
+	//g.Log().Info(ctx, "result:", result)
+	if !result {
+		return false, myerror.ValidationFailed(ctx, "Repeated requests!")
+	}
+
 	check, app, err := s.VerifyPre(ctx, appId, apiId)
 	if err != nil {
 		return false, err
@@ -423,8 +457,7 @@ func (s *sSystemApp) VerifyEasyMode(ctx context.Context, appId string, signature
 		err = myerror.ValidationFailed(ctx, "接口鉴权失败")
 		return false, err
 	}
-
-	md5Str, err := gmd5.EncryptString(appId + app.AppSecret)
+	md5Str, err := gmd5.EncryptString(app.AppSecret + timestampStr + nonce)
 	if err != nil {
 		err = myerror.ValidationFailed(ctx, "接口鉴权失败")
 		return false, err

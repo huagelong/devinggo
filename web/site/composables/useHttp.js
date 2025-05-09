@@ -1,5 +1,4 @@
-// 使用Nuxt的composables
-import { $fetch, ref, showError, useCookie, useFetch, useRequestHeaders } from '#app'
+// 移除显式导入，使用Nuxt3自动导入机制
 import { useHelper } from './useHelper'
 
 // 导入节流函数
@@ -15,172 +14,191 @@ function throttle(fn, delay = 500) {
   }
 }
 
-// AMessage组件，根据环境动态导入
-let AMessage
-if (useHelper.isClient()) {
-  // 客户端环境
-  import('@arco-design/web-vue').then((Arco) => {
-    AMessage = Arco.Message
-  }).catch((err) => {
-    console.error('Failed to import Arco components:', err)
-  })
-}
-
 // 创建一个异步函数来获取MD5
 async function getMD5() {
   // 检查是否在客户端环境
   if (useHelper.isClient()) {
-    // 客户端环境
+    // 客户端环境使用crypto-js
     const CryptoJS = await import('crypto-js')
     return CryptoJS.MD5
   }
-  else {
-    // 服务端环境
-    try {
-      const CryptoJS = await import('crypto-js')
-      return CryptoJS.MD5
+
+  // 服务端环境
+  try {
+    if (process.env.NODE_ENV === 'production') {
+      // 生产环境使用Node.js原生crypto模块
+      const crypto = await import('node:crypto')
+      return text => crypto.createHash('md5').update(text).digest('hex')
     }
-    catch (error) {
-      console.error('Failed to import crypto-js in server environment:', error)
-      // 返回一个简单的替代函数，仅用于服务端
-      return text => ({
-        toString: () => `server-side-md5-${text}`,
-      })
-    }
+    // 开发环境降级方案
+    const CryptoJS = await import('crypto-js')
+    return CryptoJS.MD5
+  }
+  catch (error) {
+    console.error('加密模块加载失败:', error)
+    throw createError({
+      statusCode: 500,
+      message: '加密服务初始化失败',
+      data: {
+        code: 'ENCRYPT_INIT_FAILED',
+        env: process.env.NODE_ENV,
+      },
+    })
   }
 }
 
-const CONFIG = {
-  baseURL: process.env.BASE_URL,
-  appId: process.env.APP_ID, // 默认应用ID
-  appSecret: process.env.APP_SECRET, // 应用密钥，实际项目中应该从环境变量或配置中获取
-  defaultLang: 'zh_CN', // 默认语言，当cookie中没有语言设置时使用
+function getConfig() {
+  const runtimeConfig = useRuntimeConfig()
+  return {
+    baseURL: runtimeConfig.public.baseURL, // 使用本地代理路径
+    appId: runtimeConfig.app.appId,
+    appSecret: runtimeConfig.app.appSecret,
+    defaultLang: 'zh_CN',
+  }
 }
-
 // 生成签名
-async function generateSignature(appId, appSecret) {
+async function generateSignature(appSecret) {
   try {
+    const xtimestamp = String(new Date().getTime())
+    const xnonce = String(Math.floor(Math.random() * 999999999 + 99999))
     // 获取MD5函数
     const md5Func = await getMD5()
     // 使用MD5加密算法生成签名
-    return md5Func(appId + appSecret).toString()
+    const xsign = md5Func(appSecret + xtimestamp + xnonce).toString()
+    return {
+      timestamp: xtimestamp,
+      nonce: xnonce,
+      sign: xsign,
+    }
   }
   catch (error) {
     console.error('Error generating signature:', error)
     // 如果出错，返回一个简单的字符串作为备用
-    return `${appId}${appSecret}`
+    return undefined
   }
 }
 
 // 获取token
 async function getToken() {
-  try {
-    const tokenCookie = useCookie('token')
-    const expireCookie = useCookie('token_expire')
+  const nuxtApp = useNuxtApp()
+  return nuxtApp.runWithContext(async () => {
+    try {
+      const tokenCookie = useCookie('token')
+      const expireCookie = useCookie('token_expire')
 
-    // 如果token存在且未过期，直接返回
-    if (tokenCookie.value && expireCookie.value) {
-      const expireTime = Number.parseInt(expireCookie.value)
-      // 提前一分钟刷新token
-      if (Date.now() < (expireTime - 60000)) {
-        return tokenCookie.value
+      // 如果token存在且未过期，直接返回
+      if (tokenCookie.value && expireCookie.value) {
+        const expireTime = Number.parseInt(expireCookie.value)
+        // 提前一分钟刷新token
+        if (Date.now() < (expireTime - 60000)) {
+          return tokenCookie.value
+        }
+        else {
+          // 如果token即将过期，尝试刷新
+          return await refreshToken(tokenCookie.value)
+        }
       }
-      else {
-        // 如果token即将过期，尝试刷新
-        return await refreshToken(tokenCookie.value)
+      // 获取新token
+      const signatureParams = await generateSignature(getConfig().appSecret)
+      if (!signatureParams) {
+        AMessage.error('Error generating signature')
+        return
       }
+
+      // 从cookie中获取语言设置，如果不存在则使用默认值
+      const langCookie = useCookie('language')
+      const language = langCookie.value || getConfig().defaultLang
+      const response = await $fetch('/api/getToken', {
+        baseURL: getConfig().baseURL,
+        method: 'GET',
+        params: {
+          app_id: getConfig().appId,
+          signature: signatureParams.sign,
+          timestamp: signatureParams.timestamp,
+          nonce: signatureParams.nonce,
+          language,
+        },
+      })
+
+      if (response && response.success && response.data && response.data.token) {
+        const token = response.data.token
+        const expire = response.data.expire * 1000 // 转换为毫秒
+
+        // 保存token到cookie
+        tokenCookie.value = token
+        expireCookie.value = expire.toString()
+
+        return token
+      }
+
+      return null
     }
-
-    // 获取新token
-    const signature = await generateSignature(CONFIG.appId, CONFIG.appSecret)
-
-    // 从cookie中获取语言设置，如果不存在则使用默认值
-    const langCookie = useCookie('language')
-    const language = langCookie.value || CONFIG.defaultLang
-
-    const response = await $fetch('/api/getToken', {
-      method: 'GET',
-      params: {
-        app_id: CONFIG.appId,
-        signature,
-        language, // 添加语言参数
-      },
-    })
-
-    if (response && response.success && response.data && response.data.token) {
-      const token = response.data.token
-      const expire = response.data.expire * 1000 // 转换为毫秒
-
-      // 保存token到cookie
-      tokenCookie.value = token
-      expireCookie.value = expire.toString()
-
-      return token
+    catch (error) {
+      console.error('获取token失败:', error)
+      return null
     }
-
-    return null
-  }
-  catch (error) {
-    console.error('获取token失败:', error)
-    return null
-  }
+  })
 }
 
 // 刷新token
 async function refreshToken(currentToken) {
-  try {
-    const tokenCookie = useCookie('token')
-    const expireCookie = useCookie('token_expire')
+  const nuxtApp = useNuxtApp()
+  return nuxtApp.runWithContext(async () => {
+    try {
+      const tokenCookie = useCookie('token')
+      const expireCookie = useCookie('token_expire')
 
-    // 从cookie中获取语言设置，如果不存在则使用默认值
-    const langCookie = useCookie('language')
-    const language = langCookie.value || CONFIG.defaultLang
+      // 从cookie中获取语言设置，如果不存在则使用默认值
+      const langCookie = useCookie('language')
+      const language = langCookie.value || getConfig().defaultLang
 
-    const response = await $fetch('/api/refreshToken', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${currentToken}`,
-        'Accept-Language': language,
-        'X-App-Id': CONFIG.appId,
-      },
-    })
+      const response = await $fetch('/api/refreshToken', {
+        baseURL: getConfig().baseURL,
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${currentToken}`,
+          'Accept-Language': language,
+          'X-App-Id': getConfig().appId,
+        },
+      })
 
-    if (response && response.success && response.data && response.data.token) {
-      const token = response.data.token
-      const expire = response.data.expire * 1000 // 转换为毫秒
+      if (response && response.success && response.data && response.data.token) {
+        const token = response.data.token
+        const expire = response.data.expire * 1000 // 转换为毫秒
 
-      // 更新token到cookie
-      tokenCookie.value = token
-      expireCookie.value = expire.toString()
+        // 更新token到cookie
+        tokenCookie.value = token
+        expireCookie.value = expire.toString()
 
-      return token
+        return token
+      }
+
+      return currentToken
     }
-
-    return currentToken
-  }
-  catch (error) {
-    console.error('刷新token失败:', error)
-    return currentToken
-  }
+    catch (error) {
+      console.error('刷新token失败:', error)
+      return currentToken
+    }
+  })
 }
 
 // 请求体封装
 async function applyOptions(options = {}) {
-  options.baseURL = options.baseURL ?? CONFIG.baseURL
+  options.baseURL = options.baseURL ?? getConfig().baseURL
   options.initialCache = options.initialCache ?? false
   options.headers = options.headers || {}
   options.method = options.method || 'GET'
   options.timeout = 3000
-  options.credentials = 'include'
+  // options.credentials = 'include'
 
   // 从cookie中获取语言设置，如果不存在则使用默认值
   const langCookie = useCookie('language')
-  const language = langCookie.value || CONFIG.defaultLang
+  const language = langCookie.value || getConfig().defaultLang
 
   let headers = {
     'accept': 'application/json',
     'Accept-Language': language,
-    'X-App-Id': CONFIG.appId,
+    'X-App-Id': getConfig().appId,
   }
 
   // 获取token
@@ -224,11 +242,12 @@ async function applyOptions(options = {}) {
 }
 
 function handleError(response) {
-  const err = function (text) {
+  const err = async (text) => {
     if (useHelper.isClient()) {
-      // 确保AMessage在客户端环境中可用
       try {
-        AMessage.error(text || '未知错误')
+        // 动态导入Arco组件
+        const Arco = await import('@arco-design/web-vue')
+        Arco.Message.error(text || '未知错误')
       }
       catch (error) {
         console.error('Error showing client error message:', error)
@@ -238,7 +257,7 @@ function handleError(response) {
     else {
       // 服务端环境
       try {
-        showError(text)
+        throw createError({ statusCode: 500, message: text })
       }
       catch (error) {
         console.error('Error showing server error message:', error)
@@ -293,8 +312,7 @@ function handleError(response) {
 async function fetch(key, url, options) {
   options.key = key
   options = await applyOptions(options)
-
-  if (options.$) {
+  if (useHelper.isClient()) {
     const data = ref(null)
     const error = ref(null)
     return await $fetch(url, options).then((res) => {
@@ -350,7 +368,7 @@ async function fetch(key, url, options) {
   // 添加响应拦截器
   options.onResponse = async ({ request, response, options }) => {
     // 检查token是否过期
-    if (response._data && response._data.code === 1000) {
+    if (response._data && response._data.code === 1002) {
       // token过期，尝试重新获取token
       const newToken = await getToken()
       if (newToken) {

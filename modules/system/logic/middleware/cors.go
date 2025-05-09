@@ -27,6 +27,7 @@ func (s *sMiddleware) Cors(r *ghttp.Request) {
 		corsOptions.AllowDomain = allowDomain
 	}
 	corsOptions.AllowHeaders = corsOptions.AllowHeaders + allowHeaders
+	corsOptions.AllowOrigin = "*"
 	r.Response.CORS(corsOptions)
 	r.Middleware.Next()
 }
