@@ -12,6 +12,7 @@ defineProps({
 
 hljs.registerLanguage('json', json)
 hljs.configure({ ignoreUnescapedHTML: true })
+
 const vHighlight = {
   mounted(el) {
     hljs.highlightElement(el)
@@ -45,9 +46,11 @@ const isDev = useHelper.isDev()
       >
         返回首页
       </a-button>
-      <pre v-if="error.message && isDev" v-highlight>
-        <code class="language-javascript">{{ error }}</code>
-      </pre>
+      <div v-if="error.message && isDev" class="error-details text-center">
+        <div class="error-section text-center" v-if="error.stack">
+          <div v-highlight style="padding: 10px;"><code class="language-javascript">{{ error.stack }}</code></div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
