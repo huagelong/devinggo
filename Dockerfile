@@ -22,7 +22,6 @@ RUN ls -la ./bin/v1.0.0/linux_amd64
 
 # 构建site前端 (Nuxt3)
 FROM node:20-alpine AS site-builder
-RUN npm install -g yarn
 WORKDIR /app
 COPY ./web/site ./
 COPY ./web/site/.env.docker ./.env.production
