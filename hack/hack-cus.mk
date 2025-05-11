@@ -1,5 +1,7 @@
 PLATFORM_RESOURCE_PATH = "./resource/public/admin"
 UI_PATH = "./web/admin"
+SITE_PATH = "./web/site"
+
 VERSION = $(shell git describe --tags --always --match='v*')
 SED = sed
 ifneq ($(shell go env GOOS),windows)
@@ -41,4 +43,17 @@ ui.install: cli.install
 ui.build: ui.install
 	@set -e;\
 	cd $(UI_PATH);\
+	npm run build;
+
+.PHONY: siteui.install
+siteui.install: cli.install
+	@set -e;\
+	cd $(SITE_PATH);\
+	npm install;
+
+#ui build
+.PHONY: siteui.build
+siteui.build: siteui.install
+	@set -e;\
+	cd $(SITE_PATH);\
 	npm run build;
