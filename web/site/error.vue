@@ -47,8 +47,10 @@ const isDev = useHelper.isDev()
         返回首页
       </a-button>
       <div v-if="error.message && isDev" class="error-details text-center">
-        <div class="error-section text-center" v-if="error.stack">
-          <div v-highlight style="padding: 10px;"><code class="language-javascript">{{ error.stack }}</code></div>
+        <div v-if="error.stack" class="error-section text-center">
+          <div v-highlight style="padding: 10px;">
+            <code class="language-javascript">{{ error.stack }}</code>
+          </div>
         </div>
       </div>
     </div>

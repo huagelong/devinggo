@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-console.log('process.argv: ', process.argv)
-console.log('process.env.NODE_ENV: ', process.env.NODE_ENV)
+console.warn('process.argv: ', process.argv)
+console.warn('process.env.NODE_ENV: ', process.env.NODE_ENV)
 export default defineNuxtConfig({
   runtimeConfig: {
     public: {

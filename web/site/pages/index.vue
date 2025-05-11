@@ -9,7 +9,7 @@ async function handleExperienceClick() {
   try {
     isLoading.value = true
     const res = await test({})
-    Message.success(`接口返回：${JSON.stringify(res.data.value)}`)
+    Message.success(`接口返回：${JSON.stringify(res)}`)
   }
   catch (error) {
     Message.error(`请求失败：${error.message}`)
@@ -20,7 +20,7 @@ async function handleExperienceClick() {
 }
 
 const res = await test({})
-helloWord.value = res.data.value.data
+helloWord.value = res?.data
 
 useSeoMeta({
   // 页面标题
