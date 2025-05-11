@@ -56,7 +56,7 @@ async function getToken(nuxtApp) {
 
       if (tokenCookie.value && expireCookie.value) {
         const expireTime = Number.parseInt(expireCookie.value)
-        if (Date.now() < (expireTime - 60000))
+        if (Date.now() < expireTime - 60000)
           return tokenCookie.value
         return await refreshToken(nuxtApp, tokenCookie.value)
       }
@@ -185,14 +185,14 @@ async function applyOptions(nuxtApp, options = {}) {
       'X-App-Id': config.appId,
     }
 
-    const token = nuxtApp.runWithContext(() => useCookie('token'))
-    if (!token.value) {
+    const token = await nuxtApp.runWithContext(async () => useCookie('token').value)
+    if (!token) {
       const newToken = await getToken(nuxtApp)
       if (newToken)
         headers.Authorization = `Bearer ${newToken}`
     }
     else {
-      headers.Authorization = `Bearer ${token.value}`
+      headers.Authorization = `Bearer ${token}`
     }
 
     if (useHelper.isServer()) {
@@ -220,13 +220,15 @@ function handleError(nuxtApp, response) {
 
   switch (response?.code) {
     case 1000:
-      throttle(() => {
-        nuxtApp.runWithContext(() => {
-          useCookie('token').value = null
-          useCookie('token_expire').value = null
+      throttle((nuxt) => {
+        nuxt.runWithContext(() => {
+          const tokenCookie = useCookie('token')
+          const expireCookie = useCookie('token_expire')
+          tokenCookie.value = null
+          expireCookie.value = null
+          showError('登录状态过期')
         })
-        showError('登录状态过期')
-      })()
+      }).call(this, nuxtApp)
       break
     case 65:
       showError('资源不存在')
@@ -247,46 +249,52 @@ function handleError(nuxtApp, response) {
 }
 
 async function fetch(nuxtApp, key, url, options) {
-  try {
-    options = await applyOptions(nuxtApp, { ...options, key })
-    let response
+  return nuxtApp.runWithContext(async () => {
+    try {
+      options = await applyOptions(nuxtApp, { ...options, key })
+      let response
 
-    if (useHelper.isClient()) {
-      response = await $fetch(url, options)
-      if (response?.code !== 0)
-        handleError(nuxtApp, response)
-    }
-    else {
-      const { data } = await useFetch(url, {
-        ...options,
-        transform: res => ({ ...res, fetchedAt: new Date() }),
-      })
-      response = data.value
-      if (response?.code !== 0)
-        handleError(nuxtApp, response)
-    }
+      if (useHelper.isClient()) {
+        response = await $fetch(url, options)
+        if (response?.code !== 0)
+          handleError(nuxtApp, response)
+      }
+      else {
+        const { data } = await useFetch(url, {
+          ...options,
+          transform: res => ({ ...res, fetchedAt: new Date() }),
+        })
+        response = data.value
+        if (response?.code !== 0)
+          handleError(nuxtApp, response)
+      }
 
-    return response
-  }
-  catch (error) {
-    console.error('请求异常:', error)
-    handleError(nuxtApp, { code: 500, message: error.message })
-    return null
-  }
+      return response
+    }
+    catch (error) {
+      console.error('请求异常:', error)
+      handleError(nuxtApp, { code: 500, message: error.message })
+      return null
+    }
+  })
 }
 
 export function useHttp() {
   const nuxtApp = useNuxtApp()
+
+  const withContext = fn => (...args) =>
+    nuxtApp.runWithContext(() => fn(nuxtApp, ...args))
+
   return {
-    get: (key, url, params, options) =>
-      fetch(nuxtApp, key, url, { method: 'GET', params, ...options }),
-    post: (key, url, body, options) =>
-      fetch(nuxtApp, key, url, { method: 'POST', body, ...options }),
-    put: (key, url, body, options) =>
-      fetch(nuxtApp, key, url, { method: 'PUT', body, ...options }),
-    delete: (key, url, options) =>
-      fetch(nuxtApp, key, url, { method: 'DELETE', ...options }),
-    getToken: () => getToken(nuxtApp),
-    refreshToken: currentToken => refreshToken(nuxtApp, currentToken),
+    get: withContext((nuxtApp, key, url, params, options) =>
+      fetch(nuxtApp, key, url, { method: 'GET', params, ...options })),
+    post: withContext((nuxtApp, key, url, body, options) =>
+      fetch(nuxtApp, key, url, { method: 'POST', body, ...options })),
+    put: withContext((nuxtApp, key, url, body, options) =>
+      fetch(nuxtApp, key, url, { method: 'PUT', body, ...options })),
+    delete: withContext((nuxtApp, key, url, options) =>
+      fetch(nuxtApp, key, url, { method: 'DELETE', ...options })),
+    getToken: withContext(() => getToken(nuxtApp)),
+    refreshToken: withContext(currentToken => refreshToken(nuxtApp, currentToken)),
   }
 }

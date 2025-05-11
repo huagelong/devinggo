@@ -19,8 +19,10 @@ async function handleExperienceClick() {
   }
 }
 
-const res = await test({})
-helloWord.value = res?.data
+onMounted(async () => {
+  const res = await test()
+  helloWord.value = res?.data
+})
 
 useSeoMeta({
   // 页面标题

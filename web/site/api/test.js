@@ -1,3 +1,6 @@
-export async function test(query) {
-  return await useHttp().get('test.test', '/api/test', query)
+export function test(query) {
+  const nuxtApp = useNuxtApp()
+  return nuxtApp.runWithContext(async () => {
+    return useHttp().get('test.test', '/api/test', query)
+  })
 }
