@@ -121,6 +121,7 @@ async function getToken(nuxtApp) {
 async function refreshToken(nuxtApp, currentToken) {
   return nuxtApp.runWithContext(async () => {
     try {
+      // 确保useCookie在正确的上下文中调用
       const tokenCookie = useCookie('token')
       const expireCookie = useCookie('token_expire')
       const langCookie = useCookie('language')
@@ -176,6 +177,7 @@ async function applyOptions(nuxtApp, options = {}) {
     options.method = options.method || 'GET'
     options.timeout = 3000
 
+    // 确保useCookie在正确的上下文中调用
     const langCookie = useCookie('language')
     const language = langCookie.value || config.defaultLang
 
@@ -185,7 +187,8 @@ async function applyOptions(nuxtApp, options = {}) {
       'X-App-Id': config.appId,
     }
 
-    const token = await nuxtApp.runWithContext(async () => useCookie('token').value)
+    const tokenCookie = await nuxtApp.runWithContext(async () => useCookie('token'))
+    const token = tokenCookie.value
     if (!token) {
       const newToken = await getToken(nuxtApp)
       if (newToken)
@@ -205,30 +208,59 @@ async function applyOptions(nuxtApp, options = {}) {
   })
 }
 
-function handleError(nuxtApp, response) {
-  const showError = (text) => {
-    nuxtApp.runWithContext(async () => {
-      if (useHelper.isClient()) {
-        const Arco = await import('@arco-design/web-vue')
-        Arco.Message.error(text || '未知错误')
-      }
-      else {
-        console.error('服务端错误:', text)
-      }
-    })
+// 创建带上下文的节流函数
+function createThrottleWithContext(nuxtApp) {
+  return function(fn, delay = 500) {
+    let timer = null
+    return function (...args) {
+      if (timer) return
+      timer = setTimeout(() => {
+        nuxtApp.runWithContext(() => fn.apply(this, args))
+        timer = null
+      }, delay)
+    }
   }
+}
+
+function handleError(nuxtApp, response) {
+  // 创建带上下文的工具函数
+  // 增强版上下文绑定
+  const withContext = function (fn) {
+    return function (...args) {
+      const contextApp = nuxtApp
+      return contextApp.runWithContext(() => fn.call(this, contextApp, ...args))
+    }
+  }
+
+  // 带上下文的错误显示
+  const showError = withContext(async (nuxtApp, text) => {
+    if (useHelper.isClient()) {
+      const Arco = await import('@arco-design/web-vue')
+      Arco.Message.error(text || '未知错误')
+    } else {
+      console.error('服务端错误:', text)
+    }
+  })
+
+  // 带上下文的清理token
+  const clearTokens = withContext((nuxtApp) => {
+    nuxtApp.runWithContext(() => {
+      const tokenCookie = useCookie('token')
+      const expireCookie = useCookie('token_expire')
+      tokenCookie.value = null
+      expireCookie.value = null
+    })
+  })
+
+  // 创建带上下文的节流实例
+  const throttle = createThrottleWithContext(nuxtApp)
 
   switch (response?.code) {
     case 1000:
-      throttle((nuxt) => {
-        nuxt.runWithContext(() => {
-          const tokenCookie = useCookie('token')
-          const expireCookie = useCookie('token_expire')
-          tokenCookie.value = null
-          expireCookie.value = null
-          showError('登录状态过期')
-        })
-      }).call(this, nuxtApp)
+      throttle(() => {
+        clearTokens()
+        showError('登录状态过期')
+      })()
       break
     case 65:
       showError('资源不存在')
