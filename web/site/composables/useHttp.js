@@ -1,7 +1,7 @@
 // useHttp.js
 import { useHelper } from './useHelper'
 
-function throttle(fn, delay = 500) {
+function _throttle(fn, delay = 500) {
   let timer = null
   return function (...args) {
     if (timer)
@@ -210,10 +210,11 @@ async function applyOptions(nuxtApp, options = {}) {
 
 // 创建带上下文的节流函数
 function createThrottleWithContext(nuxtApp) {
-  return function(fn, delay = 500) {
+  return function (fn, delay = 500) {
     let timer = null
     return function (...args) {
-      if (timer) return
+      if (timer)
+        return
       timer = setTimeout(() => {
         nuxtApp.runWithContext(() => fn.apply(this, args))
         timer = null
@@ -237,7 +238,8 @@ function handleError(nuxtApp, response) {
     if (useHelper.isClient()) {
       const Arco = await import('@arco-design/web-vue')
       Arco.Message.error(text || '未知错误')
-    } else {
+    }
+    else {
       console.error('服务端错误:', text)
     }
   })

@@ -18,7 +18,7 @@ export default defineNuxtConfig({
   },
 
   modules: [
-    // '@nuxtjs/eslint-module',
+    '@nuxtjs/eslint-module',
     '@nuxtjs/tailwindcss',
     '@nuxtjs/color-mode',
     '@pinia/nuxt',
