@@ -36,24 +36,24 @@ install:
 ui.install: cli.install
 	@set -e;\
 	cd $(UI_PATH);\
-	npm install;
+	yarn install;
 
 #ui build
 .PHONY: ui.build
 ui.build: ui.install
 	@set -e;\
 	cd $(UI_PATH);\
-	npm run build;
+	yarn build;
 
 .PHONY: siteui.install
 siteui.install: cli.install
 	@set -e;\
 	cd $(SITE_PATH);\
-	npm install;
+	yarn install;
 
 #ui build
 .PHONY: siteui.build
 siteui.build: siteui.install
 	@set -e;\
 	cd $(SITE_PATH);\
-	npm run build;
+	yarn build;

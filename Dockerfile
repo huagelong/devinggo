@@ -7,7 +7,7 @@ ENV GO111MODULE on
 ENV CGO_ENABLED 0
 ENV GOOS linux
 # 安装 Make 及其他依赖
-RUN apk add --no-cache make git wget nodejs npm
+RUN apk add --no-cache make git wget nodejs npm yarn
 WORKDIR /app
 COPY . ./
 RUN mv ./manifest/config/config.docker.yaml ./manifest/config/config.yaml
@@ -22,11 +22,11 @@ RUN ls -la ./bin/v1.0.0/linux_amd64
 
 # 构建site前端 (Nuxt3)
 FROM node:20-alpine AS site-builder
-RUN npm install -g npm@latest
+RUN npm install -g yarn
 WORKDIR /app
 COPY ./web/site ./
 COPY ./web/site/.env.docker ./.env.production
-RUN npm install --registry=https://registry.npmmirror.com && npm run build:docker
+RUN yarn install && yarn build:docker
 
 ###############################################################################
 #                                INSTALLATION

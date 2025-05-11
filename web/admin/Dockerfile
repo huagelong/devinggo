@@ -10,12 +10,11 @@ ENV devinggo_NODE_ENV $devinggo_NODE_ENV
 
 RUN echo "devinggo_NODE_ENV=$devinggo_NODE_ENV"
 
-RUN npm install && \
-    if [ "$devinggo_NODE_ENV" = "development" ]; then npm run build --mode development; fi && \
-    if [ "$devinggo_NODE_ENV" = "production" ]; then npm run build --mode production; fi && \
-    npm cache clean --force
+RUN yarn install && \
+    if [ "$devinggo_NODE_ENV" = "development" ]; then yarn build --mode development; fi && \
+    if [ "$devinggo_NODE_ENV" = "production" ]; then yarn build --mode production; fi && \
 
-RUN npm run generate:version
+RUN yarn generate:version
 
 FROM nginx:alpine
 
