@@ -1,0 +1,3 @@
+[submodule "web/site"]
+	path = web/site
+	url = https://github.com/huagelong/devingsite.git
