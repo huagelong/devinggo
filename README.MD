@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="web/admin/public/logo.svg" width="120" />
+  <img src="docs/logo.svg" width="120" />
 </p>
 <p align="center">
  <img src="https://svg.hamm.cn/badge.svg?key=License&value=Apache-2.0" />
