@@ -20,16 +20,16 @@ type SystemQueueMessageDao struct {
 
 // SystemQueueMessageColumns defines and stores column names for table system_queue_message.
 type SystemQueueMessageColumns struct {
-	Id          string //
-	ContentType string //
-	Title       string //
-	SendBy      string //
-	Content     string //
-	CreatedBy   string //
-	UpdatedBy   string //
-	CreatedAt   string //
-	UpdatedAt   string //
-	Remark      string //
+	Id          string // 主键
+	ContentType string // 内容类型
+	Title       string // 消息标题
+	SendBy      string // 发送人
+	Content     string // 消息内容
+	CreatedBy   string // 创建者
+	UpdatedBy   string // 更新者
+	CreatedAt   string // 创建时间
+	UpdatedAt   string // 更新时间
+	Remark      string // 备注
 }
 
 // systemQueueMessageColumns holds the columns for table system_queue_message.

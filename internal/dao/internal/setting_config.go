@@ -23,11 +23,11 @@ type SettingConfigColumns struct {
 	GroupId          string // 组id
 	Key              string // 配置键名
 	Value            string // 配置值
-	Name             string //
-	InputType        string //
-	ConfigSelectData string //
-	Sort             string //
-	Remark           string //
+	Name             string // 配置名称
+	InputType        string // 数据输入类型
+	ConfigSelectData string // 配置选项数据
+	Sort             string // 排序
+	Remark           string // 备注
 }
 
 // settingConfigColumns holds the columns for table setting_config.

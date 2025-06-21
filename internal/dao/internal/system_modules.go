@@ -20,17 +20,17 @@ type SystemModulesDao struct {
 
 // SystemModulesColumns defines and stores column names for table system_modules.
 type SystemModulesColumns struct {
-	Id          string //
-	CreatedAt   string //
-	UpdatedAt   string //
-	CreatedBy   string //
-	UpdatedBy   string //
-	Name        string //
-	Label       string //
-	Description string //
-	Installed   string //
-	Status      string //
-	DeletedAt   string //
+	Id          string // 主键
+	CreatedAt   string // 创建时间
+	UpdatedAt   string // 更新时间
+	CreatedBy   string // 创建者
+	UpdatedBy   string // 更新者
+	Name        string // 模块名称
+	Label       string // 模块标记
+	Description string // 描述
+	Installed   string // 是否安装1-否，2-是
+	Status      string // 状态 (1正常 2停用)
+	DeletedAt   string // 删除时间
 }
 
 // systemModulesColumns holds the columns for table system_modules.
