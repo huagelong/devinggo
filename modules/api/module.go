@@ -11,6 +11,7 @@ import (
 	_ "devinggo/modules/api/logic"
 	"devinggo/modules/api/service"
 	"devinggo/modules/system/pkg/modules"
+
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
@@ -33,6 +34,7 @@ func (m *apiModule) Start(ctx context.Context, s *ghttp.Server) error {
 		group.Bind(
 			controller.TokenController,
 			controller.TestController,
+			controller.UploadController,
 		).Middleware(service.Middleware().ApiAuth)
 	})
 	return nil

@@ -1,3 +1,6 @@
 [submodule "web/site"]
 	path = web/site
 	url = https://github.com/huagelong/devingsite.git
+[submodule "web/admin"]
+	path = web/admin
+	url = https://github.com/huagelong/devingadmin.git

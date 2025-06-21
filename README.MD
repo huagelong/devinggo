@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="web/admin/public/logo.svg" width="120" />
+  <img src="docs/logo.svg" width="120" />
 </p>
 <p align="center">
  <img src="https://svg.hamm.cn/badge.svg?key=License&value=Apache-2.0" />
@@ -21,6 +21,11 @@
 ## 文档
 
 - [文档](https://devinggo.devinghub.com/)
+
+## 子模块地址
+
+- [官网前端](https://github.com/huagelong/devingsite)
+- [后台admin前端](https://github.com/huagelong/devingadmin)
 
 ## 截图
 
@@ -91,26 +96,33 @@ choco install golang
 choco install nodejs
 ```
 
-3. 修改配置文件（mysql or postgresql,redis配置）
+3. 拉取子模块代码
+
+```
+git submodule update --init --recursive
+git submodule foreach git pull origin master
+```
+
+4. 修改配置文件（mysql or postgresql,redis配置）
 - `manifest/config/config.example.yaml` 复制为 `manifest/config/config.yaml`
 - `manifest/config/config.yaml` # 修改redis,mysql配置
 - `hack/config.example.yaml` 复制为 `hack/config.yaml` # 开发时使用
 - `hack/config.yaml` # 开发时使用
 
-4. 编译
+5. 编译
 
 ```
 make build
 ```
-5. 导入数据库
+6. 导入数据库
 ```
 go run main.go migrate:up
 ```
-6. 启动
+7. 启动
 ```
 go run main.go
 ```
-7. 访问
+8. 访问
 ```
 http://localhost:8070/admin
 账号 superAdmin 密码 admin123
