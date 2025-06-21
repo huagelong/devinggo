@@ -7,7 +7,6 @@ package router
 
 import (
 	"devinggo/internal/controller/glob"
-	"devinggo/internal/controller/user"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
@@ -15,7 +14,6 @@ func BindController(group *ghttp.RouterGroup) {
 	group.Group("/", func(group *ghttp.RouterGroup) {
 		group.Bind(
 			glob.GlobController,
-			user.UserController,
 		)
 	})
 
