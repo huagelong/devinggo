@@ -48,8 +48,6 @@ func GetConnectDbName(dsn string) (string, error) {
 	re := regexp.MustCompile(`^(\w+):(.*)@(\w+)\(([^)]+)\)\/(\w+)`)
 	matches := re.FindStringSubmatch(dsn)
 
-	fmt.Printf("URL: %+v\n", matches)
-
 	if len(matches) < 6 {
 		return "", fmt.Errorf("invalid DSN format")
 	}
