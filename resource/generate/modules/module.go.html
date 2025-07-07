@@ -12,6 +12,7 @@ import (
 	"devinggo/modules/{{.moduleName}}/service"
 	"devinggo/modules/system/pkg/modules"
 	"github.com/gogf/gf/v2/net/ghttp"
+	systemService "devinggo/modules/system/service"
 )
 
 type {{.moduleNameCap}}Module struct {
@@ -30,9 +31,16 @@ func (m *{{.moduleNameCap}}Module) Start(ctx context.Context, s *ghttp.Server) e
 	s.BindHookHandler("/{{.moduleName}}/*", ghttp.HookBeforeServe, service.Hook().BeforeServe)
 	s.BindHookHandler("/{{.moduleName}}/*", ghttp.HookAfterOutput, service.Hook().AfterOutput)
 	s.Group("/{{.moduleName}}", func(group *ghttp.RouterGroup) {
-		group.Bind(
+		group.Group("/api", func(group *ghttp.RouterGroup) {
+			group.Bind(
 			controller.TestController,
-		).Middleware(service.Middleware().ApiAuth)
+			).Middleware(service.Middleware().ApiAuth)
+		}
+		group.Group("/", func(group *ghttp.RouterGroup) {
+			group.Bind(
+				controller.TestController,
+			).Middleware(systemService.Middleware().AdminAuth)
+		}
 	})
 	return nil
 }
