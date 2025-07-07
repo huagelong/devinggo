@@ -35,12 +35,12 @@ func (m *{{.moduleNameCap}}Module) Start(ctx context.Context, s *ghttp.Server) e
 			group.Bind(
 			controller.TestController,
 			).Middleware(service.Middleware().ApiAuth)
-		}
+		})
 		group.Group("/", func(group *ghttp.RouterGroup) {
 			group.Bind(
 				controller.TestController,
 			).Middleware(systemService.Middleware().AdminAuth)
-		}
+		})
 	})
 	return nil
 }
