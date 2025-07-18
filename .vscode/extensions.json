@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "dbaeumer.vscode-eslint",
-    "vue.volar"
+    "golang.Go",
+    "jinliming2.vscode-go-template",
   ]
 }
