@@ -4,11 +4,11 @@
 // @Author  Kai <hpuwang@gmail.com>
 // @License  https://github.com/huagelong/devinggo/blob/master/LICENSE
 
-package {% .table.PackageName %}
+package controller
 
 import (
 "devinggo/modules/system/controller/base"
-"devinggo/modules/{% .table.ModuleName %}/api/{% .table.PackageName %}"
+"devinggo/modules/{% .table.ModuleName %}/api"
 "devinggo/modules/{% .table.ModuleName %}/model/req"
 "devinggo/modules/{% .table.ModuleName %}/model/res"
 "devinggo/modules/system/pkg/orm"
@@ -39,8 +39,8 @@ type {% .tableCaseCamelLowerName %}Controller struct {
 }
 
 {% if eq .table.Type "single"  %}
-func (c *{% .tableCaseCamelLowerName %}Controller) Index(ctx context.Context, in *{% .table.PackageName %}.Index{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Index{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.Index{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) Index(ctx context.Context, in *api.Index{% .tableCaseCamelName %}Req) (out *api.Index{% .tableCaseCamelName %}Res, err error) {
+    out = &api.Index{% .tableCaseCamelName %}Res{}
     items, totalCount, err := service.{% .tableCaseCamelName %}().GetPageList(ctx, &in.PageListReq, &in.{% .tableCaseCamelName %}Search)
     if err != nil {
         return
@@ -57,8 +57,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Index(ctx context.Context, in
    return
 }
 
-func (c *{% .tableCaseCamelLowerName %}Controller) Recycle(ctx context.Context, in *{% .table.PackageName %}.Recycle{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Recycle{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.Recycle{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) Recycle(ctx context.Context, in *api.Recycle{% .tableCaseCamelName %}Req) (out *api.Recycle{% .tableCaseCamelName %}Res, err error) {
+    out = &api.Recycle{% .tableCaseCamelName %}Res{}
     pageListReq := &in.PageListReq
     pageListReq.Recycle = true
     items, totalCount, err := service.{% .tableCaseCamelName %}().GetPageList(ctx, pageListReq, &in.{% .tableCaseCamelName %}Search)
@@ -77,8 +77,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Recycle(ctx context.Context, 
     return
 }
 
-func (c *{% .tableCaseCamelLowerName %}Controller) List(ctx context.Context, in *{% .table.PackageName %}.List{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.List{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.List{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) List(ctx context.Context, in *api.List{% .tableCaseCamelName %}Req) (out *api.List{% .tableCaseCamelName %}Res, err error) {
+    out = &api.List{% .tableCaseCamelName %}Res{}
     rs, err := service.{% .tableCaseCamelName %}().GetList(ctx, &in.ListReq, &req.{% .tableCaseCamelName %}Search{})
     if err != nil {
         return
@@ -96,8 +96,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) List(ctx context.Context, in 
 {% end %}
 
 {% if eq .table.Type "tree"  %}
-func (c *{% .tableCaseCamelLowerName %}Controller) TreeIndex(ctx context.Context, in *{% .table.PackageName %}.TreeIndex{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.TreeIndex{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.TreeIndex{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) TreeIndex(ctx context.Context, in *api.TreeIndex{% .tableCaseCamelName %}Req) (out *api.TreeIndex{% .tableCaseCamelName %}Res, err error) {
+    out = &api.TreeIndex{% .tableCaseCamelName %}Res{}
     items, err := service.{% .tableCaseCamelName %}().GetTreeList(ctx,&in.ListReq, &in.{% .tableCaseCamelName %}Search)
     if err != nil {
         return
@@ -112,8 +112,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) TreeIndex(ctx context.Context
     return
 }
 
-func (c *{% .tableCaseCamelLowerName %}Controller) TreeRecycle(ctx context.Context, in *{% .table.PackageName %}.TreeRecycle{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.TreeRecycle{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.TreeRecycle{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) TreeRecycle(ctx context.Context, in *api.TreeRecycle{% .tableCaseCamelName %}Req) (out *api.TreeRecycle{% .tableCaseCamelName %}Res, err error) {
+    out = &api.TreeRecycle{% .tableCaseCamelName %}Res{}
     listReq := &in.ListReq
     listReq.Recycle = true
     items, err := service.{% .tableCaseCamelName %}().GetTreeList(ctx, listReq, &in.{% .tableCaseCamelName %}Search)
@@ -130,8 +130,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) TreeRecycle(ctx context.Conte
     return
 }
 
-func (c *{% .tableCaseCamelLowerName %}Controller) Tree(ctx context.Context, in *{% .table.PackageName %}.Tree{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Tree{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.Tree{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) Tree(ctx context.Context, in *api.Tree{% .tableCaseCamelName %}Req) (out *api.Tree{% .tableCaseCamelName %}Res, err error) {
+    out = &api.Tree{% .tableCaseCamelName %}Res{}
     items, err := service.{% .tableCaseCamelName %}().GetSelectTree(ctx, &in.ListReq, &in.{% .tableCaseCamelName %}Search)
     if err != nil {
         return
@@ -148,8 +148,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Tree(ctx context.Context, in 
 {% end %}
 
 {% if contains .generateMenus "save"  %}
-func (c *{% .tableCaseCamelLowerName %}Controller) Save(ctx context.Context, in *{% .table.PackageName %}.Save{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Save{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.Save{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) Save(ctx context.Context, in *api.Save{% .tableCaseCamelName %}Req) (out *api.Save{% .tableCaseCamelName %}Res, err error) {
+    out = &api.Save{% .tableCaseCamelName %}Res{}
     id, err := service.{% .tableCaseCamelName %}().Save(ctx, &in.{% .tableCaseCamelName %}Save)
     if err != nil {
         return
@@ -160,8 +160,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Save(ctx context.Context, in 
 {% end %}
 
 {% if contains .generateMenus "read"  %}
-func (c *{% .tableCaseCamelLowerName %}Controller) Read(ctx context.Context, in *{% .table.PackageName %}.Read{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Read{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.Read{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) Read(ctx context.Context, in *api.Read{% .tableCaseCamelName %}Req) (out *api.Read{% .tableCaseCamelName %}Res, err error) {
+    out = &api.Read{% .tableCaseCamelName %}Res{}
     info, err := service.{% .tableCaseCamelName %}().GetById(ctx, in.Id)
     if err != nil {
         return
@@ -171,8 +171,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Read(ctx context.Context, in 
 }
 {% end %}
 {% if contains .generateMenus "update"  %}
-func (c *{% .tableCaseCamelLowerName %}Controller) Update(ctx context.Context, in *{% .table.PackageName %}.Update{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Update{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.Update{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) Update(ctx context.Context, in *api.Update{% .tableCaseCamelName %}Req) (out *api.Update{% .tableCaseCamelName %}Res, err error) {
+    out = &api.Update{% .tableCaseCamelName %}Res{}
     err = service.{% .tableCaseCamelName %}().Update(ctx, &in.{% .tableCaseCamelName %}Update)
     if err != nil {
         return
@@ -181,16 +181,16 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Update(ctx context.Context, i
 }
 {% end %}
 {% if contains .generateMenus "delete"  %}
-func (c *{% .tableCaseCamelLowerName %}Controller) Delete(ctx context.Context, in *{% .table.PackageName %}.Delete{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Delete{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.Delete{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) Delete(ctx context.Context, in *api.Delete{% .tableCaseCamelName %}Req) (out *api.Delete{% .tableCaseCamelName %}Res, err error) {
+    out = &api.Delete{% .tableCaseCamelName %}Res{}
     err = service.{% .tableCaseCamelName %}().Delete(ctx, in.Ids)
     if err != nil {
         return
     }
     return
 }
-func (c *{% .tableCaseCamelLowerName %}Controller) RealDelete(ctx context.Context, in *{% .table.PackageName %}.RealDelete{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.RealDelete{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.RealDelete{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) RealDelete(ctx context.Context, in *api.RealDelete{% .tableCaseCamelName %}Req) (out *api.RealDelete{% .tableCaseCamelName %}Res, err error) {
+    out = &api.RealDelete{% .tableCaseCamelName %}Res{}
     err = service.{% .tableCaseCamelName %}().RealDelete(ctx, in.Ids)
     if err != nil {
         return
@@ -199,8 +199,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) RealDelete(ctx context.Contex
 }
 {% end %}
 {% if contains .generateMenus "recycle"  %}
-func (c *{% .tableCaseCamelLowerName %}Controller) Recovery(ctx context.Context, in *{% .table.PackageName %}.Recovery{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Recovery{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.Recovery{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) Recovery(ctx context.Context, in *api.Recovery{% .tableCaseCamelName %}Req) (out *api.Recovery{% .tableCaseCamelName %}Res, err error) {
+    out = &api.Recovery{% .tableCaseCamelName %}Res{}
     err = service.{% .tableCaseCamelName %}().Recovery(ctx, in.Ids)
     if err != nil {
         return
@@ -210,8 +210,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Recovery(ctx context.Context,
 {% end %}
 
 {% if contains .generateMenus "changeStatus"  %}
-func (c *{% .tableCaseCamelLowerName %}Controller) ChangeStatus(ctx context.Context, in *{% .table.PackageName %}.ChangeStatus{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.ChangeStatus{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.ChangeStatus{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) ChangeStatus(ctx context.Context, in *api.ChangeStatus{% .tableCaseCamelName %}Req) (out *api.ChangeStatus{% .tableCaseCamelName %}Res, err error) {
+    out = &api.ChangeStatus{% .tableCaseCamelName %}Res{}
     err = service.{% .tableCaseCamelName %}().ChangeStatus(ctx, in.Id, in.Status)
     if err != nil {
         return
@@ -220,8 +220,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) ChangeStatus(ctx context.Cont
 }
 {% end %}
 {% if contains .generateMenus "numberOperation"  %}
-func (c *{% .tableCaseCamelLowerName %}Controller) NumberOperation(ctx context.Context, in *{% .table.PackageName %}.NumberOperation{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.NumberOperation{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.NumberOperation{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) NumberOperation(ctx context.Context, in *api.NumberOperation{% .tableCaseCamelName %}Req) (out *api.NumberOperation{% .tableCaseCamelName %}Res, err error) {
+    out = &api.NumberOperation{% .tableCaseCamelName %}Res{}
     err = service.{% .tableCaseCamelName %}().NumberOperation(ctx, in.Id, in.NumberName, in.NumberValue)
     if err != nil {
         return
@@ -231,7 +231,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) NumberOperation(ctx context.C
 {% end %}
 
 {% if contains .generateMenus "export"  %}
-func (c *{% .tableCaseCamelLowerName %}Controller) Export(ctx context.Context, in *{% .table.PackageName %}.Export{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Export{% .tableCaseCamelName %}Res, err error) {
+func (c *{% .tableCaseCamelLowerName %}Controller) Export(ctx context.Context, in *api.Export{% .tableCaseCamelName %}Req) (out *api.Export{% .tableCaseCamelName %}Res, err error) {
     var (
         fileName  = "{% .tableCaseCamelLowerName %}"
         sheetName = "Sheet1"
@@ -259,7 +259,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Export(ctx context.Context, i
 {% end %}
 
 {% if contains .generateMenus "import"  %}
-func (c *{% .tableCaseCamelLowerName %}Controller) Import(ctx context.Context, in *{% .table.PackageName %}.Import{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Import{% .tableCaseCamelName %}Res, err error) {
+func (c *{% .tableCaseCamelLowerName %}Controller) Import(ctx context.Context, in *api.Import{% .tableCaseCamelName %}Req) (out *api.Import{% .tableCaseCamelName %}Res, err error) {
     tmpPath := utils.GetTmpDir()
     fileName, err := in.File.Save(tmpPath, true)
     if err != nil {
@@ -298,7 +298,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Import(ctx context.Context, i
     return
 }
 
-func (c *{% .tableCaseCamelLowerName %}Controller) DownloadTemplate(ctx context.Context, in *{% .table.PackageName %}.DownloadTemplate{% .tableCaseCamelName %}Req) (out *system.DownloadTemplate{% .tableCaseCamelName %}Res, err error) {
+func (c *{% .tableCaseCamelLowerName %}Controller) DownloadTemplate(ctx context.Context, in *api.DownloadTemplate{% .tableCaseCamelName %}Req) (out *api.DownloadTemplate{% .tableCaseCamelName %}Res, err error) {
     var (
         fileName  = "{% .tableCaseCamelLowerName %}_template"
         sheetName = "Sheet1"
@@ -315,8 +315,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) DownloadTemplate(ctx context.
 
 {% end %}
 
-func (c *{% .tableCaseCamelLowerName %}Controller) Remote(ctx context.Context, in *{% .table.PackageName %}.Remote{% .tableCaseCamelName %}Req) (out *{% .table.PackageName %}.Remote{% .tableCaseCamelName %}Res, err error) {
-    out = &{% .table.ModuleName %}.Remote{% .tableCaseCamelName %}Res{}
+func (c *{% .tableCaseCamelLowerName %}Controller) Remote(ctx context.Context, in *api.Remote{% .tableCaseCamelName %}Req) (out *api.Remote{% .tableCaseCamelName %}Res, err error) {
+    out = &api.Remote{% .tableCaseCamelName %}Res{}
     r := request.GetHttpRequest(ctx)
     params := gmap.NewStrAnyMapFrom(r.GetMap())
     m := service.{% .tableCaseCamelName %}().Model(ctx)

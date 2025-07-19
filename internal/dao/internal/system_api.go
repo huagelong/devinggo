@@ -20,19 +20,19 @@ type SystemApiDao struct {
 
 // SystemApiColumns defines and stores column names for table system_api.
 type SystemApiColumns struct {
-	Id          string //
-	GroupId     string //
-	Name        string //
-	AccessName  string //
-	AuthMode    string //
-	RequestMode string //
-	Status      string //
-	CreatedBy   string //
-	UpdatedBy   string //
-	CreatedAt   string //
-	UpdatedAt   string //
-	DeletedAt   string //
-	Remark      string //
+	Id          string // 主键
+	GroupId     string // 接口组ID
+	Name        string // 接口名称
+	AccessName  string // 接口访问名称
+	AuthMode    string // 认证模式 (1简易 2复杂)
+	RequestMode string // 请求模式 (A 所有 P POST G GET)
+	Status      string // 状态 (1正常 2停用)
+	CreatedBy   string // 创建者
+	UpdatedBy   string // 更新者
+	CreatedAt   string // 创建时间
+	UpdatedAt   string // 更新时间
+	DeletedAt   string // 删除时间
+	Remark      string // 备注
 }
 
 // systemApiColumns holds the columns for table system_api.

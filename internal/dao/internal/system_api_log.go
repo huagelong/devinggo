@@ -20,17 +20,17 @@ type SystemApiLogDao struct {
 
 // SystemApiLogColumns defines and stores column names for table system_api_log.
 type SystemApiLogColumns struct {
-	Id           string //
-	ApiId        string //
-	ApiName      string //
-	AccessName   string //
-	RequestData  string //
-	ResponseCode string //
-	ResponseData string //
-	Ip           string //
-	IpLocation   string //
-	AccessTime   string //
-	Remark       string //
+	Id           string // 主键
+	ApiId        string // api ID
+	ApiName      string // 接口名称
+	AccessName   string // 接口访问名称
+	RequestData  string // 请求数据
+	ResponseCode string // 响应状态码
+	ResponseData string // 响应数据
+	Ip           string // 访问IP地址
+	IpLocation   string // IP所属地
+	AccessTime   string // 访问时间
+	Remark       string // 备注
 }
 
 // systemApiLogColumns holds the columns for table system_api_log.

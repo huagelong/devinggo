@@ -4,10 +4,10 @@
 // @Author  Kai <hpuwang@gmail.com>
 // @License  https://github.com/huagelong/devinggo/blob/master/LICENSE
 
-package {% .table.PackageName %}
+package api
 
 import (
-    "devinggo/internal/model"
+    "devinggo/modules/system/model"
     "devinggo/modules/system/model/page"
     "devinggo/modules/{% .table.ModuleName %}/model/req"
     "devinggo/modules/{% .table.ModuleName %}/model/res"
@@ -19,7 +19,7 @@ import (
 
 {% if eq .table.Type "single"  %}
 type Index{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/index" method:"get" tags:"{% .table.TableComment %}" summary:"分页列表" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:index" `
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/index" method:"get" tags:"{% .table.TableComment %}" summary:"分页列表" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:index" `
     model.AuthorHeader
     model.PageListReq
     req.{% .tableCaseCamelName %}Search
@@ -32,7 +32,7 @@ type Index{% .tableCaseCamelName %}Res struct {
 }
 
 type List{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/list" method:"get" tags:"{% .table.TableComment %}" summary:"列表" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:list" `
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/list" method:"get" tags:"{% .table.TableComment %}" summary:"列表" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:list" `
     model.AuthorHeader
     model.ListReq
     req.{% .tableCaseCamelName %}Search
@@ -48,7 +48,7 @@ type List{% .tableCaseCamelName %}Res struct {
 
 {% if eq .table.Type "tree"  %}
 type TreeIndex{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/index" method:"get" tags:"{% .table.TableComment %}" summary:"分页列表" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:index" `
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/index" method:"get" tags:"{% .table.TableComment %}" summary:"分页列表" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:index" `
     model.AuthorHeader
     model.ListReq
     req.{% .tableCaseCamelName %}Search
@@ -60,7 +60,7 @@ type TreeIndex{% .tableCaseCamelName %}Res struct {
 }
 
 type Tree{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/tree" method:"get" tags:"{% .table.TableComment %}" summary:"前端选择树（不需要权限）" x-exceptAuth:"true" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:tree" `
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/tree" method:"get" tags:"{% .table.TableComment %}" summary:"前端选择树（不需要权限）" x-exceptAuth:"true" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:tree" `
     model.AuthorHeader
     model.ListReq
     req.{% .tableCaseCamelName %}Search
@@ -75,7 +75,7 @@ type Tree{% .tableCaseCamelName %}Res struct {
 
 {% if contains .generateMenus "save"  %}
 type Save{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/save" method:"post" tags:"{% .table.TableComment %}" summary:"新增" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:save"`
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/save" method:"post" tags:"{% .table.TableComment %}" summary:"新增" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:save"`
     model.AuthorHeader
     req.{% .tableCaseCamelName %}Save
 }
@@ -88,7 +88,7 @@ type Save{% .tableCaseCamelName %}Res struct {
 
 {% if contains .generateMenus "read"  %}
 type Read{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/read/{Id}" method:"get" tags:"{% .table.TableComment %}" summary:"获取单个信息" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:read"`
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/read/{Id}" method:"get" tags:"{% .table.TableComment %}" summary:"获取单个信息" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:read"`
     model.AuthorHeader
     Id uint64 `json:"id" dc:"{% .table.TableComment %} id" v:"required|min:1#Id不能为空"`
 }
@@ -101,7 +101,7 @@ type Read{% .tableCaseCamelName %}Res struct {
 
 {% if contains .generateMenus "update"  %}
 type Update{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/update/{Id}" method:"put" tags:"{% .table.TableComment %}" summary:"更新" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:update"`
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/update/{Id}" method:"put" tags:"{% .table.TableComment %}" summary:"更新" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:update"`
     model.AuthorHeader
     req.{% .tableCaseCamelName %}Update
 }
@@ -113,7 +113,7 @@ type Update{% .tableCaseCamelName %}Res struct {
 
 {% if contains .generateMenus "delete"  %}
 type Delete{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/delete" method:"delete" tags:"{% .table.TableComment %}" summary:"删除" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:delete"`
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/delete" method:"delete" tags:"{% .table.TableComment %}" summary:"删除" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:delete"`
     model.AuthorHeader
     Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
 }
@@ -127,7 +127,7 @@ type Delete{% .tableCaseCamelName %}Res struct {
 {% if contains .generateMenus "recycle"  %}
 
 type Recycle{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/recycle" method:"get" tags:"{% .table.TableComment %}" summary:"回收站列表" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:recycle" `
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/recycle" method:"get" tags:"{% .table.TableComment %}" summary:"回收站列表" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:recycle" `
     model.AuthorHeader
     model.PageListReq
     req.{% .tableCaseCamelName %}Search
@@ -140,7 +140,7 @@ type Recycle{% .tableCaseCamelName %}Res struct {
 }
 {% if contains .generateMenus "tree"  %}
 type TreeRecycle{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/recycleList" method:"get" tags:"{% .table.TableComment %}" summary:"分页列表" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:recycle" `
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/recycleList" method:"get" tags:"{% .table.TableComment %}" summary:"分页列表" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:recycle" `
     model.AuthorHeader
     model.ListReq
     req.{% .tableCaseCamelName %}Search
@@ -153,7 +153,7 @@ type TreeRecycle{% .tableCaseCamelName %}Res struct {
 {% end %}
 
 type RealDelete{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/realDelete" method:"delete" tags:"{% .table.TableComment %}" summary:"单个或批量真实删除 （清空回收站）" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:realDelete"`
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/realDelete" method:"delete" tags:"{% .table.TableComment %}" summary:"单个或批量真实删除 （清空回收站）" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:realDelete"`
     model.AuthorHeader
     Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
 }
@@ -163,7 +163,7 @@ type RealDelete{% .tableCaseCamelName %}Res struct {
 }
 
 type Recovery{% .tableCaseCamelName %}Req struct {
-        g.Meta `path:"/{% .tableCaseCamelLowerName %}/recovery" method:"put" tags:"{% .table.TableComment %}" summary:"单个或批量恢复在回收站的" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:recovery"`
+        g.Meta `path:"/{% .tableCaseCamelLowerName %}/recovery" method:"put" tags:"{% .table.TableComment %}" summary:"单个或批量恢复在回收站的" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:recovery"`
         model.AuthorHeader
         Ids []uint64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
 }
@@ -176,7 +176,7 @@ type Recovery{% .tableCaseCamelName %}Res struct {
 
 {% if contains .generateMenus "export"  %}
 type Export{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/export" method:"post" tags:"{% .table.TableComment %}" summary:"导出" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:export"`
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/export" method:"post" tags:"{% .table.TableComment %}" summary:"导出" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:export"`
     model.AuthorHeader
     model.ListReq
     req.{% .tableCaseCamelName %}Search
@@ -189,7 +189,7 @@ type Export{% .tableCaseCamelName %}Res struct {
 
 {% if contains .generateMenus "import"  %}
 type Import{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/import" method:"post" mime:"multipart/form-data" tags:"{% .table.TableComment %}" summary:"导入" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:import"`
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/import" method:"post" mime:"multipart/form-data" tags:"{% .table.TableComment %}" summary:"导入" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:import"`
     model.AuthorHeader
     File *ghttp.UploadFile `json:"file" type:"file"  dc:"pls upload file"`
 }
@@ -199,7 +199,7 @@ type Import{% .tableCaseCamelName %}Res struct {
 }
 
 type DownloadTemplate{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/downloadTemplate" method:"post,get" tags:"{% .table.TableComment %}" summary:"下载导入模板." x-exceptAuth:"true" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:downloadTemplate"`
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/downloadTemplate" method:"post,get" tags:"{% .table.TableComment %}" summary:"下载导入模板." x-exceptAuth:"true" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:downloadTemplate"`
     model.AuthorHeader
 }
 
@@ -211,7 +211,7 @@ type DownloadTemplate{% .tableCaseCamelName %}Res struct {
 
 {% if contains .generateMenus "changeStatus"  %}
 type ChangeStatus{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/changeStatus" method:"put" tags:"{% .table.TableComment %}" summary:"更改状态" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:changeStatus"`
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/changeStatus" method:"put" tags:"{% .table.TableComment %}" summary:"更改状态" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:changeStatus"`
     model.AuthorHeader
     Id     uint64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
     Status int    `json:"status" dc:"status" v:"min:1#状态不能为空"`
@@ -224,7 +224,7 @@ type ChangeStatus{% .tableCaseCamelName %}Res struct {
 
 {% if contains .generateMenus "numberOperation"  %}
 type NumberOperation{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/numberOperation" method:"put" tags:"{% .table.TableComment %}" summary:"数字运算操作" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:update"`
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/numberOperation" method:"put" tags:"{% .table.TableComment %}" summary:"数字运算操作" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:update"`
     model.AuthorHeader
     Id          uint64 `json:"id" dc:"ids" v:"min:1#Id不能为空"`
     NumberName  string `json:"numberName" dc:"numberName" v:"required#名称不能为空"`
@@ -237,7 +237,7 @@ type NumberOperation{% .tableCaseCamelName %}Res struct {
 {% end %}
 
 type Remote{% .tableCaseCamelName %}Req struct {
-    g.Meta `path:"/{% .tableCaseCamelLowerName %}/remote" method:"post" tags:"{% .table.TableComment %}" summary:"远程万能通用列表接口" x-exceptAuth:"true" x-permission:"{% .table.PackageName %}:{% .tableCaseCamelLowerName %}:remote"`
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/remote" method:"post" tags:"{% .table.TableComment %}" summary:"远程万能通用列表接口" x-exceptAuth:"true" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:remote"`
     model.AuthorHeader
     model.PageListReq
 }

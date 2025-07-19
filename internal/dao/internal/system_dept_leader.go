@@ -20,10 +20,10 @@ type SystemDeptLeaderDao struct {
 
 // SystemDeptLeaderColumns defines and stores column names for table system_dept_leader.
 type SystemDeptLeaderColumns struct {
-	DeptId    string //
-	UserId    string //
-	Username  string //
-	CreatedAt string //
+	DeptId    string // 部门主键
+	UserId    string // 用户主键
+	Username  string // 用户名
+	CreatedAt string // 添加时间
 }
 
 // systemDeptLeaderColumns holds the columns for table system_dept_leader.

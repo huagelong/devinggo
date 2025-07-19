@@ -20,18 +20,18 @@ type SystemRoleDao struct {
 
 // SystemRoleColumns defines and stores column names for table system_role.
 type SystemRoleColumns struct {
-	Id        string //
-	Name      string //
-	Code      string //
-	DataScope string //
-	Status    string //
-	Sort      string //
-	CreatedBy string //
-	UpdatedBy string //
-	CreatedAt string //
-	UpdatedAt string //
-	DeletedAt string //
-	Remark    string //
+	Id        string // 主键
+	Name      string // 角色名称
+	Code      string // 角色代码
+	DataScope string // 数据范围（1：全部数据权限 2：自定义数据权限 3：本部门数据权限 4：本部门及以下数据权限 5：本人数据权限）
+	Status    string // 状态 (1正常 2停用)
+	Sort      string // 排序
+	CreatedBy string // 创建者
+	UpdatedBy string // 更新者
+	CreatedAt string // 创建时间
+	UpdatedAt string // 更新时间
+	DeletedAt string // 删除时间
+	Remark    string // 备注
 }
 
 // systemRoleColumns holds the columns for table system_role.

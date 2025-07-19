@@ -20,30 +20,30 @@ type SettingGenerateColumnsDao struct {
 
 // SettingGenerateColumnsColumns defines and stores column names for table setting_generate_columns.
 type SettingGenerateColumnsColumns struct {
-	Id            string //
-	TableId       string //
-	ColumnName    string //
-	ColumnComment string //
-	ColumnType    string //
-	IsPk          string //
-	IsRequired    string //
-	IsInsert      string //
-	IsEdit        string //
-	IsList        string //
-	IsQuery       string //
-	IsSort        string //
-	QueryType     string //
-	ViewType      string //
-	DictType      string //
-	AllowRoles    string //
-	Options       string //
-	Extra         string //
-	Sort          string //
-	CreatedBy     string //
-	UpdatedBy     string //
-	CreatedAt     string //
-	UpdatedAt     string //
-	Remark        string //
+	Id            string // 主键
+	TableId       string // 所属表ID
+	ColumnName    string // 字段名称
+	ColumnComment string // 字段注释
+	ColumnType    string // 字段类型
+	IsPk          string // 1 非主键 2 主键
+	IsRequired    string // 1 非必填 2 必填
+	IsInsert      string // 1 非插入字段 2 插入字段
+	IsEdit        string // 1 非编辑字段 2 编辑字段
+	IsList        string // 1 非列表显示字段 2 列表显示字段
+	IsQuery       string // 1 非查询字段 2 查询字段
+	IsSort        string // 1 不排序 2 排序字段
+	QueryType     string // 查询方式 eq 等于, neq 不等于, gt 大于, lt 小于, like 范围
+	ViewType      string // 页面控件，text, textarea, password, select, checkbox, radio, date, upload, ma-upload（封装的上传控件）
+	DictType      string // 字典类型
+	AllowRoles    string // 允许查看该字段的角色
+	Options       string // 字段其他设置
+	Extra         string // 字段扩展信息
+	Sort          string // 排序
+	CreatedBy     string // 创建者
+	UpdatedBy     string // 更新者
+	CreatedAt     string // 创建时间
+	UpdatedAt     string // 更新时间
+	Remark        string // 备注
 }
 
 // settingGenerateColumnsColumns holds the columns for table setting_generate_columns.
