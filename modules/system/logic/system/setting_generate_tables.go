@@ -154,39 +154,38 @@ func (s *sSettingGenerateTables) Delete(ctx context.Context, ids []int64) (err e
 }
 
 func (s *sSettingGenerateTables) SyncCode(ctx context.Context, id int64) (err error) {
-	var entity *entity.SettingGenerateTables
-	err = s.Model(ctx).Where("id", id).Scan(&entity)
+	var entitySettingGenerateTables *entity.SettingGenerateTables
+	err = s.Model(ctx).Where("id", id).Scan(&entitySettingGenerateTables)
 	if utils.IsError(err) {
 		return err
 	}
-	if g.IsEmpty(entity) {
+	if g.IsEmpty(entitySettingGenerateTables) {
 		return myerror.ValidationFailed(ctx, "数据不存在")
 	}
 
-	source := entity.Source
-	tableName := entity.TableName
-	result, err := service.SettingGenerateColumns().Model(ctx).Unscoped().Fields("id").Where("table_id", id).Array()
+	source := entitySettingGenerateTables.Source
+	tableName := entitySettingGenerateTables.TableName
+
+	// 查询现有列配置，按 ColumnName 建立索引
+	var existingColumns []*entity.SettingGenerateColumns
+	err = service.SettingGenerateColumns().Model(ctx).Where("table_id", id).Scan(&existingColumns)
 	if utils.IsError(err) {
-		return
+		return err
 	}
 
-	if g.IsEmpty(result) {
-		return
+	// 建立现有列的映射，方便快速查找
+	existingColumnMap := make(map[string]*entity.SettingGenerateColumns)
+	for _, col := range existingColumns {
+		existingColumnMap[col.ColumnName] = col
 	}
 
-	columnIds := gconv.SliceInt64(result)
-
-	_, err = service.SettingGenerateColumns().Model(ctx).WhereIn("id", columnIds).Delete()
-
-	if utils.IsError(err) {
-		return
-	}
-
+	// 获取数据库表结构
 	columnList, err := service.DataMaintain().GetColumnList(ctx, source, tableName)
 	if err != nil {
 		return err
 	}
 
+	// 遍历数据库表结构，同步列配置
 	for _, column := range columnList {
 		isPk := 1
 		if !g.IsEmpty(column.Key) {
@@ -196,19 +195,41 @@ func (s *sSettingGenerateTables) SyncCode(ctx context.Context, id int64) (err er
 		if !g.IsEmpty(column.Null) {
 			isRequired = 2
 		}
-		iData := &do.SettingGenerateColumns{
-			TableId:       id,
-			ColumnName:    column.Name,
-			ColumnComment: column.Comment,
-			ColumnType:    column.Type,
-			IsPk:          isPk,
-			IsRequired:    isRequired,
-			QueryType:     "eq",
-			ViewType:      "text",
-			Sort:          len(columnList) - column.Index,
-			Extra:         column.Extra,
+
+		// 检查列是否已存在
+		if existingColumn, exists := existingColumnMap[column.Name]; exists {
+			// 列已存在，更新数据库结构相关字段，保留用户配置
+			updateData := &do.SettingGenerateColumns{
+				ColumnComment: column.Comment,
+				ColumnType:    column.Type,
+				IsPk:          isPk,
+				IsRequired:    isRequired,
+				Extra:         column.Extra,
+				Sort:          len(columnList) - column.Index,
+			}
+			_, err = service.SettingGenerateColumns().Model(ctx).Data(updateData).OmitEmptyData().Where("id", existingColumn.Id).Update()
+			if utils.IsError(err) {
+				return err
+			}
+		} else {
+			// 列不存在，插入新列记录
+			iData := &do.SettingGenerateColumns{
+				TableId:       id,
+				ColumnName:    column.Name,
+				ColumnComment: column.Comment,
+				ColumnType:    column.Type,
+				IsPk:          isPk,
+				IsRequired:    isRequired,
+				QueryType:     "eq",
+				ViewType:      "text",
+				Sort:          len(columnList) - column.Index,
+				Extra:         column.Extra,
+			}
+			_, err = service.SettingGenerateColumns().Model(ctx).Insert(iData)
+			if utils.IsError(err) {
+				return err
+			}
 		}
-		service.SettingGenerateColumns().Model(ctx).Insert(iData)
 	}
 
 	return
@@ -486,7 +507,7 @@ func (s *sSettingGenerateTables) generateOneCode(ctx context.Context, codePath s
 	}
 	tableCaseCamelLowerName := gstr.CaseCamelLower(tables.TableName)
 	apiCode := coders.Get("apiCode")
-	err = gfile.PutContents(codePath+"/"+tables.ModuleName+"/api/"+tables.PackageName+"/"+tables.TableName+".go", apiCode)
+	err = gfile.PutContents(codePath+"/"+tables.ModuleName+"/api/"+tables.TableName+".go", apiCode)
 	if err != nil {
 		return
 	}
@@ -506,7 +527,7 @@ func (s *sSettingGenerateTables) generateOneCode(ctx context.Context, codePath s
 		return
 	}
 	controllerCode := coders.Get("controllerCode")
-	err = gfile.PutContents(codePath+"/"+tables.ModuleName+"/controller/"+tables.PackageName+"/"+tables.TableName+".go", controllerCode)
+	err = gfile.PutContents(codePath+"/"+tables.ModuleName+"/controller/"+tables.TableName+".go", controllerCode)
 	if err != nil {
 		return
 	}
