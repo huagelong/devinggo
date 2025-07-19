@@ -18,6 +18,9 @@
 - 账号密码：superAdmin/admin123
 - 数据每小时重置一次
 
+## 视频教程
+- b站: https://space.bilibili.com/323699697
+
 ## 文档
 
 - [文档](https://devinggo.devinghub.com/)
