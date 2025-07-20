@@ -60,6 +60,8 @@ func GetPageList(m *gdb.Model, req *model.PageListReq, params ...g.Map) *gdb.Mod
 			orderType = req.OrderType
 		}
 		m = m.Order(req.OrderBy, orderType)
+	} else {
+		m = m.OrderDesc("id")
 	}
 	return m
 }
