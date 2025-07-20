@@ -185,6 +185,12 @@ func (s *sSettingGenerateTables) SyncCode(ctx context.Context, id int64) (err er
 		return err
 	}
 
+	// 建立数据库字段名集合，用于快速查找
+	dbColumnSet := make(map[string]bool)
+	for _, column := range columnList {
+		dbColumnSet[column.Name] = true
+	}
+
 	// 遍历数据库表结构，同步列配置
 	for _, column := range columnList {
 		isPk := 1
@@ -229,6 +235,22 @@ func (s *sSettingGenerateTables) SyncCode(ctx context.Context, id int64) (err er
 			if utils.IsError(err) {
 				return err
 			}
+		}
+	}
+
+	// 删除已不存在的字段配置
+	var columnsToDelete []int64
+	for _, existingColumn := range existingColumns {
+		if !dbColumnSet[existingColumn.ColumnName] {
+			columnsToDelete = append(columnsToDelete, existingColumn.Id)
+		}
+	}
+
+	// 批量删除已不存在的字段
+	if len(columnsToDelete) > 0 {
+		_, err = service.SettingGenerateColumns().Model(ctx).WhereIn("id", columnsToDelete).Delete()
+		if utils.IsError(err) {
+			return err
 		}
 	}
 

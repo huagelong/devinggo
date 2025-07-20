@@ -28,6 +28,7 @@ service: cli.install
 	@gf gen service
 	@gf gen service -s=modules/system/logic -d=modules/system/service
 	@gf gen service -s=modules/api/logic -d=modules/api/service
+	@gf gen service -s=modules/cms/logic -d=modules/cms/service
 
 # Build docker image.
 .PHONY: image

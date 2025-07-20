@@ -1,0 +1,22 @@
+{
+    "author": "devinggo",
+    "files": {
+        "go": [
+            "modules/cms",
+            "modules/_/worker/cms.go",
+            "modules/_/modules/cms.go",
+            "modules/_/logic/cms.go"
+        ],
+        "other": [],
+        "sql": [
+            "resource/migrations/20250720120808_cms_module.up.sql",
+            "resource/migrations/20250720120808_cms_module.down.sql"
+        ],
+        "static": []
+    },
+    "goVersion": "1.23+",
+    "license": "MIT",
+    "mod": {},
+    "name": "cms",
+    "version": "1.0.0"
+}

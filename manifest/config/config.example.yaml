@@ -77,6 +77,9 @@ database:
   default:
     link: "mysql:root:123456@tcp(127.0.0.1:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
     debug: true # 默认 false
+  cms:
+    link: "mysql:root:123456@tcp(127.0.0.1:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
+    debug: true # 默认 false
 
 # doc: https://goframe.org/pages/viewpage.action?pageId=1114217
 redis:
