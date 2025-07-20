@@ -12,7 +12,7 @@ import "github.com/gogf/gf/v2/os/gtime"
 
 type {% .tableCaseCamelName %} struct {
 {% range $index, $elem := .columns %}
- {%if eq $elem.IsList 2 %}
+ {%if or (eq $elem.IsList 2) (eq $elem.ColumnName "id")   %}
  {% caseCamel $elem.ColumnName %}  {% getModelColumnType $elem %} `json:"{% $elem.ColumnName %}"  description:"{% $elem.ColumnComment %}" `
  {%end %}
 {%end %}

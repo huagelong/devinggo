@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "golang.Go",
+    "jinliming2.vscode-go-template",
+  ]
+}
