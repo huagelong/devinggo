@@ -130,6 +130,10 @@ func (s *sSystemOperLog) handleSearch(ctx context.Context, in *req.SystemOperLog
 		m = m.Where("status", in.Status)
 	}
 
+	if !g.IsEmpty(in.Username) {
+		m = m.Where("username like ? ", "%"+in.Username+"%")
+	}
+
 	if !g.IsEmpty(in.ServiceName) {
 		m = m.Where("service_name like ? ", "%"+in.ServiceName+"%")
 	}
