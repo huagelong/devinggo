@@ -14,7 +14,6 @@ import (
     "devinggo/internal/model/entity"
     "devinggo/modules/{% .table.ModuleName %}/model/req"
     "devinggo/modules/{% .table.ModuleName %}/model/res"
-    "devinggo/modules/system/pkg/handler"
     "devinggo/modules/system/pkg/hook"
     "devinggo/modules/system/pkg/orm"
     "devinggo/modules/system/pkg/utils"
@@ -108,7 +107,7 @@ func (s *s{% .tableCaseCamelName %}) handleSearch(ctx context.Context, in *req.{
 
 {% if eq .table.Type "single"  %}
 func (s *s{% .tableCaseCamelName %}) GetList(ctx context.Context,inReq *model.ListReq, in *req.{% .tableCaseCamelName %}Search) (out []*res.{% .tableCaseCamelName %}, err error) {
-    m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
+    m := s.handleSearch(ctx, in)
     m = orm.GetList(m, inReq)
     err = m.Scan(&out)
     if utils.IsError(err) {
@@ -118,7 +117,7 @@ func (s *s{% .tableCaseCamelName %}) GetList(ctx context.Context,inReq *model.Li
 }
 
 func (s *s{% .tableCaseCamelName %}) GetPageList(ctx context.Context, req *model.PageListReq, in *req.{% .tableCaseCamelName %}Search) (rs []*res.{% .tableCaseCamelName %}, total int, err error) {
-    m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
+    m := s.handleSearch(ctx, in)
     var entity []*entity.{% .tableCaseCamelName %}
     err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
     if utils.IsError(err) {
@@ -190,7 +189,7 @@ func (s *s{% .tableCaseCamelName %}) treeSelectList(nodes []entity.{% .tableCase
 }
 
 func (s *s{% .tableCaseCamelName %}) GetSelectTree(ctx context.Context, inReq *model.ListReq, in *req.{% .tableCaseCamelName %}Search ) (routes []*res.{% .tableCaseCamelName %}SelectTree, err error) {
-    m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
+    m := s.handleSearch(ctx, in)
     m = orm.GetList(m, inReq)
     entity := []entity.{% .tableCaseCamelName %}{}
     err = m.Scan(&entity)
