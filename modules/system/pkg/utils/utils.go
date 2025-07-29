@@ -12,10 +12,6 @@ import (
 	"crypto/md5"
 	"database/sql"
 	"fmt"
-	"github.com/gogf/gf/v2/errors/gerror"
-	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/os/gfile"
-	"github.com/gogf/gf/v2/os/glog"
 	"io"
 	"log"
 	"os"
@@ -23,7 +19,13 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"runtime/debug"
 	"strings"
+
+	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gfile"
+	"github.com/gogf/gf/v2/os/glog"
 
 	"github.com/gogf/gf/v2/text/gstr"
 )
@@ -61,7 +63,10 @@ func SafeGo(ctx context.Context, f func(ctx context.Context), lv ...int) {
 		if len(lv) > 0 {
 			level = lv[0]
 		}
-		Logf(level, ctx, "SafeGo exec failed:%+v", err)
+
+		// 获取调用栈
+		stack := debug.Stack()
+		Logf(level, ctx, "SafeGo exec failed: %+v\nStack:\n%s", err, stack)
 	})
 }
 

@@ -12,7 +12,7 @@ import (
 )
 
 type IndexReq struct {
-	g.Meta `path:"/test" method:"get" tags:"test" summary:"测试." x-exceptLogin:"true" x-permission:"api:test" `
+	g.Meta `path:"/test" method:"get" tags:"test" summary:"测试." x-exceptAuth:"true" x-exceptLogin:"true" x-permission:"api:test" `
 	model.ApiSign
 }
 
