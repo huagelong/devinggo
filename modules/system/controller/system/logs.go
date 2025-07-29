@@ -79,7 +79,7 @@ func (c *logsController) GetApiLogPageList(ctx context.Context, in *system.GetAp
 	return
 }
 
-func (c *apiController) DeleteOperLogPageList(ctx context.Context, in *system.DeleteOperLogReq) (out *system.DeleteOperLogRes, err error) {
+func (c *logsController) DeleteOperLogPageList(ctx context.Context, in *system.DeleteOperLogReq) (out *system.DeleteOperLogRes, err error) {
 	err = dao.SystemApi.Transaction(ctx, func(ctx context.Context, tx gdb.TX) (err error) {
 		out = &system.DeleteOperLogRes{}
 		err = service.SystemOperLog().DeleteOperLog(ctx, in.Ids)
