@@ -52,3 +52,12 @@ type GetApiLogPageListRes struct {
 	page.PageRes
 	Items []res.SystemApiLog `json:"items"  dc:"list" `
 }
+
+type DeleteOperLogReq struct {
+	g.Meta `path:"/logs/deleteOperLog" method:"delete" tags:"日志" summary:"删除操作日志." x-permission:"system:operLog:delete"`
+	Ids    []int64 `json:"ids" dc:"ids" v:"min-length:1#操作日志Id不能为空"`
+}
+
+type DeleteOperLogRes struct {
+	g.Meta `mime:"application/json"`
+}

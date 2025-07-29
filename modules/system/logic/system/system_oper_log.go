@@ -163,3 +163,11 @@ func (s *sSystemOperLog) GetPageListForSearch(ctx context.Context, req *model.Pa
 	}
 	return
 }
+
+func (s *sSystemOperLog) DeleteOperLog(ctx context.Context, ids []int64) (err error) {
+	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
+	if err != nil {
+		return err
+	}
+	return
+}
