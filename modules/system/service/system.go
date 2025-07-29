@@ -10,7 +10,6 @@ import (
 	"database/sql"
 	"devinggo/internal/model/entity"
 	"devinggo/modules/system/model"
-	model2 "devinggo/modules/system/model"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 
@@ -255,8 +254,8 @@ type (
 	}
 	ISystemQueueMessage interface {
 		Model(ctx context.Context) *gdb.Model
-		GetReceiveUserPageList(ctx context.Context, req *model2.PageListReq, messageId int64) (rs []*res.MessageReceiveUser, total int, err error)
-		GetPageList(ctx context.Context, req *model2.PageListReq, userId int64, params *req.SystemQueueMessageSearch) (rs []*res.SystemQueueMessage, total int, err error)
+		GetReceiveUserPageList(ctx context.Context, req *model.PageListReq, messageId int64) (rs []*res.MessageReceiveUser, total int, err error)
+		GetPageList(ctx context.Context, req *model.PageListReq, userId int64, params *req.SystemQueueMessageSearch) (rs []*res.SystemQueueMessage, total int, err error)
 		DeletesRelated(ctx context.Context, ids []int64, userId int64) (err error)
 		SendMessage(ctx context.Context, sendReq *req.SystemQueueMessagesSend, sendUserId int64, contentType string) (err error, messageId int64)
 	}
