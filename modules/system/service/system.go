@@ -102,6 +102,7 @@ type (
 		Model(ctx context.Context) *gdb.Model
 		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemApiLogSearch) (rs []*res.SystemApiLog, total int, err error)
 		Push(ctx context.Context)
+		DeleteApiLog(ctx context.Context, ids []int64) (err error)
 	}
 	ISystemApp interface {
 		Model(ctx context.Context) *gdb.Model
@@ -191,6 +192,7 @@ type (
 		GetPageList(ctx context.Context, req *model.PageListReq, username string) (res []*res.SystemLoginLog, total int, err error)
 		Push(ctx context.Context, username string, err error)
 		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemLoginLogSearch) (rs []*res.SystemLoginLog, total int, err error)
+		DeleteLoginLog(ctx context.Context, ids []int64) (err error)
 	}
 	ISystemMenu interface {
 		Model(ctx context.Context) *gdb.Model

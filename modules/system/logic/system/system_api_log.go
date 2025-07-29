@@ -139,3 +139,11 @@ func (s *sSystemApiLog) Push(ctx context.Context) {
 	}
 	s.Model(ctx).Data(systemApiLog).Insert()
 }
+
+func (s *sSystemApiLog) DeleteApiLog(ctx context.Context, ids []int64) (err error) {
+	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
+	if err != nil {
+		return err
+	}
+	return
+}

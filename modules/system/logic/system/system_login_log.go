@@ -140,3 +140,11 @@ func (s *sSystemLoginLog) GetPageListForSearch(ctx context.Context, req *model.P
 	}
 	return
 }
+
+func (s *sSystemLoginLog) DeleteLoginLog(ctx context.Context, ids []int64) (err error) {
+	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
+	if err != nil {
+		return err
+	}
+	return
+}

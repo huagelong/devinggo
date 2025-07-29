@@ -54,10 +54,31 @@ type GetApiLogPageListRes struct {
 }
 
 type DeleteOperLogReq struct {
-	g.Meta `path:"/logs/deleteOperLog" method:"delete" tags:"日志" summary:"删除操作日志." x-permission:"system:operLog:delete"`
-	Ids    []int64 `json:"ids" dc:"ids" v:"min-length:1#操作日志Id不能为空"`
+	g.Meta `path:"/logs/deleteOperLog" method:"delete" tags:"日志" summary:"删除操作日志." x-permission:"system:operLog"`
+	model.AuthorHeader
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#操作日志Id不能为空"`
 }
 
 type DeleteOperLogRes struct {
+	g.Meta `mime:"application/json"`
+}
+
+type DeleteApiLogReq struct {
+	g.Meta `path:"/logs/deleteApiLog" method:"delete" tags:"日志" summary:"删除api日志." x-permission:"system:apiLog"`
+	model.AuthorHeader
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#日志Id不能为空"`
+}
+
+type DeleteApiLogRes struct {
+	g.Meta `mime:"application/json"`
+}
+
+type DeleteLoginLogReq struct {
+	g.Meta `path:"/logs/deleteLoginLog" method:"delete" tags:"日志" summary:"删除登录日志." x-permission:"system:loginLog"`
+	model.AuthorHeader
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#日志Id不能为空"`
+}
+
+type DeleteLoginLogRes struct {
 	g.Meta `mime:"application/json"`
 }
