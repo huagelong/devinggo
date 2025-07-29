@@ -8,10 +8,12 @@ package system
 
 import (
 	"context"
+	"devinggo/internal/dao"
 	"devinggo/modules/system/api/system"
 	"devinggo/modules/system/controller/base"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/service"
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -74,5 +76,20 @@ func (c *logsController) GetApiLogPageList(ctx context.Context, in *system.GetAp
 		out.Items = make([]res.SystemApiLog, 0)
 	}
 	out.PageRes.Pack(in, totalCount)
+	return
+}
+
+func (c *logsController) DeleteOperLog(ctx context.Context, in *system.DeleteOperLogReq) (out *system.DeleteOperLogRes, err error) {
+	err = dao.SystemApi.Transaction(ctx, func(ctx context.Context, tx gdb.TX) (err error) {
+		out = &system.DeleteOperLogRes{}
+		err = service.SystemOperLog().DeleteOperLog(ctx, in.Ids)
+		if err != nil {
+			return
+		}
+		return
+	})
+	if err != nil {
+		return
+	}
 	return
 }
