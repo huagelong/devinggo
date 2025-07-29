@@ -18,7 +18,7 @@ type (
 		GetToken(ctx context.Context, scene string, claimsData map[string]interface{}) (string, int64, error)
 		ParseToken(ctx context.Context, token string) (*model.NormalIdentity, error)
 		Refresh(r *ghttp.Request) (string, int64, error)
-		GenerateUserToken(ctx context.Context, scene, appId string, user *model.Identity) (string, int64, error)
+		GenerateUserToken(ctx context.Context, scene string, appId string, user *model.Identity) (string, int64, error)
 		Logout(r *ghttp.Request) (err error)
 		// 强退用户
 		Kick(r *ghttp.Request, userId int64, appId string) (err error)
@@ -31,7 +31,7 @@ type (
 		// GetAuthKey 认证key
 		GetAuthKey(token string) string
 		// GetTokenKey 令牌缓存key
-		GetTokenKey(appId, authKey string) string
+		GetTokenKey(appId string, authKey string) string
 		// GetBindKey 令牌身份绑定key
 		GetBindKey(appId string, userId int64) string
 	}

@@ -20,12 +20,12 @@ import (
 type (
 	IDataMaintain interface {
 		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.DataMaintainSearch) (rs []*res.DataMaintain, total int, err error)
-		GetColumnList(ctx context.Context, source, tableName string) (rs map[string]*gdb.TableField, err error)
+		GetColumnList(ctx context.Context, source string, tableName string) (rs map[string]*gdb.TableField, err error)
 		GetAllTableStatus(ctx context.Context, groupName string) (rs []*res.DataMaintain, err error)
 	}
 	ILogin interface {
 		Model(ctx context.Context) *gdb.Model
-		Login(ctx context.Context, username, password string) (token string, expire int64, err error)
+		Login(ctx context.Context, username string, password string) (token string, expire int64, err error)
 	}
 	ISettingConfig interface {
 		Model(ctx context.Context) *gdb.Model
@@ -102,6 +102,7 @@ type (
 		Model(ctx context.Context) *gdb.Model
 		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemApiLogSearch) (rs []*res.SystemApiLog, total int, err error)
 		Push(ctx context.Context)
+		DeleteApiLog(ctx context.Context, ids []int64) (err error)
 	}
 	ISystemApp interface {
 		Model(ctx context.Context) *gdb.Model
@@ -191,6 +192,7 @@ type (
 		GetPageList(ctx context.Context, req *model.PageListReq, username string) (res []*res.SystemLoginLog, total int, err error)
 		Push(ctx context.Context, username string, err error)
 		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemLoginLogSearch) (rs []*res.SystemLoginLog, total int, err error)
+		DeleteLoginLog(ctx context.Context, ids []int64) (err error)
 	}
 	ISystemMenu interface {
 		Model(ctx context.Context) *gdb.Model
@@ -200,7 +202,7 @@ type (
 		GetMenuByPermission(ctx context.Context, permission string, menuIds ...[]int64) (systemMenuEntity *entity.SystemMenu, err error)
 		GetTreeList(ctx context.Context, in *req.SystemMenuSearch) (tree []*res.SystemMenuTree, err error)
 		GetRecycleTreeList(ctx context.Context, in *req.SystemMenuSearch) (tree []*res.SystemMenuTree, err error)
-		GetSelectTree(ctx context.Context, userId int64, onlyMenu, scope bool) (routes []*res.SystemDeptSelectTree, err error)
+		GetSelectTree(ctx context.Context, userId int64, onlyMenu bool, scope bool) (routes []*res.SystemDeptSelectTree, err error)
 		Save(ctx context.Context, in *req.SystemMenuSave) (id int64, err error)
 		Update(ctx context.Context, in *req.SystemMenuSave) (err error)
 		Delete(ctx context.Context, ids []int64) (names []string, err error)
@@ -237,6 +239,7 @@ type (
 		GetPageList(ctx context.Context, req *model.PageListReq, username string) (res []*res.SystemOperLog, total int, err error)
 		Push(ctx context.Context)
 		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemOperLogSearch) (rs []*res.SystemOperLog, total int, err error)
+		DeleteOperLog(ctx context.Context, ids []int64) (err error)
 	}
 	ISystemPost interface {
 		Model(ctx context.Context) *gdb.Model

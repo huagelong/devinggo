@@ -19,6 +19,7 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/response"
 	"devinggo/modules/system/pkg/utils"
+	"devinggo/modules/system/pkg/utils/config"
 	"devinggo/modules/system/pkg/utils/location"
 	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/service"
@@ -97,8 +98,12 @@ func (s *sSystemOperLog) Push(ctx context.Context) {
 		area = ipData.Area
 	}
 
+	logSaveResponseData := config.GetConfigBool(ctx, "settings.logSaveResponseData", true)
 	res, bizCode := response.ResponseHandler(r)
-	resJson := response.Json(r, bizCode, res)
+	resJson := ""
+	if logSaveResponseData {
+		resJson = gconv.String(response.Json(r, bizCode, res))
+	}
 	postData := contexts.New().GetRequestBody(ctx)
 
 	systemOperLog := &do.SystemOperLog{
@@ -160,6 +165,14 @@ func (s *sSystemOperLog) GetPageListForSearch(ctx context.Context, req *model.Pa
 		if err = gconv.Structs(entity, &rs); err != nil {
 			return nil, 0, err
 		}
+	}
+	return
+}
+
+func (s *sSystemOperLog) DeleteOperLog(ctx context.Context, ids []int64) (err error) {
+	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
+	if err != nil {
+		return err
 	}
 	return
 }
