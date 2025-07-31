@@ -21,6 +21,9 @@ import (
 	"devinggo/modules/system/pkg/utils/idgen"
 	"devinggo/modules/system/pkg/utils/slice"
 	"devinggo/modules/system/service"
+	"regexp"
+	"strings"
+
 	"github.com/gogf/gf/v2/container/gmap"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
@@ -29,8 +32,6 @@ import (
 	"github.com/gogf/gf/v2/os/gview"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
-	"regexp"
-	"strings"
 )
 
 type sSettingGenerateTables struct {
@@ -451,6 +452,7 @@ func (s *sSettingGenerateTables) getOneCode(ctx context.Context, id int64) (rs *
 	})
 	view.BindFunc("contains", s.sliceContains)
 	view.BindFunc("caseCamel", s.caseCamel)
+	view.BindFunc("cleanStr", s.cleanStr)
 	view.BindFunc("parseColumnType", s.parseColumnType)
 	view.BindFunc("getModelColumnType", s.getModelColumnType)
 	apiCode, err := s.generateApi(ctx, view, tables, columns)
@@ -1012,6 +1014,10 @@ func (s *sSettingGenerateTables) sliceContains(arr []string, value string) bool 
 
 func (s *sSettingGenerateTables) caseCamel(value string) string {
 	return gstr.CaseCamel(value)
+}
+
+func (s *sSettingGenerateTables) cleanStr(value string) string {
+	return gstr.TrimAll(value)
 }
 
 func (s *sSettingGenerateTables) parseDataType(value string) (dataType string, limit string) {
