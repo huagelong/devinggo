@@ -13,7 +13,7 @@ import "github.com/gogf/gf/v2/os/gtime"
 type {% .tableCaseCamelName %} struct {
 {% range $index, $elem := .columns %}
  {%if or (eq $elem.IsList 2) (eq $elem.ColumnName "id")   %}
- {% caseCamel $elem.ColumnName %}  {% getModelColumnType $elem %} `json:"{% $elem.ColumnName %}"  description:"{% $elem.ColumnComment %}" `
+ {% caseCamel $elem.ColumnName %}  {% getModelColumnType $elem %} `json:"{% $elem.ColumnName %}"  description:"{% cleanStr $elem.ColumnComment %}" `
  {%end %}
 {%end %}
 }
@@ -36,7 +36,7 @@ type {% .tableCaseCamelName %}SelectTree struct {
 type {% .tableCaseCamelName %}Excel struct {
 {% range $index, $elem := .columns %}
 {%if eq $elem.IsInsert 2 %}
-    {% caseCamel $elem.ColumnName %}  {% parseColumnType $elem %} `json:"{% $elem.ColumnName %}" {%if eq $elem.IsRequired 2 %} v:"required" {%end %} description:"{% $elem.ColumnComment %}" {% if or (contains $.generateMenus "export")  (contains $.generateMenus "import") %} excelName:"{% $elem.ColumnComment %}" excelIndex:"{% $index %}" {%end %} `
+    {% caseCamel $elem.ColumnName %}  {% parseColumnType $elem %} `json:"{% $elem.ColumnName %}" {%if eq $elem.IsRequired 2 %} v:"required" {%end %} description:"{% cleanStr $elem.ColumnComment %}" {% if or (contains $.generateMenus "export")  (contains $.generateMenus "import") %} excelName:"{% $elem.ColumnComment %}" excelIndex:"{% $index %}" {%end %} `
 {%end %}
 {% end %}
 }
