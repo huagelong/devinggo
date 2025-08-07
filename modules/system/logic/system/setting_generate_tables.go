@@ -283,7 +283,7 @@ func (s *sSettingGenerateTables) UpdateTableAndColumns(ctx context.Context, in *
 	if !g.IsEmpty(in.GenerateMenus) {
 		updateData.GenerateMenus = gstr.Join(in.GenerateMenus, ",")
 	}
-	_, err = s.Model(ctx).Data(updateData).OmitEmptyData().Where("id", in.Id).Update()
+	_, err = s.Model(ctx).Data(updateData).OmitNilData().Where("id", in.Id).Update()
 	if utils.IsError(err) {
 		return
 	}
@@ -506,21 +506,21 @@ func (s *sSettingGenerateTables) Preview(ctx context.Context, id int64) (rs []re
 	}
 	tableCaseCamelLowerName := gstr.CaseCamelLower(tables.TableName)
 	apiCode := coders.Get("apiCode")
-	rs = append(rs, res.PreviewTable{TabName: "api/" + tables.PackageName + "/" + tables.TableName + ".go", Code: apiCode, Lang: "go", Name: "api"})
+	rs = append(rs, res.PreviewTable{TabName: "api/" + tables.TableName + ".go", Code: apiCode, Lang: "go", Name: "api"})
 	modelReqCode := coders.Get("modelReqCode")
 	rs = append(rs, res.PreviewTable{TabName: "model/req/" + tables.TableName + ".go", Code: modelReqCode, Lang: "go", Name: "req"})
 	modelResCode := coders.Get("modelResCode")
 	rs = append(rs, res.PreviewTable{TabName: "model/res/" + tables.TableName + ".go", Code: modelResCode, Lang: "go", Name: "res"})
 	logicCode := coders.Get("logicCode")
-	rs = append(rs, res.PreviewTable{TabName: "logic/" + tables.PackageName + "/" + tables.TableName + ".go", Code: logicCode, Lang: "go", Name: "logic"})
+	rs = append(rs, res.PreviewTable{TabName: "logic/" + tables.ModuleName + "/" + tables.TableName + ".go", Code: logicCode, Lang: "go", Name: "logic"})
 	controllerCode := coders.Get("controllerCode")
-	rs = append(rs, res.PreviewTable{TabName: "controller/" + tables.PackageName + "/" + tables.TableName + ".go", Code: controllerCode, Lang: "go", Name: "controller"})
+	rs = append(rs, res.PreviewTable{TabName: "controller/" + tables.TableName + ".go", Code: controllerCode, Lang: "go", Name: "controller"})
 	sqlCode := coders.Get("sqlCode")
-	rs = append(rs, res.PreviewTable{TabName: tables.TableName + ".sql", Code: sqlCode, Lang: "sql", Name: "sql"})
+	rs = append(rs, res.PreviewTable{TabName: "sql/" + tables.TableName + ".sql", Code: sqlCode, Lang: "sql", Name: "sql"})
 	vueCode := coders.Get("vueCode")
-	rs = append(rs, res.PreviewTable{TabName: tableCaseCamelLowerName + "/index.vue", Code: vueCode, Lang: "vue", Name: "vue"})
+	rs = append(rs, res.PreviewTable{TabName: "vue/views/" + tables.ModuleName + "/" + tableCaseCamelLowerName + "/index.vue", Code: vueCode, Lang: "vue", Name: "vue"})
 	jsApiCode := coders.Get("jsApiCode")
-	rs = append(rs, res.PreviewTable{TabName: tableCaseCamelLowerName + ".js", Code: jsApiCode, Lang: "js", Name: "js"})
+	rs = append(rs, res.PreviewTable{TabName: "/vue/api/" + tables.ModuleName + "/" + tableCaseCamelLowerName + ".js", Code: jsApiCode, Lang: "js", Name: "js"})
 	return
 }
 
@@ -546,7 +546,7 @@ func (s *sSettingGenerateTables) generateOneCode(ctx context.Context, codePath s
 		return
 	}
 	logicCode := coders.Get("logicCode")
-	err = gfile.PutContents(codePath+"/"+tables.ModuleName+"/logic/"+tables.PackageName+"/"+tables.TableName+".go", logicCode)
+	err = gfile.PutContents(codePath+"/"+tables.ModuleName+"/logic/"+tables.ModuleName+"/"+tables.TableName+".go", logicCode)
 	if err != nil {
 		return
 	}
@@ -677,7 +677,8 @@ func (s *sSettingGenerateTables) generateVue(ctx context.Context, view *gview.Vi
 	if err != nil {
 		return
 	}
-	authCode := tables.PackageName + ":" + tableCaseCamelLowerName
+
+	authCode := tables.ModuleName + "_" + tableCaseCamelLowerName
 	code, err = view.Parse(context.TODO(), "vue/main.html", g.Map{"table": tables, "authCode": authCode, "adminId": adminId, "OptionsView": OptionsView, "columnsView": columnsView, "generateMenus": generateMenus, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName})
 	if err != nil {
 		return
@@ -702,7 +703,7 @@ func (s *sSettingGenerateTables) generateJsApi(ctx context.Context, view *gview.
 
 	requestRoute := gstr.ToLower(tables.ModuleName) + "/" + tableCaseCamelLowerName
 
-	authCode := tables.PackageName + ":" + tableCaseCamelLowerName
+	authCode := tables.ModuleName + ":" + tableCaseCamelLowerName
 	code, err = view.Parse(context.TODO(), "vue/jsApi.html", g.Map{"table": tables, "requestRoute": requestRoute, "authCode": authCode, "adminId": adminId, "OptionsView": OptionsView, "columnsView": columnsView, "generateMenus": generateMenus, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName})
 	if err != nil {
 		return
@@ -827,7 +828,7 @@ func (s *sSettingGenerateTables) getOptions(ctx context.Context, tables *entity.
 			"titleDataIndex": "'" + titleDataIndex + "'",
 		})
 	}
-	authCode := tables.PackageName + ":" + tableCaseCamelLowerName
+	authCode := tables.ModuleName + ":" + tableCaseCamelLowerName
 	options.Set("api", tableCaseCamelLowerName+".getPageList")
 	if s.sliceContains(generateMenus, "recycle") {
 		options.Set("recycleApi", tableCaseCamelLowerName+".getPageRecycleList")
