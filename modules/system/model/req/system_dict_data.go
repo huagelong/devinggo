@@ -21,11 +21,17 @@ type SystemDictDataSave struct {
 	Code   string `json:"code" v:"required"`
 	Value  string `json:"value" v:"required"`
 	Label  string `json:"label" v:"required"`
+	Sort   int    `json:"sort" v:"required"`
+	Status int    `json:"status" v:"required"`
+	Remark string `json:"remark"`
 }
 
 type SystemDictDataUpdate struct {
-	Id    int64  `json:"id" v:"required"`
-	Code  string `json:"code" v:"required"`
-	Value string `json:"value" v:"required"`
-	Label string `json:"label" v:"required"`
+	Id     int64  `json:"id" v:"required"`
+	Code   string `json:"code" v:"required"`
+	Value  string `json:"value" v:"required"`
+	Label  string `json:"label" v:"required"`
+	Sort   int    `json:"sort" v:"required"`
+	Status int    `json:"status" v:"required"`
+	Remark string `json:"remark"`
 }

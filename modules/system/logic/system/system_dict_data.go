@@ -85,6 +85,9 @@ func (s *sSystemDictData) Save(ctx context.Context, in *req.SystemDictDataSave) 
 		Value:  in.Value,
 		Code:   in.Code,
 		Label:  in.Label,
+		Sort:   in.Sort,
+		Status: in.Status,
+		Remark: in.Remark,
 	}
 	rs, err := s.Model(ctx).Data(saveData).Insert()
 	if utils.IsError(err) {
@@ -108,9 +111,12 @@ func (s *sSystemDictData) GetById(ctx context.Context, id int64) (res *res.Syste
 
 func (s *sSystemDictData) Update(ctx context.Context, in *req.SystemDictDataUpdate) (err error) {
 	updateData := do.SystemDictData{
-		Value: in.Value,
-		Code:  in.Code,
-		Label: in.Label,
+		Value:  in.Value,
+		Code:   in.Code,
+		Label:  in.Label,
+		Sort:   in.Sort,
+		Status: in.Status,
+		Remark: in.Remark,
 	}
 	_, err = s.Model(ctx).Data(updateData).Where("id", in.Id).Update()
 	if utils.IsError(err) {
