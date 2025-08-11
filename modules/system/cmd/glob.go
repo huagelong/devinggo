@@ -20,26 +20,28 @@ import (
 
 func CmdInit(ctx context.Context, parser *gcmd.Parser) {
 	once.Do(func() {
-		filePath := "manifest/config/config.yaml"
-		if !gfile.Exists(filePath) {
-			g.Log().Panicf(ctx, "%s：config file not found,please run devinggo unpack", filePath)
-		}
 		configFile := parser.GetOpt("config").String()
+		g.Log().Debug(ctx, "GetOptAll:", parser.GetOptAll())
 		if configFile != "" {
-			g.Cfg().GetAdapter().(*gcfg.AdapterFile).SetFileName(configFile)
+			if !gfile.Exists(configFile) {
+				g.Log().Panicf(ctx, "%s：config file not found", configFile)
+			} else {
+				g.Cfg().GetAdapter().(*gcfg.AdapterFile).SetFileName(configFile)
+			}
+		} else {
+			filePath := "manifest/config/config.yaml"
+			if !gfile.Exists(filePath) {
+				g.Log().Panicf(ctx, "%s：config file not found,please run devinggo unpack", filePath)
+			}
 		}
 
 		configPath, _ := g.Cfg().GetAdapter().(*gcfg.AdapterFile).GetFilePath()
 		g.Log().Debug(ctx, "use config file:", configPath)
 
-		if parser.GetOpt("gf.gmode").IsEmpty() {
-			gmodeConfig := config.GetConfigString(ctx, "gf.gmode")
-			if !g.IsEmpty(gmodeConfig) {
-				gmode.Set(gmodeConfig)
-			}
-		} else {
+		if gcmd.GetOptWithEnv("gf.gmode").IsEmpty() {
 			gmode.Set(gmode.PRODUCT)
 		}
+
 		g.Log().Debug(ctx, "gmode:", gmode.Mode())
 
 		// json格式日志

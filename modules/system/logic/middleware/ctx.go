@@ -60,7 +60,7 @@ func (s *sMiddleware) Ctx(r *ghttp.Request) {
 	s.meta(r)
 	error := s.userCtx(r)
 	if error != nil {
-		g.Log().Warning(ctx, error)
+		//g.Log().Warning(ctx, error)
 	}
 	r.Middleware.Next()
 }
