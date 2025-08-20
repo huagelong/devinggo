@@ -78,7 +78,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Recycle(ctx context.Context, 
 
 func (c *{% .tableCaseCamelLowerName %}Controller) List(ctx context.Context, in *api.List{% .tableCaseCamelName %}Req) (out *api.List{% .tableCaseCamelName %}Res, err error) {
     out = &api.List{% .tableCaseCamelName %}Res{}
-    rs, err := service.{% .tableCaseCamelName %}().GetList(ctx, &in.ListReq, &in.{% .tableCaseCamelName %}Search{})
+    rs, err := service.{% .tableCaseCamelName %}().GetList(ctx, &in.ListReq, &in.{% .tableCaseCamelName %}Search)
     if err != nil {
         return
     }
