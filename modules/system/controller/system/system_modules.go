@@ -10,7 +10,6 @@ import (
 	"context"
 	"devinggo/modules/system/api/system"
 	"devinggo/modules/system/controller/base"
-	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils/request"
@@ -66,8 +65,8 @@ func (c *systemModulesController) Recycle(ctx context.Context, in *system.Recycl
 }
 
 func (c *systemModulesController) List(ctx context.Context, in *system.ListSystemModulesReq) (out *system.ListSystemModulesRes, err error) {
-	out = &system.ListSystemModulesRes{}
-	rs, err := service.SystemModules().GetList(ctx, &in.ListReq, &req.SystemModulesSearch{})
+	out = &system.ListSystemModulesRes{} 
+	rs, err := service.SystemModules().GetList(ctx, &in.ListReq, &in.SystemModulesSearch)
 	if err != nil {
 		return
 	}

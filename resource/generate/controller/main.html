@@ -9,7 +9,6 @@ package controller
 import (
 "devinggo/modules/system/controller/base"
 "devinggo/modules/{% .table.ModuleName %}/api"
-"devinggo/modules/{% .table.ModuleName %}/model/req"
 "devinggo/modules/{% .table.ModuleName %}/model/res"
 "devinggo/modules/system/pkg/orm"
 "devinggo/modules/system/pkg/utils/request"
@@ -77,9 +76,9 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Recycle(ctx context.Context, 
     return
 }
 
-func (c *{% .tableCaseCamelLowerName %}Controller) List(ctx context.Context, in *api.List{% .tableCaseCamelName %}Req) (out *api.List{% .tableCaseCamelName %}Res, err error) {
+func (c *{% .tableCaseCamelLowerName %}Controller) List(ctx context.Context, in *api.List{% .tableCaseCamelName %}Req) (out *api.List{% .tableCaseCamelName %}Res, err error) { 
     out = &api.List{% .tableCaseCamelName %}Res{}
-    rs, err := service.{% .tableCaseCamelName %}().GetList(ctx, &in.ListReq, &req.{% .tableCaseCamelName %}Search{})
+    rs, err := service.{% .tableCaseCamelName %}().GetList(ctx, &in.ListReq, &in.{% .tableCaseCamelName %}Search)
     if err != nil {
         return
     }
