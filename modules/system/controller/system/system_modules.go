@@ -65,7 +65,7 @@ func (c *systemModulesController) Recycle(ctx context.Context, in *system.Recycl
 }
 
 func (c *systemModulesController) List(ctx context.Context, in *system.ListSystemModulesReq) (out *system.ListSystemModulesRes, err error) {
-	out = &system.ListSystemModulesRes{}
+	out = &system.ListSystemModulesRes{} 
 	rs, err := service.SystemModules().GetList(ctx, &in.ListReq, &in.SystemModulesSearch)
 	if err != nil {
 		return
