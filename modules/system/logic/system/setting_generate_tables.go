@@ -421,7 +421,7 @@ func (s *sSettingGenerateTables) getOneCode(ctx context.Context, id int64) (rs *
 		return
 	}
 	if g.IsEmpty(tables.ModuleName) {
-		tables.ModuleName = "system"
+		tables.ModuleName = "default"
 	}
 
 	if g.IsEmpty(tables.Namespace) {

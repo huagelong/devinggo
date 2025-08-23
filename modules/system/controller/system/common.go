@@ -209,6 +209,13 @@ func (c *commonController) GetModuleList(ctx context.Context, in *system.GetModu
 		return
 	}
 	data := make([]res.Module, 0)
+	data = append(data, res.Module{
+		Name:        "default",
+		Label:       "default",
+		Description: "default",
+		Installed:   true,
+		Enabled:     true,
+	})
 	if !g.IsEmpty(dbModules) {
 		for _, item := range dbModules {
 			isEnable := false
@@ -229,6 +236,8 @@ func (c *commonController) GetModuleList(ctx context.Context, in *system.GetModu
 			})
 		}
 	}
+
+
 	out.Data = data
 	return
 }
