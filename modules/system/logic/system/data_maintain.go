@@ -44,7 +44,7 @@ func (s *sDataMaintain) GetPageListForSearch(ctx context.Context, req *model.Pag
 	if !g.IsEmpty(in.Name) {
 		allListNew := make([]*res.DataMaintain, 0)
 		for _, v := range allList {
-			if v.Name == in.Name {
+			if strings.Contains(v.Name, in.Name) {
 				allListNew = append(allListNew, v)
 			}
 		}
