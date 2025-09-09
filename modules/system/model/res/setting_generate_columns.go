@@ -23,7 +23,7 @@ type SettingGenerateColumns struct {
 	QueryType     string      `json:"query_type"          description:"查询方式 eq 等于, neq 不等于, gt 大于, lt 小于, like 范围"`                                                // 查询方式 eq 等于, neq 不等于, gt 大于, lt 小于, like 范围
 	ViewType      string      `json:"view_type"            description:"页面控件，text, textarea, password, select, checkbox, radio, date, upload, ma-upload（封装的上传控件）"` // 页面控件，text, textarea, password, select, checkbox, radio, date, upload, ma-upload（封装的上传控件）
 	DictType      string      `json:"dict_type"            description:"字典类型"`                                                                                     // 字典类型
-	AllowRoles    string      `json:"allow_roles"        description:"允许查看该字段的角色"`                                                                                 // 允许查看该字段的角色
+	AllowRoles    []string    `json:"allow_roles"        description:"允许查看该字段的角色"`                                                                                 // 允许查看该字段的角色
 	Options       string      `json:"options"               description:"字段其他设置"`                                                                                  // 字段其他设置
 	Extra         string      `json:"extra"                   description:"字段扩展信息"`                                                                                // 字段扩展信息
 	Sort          int         `json:"sort"                     description:"排序"`                                                                                   // 排序

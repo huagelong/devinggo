@@ -21,8 +21,10 @@ import (
 	"devinggo/modules/system/pkg/utils/idgen"
 	"devinggo/modules/system/pkg/utils/slice"
 	"devinggo/modules/system/service"
+	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/gogf/gf/v2/container/gmap"
 	"github.com/gogf/gf/v2/database/gdb"
@@ -69,7 +71,7 @@ func (s *sSettingGenerateTables) GetPageListForSearch(ctx context.Context, req *
 func (s *sSettingGenerateTables) handleSearch(ctx context.Context, in *req.SettingGenerateTablesSearch) (m *gdb.Model) {
 	m = s.Model(ctx)
 	if !g.IsEmpty(in.TableName) {
-		m = m.Where("table_name", in.TableName)
+		m = m.WhereLike("table_name", "%"+in.TableName+"%")
 	}
 	return
 }
@@ -133,9 +135,16 @@ func (s *sSettingGenerateTables) LoadTable(ctx context.Context, in *req.LoadTabl
 }
 
 func (s *sSettingGenerateTables) GetById(ctx context.Context, id int64) (res *res.SettingGenerateTables, err error) {
-	err = s.Model(ctx).Where("id", id).Scan(&res)
+	var entity *entity.SettingGenerateTables
+	err = s.Model(ctx).Where("id", id).Scan(&entity)
 	if utils.IsError(err) {
 		return nil, err
+	}
+	if !g.IsEmpty(entity) {
+		if err = gconv.Struct(entity, &res); err != nil {
+			return nil, err
+		}
+		res.Options = gjson.New(entity.Options)
 	}
 	return
 }
@@ -327,7 +336,7 @@ func (s *sSettingGenerateTables) UpdateTableAndColumns(ctx context.Context, in *
 				IsQuery:       isQuery,
 				IsSort:        isSort,
 				IsRequired:    isRequired,
-				AllowRoles:    column.AllowRoles,
+				AllowRoles:    gstr.Join(column.AllowRoles, ","),
 				ColumnComment: column.ColumnComment,
 				ColumnName:    column.ColumnName,
 				ColumnType:    column.ColumnType,
@@ -485,6 +494,11 @@ func (s *sSettingGenerateTables) getOneCode(ctx context.Context, id int64) (rs *
 		return
 	}
 	rs.Set("sqlCode", sqlCode)
+	downSqlCode, err := s.generateDownSql(ctx, view, tables, columns)
+	if err != nil {
+		return
+	}
+	rs.Set("downSqlCode", downSqlCode)
 	vueCode, err := s.generateVue(ctx, view, tables, columns)
 	if err != nil {
 		return
@@ -516,7 +530,9 @@ func (s *sSettingGenerateTables) Preview(ctx context.Context, id int64) (rs []re
 	controllerCode := coders.Get("controllerCode")
 	rs = append(rs, res.PreviewTable{TabName: "controller/" + tables.TableName + ".go", Code: controllerCode, Lang: "go", Name: "controller"})
 	sqlCode := coders.Get("sqlCode")
-	rs = append(rs, res.PreviewTable{TabName: "sql/" + tables.TableName + ".sql", Code: sqlCode, Lang: "sql", Name: "sql"})
+	rs = append(rs, res.PreviewTable{TabName: "sql/" + tables.TableName + "_up.sql", Code: sqlCode, Lang: "sql", Name: "sql"})
+	downSqlCode := coders.Get("downSqlCode")
+	rs = append(rs, res.PreviewTable{TabName: "sql/" + tables.TableName + "_down.sql", Code: downSqlCode, Lang: "sql", Name: "down"})
 	vueCode := coders.Get("vueCode")
 	rs = append(rs, res.PreviewTable{TabName: "vue/views/" + tables.ModuleName + "/" + tableCaseCamelLowerName + "/index.vue", Code: vueCode, Lang: "vue", Name: "vue"})
 	jsApiCode := coders.Get("jsApiCode")
@@ -556,7 +572,21 @@ func (s *sSettingGenerateTables) generateOneCode(ctx context.Context, codePath s
 		return
 	}
 	sqlCode := coders.Get("sqlCode")
-	err = gfile.PutContents(codePath+"/sql/"+tables.TableName+".sql", sqlCode)
+	downSqlCode := coders.Get("downSqlCode")
+	ext := ".sql"
+	startTime := time.Now()
+	timezone, err := time.LoadLocation("UTC")
+	if err != nil {
+		g.Log().Panic(ctx, err)
+	}
+	version := startTime.In(timezone).Format("20060102150405")
+	basename := fmt.Sprintf("%s_%s.%s%s", version, tables.TableName, "up", ext)
+	basenameDown := fmt.Sprintf("%s_%s.%s%s", version, tables.TableName, "down", ext)
+	err = gfile.PutContents(codePath+"/sql/"+basename, sqlCode)
+	if err != nil {
+		return
+	}
+	err = gfile.PutContents(codePath+"/sql/"+basenameDown, downSqlCode)
 	if err != nil {
 		return
 	}
@@ -656,7 +686,35 @@ func (s *sSettingGenerateTables) generateSql(ctx context.Context, view *gview.Vi
 	}
 	menu.Level = menu.Level + gconv.String(tables.BelongMenuId) + ","
 	adminId := service.SystemUser().GetSupserAdminId(ctx)
-	code, err = view.Parse(context.TODO(), "sql/main.html", g.Map{"table": tables, "adminId": adminId, "menu": menu, "generateMenus": generateMenus, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName, "menuTableName": menuTableName})
+	tpl := "sql/main.html"
+	if utils.GetDbType() == "postgres" {
+		tpl = "sql/main_pgsql.html"
+	}
+	code, err = view.Parse(context.TODO(), tpl, g.Map{"table": tables, "adminId": adminId, "menu": menu, "generateMenus": generateMenus, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName, "menuTableName": menuTableName})
+	if err != nil {
+		return
+	}
+	code = s.removeExtraBlankLines(code)
+	return
+}
+
+func (s *sSettingGenerateTables) generateDownSql(ctx context.Context, view *gview.View, tables *entity.SettingGenerateTables, columns []*entity.SettingGenerateColumns) (code string, err error) {
+	tableCaseCamelName := gstr.CaseCamel(tables.TableName)
+	tableCaseCamelLowerName := gstr.CaseCamelLower(tables.TableName)
+	generateMenus := gstr.Split(tables.GenerateMenus, ",")
+	menuTableName := dao.SystemMenu.Table()
+	var menu *entity.SystemMenu
+	err = service.SystemMenu().Model(ctx).Where("id", tables.BelongMenuId).Scan(&menu)
+	if err != nil {
+		return
+	}
+	menu.Level = menu.Level + gconv.String(tables.BelongMenuId) + ","
+	adminId := service.SystemUser().GetSupserAdminId(ctx)
+	tpl := "sql/down.html"
+	if utils.GetDbType() == "postgres" {
+		tpl = "sql/down_pgsql.html"
+	}
+	code, err = view.Parse(context.TODO(), tpl, g.Map{"table": tables, "adminId": adminId, "menu": menu, "generateMenus": generateMenus, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName, "menuTableName": menuTableName})
 	if err != nil {
 		return
 	}
@@ -748,6 +806,10 @@ func (s *sSettingGenerateTables) getColumns(ctx context.Context, columns []*enti
 			tmp.Set("sortable", g.Map{"sortDirections": []string{"ascend", "descend"}, "sorter": true})
 		} else {
 			tmp.Set("sortable", g.Map{})
+		}
+
+		if !g.IsEmpty(column.AllowRoles) {
+			tmp.Set("roles", gstr.Split(column.AllowRoles, ","))
 		}
 
 		if !g.IsEmpty(column.Options) {

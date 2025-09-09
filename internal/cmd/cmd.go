@@ -10,6 +10,7 @@ import (
 	"context"
 	"devinggo/modules/system/cmd"
 	"devinggo/modules/system/pkg/utils"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcmd"
 )
@@ -41,11 +42,11 @@ var (
 		>> 所有服务  [go run main.go]   热编译  [gf run main.go]
 		>> 初始化配置以及其他必要文件  [go run main.go unpack]
 		>> 迁移数据库文件  [go run main.go migrate:xxx]
-		  migrate:create -name name Create a set of timestamped up/down migrations titled NAME
-		  migrate:goto -v version      Migrate to version V
-		  migrate:up [-n N]       Apply all or N up migrations
-		  migrate:down [-n N]     Apply all or N down migrations
-		  migrate:force v version  Set version V but don't run migration (ignores dirty state)
+		  [go run main.go migrate:create -name NAME] 	创建一组名为 NAME 的带时间戳的 up/down 迁移文件
+		  [go run main.go migrate:goto -v 版本]      	迁移到版本 V
+		  [go run main.go migrate:up [-n N]]       	应用所有或 N 个 up 迁移
+		  [go run main.go migrate:down [-n N]]     	应用所有或 N 个 down 迁移
+		  [go run main.go migrate:force -v 版本]  	设置版本为 V 但不运行迁移（忽略脏状态）
 		>> HTTP服务  [go run main.go http]
 		>> 消息队列&定时任务  [go run main.go worker]
 		>> 创建新模块  [go run main.go module:create -name 模块名称]
@@ -84,7 +85,7 @@ var (
 )
 
 func init() {
-	if err := Main.AddCommand(All, cmd.Http, cmd.Version, cmd.Worker, cmd.Unpack, cmd.MigrateUp, cmd.MigrateDown, cmd.MigrateGoto, cmd.MigrateCreate, cmd.MigrateForce, cmd.CreateModule, cmd.ExportModule,cmd.ImportModule, Help); err != nil {
+	if err := Main.AddCommand(All, cmd.Http, cmd.Version, cmd.Worker, cmd.Unpack, cmd.MigrateUp, cmd.MigrateDown, cmd.MigrateGoto, cmd.MigrateCreate, cmd.MigrateForce, cmd.CreateModule, cmd.ExportModule, cmd.ImportModule, Help); err != nil {
 		panic(err)
 	}
 }
