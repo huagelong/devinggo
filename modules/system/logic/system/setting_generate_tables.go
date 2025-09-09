@@ -69,7 +69,7 @@ func (s *sSettingGenerateTables) GetPageListForSearch(ctx context.Context, req *
 func (s *sSettingGenerateTables) handleSearch(ctx context.Context, in *req.SettingGenerateTablesSearch) (m *gdb.Model) {
 	m = s.Model(ctx)
 	if !g.IsEmpty(in.TableName) {
-		m = m.Where("table_name", in.TableName)
+		m = m.WhereLike("table_name", "%"+in.TableName+"%")
 	}
 	return
 }
