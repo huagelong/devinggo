@@ -5,7 +5,10 @@
 // @License  https://github.com/huagelong/devinggo/blob/master/LICENSE
 package res
 
-import "github.com/gogf/gf/v2/os/gtime"
+import (
+	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/os/gtime"
+)
 
 type SettingGenerateTables struct {
 	Id            int64       `json:"id"                         description:"主键"`                                             // 主键
@@ -21,7 +24,7 @@ type SettingGenerateTables struct {
 	GenerateMenus string      `json:"generate_menus"  description:"生成菜单列表"`                                                    // 生成菜单列表
 	BuildMenu     int         `json:"build_menu"          description:"是否构建菜单"`                                                // 是否构建菜单
 	ComponentType int         `json:"component_type"  description:"组件显示方式"`                                                    // 组件显示方式
-	Options       string      `json:"options"               description:"其他业务选项"`                                              // 其他业务选项
+	Options       *gjson.Json `json:"options"               description:"其他业务选项"`                                              // 其他业务选项
 	CreatedBy     int64       `json:"created_by"          description:"创建者"`                                                   // 创建者
 	UpdatedBy     int64       `json:"updated_by"          description:"更新者"`                                                   // 更新者
 	CreatedAt     *gtime.Time `json:"created_at"          description:"创建时间"`                                                  // 创建时间

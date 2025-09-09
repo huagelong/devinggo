@@ -8,6 +8,7 @@ package system
 import (
 	"context"
 	"devinggo/internal/dao"
+	"devinggo/internal/model/entity"
 	"devinggo/modules/system/logic/base"
 	"devinggo/modules/system/model"
 	"devinggo/modules/system/model/req"
@@ -17,8 +18,10 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
 type sSettingGenerateColumns struct {
@@ -42,11 +45,17 @@ func (s *sSettingGenerateColumns) GetList(ctx context.Context, in *req.SettingGe
 		OrderBy:   "sort",
 		OrderType: "desc",
 	}
+	var entity []*entity.SettingGenerateColumns
 	m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
 	m = orm.GetList(m, inReq)
-	err = m.Scan(&out)
+	err = m.Scan(&entity)
 	if utils.IsError(err) {
 		return
+	}
+	if !g.IsEmpty(entity) {
+		if err = gconv.Structs(entity, &out); err != nil {
+			return nil, err
+		}
 	}
 	return
 }

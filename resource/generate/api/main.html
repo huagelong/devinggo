@@ -138,7 +138,7 @@ type Recycle{% .tableCaseCamelName %}Res struct {
     page.PageRes
     Items []res.{% .tableCaseCamelName %} `json:"items"  dc:"list" `
 }
-{% if contains .generateMenus "tree"  %}
+{% if eq .table.Type "tree"  %}
 type TreeRecycle{% .tableCaseCamelName %}Req struct {
     g.Meta `path:"/{% .tableCaseCamelLowerName %}/recycleList" method:"get" tags:"{%  cleanStr .table.TableComment %}" summary:"分页列表" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:recycle" `
     model.AuthorHeader
