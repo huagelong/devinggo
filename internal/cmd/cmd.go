@@ -46,7 +46,7 @@ var (
 		  [go run main.go migrate:goto -v 版本]      	迁移到版本 V
 		  [go run main.go migrate:up [-n N]]       	应用所有或 N 个 up 迁移
 		  [go run main.go migrate:down [-n N]]     	应用所有或 N 个 down 迁移
-		  [go run main.go migrate:force v 版本]  	设置版本为 V 但不运行迁移（忽略脏状态）
+		  [go run main.go migrate:force -v 版本]  	设置版本为 V 但不运行迁移（忽略脏状态）
 		>> HTTP服务  [go run main.go http]
 		>> 消息队列&定时任务  [go run main.go worker]
 		>> 创建新模块  [go run main.go module:create -name 模块名称]
