@@ -59,6 +59,7 @@ var (
 				fmt.Sprintf("./modules/%s/logic", moduleName),
 				fmt.Sprintf("./modules/%s/logic/hook", moduleName),
 				fmt.Sprintf("./modules/%s/logic/middleware", moduleName),
+				fmt.Sprintf("./modules/%s/logic/%s", moduleName, moduleName),
 				fmt.Sprintf("./modules/%s/service", moduleName),
 				fmt.Sprintf("./modules/%s/worker", moduleName),
 			}
