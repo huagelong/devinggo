@@ -7,9 +7,11 @@
 package hook
 
 import (
+	"context"
 	"devinggo/modules/system/pkg/contexts"
 	"devinggo/modules/system/pkg/orm"
-	"context"
+	"devinggo/modules/system/pkg/utils"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/text/gstr"
@@ -17,10 +19,12 @@ import (
 )
 
 func AutoCreatedUpdatedByInsert(ctx context.Context, in *gdb.HookInsertInput) (err error) {
-	hasCreatedBy := gstr.InArray(orm.GetTableFieds(in.Model), "created_by")
-	hasUpdatedBy := gstr.InArray(orm.GetTableFieds(in.Model), "updated_by")
+	//g.Log().Debug(ctx, "GetTableFieds", orm.GetTableFieds(in.Model))
+	hasCreatedBy := gstr.InArray(orm.GetTableFieds(in.Model), "created_by") || gstr.InArray(orm.GetTableFieds(in.Model), "\"created_by\"")
+	hasUpdatedBy := gstr.InArray(orm.GetTableFieds(in.Model), "updated_by") || gstr.InArray(orm.GetTableFieds(in.Model), "\"updated_by\"")
 	if hasCreatedBy || hasUpdatedBy {
 		userId := contexts.New().GetUserId(ctx)
+		//g.Log().Debug(ctx, "userId", userId)
 		if !g.IsEmpty(in.Data) && !g.IsEmpty(userId) {
 			for _, data := range in.Data {
 				if hasCreatedBy {
@@ -36,12 +40,14 @@ func AutoCreatedUpdatedByInsert(ctx context.Context, in *gdb.HookInsertInput) (e
 			}
 		}
 	}
+	//g.Log().Debug(ctx, "GetTableFieds-in", in)
 	return
 }
 
 func AutoCreatedUpdatedByUpdatefunc(ctx context.Context, in *gdb.HookUpdateInput) (err error) {
 	//g.Log().Debug(ctx, "in", in)
-	if gstr.InArray(orm.GetTableFieds(in.Model), "updated_by") {
+	hasUpdatedBy := gstr.InArray(orm.GetTableFieds(in.Model), "updated_by") || gstr.InArray(orm.GetTableFieds(in.Model), "\"updated_by\"")
+	if hasUpdatedBy {
 		userId := contexts.New().GetUserId(ctx)
 		if !g.IsEmpty(in.Data) && !g.IsEmpty(userId) {
 			switch in.Data.(type) {
@@ -51,7 +57,7 @@ func AutoCreatedUpdatedByUpdatefunc(ctx context.Context, in *gdb.HookUpdateInput
 					in.Data.(map[string]interface{})["updated_by"] = userId
 				}
 			case string:
-				in.Data = in.Data.(string) + ", `updated_by` = " + gconv.String(userId)
+				in.Data = in.Data.(string) + ", " + utils.QuoteField("updated_by") + " = " + gconv.String(userId)
 			}
 		}
 	}

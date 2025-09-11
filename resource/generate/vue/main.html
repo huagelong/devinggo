@@ -10,7 +10,7 @@
         <ma-crud :options="options" :columns="columns" ref="crudRef">
             {% if contains .generateMenus "numberOperation"  %}
                 <template #sort="{ record }">
-                    <a-input-number :default-value="record.sort" mode="button" @change="changeSort($event,record.id,record.sort)" :min="0"
+                    <a-input-number :default-value="record.sort" mode="button" @change="changeSort($event,record.id)" :min="0"
                                     :max="1000" />
                 </template>
             {% end %}
@@ -31,16 +31,26 @@
     import * as common from '@/utils/common'
     const crudRef = ref()
     {% if contains .generateMenus "numberOperation"  %}
-    const numberOperation = (newValue, id, numberName) => {
-        {% .tableCaseCamelLowerName %}.numberOperation({ id, numberName, numberValue: newValue }).then( res => {
-            res.success && Message.success(res.message)
+    const changeSort = (newValue, id, numberName) => {
+        {% .tableCaseCamelLowerName %}.numberOperation({ id, numberName: 'sort', numberValue: newValue }).then( res => {
+            if (res.success) {
+                Message.success(res.message)
+                // 刷新列表数据
+                // common.refreshTag()
+                // crudRef.value.refresh()
+            }
         }).catch( e => { console.log(e) } )
     }
     {% end %}
     {% if contains .generateMenus "changeStatus"  %}
     const switchStatus = (status, record) => {
         {% .tableCaseCamelLowerName %}.changeStatus({ id: record.id, status }).then( res => {
-            res.success && Message.success(res.message)
+            if (res.success) {
+                Message.success(res.message)
+                // 刷新列表数据
+                // common.refreshTag()
+                // crudRef.value.refresh()
+            }
         }).catch( e => { console.log(e) } )
     }
     {% end %}

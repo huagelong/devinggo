@@ -13,7 +13,7 @@ import "github.com/gogf/gf/v2/os/gtime"
 type {% .tableCaseCamelName %} struct {
 {% range $index, $elem := .columns %}
  {%if or (eq $elem.IsList 2) (eq $elem.ColumnName "id")   %}
- {% caseCamel $elem.ColumnName %}  {% getModelColumnType $elem %} `json:"{% $elem.ColumnName %}"  description:"{% cleanStr $elem.ColumnComment %}" `
+ {% caseCamel $elem.ColumnName %}  {% getModelColumnType $elem.ColumnType %} `json:"{% $elem.ColumnName %}"  description:"{% cleanStr $elem.ColumnComment %}" `
  {%end %}
 {%end %}
 }
@@ -25,9 +25,9 @@ type {% .tableCaseCamelName %}Tree struct {
 }
 
 type {% .tableCaseCamelName %}SelectTree struct {
-  Id       uint64            `json:"id"`
-  ParentId uint64            `json:"parent_id"`
-  Value    uint64            `json:"value"`
+  Id       {% getModelColumnTypeFromColumName .columns "id" %}            `json:"id"`
+  ParentId {% getModelColumnTypeFromColumName .columns "parent_id"  %}            `json:"parent_id"`
+  Value    {% getModelColumnTypeFromColumName .columns "id"  %}            `json:"value"`
   Label    string            `json:"label"`
   Children []*{% .tableCaseCamelName %}SelectTree `json:"children"`
 }

@@ -584,6 +584,30 @@ func (s *sSystemMenu) ChangeStatus(ctx context.Context, id int64, status int) (e
 	if utils.IsError(err) {
 		return err
 	}
+	doObj := do.SystemMenu{}
+	needCalculateLevel := utils.HasField(doObj, "Level")
+	if needCalculateLevel {
+		// 2. 查询目标记录信息，获取level字段用于查找子节点
+		var targetRecord *entity.SystemMenu
+		err = s.Model(ctx).Where("id", id).Scan(&targetRecord)
+		if utils.IsError(err) {
+			return err
+		}
+
+		// 3. 如果目标记录存在且有level信息，查找并更新所有子节点
+		if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+			childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+			// 批量更新所有子节点的状态
+			_, err = s.Model(ctx).OmitNilData().Data(g.Map{"status": status}).
+				Where("level LIKE ?", childLevelPrefix+"%").
+				Where("id != ?", id). // 排除自身
+				Update()
+			if utils.IsError(err) {
+				return err
+			}
+		}
+
+	}
 	return
 }
 

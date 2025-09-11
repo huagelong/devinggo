@@ -19,6 +19,9 @@ import (
     "devinggo/modules/system/pkg/utils"
     "devinggo/modules/{% .table.ModuleName %}/service"
     "context"
+    {% if or (contains .generateMenus "save")  (contains .generateMenus "changeStatus")  %}
+    "fmt"
+    {% end %}
     "github.com/gogf/gf/v2/database/gdb"
     "github.com/gogf/gf/v2/frame/g"
     "github.com/gogf/gf/v2/util/gconv"
@@ -150,7 +153,7 @@ func (s *s{% .tableCaseCamelName %}) GetTreeList(ctx context.Context, inReq *mod
 }
 
 func (s *s{% .tableCaseCamelName %}) treeItemList(ctx context.Context, nodes []entity.{% .tableCaseCamelName %}) (tree []*res.{% .tableCaseCamelName %}Tree) {
-    type itemTree map[uint64]*res.{% .tableCaseCamelName %}Tree
+    type itemTree map[{% getModelColumnTypeFromColumName .columns "parent_id" %}]*res.{% .tableCaseCamelName %}Tree
     itemList := make(itemTree)
     for _, entity := range nodes {
         var item *res.{% .tableCaseCamelName %}Tree
@@ -169,7 +172,7 @@ func (s *s{% .tableCaseCamelName %}) treeItemList(ctx context.Context, nodes []e
 }
 
 func (s *s{% .tableCaseCamelName %}) treeSelectList(nodes []entity.{% .tableCaseCamelName %}) (tree []*res.{% .tableCaseCamelName %}SelectTree) {
-    type itemTree map[uint64]*res.{% .tableCaseCamelName %}SelectTree
+    type itemTree map[{% getModelColumnTypeFromColumName .columns "parent_id" %}]*res.{% .tableCaseCamelName %}SelectTree
     itemList := make(itemTree)
     for _, entity := range nodes {
         var item res.{% .tableCaseCamelName %}SelectTree
@@ -196,18 +199,53 @@ func (s *s{% .tableCaseCamelName %}) GetSelectTree(ctx context.Context, inReq *m
     if utils.IsError(err) {
         return
     }
-    routes = s.treeSelectList(entity)
+    // 构建原有的分类树
+    originalTree := s.treeSelectList(entity)
+
+    // 创建默认根节点
+    rootNode := &res.{% .tableCaseCamelName %}SelectTree{
+    Id:       0,
+    ParentId: -1,
+    Value:    0,
+    Label:    "根",
+    Children: originalTree,
+    }
+
+    // 返回包含根节点的树结构
+    routes = []*res.{% .tableCaseCamelName %}SelectTree{rootNode}
+
     return
 }
 {% end %}
 
 {% if contains .generateMenus "save"  %}
-func (s *s{% .tableCaseCamelName %}) Save(ctx context.Context, in *req.{% .tableCaseCamelName %}Save) (id uint64, err error) {
+func (s *s{% .tableCaseCamelName %}) Save(ctx context.Context, in *req.{% .tableCaseCamelName %}Save) (id {% getModelColumnTypeFromColumName .columns "id" %}, err error) {
     var saveData *do.{% .tableCaseCamelName %}
     if err = gconv.Struct(in, &saveData); err != nil {
         return
     }
-    rs, err := s.Model(ctx).OmitEmptyData().Data(saveData).Save()
+
+    // 检查Level字段是否已存在且有值
+    needCalculateLevel := utils.HasField(saveData, "Level")
+    // 只有在Level字段不存在或为空时才自动计算
+    if needCalculateLevel {
+        var level string
+        if in.ParentId == 0 {
+            level = ",0,"
+        } else {
+            var parentItem *entity.{% .tableCaseCamelName %}
+            err = s.Model(ctx).Where(dao.{% .tableCaseCamelName %}.Columns().Id, in.ParentId).Scan(&parentItem)
+            if utils.IsError(err) {
+                return 0, err
+            }
+            if !g.IsEmpty(parentItem) {
+                level = fmt.Sprintf("%s%d,", parentItem.Level, in.ParentId)
+            }
+        }
+        saveData.Level = level
+    }
+
+    rs, err := s.Model(ctx).OmitNilData().Data(saveData).Insert()
     if utils.IsError(err) {
         return
     }
@@ -215,13 +253,13 @@ func (s *s{% .tableCaseCamelName %}) Save(ctx context.Context, in *req.{% .table
     if err != nil {
         return
     }
-    id = gconv.Uint64(tmpId)
+    id = {% getModelColumnTypeFromColumName .columns "id" %}(tmpId)
     return
 }
 {% end %}
 
 {% if contains .generateMenus "read"  %}
-func (s *s{% .tableCaseCamelName %}) GetById(ctx context.Context, id uint64) (res *res.{% .tableCaseCamelName %}, err error) {
+func (s *s{% .tableCaseCamelName %}) GetById(ctx context.Context, id {% getModelColumnTypeFromColumName .columns "id" %}) (res *res.{% .tableCaseCamelName %}, err error) {
     err = s.Model(ctx).Where("id", id).Scan(&res)
     if utils.IsError(err) {
         return
@@ -245,7 +283,7 @@ func (s *s{% .tableCaseCamelName %}) Update(ctx context.Context, in *req.{% .tab
 {% end %}
 
 {% if contains .generateMenus "delete"  %}
-func (s *s{% .tableCaseCamelName %}) Delete(ctx context.Context, ids []uint64) (err error) {
+func (s *s{% .tableCaseCamelName %}) Delete(ctx context.Context, ids []{% getModelColumnTypeFromColumName .columns "id" %}) (err error) {
     _, err = s.Model(ctx).WhereIn("id", ids).Delete()
     if utils.IsError(err) {
         return err
@@ -253,7 +291,7 @@ func (s *s{% .tableCaseCamelName %}) Delete(ctx context.Context, ids []uint64) (
     return
 }
 
-func (s *s{% .tableCaseCamelName %}) RealDelete(ctx context.Context, ids []uint64) (err error) {
+func (s *s{% .tableCaseCamelName %}) RealDelete(ctx context.Context, ids []{% getModelColumnTypeFromColumName .columns "id" %}) (err error) {
     _, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
     if utils.IsError(err) {
         return
@@ -262,7 +300,7 @@ func (s *s{% .tableCaseCamelName %}) RealDelete(ctx context.Context, ids []uint6
 }
 {% end %}
 {% if contains .generateMenus "recycle"  %}
-func (s *s{% .tableCaseCamelName %}) Recovery(ctx context.Context, ids []uint64) (err error) {
+func (s *s{% .tableCaseCamelName %}) Recovery(ctx context.Context, ids []{% getModelColumnTypeFromColumName .columns "id" %}) (err error) {
     _, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
     if utils.IsError(err) {
         return err
@@ -271,18 +309,42 @@ func (s *s{% .tableCaseCamelName %}) Recovery(ctx context.Context, ids []uint64)
 }
 {% end %}
 {% if contains .generateMenus "changeStatus"  %}
-func (s *s{% .tableCaseCamelName %}) ChangeStatus(ctx context.Context, id uint64, status int) (err error) {
+func (s *s{% .tableCaseCamelName %}) ChangeStatus(ctx context.Context, id {% getModelColumnTypeFromColumName .columns "id" %}, status {% getModelColumnTypeFromColumName .columns "status" %}) (err error) {
     _, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
     if utils.IsError(err) {
         return err
+    }
+    doObj :=do.{% .tableCaseCamelName %}{}
+    needCalculateLevel := utils.HasField(doObj, "Level")
+    if utils.IsError(err) {
+        return err
+    }
+    if needCalculateLevel {
+        var targetRecord *entity.{% .tableCaseCamelName %}
+        err = s.Model(ctx).Where("id", id).Scan(&targetRecord)
+        if utils.IsError(err) {
+            return err
+        }
+
+        if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+            childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+            // 批量更新所有子节点的状态
+            _, err = s.Model(ctx).OmitNilData().Data(g.Map{"status": status}).
+            Where("level LIKE ?", childLevelPrefix+"%").
+            Where("id != ?", id). // 排除自身
+            Update()
+            if utils.IsError(err) {
+                return err
+            }
+        }
     }
     return
 }
 {% end %}
 
 {% if contains .generateMenus "numberOperation"  %}
-func (s *s{% .tableCaseCamelName %}) NumberOperation(ctx context.Context, id uint64, numberName string, numberValue int) (err error) {
-    _, err = s.Model(ctx).Data(g.Map{numberName: numberValue}).Where("id", id).Update()
+func (s *s{% .tableCaseCamelName %}) NumberOperation(ctx context.Context, id {% getModelColumnTypeFromColumName .columns "id" %}, numberName string, numberValue int) (err error) {
+    _, err = s.Model(ctx).OmitNilData().Data(g.Map{numberName: numberValue}).Where("id", id).Update()
     if utils.IsError(err) {
         return err
     }
