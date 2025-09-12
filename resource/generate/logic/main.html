@@ -155,25 +155,41 @@ func (s *s{% .tableCaseCamelName %}) GetTreeList(ctx context.Context, inReq *mod
 func (s *s{% .tableCaseCamelName %}) treeItemList(ctx context.Context, nodes []entity.{% .tableCaseCamelName %}) (tree []*res.{% .tableCaseCamelName %}Tree) {
     type itemTree map[{% getModelColumnTypeFromColumName .columns "parent_id" %}]*res.{% .tableCaseCamelName %}Tree
     itemList := make(itemTree)
+
+    // 第一遍：创建所有节点并存储到map中
     for _, entity := range nodes {
         var item *res.{% .tableCaseCamelName %}Tree
         if err := gconv.Struct(entity, &item); err != nil {
             continue
         }
         item.Children = make([]*res.{% .tableCaseCamelName %}Tree, 0)
-        if !g.IsEmpty(itemList[item.ParentId]) {
-            itemList[item.ParentId].Children = append(itemList[item.ParentId].Children, item)
+        itemList[entity.Id] = item
+    }
+
+    // 第二遍：建立父子关系
+    for _, entity := range nodes {
+        item := itemList[entity.Id]
+        if item == nil {
+            continue
+        }
+
+        // 如果有父节点且父节点存在，则添加到父节点的children中
+        if entity.ParentId != 0 && itemList[entity.ParentId] != nil {
+            itemList[entity.ParentId].Children = append(itemList[entity.ParentId].Children, item)
         } else {
+        // 否则作为根节点
             tree = append(tree, item)
         }
-            itemList[entity.Id] = item
     }
+
     return
 }
 
 func (s *s{% .tableCaseCamelName %}) treeSelectList(nodes []entity.{% .tableCaseCamelName %}) (tree []*res.{% .tableCaseCamelName %}SelectTree) {
     type itemTree map[{% getModelColumnTypeFromColumName .columns "parent_id" %}]*res.{% .tableCaseCamelName %}SelectTree
     itemList := make(itemTree)
+
+    // 第一遍：创建所有节点并存储到map中
     for _, entity := range nodes {
         var item res.{% .tableCaseCamelName %}SelectTree
         item.ParentId = entity.ParentId
@@ -181,13 +197,25 @@ func (s *s{% .tableCaseCamelName %}) treeSelectList(nodes []entity.{% .tableCase
         item.Label = entity.Name
         item.Value = entity.Id
         item.Children = make([]*res.{% .tableCaseCamelName %}SelectTree, 0)
-        if !g.IsEmpty(itemList[item.ParentId]) {
-            itemList[item.ParentId].Children = append(itemList[item.ParentId].Children, &item)
-        } else {
-            tree = append(tree, &item)
-        }
         itemList[entity.Id] = &item
     }
+
+    // 第二遍：建立父子关系
+    for _, entity := range nodes {
+        item := itemList[entity.Id]
+        if item == nil {
+            continue
+        }
+
+        // 如果有父节点且父节点存在，则添加到父节点的children中
+        if entity.ParentId != 0 && itemList[entity.ParentId] != nil {
+            itemList[entity.ParentId].Children = append(itemList[entity.ParentId].Children, item)
+        } else {
+            // 否则作为根节点
+            tree = append(tree, item)
+        }
+    }
+
     return
 }
 
@@ -207,7 +235,7 @@ func (s *s{% .tableCaseCamelName %}) GetSelectTree(ctx context.Context, inReq *m
     Id:       0,
     ParentId: -1,
     Value:    0,
-    Label:    "根",
+    Label:    "根节点",
     Children: originalTree,
     }
 
@@ -274,16 +302,93 @@ func (s *s{% .tableCaseCamelName %}) Update(ctx context.Context, in *req.{% .tab
     if err = gconv.Struct(in, &updateData); err != nil {
         return
     }
-    _, err = s.Model(ctx).OmitEmptyData().Data(updateData).Where("id", in.Id).Update()
+    needCalculateLevel := utils.HasField(updateData, "Level")
+    var {% .tableCaseCamelLowerName %}Item *entity.{% .tableCaseCamelName %}
+    err = s.Model(ctx).Where("id", in.Id).Scan(&{% .tableCaseCamelLowerName %}Item)
     if utils.IsError(err) {
         return
     }
+
+    if g.IsEmpty({% .tableCaseCamelLowerName %}Item) {
+        err = fmt.Errorf("记录不存在")
+        return
+    }
+
+    if needCalculateLevel {
+        var level string
+        if in.ParentId == 0 {
+            level = ",0,"
+        } else {
+            var parentItem *entity.{% .tableCaseCamelName %}
+            err = s.Model(ctx).Where(dao.{% .tableCaseCamelName %}.Columns().Id, in.ParentId).Scan(&parentItem)
+            if utils.IsError(err) {
+                return
+            }
+            if !g.IsEmpty(parentItem) {
+                level = fmt.Sprintf("%s%d,", parentItem.Level, in.ParentId)
+            }
+        }
+        updateData.Level = level
+    }
+    _, err = s.Model(ctx).OmitNilData().Data(updateData).Where("id", in.Id).Update()
+
+    if utils.IsError(err) {
+        return
+    }
+    if needCalculateLevel {
+        childLevelPrefix := fmt.Sprintf("%s%d,", updateData.Level, in.Id)
+        var itemList []*entity.{% .tableCaseCamelName %}
+
+        err = s.Model(ctx).Unscoped().WhereLike("level", childLevelPrefix+"%").Where("id != ?", in.Id).Scan(&itemList)
+        if utils.IsError(err) {
+            return err
+        }
+        if !g.IsEmpty(itemList) {
+            for _, item := range itemList {
+                newLevel := utils.ReplaceSubstr(item.Level, {% .tableCaseCamelLowerName %}Item.Level, gconv.String(updateData.Level))
+                _, err = s.Model(ctx).Unscoped().Where(dao.{% .tableCaseCamelName %}.Columns().Id, item.Id).Data(do.{% .tableCaseCamelName %}{
+                Level: newLevel,
+                }).Update()
+                if utils.IsError(err) {
+                    return err
+                }
+            }
+        }
+    }
+
     return
 }
 {% end %}
 
 {% if contains .generateMenus "delete"  %}
 func (s *s{% .tableCaseCamelName %}) Delete(ctx context.Context, ids []{% getModelColumnTypeFromColumName .columns "id" %}) (err error) {
+    // 检查是否需要处理Level字段
+    doObj := do.{% .tableCaseCamelName %}{}
+    needCalculateLevel := utils.HasField(doObj, "Level")
+
+    if needCalculateLevel {
+            // 为每个要删除的ID处理其子分类
+         for _, id := range ids {
+            var targetRecord *entity.{% .tableCaseCamelName %}
+            err = s.Model(ctx).Where("id", id).Scan(&targetRecord)
+            if utils.IsError(err) {
+                return err
+            }
+
+            if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+                childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+                // 批量删除所有子节点
+                _, err = s.Model(ctx).
+                Where("level LIKE ?", childLevelPrefix+"%").
+                Delete()
+                if utils.IsError(err) {
+                    return err
+                }
+            }
+         }
+    }
+
+    // 删除指定的记录
     _, err = s.Model(ctx).WhereIn("id", ids).Delete()
     if utils.IsError(err) {
         return err
@@ -292,15 +397,69 @@ func (s *s{% .tableCaseCamelName %}) Delete(ctx context.Context, ids []{% getMod
 }
 
 func (s *s{% .tableCaseCamelName %}) RealDelete(ctx context.Context, ids []{% getModelColumnTypeFromColumName .columns "id" %}) (err error) {
+    // 检查是否需要处理Level字段
+    doObj := do.{% .tableCaseCamelName %}{}
+    needCalculateLevel := utils.HasField(doObj, "Level")
+
+    if needCalculateLevel {
+        // 为每个要删除的ID处理其子分类
+        for _, id := range ids {
+            var targetRecord *entity.{% .tableCaseCamelName %}
+            err = s.Model(ctx).Unscoped().Where("id", id).Scan(&targetRecord)
+            if utils.IsError(err) {
+                return err
+            }
+
+            if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+                childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+                // 批量物理删除所有子节点
+                _, err = s.Model(ctx).Unscoped().
+                Where("level LIKE ?", childLevelPrefix+"%").
+                Delete()
+                if utils.IsError(err) {
+                    return err
+                }
+            }
+        }
+    }
+
+    // 物理删除指定的记录
     _, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
     if utils.IsError(err) {
-        return
+       return
     }
     return
 }
 {% end %}
 {% if contains .generateMenus "recycle"  %}
 func (s *s{% .tableCaseCamelName %}) Recovery(ctx context.Context, ids []{% getModelColumnTypeFromColumName .columns "id" %}) (err error) {
+    // 检查是否需要处理Level字段
+    doObj := do.{% .tableCaseCamelName %}{}
+    needCalculateLevel := utils.HasField(doObj, "Level")
+
+    if needCalculateLevel {
+        // 为每个要恢复的ID处理其子分类
+        for _, id := range ids {
+            var targetRecord *entity.{% .tableCaseCamelName %}
+            err = s.Model(ctx).Unscoped().Where("id", id).Scan(&targetRecord)
+            if utils.IsError(err) {
+                return err
+            }
+
+            if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+                childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+                // 批量恢复所有子节点
+                _, err = s.Model(ctx).Unscoped().
+                Where("level LIKE ?", childLevelPrefix+"%").
+                Update(g.Map{"deleted_at": nil})
+                if utils.IsError(err) {
+                    return err
+                }
+            }
+        }
+    }
+
+    // 恢复指定的记录
     _, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
     if utils.IsError(err) {
         return err
@@ -331,7 +490,6 @@ func (s *s{% .tableCaseCamelName %}) ChangeStatus(ctx context.Context, id {% get
             // 批量更新所有子节点的状态
             _, err = s.Model(ctx).OmitNilData().Data(g.Map{"status": status}).
             Where("level LIKE ?", childLevelPrefix+"%").
-            Where("id != ?", id). // 排除自身
             Update()
             if utils.IsError(err) {
                 return err

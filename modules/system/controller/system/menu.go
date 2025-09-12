@@ -11,8 +11,6 @@ import (
 	"devinggo/modules/system/api/system"
 	"devinggo/modules/system/controller/base"
 	"devinggo/modules/system/model/res"
-	"devinggo/modules/system/myerror"
-	"devinggo/modules/system/pkg/utils/slice"
 	"devinggo/modules/system/service"
 	"github.com/gogf/gf/v2/frame/g"
 )
@@ -95,25 +93,18 @@ func (c *menuController) Update(ctx context.Context, in *system.UpdateMenuReq) (
 
 func (c *menuController) Delete(ctx context.Context, in *system.DeleteMenuReq) (out *system.DeleteMenuRes, err error) {
 	out = &system.DeleteMenuRes{}
-	names, err := service.SystemMenu().Delete(ctx, in.Ids)
+	err = service.SystemMenu().Delete(ctx, in.Ids)
 	if err != nil {
 		return
-	}
-	if !g.IsEmpty(names) {
-		return out, myerror.ValidationFailed(ctx, "菜单：【"+slice.Join(names, ",")+"】有子菜单，不能删除")
 	}
 	return
 }
 
 func (c *menuController) RealDelete(ctx context.Context, in *system.RealDeleteMenuReq) (out *system.RealDeleteMenuRes, err error) {
 	out = &system.RealDeleteMenuRes{}
-	names, err := service.SystemMenu().RealDelete(ctx, in.Ids)
+	err = service.SystemMenu().RealDelete(ctx, in.Ids)
 	if err != nil {
 		return
-	}
-
-	if !g.IsEmpty(names) {
-		return out, myerror.ValidationFailed(ctx, "菜单：【"+slice.Join(names, ",")+"】有子菜单，不能删除")
 	}
 	return
 }

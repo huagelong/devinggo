@@ -66,7 +66,6 @@ type SystemUser struct {
 	UpdatedAt      *gtime.Time `json:"updated_at"            description:"更新时间"`           // 更新时间
 	Remark         string      `json:"remark"                description:"备注"`             // 备注
 	AppId          string      `json:"app_id"               description:"应用ID"`            // 应用ID
-	//CreatedBySumma *bind_hook.UserSumma `json:"createdBySumma" dc:"创建者摘要信息"`
 }
 
 type SystemUserFullInfo struct {

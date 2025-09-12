@@ -11,10 +11,8 @@ import (
 	"devinggo/modules/system/api/system"
 	"devinggo/modules/system/controller/base"
 	"devinggo/modules/system/model/res"
-	"devinggo/modules/system/myerror"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils/request"
-	"devinggo/modules/system/pkg/utils/slice"
 	"devinggo/modules/system/service"
 	"github.com/gogf/gf/v2/container/gmap"
 	"github.com/gogf/gf/v2/frame/g"
@@ -135,34 +133,19 @@ func (c *deptController) Update(ctx context.Context, in *system.UpdateReq) (out 
 
 func (c *deptController) Delete(ctx context.Context, in *system.DeleteReq) (out *system.DeleteRes, err error) {
 	out = &system.DeleteRes{}
-	names, err := service.SystemDept().Delete(ctx, in.Ids)
-	if err != nil {
-		return
-	}
-	if !g.IsEmpty(names) {
-		return out, myerror.ValidationFailed(ctx, "部门：【"+slice.Join(names, ",")+"】有子部门，不能删除")
-	}
+	err = service.SystemDept().Delete(ctx, in.Ids)
 	return
 }
 
 func (c *deptController) RealDelete(ctx context.Context, in *system.RealDeleteReq) (out *system.RealDeleteRes, err error) {
 	out = &system.RealDeleteRes{}
-	names, err := service.SystemDept().RealDelete(ctx, in.Ids)
-	if err != nil {
-		return
-	}
-	if !g.IsEmpty(names) {
-		return out, myerror.ValidationFailed(ctx, "部门：【"+slice.Join(names, ",")+"】有子部门，不能删除")
-	}
+	err = service.SystemDept().RealDelete(ctx, in.Ids)
 	return
 }
 
 func (c *deptController) Recovery(ctx context.Context, in *system.RecoveryReq) (out *system.RecoveryRes, err error) {
 	out = &system.RecoveryRes{}
 	err = service.SystemDept().Recovery(ctx, in.Ids)
-	if err != nil {
-		return
-	}
 	return
 }
 
