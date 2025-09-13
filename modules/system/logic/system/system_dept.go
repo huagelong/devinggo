@@ -333,9 +333,13 @@ func (s *sSystemDept) DelLeader(ctx context.Context, id int64, userIds []int64) 
 }
 
 func (s *sSystemDept) Update(ctx context.Context, in *req.SystemDeptSave) (err error) {
-	oldLevel := in.Level
 	data, err := s.handleData(ctx, in)
 	if err != nil {
+		return
+	}
+	var systemDeptItem *entity.SystemDept
+	err = s.Model(ctx).Where("id", in.Id).Scan(&systemDeptItem)
+	if utils.IsError(err) {
 		return
 	}
 	saveData := do.SystemDept{
@@ -355,14 +359,14 @@ func (s *sSystemDept) Update(ctx context.Context, in *req.SystemDeptSave) (err e
 
 	var dept []*entity.SystemDept
 
-	childLevelPrefix := fmt.Sprintf("%s%d,", saveData.Level, data.Id)
+	childLevelPrefix := fmt.Sprintf("%s%d,", systemDeptItem.Level, data.Id)
 	err = s.Model(ctx).Unscoped().WhereLike("level", childLevelPrefix+"%").Scan(&dept)
 	if utils.IsError(err) {
 		return err
 	}
 	if !g.IsEmpty(dept) {
 		for _, item := range dept {
-			newLevel := utils.ReplaceSubstr(item.Level, oldLevel, data.Level)
+			newLevel := utils.ReplaceSubstr(item.Level, systemDeptItem.Level, data.Level)
 			_, err = s.Model(ctx).Unscoped().Where(dao.SystemDept.Columns().Id, item.Id).Data(do.SystemDept{
 				Level: newLevel,
 			}).Update()

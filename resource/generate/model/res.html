@@ -6,16 +6,26 @@
 
 package res
 
+import (
+{% if or (hasField .columns "created_by") (hasField .columns "updated_by")  %}
+"devinggo/modules/system/model"
+{%end %}
 {%if .hasGtime %}
-import "github.com/gogf/gf/v2/os/gtime"
+"github.com/gogf/gf/v2/os/gtime"
 {% end %}
+)
 
 type {% .tableCaseCamelName %} struct {
 {% range $index, $elem := .columns %}
- {%if or (eq $elem.IsList 2) (eq $elem.ColumnName "id")   %}
  {% caseCamel $elem.ColumnName %}  {% getModelColumnType $elem.ColumnType %} `json:"{% $elem.ColumnName %}"  description:"{% cleanStr $elem.ColumnComment %}" `
- {%end %}
+{% if eq $elem.ColumnName "created_by" %}
+CreatedByRelate model.UserRelate `json:"created_by_related"  description:"创建人关联信息" `
 {%end %}
+{% if eq $elem.ColumnName "updated_by" %}
+UpdatedByRelate model.UserRelate `json:"updated_by_related"  description:"更新人关联信息" `
+{%end %}
+{%end %}
+
 }
 
 {% if eq .table.Type "tree"  %}

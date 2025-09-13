@@ -23,7 +23,7 @@ type HookOptions struct {
 func Bind(optionsFirst ...*HookOptions) gdb.HookHandler {
 	defaultAutoCreatedUpdatedBy := true
 	defaultCacheEvict := true
-	defaultUserRelate := false
+	defaultUserRelate := true
 	var options = HookOptions{
 		AutoCreatedUpdatedBy: &defaultAutoCreatedUpdatedBy,
 		CacheEvict:           &defaultCacheEvict,
@@ -53,7 +53,7 @@ func Bind(optionsFirst ...*HookOptions) gdb.HookHandler {
 			if err != nil {
 				return result, err
 			}
-			if *options.UserRelate {
+			if *options.UserRelate && !g.IsEmpty(options.Params) {
 				return UserRelate(ctx, result, options.Params.([]string))
 			}
 			return

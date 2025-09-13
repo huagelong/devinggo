@@ -147,7 +147,7 @@ type NumberOperationReq struct {
 	model.AuthorHeader
 	Id          int64  `json:"id" dc:"ids" v:"min:1#部门Id不能为空"`
 	NumberName  string `json:"numberName" dc:"numberName" v:"required#名称不能为空"`
-	NumberValue int    `json:"numberValue" dc:"number Value" d:"1" v:"min:1#数字不能为空"`
+	NumberValue int    `json:"numberValue" dc:"number Value" d:"0" v:"min:0#数字不能为空"`
 }
 
 type NumberOperationRes struct {

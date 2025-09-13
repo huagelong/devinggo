@@ -40,12 +40,23 @@ func New{% .tableCaseCamelName %}() *s{% .tableCaseCamelName %} {
 }
 
 func (s *s{% .tableCaseCamelName %}) Model(ctx context.Context) *gdb.Model {
-    return dao.{% .tableCaseCamelName %}.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx))
+    doObj := do.{% .tableCaseCamelName %}{}
+    var params []string
+    if utils.HasField(doObj, "CreatedBy") {
+        params = append(params, "created_by")
+    }
+    if utils.HasField(doObj, "UpdatedBy") {
+        params = append(params, "updated_by")
+    }
+    hookOptions := &hook.HookOptions{
+        Params: params,
+    }
+    return dao.{% .tableCaseCamelName %}.Ctx(ctx).Hook(hook.Bind(hookOptions)).Cache(orm.SetCacheOption(ctx))
 }
 
 
 func (s *s{% .tableCaseCamelName %}) handleSearch(ctx context.Context, in *req.{% .tableCaseCamelName %}Search) (m *gdb.Model) {
-    m = s.Model(ctx)
+                m = s.Model(ctx)
 {% range $index, $elem := .columns %}
     {%if eq $elem.IsQuery 2 %}
         {%if eq $elem.QueryType "eq" %}
@@ -121,16 +132,9 @@ func (s *s{% .tableCaseCamelName %}) GetList(ctx context.Context,inReq *model.Li
 
 func (s *s{% .tableCaseCamelName %}) GetPageList(ctx context.Context, req *model.PageListReq, in *req.{% .tableCaseCamelName %}Search) (rs []*res.{% .tableCaseCamelName %}, total int, err error) {
     m := s.handleSearch(ctx, in)
-    var entity []*entity.{% .tableCaseCamelName %}
-    err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+    err = orm.GetPageList(m, req).ScanAndCount(&rs, &total, false)
     if utils.IsError(err) {
         return nil, 0, err
-    }
-    rs = make([]*res.{% .tableCaseCamelName %}, 0)
-    if !g.IsEmpty(entity) {
-        if err = gconv.Structs(entity, &rs); err != nil {
-            return nil, 0, err
-        }
     }
     return
 }
@@ -140,7 +144,7 @@ func (s *s{% .tableCaseCamelName %}) GetPageList(ctx context.Context, req *model
 func (s *s{% .tableCaseCamelName %}) GetTreeList(ctx context.Context, inReq *model.ListReq, in *req.{% .tableCaseCamelName %}Search) (tree []*res.{% .tableCaseCamelName %}Tree, err error) {
     m := s.handleSearch(ctx, in)
     m = orm.GetList(m, inReq)
-    entity := []entity.{% .tableCaseCamelName %}{}
+    entity := []res.{% .tableCaseCamelName %}{}
     err = m.Scan(&entity)
     if utils.IsError(err) {
         return
@@ -152,7 +156,7 @@ func (s *s{% .tableCaseCamelName %}) GetTreeList(ctx context.Context, inReq *mod
     return
 }
 
-func (s *s{% .tableCaseCamelName %}) treeItemList(ctx context.Context, nodes []entity.{% .tableCaseCamelName %}) (tree []*res.{% .tableCaseCamelName %}Tree) {
+func (s *s{% .tableCaseCamelName %}) treeItemList(ctx context.Context, nodes []res.{% .tableCaseCamelName %}) (tree []*res.{% .tableCaseCamelName %}Tree) {
     type itemTree map[{% getModelColumnTypeFromColumName .columns "parent_id" %}]*res.{% .tableCaseCamelName %}Tree
     itemList := make(itemTree)
 
@@ -185,7 +189,7 @@ func (s *s{% .tableCaseCamelName %}) treeItemList(ctx context.Context, nodes []e
     return
 }
 
-func (s *s{% .tableCaseCamelName %}) treeSelectList(nodes []entity.{% .tableCaseCamelName %}) (tree []*res.{% .tableCaseCamelName %}SelectTree) {
+func (s *s{% .tableCaseCamelName %}) treeSelectList(nodes []res.{% .tableCaseCamelName %}) (tree []*res.{% .tableCaseCamelName %}SelectTree) {
     type itemTree map[{% getModelColumnTypeFromColumName .columns "parent_id" %}]*res.{% .tableCaseCamelName %}SelectTree
     itemList := make(itemTree)
 
@@ -222,7 +226,7 @@ func (s *s{% .tableCaseCamelName %}) treeSelectList(nodes []entity.{% .tableCase
 func (s *s{% .tableCaseCamelName %}) GetSelectTree(ctx context.Context, inReq *model.ListReq, in *req.{% .tableCaseCamelName %}Search ) (routes []*res.{% .tableCaseCamelName %}SelectTree, err error) {
     m := s.handleSearch(ctx, in)
     m = orm.GetList(m, inReq)
-    entity := []entity.{% .tableCaseCamelName %}{}
+    entity := []res.{% .tableCaseCamelName %}{}
     err = m.Scan(&entity)
     if utils.IsError(err) {
         return
@@ -336,7 +340,7 @@ func (s *s{% .tableCaseCamelName %}) Update(ctx context.Context, in *req.{% .tab
         return
     }
     if needCalculateLevel {
-        childLevelPrefix := fmt.Sprintf("%s%d,", updateData.Level, in.Id)
+        childLevelPrefix := fmt.Sprintf("%s%d,", {% .tableCaseCamelLowerName %}Item.Level, in.Id)
         var itemList []*entity.{% .tableCaseCamelName %}
 
         err = s.Model(ctx).Unscoped().WhereLike("level", childLevelPrefix+"%").Where("id != ?", in.Id).Scan(&itemList)

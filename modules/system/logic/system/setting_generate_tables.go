@@ -460,6 +460,7 @@ func (s *sSettingGenerateTables) getOneCode(ctx context.Context, id int64) (rs *
 		"Delimiters": []string{"{%", "%}"},
 	})
 	view.BindFunc("contains", s.sliceContains)
+	view.BindFunc("hasField", s.hasField)
 	view.BindFunc("caseCamel", s.caseCamel)
 	view.BindFunc("cleanStr", s.cleanStr)
 	view.BindFunc("parseColumnType", s.parseColumnType)
@@ -1074,6 +1075,15 @@ func (s *sSettingGenerateTables) removeExtraBlankLines(input string) string {
 
 func (s *sSettingGenerateTables) sliceContains(arr []string, value string) bool {
 	return slice.Contains(arr, value)
+}
+
+func (s *sSettingGenerateTables) hasField(columns []*entity.SettingGenerateColumns, fieldName string) bool {
+	for _, column := range columns {
+		if column.ColumnName == fieldName {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *sSettingGenerateTables) caseCamel(value string) string {
