@@ -18,9 +18,9 @@ import (
 	"devinggo/modules/system/pkg/hook"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
-	"devinggo/modules/system/pkg/utils/slice"
 	"devinggo/modules/system/service"
 	"fmt"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -66,6 +66,8 @@ func (s *sSystemMenu) GetSuperAdminRouters(ctx context.Context) (routes []*res.R
 func (s *sSystemMenu) treeList(nodes []entity.SystemMenu) (tree []*res.Router) {
 	type itemTree map[int64]*res.Router
 	itemList := make(itemTree)
+
+	// 第一遍：创建所有节点并存储到map中
 	for _, systemMenuEntity := range nodes {
 		var item res.Router
 		isHidden := false
@@ -85,13 +87,25 @@ func (s *sSystemMenu) treeList(nodes []entity.SystemMenu) (tree []*res.Router) {
 		item.Meta = res.Meta{Title: systemMenuEntity.Name, Icon: systemMenuEntity.Icon,
 			Type: systemMenuEntity.Type, Hidden: isHidden, HiddenBreadcrumb: false}
 		item.Children = make([]*res.Router, 0)
-		if !g.IsEmpty(itemList[item.ParentId]) {
-			itemList[item.ParentId].Children = append(itemList[item.ParentId].Children, &item)
-		} else {
-			tree = append(tree, &item)
-		}
 		itemList[systemMenuEntity.Id] = &item
 	}
+
+	// 第二遍：建立父子关系
+	for _, systemMenuEntity := range nodes {
+		item := itemList[systemMenuEntity.Id]
+		if item == nil {
+			continue
+		}
+
+		// 如果有父节点且父节点存在，则添加到父节点的children中
+		if systemMenuEntity.ParentId != 0 && itemList[systemMenuEntity.ParentId] != nil {
+			itemList[systemMenuEntity.ParentId].Children = append(itemList[systemMenuEntity.ParentId].Children, item)
+		} else {
+			// 否则作为根节点
+			tree = append(tree, item)
+		}
+	}
+
 	return
 }
 
@@ -212,6 +226,8 @@ func (s *sSystemMenu) GetRecycleTreeList(ctx context.Context, in *req.SystemMenu
 func (s *sSystemMenu) treeItemList(ctx context.Context, nodes []entity.SystemMenu) (tree []*res.SystemMenuTree) {
 	type itemTree map[int64]*res.SystemMenuTree
 	itemList := make(itemTree)
+	
+	// 第一遍：创建所有节点并存储到map中
 	for _, systemMenuEntity := range nodes {
 		var item *res.SystemMenuTree
 		if err := gconv.Struct(systemMenuEntity, &item); err != nil {
@@ -219,12 +235,23 @@ func (s *sSystemMenu) treeItemList(ctx context.Context, nodes []entity.SystemMen
 			continue
 		}
 		item.Children = make([]*res.SystemMenuTree, 0)
-		if !g.IsEmpty(itemList[item.ParentId]) {
-			itemList[item.ParentId].Children = append(itemList[item.ParentId].Children, item)
+		itemList[systemMenuEntity.Id] = item
+	}
+	
+	// 第二遍：建立父子关系
+	for _, systemMenuEntity := range nodes {
+		item := itemList[systemMenuEntity.Id]
+		if item == nil {
+			continue
+		}
+		
+		// 如果有父节点且父节点存在，则添加到父节点的children中
+		if systemMenuEntity.ParentId != 0 && itemList[systemMenuEntity.ParentId] != nil {
+			itemList[systemMenuEntity.ParentId].Children = append(itemList[systemMenuEntity.ParentId].Children, item)
 		} else {
+			// 否则作为根节点
 			tree = append(tree, item)
 		}
-		itemList[systemMenuEntity.Id] = item
 	}
 	return
 }
@@ -232,6 +259,8 @@ func (s *sSystemMenu) treeItemList(ctx context.Context, nodes []entity.SystemMen
 func (s *sSystemMenu) treeSelectList(nodes []entity.SystemMenu) (tree []*res.SystemDeptSelectTree) {
 	type itemTree map[int64]*res.SystemDeptSelectTree
 	itemList := make(itemTree)
+	
+	// 第一遍：创建所有节点并存储到map中
 	for _, systemMenuEntity := range nodes {
 		var item res.SystemDeptSelectTree
 		item.ParentId = systemMenuEntity.ParentId
@@ -239,12 +268,23 @@ func (s *sSystemMenu) treeSelectList(nodes []entity.SystemMenu) (tree []*res.Sys
 		item.Label = systemMenuEntity.Name
 		item.Value = systemMenuEntity.Id
 		item.Children = make([]*res.SystemDeptSelectTree, 0)
-		if !g.IsEmpty(itemList[item.ParentId]) {
-			itemList[item.ParentId].Children = append(itemList[item.ParentId].Children, &item)
-		} else {
-			tree = append(tree, &item)
-		}
 		itemList[systemMenuEntity.Id] = &item
+	}
+	
+	// 第二遍：建立父子关系
+	for _, systemMenuEntity := range nodes {
+		item := itemList[systemMenuEntity.Id]
+		if item == nil {
+			continue
+		}
+		
+		// 如果有父节点且父节点存在，则添加到父节点的children中
+		if systemMenuEntity.ParentId != 0 && itemList[systemMenuEntity.ParentId] != nil {
+			itemList[systemMenuEntity.ParentId].Children = append(itemList[systemMenuEntity.ParentId].Children, item)
+		} else {
+			// 否则作为根节点
+			tree = append(tree, item)
+		}
 	}
 	return
 }
@@ -279,7 +319,28 @@ func (s *sSystemMenu) GetSelectTree(ctx context.Context, userId int64, onlyMenu,
 	if utils.IsError(err) {
 		return
 	}
-	routes = s.treeSelectList(systemMenuEntity)
+	// 构建原有的菜单树
+	originalTree := s.treeSelectList(systemMenuEntity)
+
+	defaultNode := &res.SystemDeptSelectItem{
+		Id:       0,
+		ParentId: -1,
+		Value:    0,
+		Label:    "根节点",
+	}
+	// 创建默认根节点
+	rootNode := &res.SystemDeptSelectTree{
+		Children: originalTree,
+	}
+
+	rootNode.Id = defaultNode.Id
+	rootNode.ParentId = defaultNode.ParentId
+	rootNode.Value = defaultNode.Value
+	rootNode.Label = defaultNode.Label
+
+	// 返回包含根节点的树结构
+	routes = []*res.SystemDeptSelectTree{rootNode}
+
 	return
 }
 
@@ -424,11 +485,16 @@ func (s *sSystemMenu) genButton(ctx context.Context, id int64, name, code string
 }
 
 func (s *sSystemMenu) Update(ctx context.Context, in *req.SystemMenuSave) (err error) {
-	oldLevel := in.Level
 	data, err := s.handleData(ctx, in)
 	if err != nil {
 		return
 	}
+	var systemMenuItem *entity.SystemMenu
+	err = s.Model(ctx).Where("id", in.Id).Scan(&systemMenuItem)
+	if utils.IsError(err) {
+		return
+	}
+	oldLevel := systemMenuItem.Level
 	saveData := do.SystemMenu{
 		Name:      data.Name,
 		ParentId:  data.ParentId,
@@ -449,18 +515,14 @@ func (s *sSystemMenu) Update(ctx context.Context, in *req.SystemMenuSave) (err e
 		return err
 	}
 
-	if !s.checkChildrenExists(ctx, data.Id) {
-		return
-	}
-
 	var menu []*entity.SystemMenu
 
-	err = s.Model(ctx).Unscoped().WhereLike("level", "%,"+gconv.String(data.Id)+",%").Scan(&menu)
+	childLevelPrefix := fmt.Sprintf("%s%d,", oldLevel, data.Id)
+	err = s.Model(ctx).Unscoped().WhereLike("level", childLevelPrefix+"%").Scan(&menu)
 	if utils.IsError(err) {
 		return err
 	}
 	if !g.IsEmpty(menu) {
-		g.Log().Debug(ctx, "update menu:", menu)
 		for _, item := range menu {
 			newLevel := utils.ReplaceSubstr(item.Level, oldLevel, data.Level)
 			_, err = s.Model(ctx).Unscoped().Where(dao.SystemMenu.Columns().Id, item.Id).Data(do.SystemMenu{
@@ -474,104 +536,84 @@ func (s *sSystemMenu) Update(ctx context.Context, in *req.SystemMenuSave) (err e
 	return
 }
 
-func (s *sSystemMenu) checkChildrenExists(ctx context.Context, id int64) bool {
-	count, err := s.Model(ctx).Unscoped().Where("parent_id", id).Count()
-	if utils.IsError(err) {
-		return false
-	}
-	if count > 0 {
-		return true
-	}
-	return false
-}
-
-func (s *sSystemMenu) checkChildrenUnscopedAllExists(ctx context.Context, id int64, ids []int64) bool {
-	var menus []*entity.SystemMenu
-	err := s.Model(ctx).Unscoped().Where("parent_id", id).Scan(&menus)
-	if utils.IsError(err) {
-		return false
-	}
-	hasAllChildrenExists := true
-	if !g.IsEmpty(menus) {
-		for _, item := range menus {
-			if !slice.Contains(ids, item.Id) {
-				hasAllChildrenExists = false
-			}
-		}
-	}
-	return hasAllChildrenExists
-}
-
-func (s *sSystemMenu) checkChildrenAllExists(ctx context.Context, id int64, ids []int64) bool {
-	var menus []*entity.SystemMenu
-	err := s.Model(ctx).Where("parent_id", id).Scan(&menus)
-	if utils.IsError(err) {
-		return false
-	}
-	hasAllChildrenExists := true
-	if !g.IsEmpty(menus) {
-		for _, item := range menus {
-			if !slice.Contains(ids, item.Id) {
-				hasAllChildrenExists = false
-			}
-		}
-	}
-	return hasAllChildrenExists
-}
-
-func (s *sSystemMenu) Delete(ctx context.Context, ids []int64) (names []string, err error) {
-
-	ctuIds := make([]int64, 0)
+func (s *sSystemMenu) Delete(ctx context.Context, ids []int64) (err error) {
 	for _, id := range ids {
-		if s.checkChildrenAllExists(ctx, id, ids) {
-			_, err = s.Model(ctx).Where("id", id).Delete()
+		var targetRecord *entity.SystemMenu
+		err = s.Model(ctx).Where("id", id).Scan(&targetRecord)
+		if utils.IsError(err) {
+			return err
+		}
+
+		if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+			childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+			// 批量删除所有子节点
+			_, err = s.Model(ctx).
+				Where("level LIKE ?", childLevelPrefix+"%").
+				Delete()
 			if utils.IsError(err) {
-				return nil, err
+				return err
 			}
-		} else {
-			ctuIds = append(ctuIds, id)
 		}
 	}
 
-	if !g.IsEmpty(ctuIds) {
-		result, err := s.Model(ctx).Fields("name").WhereIn("id", ctuIds).Array()
-		if utils.IsError(err) {
-			return nil, err
-		}
-		if !g.IsEmpty(result) {
-			names = gconv.SliceStr(result)
-		}
+	// 删除指定的记录
+	_, err = s.Model(ctx).WhereIn("id", ids).Delete()
+	if utils.IsError(err) {
+		return err
 	}
 	return
 }
 
-func (s *sSystemMenu) RealDelete(ctx context.Context, ids []int64) (names []string, err error) {
-	ctuIds := make([]int64, 0)
+func (s *sSystemMenu) RealDelete(ctx context.Context, ids []int64) (err error) {
+	// 为每个成功删除的ID处理其子菜单
 	for _, id := range ids {
-		if s.checkChildrenUnscopedAllExists(ctx, id, ids) {
-			_, err = s.Model(ctx).Unscoped().Where("id", id).Delete()
+		var targetRecord *entity.SystemMenu
+		err = s.Model(ctx).Unscoped().Where("id", id).Scan(&targetRecord)
+		if utils.IsError(err) {
+			return err
+		}
+
+		if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+			childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+			// 批量物理删除所有子节点
+			_, err = s.Model(ctx).Unscoped().
+				Where("level LIKE ?", childLevelPrefix+"%").
+				Delete()
 			if utils.IsError(err) {
-				return nil, err
+				return err
 			}
-		} else {
-			ctuIds = append(ctuIds, id)
 		}
 	}
 
-	if !g.IsEmpty(ctuIds) {
-		result, err := s.Model(ctx).Unscoped().Fields("name").WhereIn("id", ctuIds).Array()
-		if utils.IsError(err) {
-			return nil, err
-		}
-		if !g.IsEmpty(result) {
-			names = gconv.SliceStr(result)
-		}
+	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
+	if utils.IsError(err) {
+		return
 	}
 
 	return
 }
 
 func (s *sSystemMenu) Recovery(ctx context.Context, ids []int64) (err error) {
+	// 为每个要恢复的ID处理其子菜单
+	for _, id := range ids {
+		var targetRecord *entity.SystemMenu
+		err = s.Model(ctx).Unscoped().Where("id", id).Scan(&targetRecord)
+		if utils.IsError(err) {
+			return err
+		}
+
+		if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+			childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+			// 批量恢复所有子节点
+			_, err = s.Model(ctx).Unscoped().
+				Where("level LIKE ?", childLevelPrefix+"%").
+				Update(g.Map{"deleted_at": nil})
+			if utils.IsError(err) {
+				return err
+			}
+		}
+	}
+	// 恢复指定的记录
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
 		return err
@@ -583,6 +625,30 @@ func (s *sSystemMenu) ChangeStatus(ctx context.Context, id int64, status int) (e
 	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err
+	}
+	doObj := do.SystemMenu{}
+	needCalculateLevel := utils.HasField(doObj, "Level")
+	if needCalculateLevel {
+		// 2. 查询目标记录信息，获取level字段用于查找子节点
+		var targetRecord *entity.SystemMenu
+		err = s.Model(ctx).Where("id", id).Scan(&targetRecord)
+		if utils.IsError(err) {
+			return err
+		}
+
+		// 3. 如果目标记录存在且有level信息，查找并更新所有子节点
+		if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+			childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+			// 批量更新所有子节点的状态
+			_, err = s.Model(ctx).OmitNilData().Data(g.Map{"status": status}).
+				Where("level LIKE ?", childLevelPrefix+"%").
+				Where("id != ?", id). // 排除自身
+				Update()
+			if utils.IsError(err) {
+				return err
+			}
+		}
+
 	}
 	return
 }

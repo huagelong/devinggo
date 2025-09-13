@@ -16,6 +16,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/hibiken/asynq"
+	"time"
 )
 
 type ConfigProvider struct {
@@ -35,7 +36,7 @@ func (p *ConfigProvider) GetConfigs() ([]*asynq.PeriodicTaskConfig, error) {
 		CacheEvict:           &defaultCacheEvict,
 		UserRelate:           &defaultUserRelate,
 		AutoCreatedUpdatedBy: &defaultAutoCreatedUpdatedBy,
-	})).Cache(orm.SetCacheOption(p.Ctx)).Where("status", 1).Scan(&dbCrons)
+	})).Cache(orm.SetCacheOption(p.Ctx, time.Hour*24)).Where("status", 1).Scan(&dbCrons)
 	if utils.IsError(err) {
 		return nil, err
 	}

@@ -19,9 +19,9 @@ import (
 	"devinggo/modules/system/pkg/hook"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
-	"devinggo/modules/system/pkg/utils/slice"
 	"devinggo/modules/system/service"
 	"fmt"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -74,7 +74,21 @@ func (s *sSystemDept) GetSelectTree(ctx context.Context, userId int64) (tree []*
 	if g.IsEmpty(systemDeptEntity) {
 		return
 	}
-	tree = s.treeList(systemDeptEntity)
+	// 构建原有的部门树
+	originalTree := s.treeList(systemDeptEntity)
+
+	// 创建默认根节点
+	rootNode := &res.SystemDeptTree{
+		Id:       0,
+		ParentId: -1,
+		Value:    0,
+		Label:    "根节点",
+		Children: originalTree,
+	}
+
+	// 返回包含根节点的树结构
+	tree = []*res.SystemDeptTree{rootNode}
+
 	return
 }
 
@@ -85,6 +99,8 @@ func (s *sSystemDept) compareFunc(item entity.SystemDept) string {
 func (s *sSystemDept) treeList(nodes []entity.SystemDept) (tree []*res.SystemDeptTree) {
 	type itemTree map[int64]*res.SystemDeptTree
 	itemList := make(itemTree)
+
+	// 第一遍：创建所有节点并存储到map中
 	for _, systemDeptEntity := range nodes {
 		var item res.SystemDeptTree
 		item.Id = systemDeptEntity.Id
@@ -92,13 +108,25 @@ func (s *sSystemDept) treeList(nodes []entity.SystemDept) (tree []*res.SystemDep
 		item.Value = systemDeptEntity.Id
 		item.Label = systemDeptEntity.Name
 		item.Children = make([]*res.SystemDeptTree, 0)
-		if !g.IsEmpty(itemList[item.ParentId]) {
-			itemList[item.ParentId].Children = append(itemList[item.ParentId].Children, &item)
-		} else {
-			tree = append(tree, &item)
-		}
 		itemList[systemDeptEntity.Id] = &item
 	}
+
+	// 第二遍：建立父子关系
+	for _, systemDeptEntity := range nodes {
+		item := itemList[systemDeptEntity.Id]
+		if item == nil {
+			continue
+		}
+
+		// 如果有父节点且父节点存在，则添加到父节点的children中
+		if systemDeptEntity.ParentId != 0 && itemList[systemDeptEntity.ParentId] != nil {
+			itemList[systemDeptEntity.ParentId].Children = append(itemList[systemDeptEntity.ParentId].Children, item)
+		} else {
+			// 否则作为根节点
+			tree = append(tree, item)
+		}
+	}
+
 	return
 }
 
@@ -305,9 +333,13 @@ func (s *sSystemDept) DelLeader(ctx context.Context, id int64, userIds []int64) 
 }
 
 func (s *sSystemDept) Update(ctx context.Context, in *req.SystemDeptSave) (err error) {
-	oldLevel := in.Level
 	data, err := s.handleData(ctx, in)
 	if err != nil {
+		return
+	}
+	var systemDeptItem *entity.SystemDept
+	err = s.Model(ctx).Where("id", in.Id).Scan(&systemDeptItem)
+	if utils.IsError(err) {
 		return
 	}
 	saveData := do.SystemDept{
@@ -324,19 +356,17 @@ func (s *sSystemDept) Update(ctx context.Context, in *req.SystemDeptSave) (err e
 	if utils.IsError(err) {
 		return err
 	}
-	if !s.checkChildrenExists(ctx, data.Id) {
-		return
-	}
 
 	var dept []*entity.SystemDept
 
-	err = s.Model(ctx).Unscoped().WhereLike("level", "%,"+gconv.String(data.Id)+",%").Scan(&dept)
+	childLevelPrefix := fmt.Sprintf("%s%d,", systemDeptItem.Level, data.Id)
+	err = s.Model(ctx).Unscoped().WhereLike("level", childLevelPrefix+"%").Scan(&dept)
 	if utils.IsError(err) {
 		return err
 	}
 	if !g.IsEmpty(dept) {
 		for _, item := range dept {
-			newLevel := utils.ReplaceSubstr(item.Level, oldLevel, data.Level)
+			newLevel := utils.ReplaceSubstr(item.Level, systemDeptItem.Level, data.Level)
 			_, err = s.Model(ctx).Unscoped().Where(dao.SystemDept.Columns().Id, item.Id).Data(do.SystemDept{
 				Level: newLevel,
 			}).Update()
@@ -348,103 +378,85 @@ func (s *sSystemDept) Update(ctx context.Context, in *req.SystemDeptSave) (err e
 	return
 }
 
-func (s *sSystemDept) checkChildrenExists(ctx context.Context, id int64) bool {
-	count, err := s.Model(ctx).Unscoped().Where("parent_id", id).Count()
-	if utils.IsError(err) {
-		return false
-	}
-	if count > 0 {
-		return true
-	}
-	return false
-}
-
-func (s *sSystemDept) checkChildrenUnscopedAllExists(ctx context.Context, id int64, ids []int64) bool {
-	var depts []*entity.SystemDept
-	err := s.Model(ctx).Unscoped().Where("parent_id", id).Scan(&depts)
-	if utils.IsError(err) {
-		return false
-	}
-	hasAllChildrenExists := true
-	if !g.IsEmpty(depts) {
-		for _, item := range depts {
-			if !slice.Contains(ids, item.Id) {
-				hasAllChildrenExists = false
-			}
-		}
-	}
-	return hasAllChildrenExists
-}
-
-func (s *sSystemDept) checkChildrenAllExists(ctx context.Context, id int64, ids []int64) bool {
-	var depts []*entity.SystemDept
-	err := s.Model(ctx).Where("parent_id", id).Scan(&depts)
-	if utils.IsError(err) {
-		return false
-	}
-	hasAllChildrenExists := true
-	if !g.IsEmpty(depts) {
-		for _, item := range depts {
-			if !slice.Contains(ids, item.Id) {
-				hasAllChildrenExists = false
-			}
-		}
-	}
-	return hasAllChildrenExists
-}
-
-func (s *sSystemDept) Delete(ctx context.Context, ids []int64) (names []string, err error) {
-	ctuIds := make([]int64, 0)
+func (s *sSystemDept) Delete(ctx context.Context, ids []int64) (err error) {
+	// 为每个成功删除的ID处理其子部门
 	for _, id := range ids {
-		if s.checkChildrenAllExists(ctx, id, ids) {
-			_, err = s.Model(ctx).Where("id", id).Delete()
+		var targetRecord *entity.SystemDept
+		err = s.Model(ctx).Where("id", id).Scan(&targetRecord)
+		if utils.IsError(err) {
+			return err
+		}
+
+		if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+			childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+			// 批量删除所有子节点
+			_, err = s.Model(ctx).
+				Where("level LIKE ?", childLevelPrefix+"%").
+				Delete()
 			if utils.IsError(err) {
-				return nil, err
+				return err
 			}
-		} else {
-			ctuIds = append(ctuIds, id)
 		}
 	}
-
-	if !g.IsEmpty(ctuIds) {
-		result, err := s.Model(ctx).Fields("name").WhereIn("id", ctuIds).Array()
-		if utils.IsError(err) {
-			return nil, err
-		}
-		if !g.IsEmpty(result) {
-			names = gconv.SliceStr(result)
-		}
+	// 删除指定的记录
+	_, err = s.Model(ctx).WhereIn("id", ids).Delete()
+	if utils.IsError(err) {
+		return err
 	}
 	return
 }
 
-func (s *sSystemDept) RealDelete(ctx context.Context, ids []int64) (names []string, err error) {
-	ctuIds := make([]int64, 0)
+func (s *sSystemDept) RealDelete(ctx context.Context, ids []int64) (err error) {
+	// 为每个成功删除的ID处理其子部门
 	for _, id := range ids {
-		if s.checkChildrenUnscopedAllExists(ctx, id, ids) {
-			_, err = s.Model(ctx).Unscoped().Where("id", id).Delete()
+		var targetRecord *entity.SystemDept
+		err = s.Model(ctx).Unscoped().Where("id", id).Scan(&targetRecord)
+		if utils.IsError(err) {
+			return err
+		}
+
+		if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+			childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+			// 批量物理删除所有子节点
+			_, err = s.Model(ctx).Unscoped().
+				Where("level LIKE ?", childLevelPrefix+"%").
+				Delete()
 			if utils.IsError(err) {
-				return nil, err
+				return err
 			}
-		} else {
-			ctuIds = append(ctuIds, id)
 		}
 	}
 
-	if !g.IsEmpty(ctuIds) {
-		result, err := s.Model(ctx).Unscoped().Fields("name").WhereIn("id", ctuIds).Array()
-		if utils.IsError(err) {
-			return nil, err
-		}
-		if !g.IsEmpty(result) {
-			names = gconv.SliceStr(result)
-		}
+	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
+	if utils.IsError(err) {
+		return
 	}
 
 	return
 }
 
 func (s *sSystemDept) Recovery(ctx context.Context, ids []int64) (err error) {
+	// 为每个要恢复的ID处理其子部门
+	for _, id := range ids {
+		var targetRecord *entity.SystemDept
+		err = s.Model(ctx).Unscoped().Where("id", id).Scan(&targetRecord)
+		if utils.IsError(err) {
+			return err
+		}
+
+		if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+			childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+			// 批量恢复所有子节点
+			_, err = s.Model(ctx).Unscoped().
+				Where("level LIKE ?", childLevelPrefix+"%").
+				Update(g.Map{"deleted_at": nil})
+			if utils.IsError(err) {
+				return err
+			}
+		}
+	}
+
+	// 恢复指定的记录
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
 		return err
@@ -456,6 +468,29 @@ func (s *sSystemDept) ChangeStatus(ctx context.Context, id int64, status int) (e
 	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
 	if utils.IsError(err) {
 		return err
+	}
+	doObj := do.SystemDept{}
+	needCalculateLevel := utils.HasField(doObj, "Level")
+	if needCalculateLevel {
+		// 2. 查询目标记录信息，获取level字段用于查找子节点
+		var targetRecord *entity.SystemDept
+		err = s.Model(ctx).Where("id", id).Scan(&targetRecord)
+		if utils.IsError(err) {
+			return err
+		}
+
+		// 3. 如果目标记录存在且有level信息，查找并更新所有子节点
+		if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+			childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+			// 批量更新所有子节点的状态
+			_, err = s.Model(ctx).OmitNilData().Data(g.Map{"status": status}).
+				Where("level LIKE ?", childLevelPrefix+"%").
+				Update()
+			if utils.IsError(err) {
+				return err
+			}
+		}
+
 	}
 	return
 }

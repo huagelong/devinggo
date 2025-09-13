@@ -1,0 +1,26 @@
+// ================================================================================
+// Code generated and maintained by GoFrame CLI tool. DO NOT EDIT.
+// You can delete these comments if you wish manually maintain this interface file.
+// ================================================================================
+
+package service
+
+type (
+	I{{.moduleNameCap}} interface {
+	}
+)
+
+var (
+	local{{.moduleNameCap}} I{{.moduleNameCap}}
+)
+
+func {{.moduleNameCap}}() I{{.moduleNameCap}} {
+	if local{{.moduleNameCap}} == nil {
+		panic("implement not found for interface I{{.moduleNameCap}}, forgot register?")
+	}
+	return local{{.moduleNameCap}}
+}
+
+func Register{{.moduleNameCap}}(i I{{.moduleNameCap}}) {
+	local{{.moduleNameCap}} = i
+}

@@ -10,10 +10,11 @@ import (
 	"context"
 	"devinggo/modules/system/pkg/utils"
 	"fmt"
-	"github.com/gogf/gf/v2/encoding/gjson"
-	"github.com/gogf/gf/v2/util/gconv"
 	"strings"
 	"time"
+
+	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/util/gconv"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -59,6 +60,7 @@ var (
 				fmt.Sprintf("./modules/%s/logic", moduleName),
 				fmt.Sprintf("./modules/%s/logic/hook", moduleName),
 				fmt.Sprintf("./modules/%s/logic/middleware", moduleName),
+				fmt.Sprintf("./modules/%s/logic/%s", moduleName, moduleName),
 				fmt.Sprintf("./modules/%s/service", moduleName),
 				fmt.Sprintf("./modules/%s/worker", moduleName),
 			}
@@ -311,6 +313,14 @@ func createModuleFiles(ctx context.Context, moduleName string) error {
 			filePath: fmt.Sprintf("./modules/%s/service/middleware.go", moduleName),
 		},
 		{
+			tplPath:  "modules/mod_service.go.html",
+			filePath: fmt.Sprintf("./modules/%s/service/%s.go", moduleName, moduleName),
+		},
+		{
+			tplPath:  "modules/mod.go.html",
+			filePath: fmt.Sprintf("./modules/%s/logic/%s/%s.go", moduleName, moduleName, moduleName),
+		},
+		{
 			tplPath:  "modules/hook.go.html",
 			filePath: fmt.Sprintf("./modules/%s/logic/hook/hook.go", moduleName),
 		},
@@ -359,17 +369,6 @@ func createModuleFiles(ctx context.Context, moduleName string) error {
 		if err != nil {
 			return gerror.Wrapf(err, "渲染模板 '%s' 失败", file.tplPath)
 		}
-
-		// 替换特殊格式的模板变量
-		content = gstr.Replace(content, "{% .table.ModuleName %}", moduleName)
-		content = gstr.Replace(content, "{% .table.PackageName %}", moduleName)
-		content = gstr.Replace(content, "{% .tableCaseCamelName %}", moduleNameCap)
-		content = gstr.Replace(content, "{% .tableCaseCamelLowerName %}", moduleName)
-
-		// 处理条件语句，默认保留条件内容
-		content = gstr.Replace(content, "{% if eq .table.Type \"single\"  %}", "")
-		content = gstr.Replace(content, "{% if eq .table.Type \"tree\"  %}", "")
-		content = gstr.Replace(content, "{% endif %}", "")
 
 		if err := gfile.PutContents(file.filePath, content); err != nil {
 			return gerror.Wrapf(err, "创建文件 '%s' 失败", file.filePath)

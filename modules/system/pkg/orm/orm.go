@@ -31,7 +31,11 @@ func SetCacheOption(ctx context.Context, duration ...time.Duration) gdb.CacheOpt
 			dura = time.Hour * 24
 		}
 	} else {
-		dura = -1
+		if len(duration) > 0 {
+			dura = duration[0]
+		} else {
+			dura = -1
+		}
 	}
 	return gdb.CacheOption{Duration: dura, Force: false}
 }

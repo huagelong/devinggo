@@ -41,7 +41,7 @@ type RecycleRoleRes struct {
 }
 
 type ListRoleReq struct {
-	g.Meta `path:"/role/list" method:"get" tags:"角色" summary:"前端选择树（不需要权限）." x-permission:"system:role:list" `
+	g.Meta `path:"/role/list" method:"get" tags:"角色" summary:"前端选择树（不需要权限）." x-exceptAuth:"true" x-permission:"system:role:list" `
 	model.AuthorHeader
 }
 
@@ -117,7 +117,7 @@ type NumberOperationRoleReq struct {
 	model.AuthorHeader
 	Id          int64  `json:"id" dc:"ids" v:"min:1#Id不能为空"`
 	NumberName  string `json:"numberName" dc:"numberName" v:"required#名称不能为空"`
-	NumberValue int    `json:"numberValue" dc:"number Value" d:"1" v:"min:1#数字不能为空"`
+	NumberValue int    `json:"numberValue" dc:"number Value" d:"0" v:"min:0#数字不能为空"`
 }
 
 type NumberOperationRoleRes struct {

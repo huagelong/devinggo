@@ -460,10 +460,12 @@ func (s *sSettingGenerateTables) getOneCode(ctx context.Context, id int64) (rs *
 		"Delimiters": []string{"{%", "%}"},
 	})
 	view.BindFunc("contains", s.sliceContains)
+	view.BindFunc("hasField", s.hasField)
 	view.BindFunc("caseCamel", s.caseCamel)
 	view.BindFunc("cleanStr", s.cleanStr)
 	view.BindFunc("parseColumnType", s.parseColumnType)
 	view.BindFunc("getModelColumnType", s.getModelColumnType)
+	view.BindFunc("getModelColumnTypeFromColumName", s.getModelColumnTypeFromColumName)
 	apiCode, err := s.generateApi(ctx, view, tables, columns)
 	if err != nil {
 		return
@@ -607,7 +609,7 @@ func (s *sSettingGenerateTables) generateApi(ctx context.Context, view *gview.Vi
 	tableCaseCamelName := gstr.CaseCamel(tables.TableName)
 	tableCaseCamelLowerName := gstr.CaseCamelLower(tables.TableName)
 	generateMenus := gstr.Split(tables.GenerateMenus, ",")
-	code, err = view.Parse(context.TODO(), "api/main.html", g.Map{"table": tables, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName, "generateMenus": generateMenus})
+	code, err = view.Parse(context.TODO(), "api/main.html", g.Map{"table": tables, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName, "generateMenus": generateMenus, "columns": columns})
 	if err != nil {
 		return
 	}
@@ -690,7 +692,7 @@ func (s *sSettingGenerateTables) generateSql(ctx context.Context, view *gview.Vi
 	if utils.GetDbType() == "postgres" {
 		tpl = "sql/main_pgsql.html"
 	}
-	code, err = view.Parse(context.TODO(), tpl, g.Map{"table": tables, "adminId": adminId, "menu": menu, "generateMenus": generateMenus, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName, "menuTableName": menuTableName})
+	code, err = view.Parse(context.TODO(), tpl, g.Map{"table": tables, "adminId": adminId, "columns": columns, "menu": menu, "generateMenus": generateMenus, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName, "menuTableName": menuTableName})
 	if err != nil {
 		return
 	}
@@ -714,7 +716,7 @@ func (s *sSettingGenerateTables) generateDownSql(ctx context.Context, view *gvie
 	if utils.GetDbType() == "postgres" {
 		tpl = "sql/down_pgsql.html"
 	}
-	code, err = view.Parse(context.TODO(), tpl, g.Map{"table": tables, "adminId": adminId, "menu": menu, "generateMenus": generateMenus, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName, "menuTableName": menuTableName})
+	code, err = view.Parse(context.TODO(), tpl, g.Map{"table": tables, "adminId": adminId, "columns": columns, "menu": menu, "generateMenus": generateMenus, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName, "menuTableName": menuTableName})
 	if err != nil {
 		return
 	}
@@ -1024,7 +1026,7 @@ func (s *sSettingGenerateTables) hasGtime(ctx context.Context, columns []*entity
 					return true
 				}
 			} else if column.IsList == 2 && (dataType == "isList") {
-				parseColumnType := s.getModelColumnType(*column)
+				parseColumnType := s.getModelColumnType(column.ColumnType)
 				if parseColumnType == "*gtime.Time" {
 					return true
 				}
@@ -1075,6 +1077,15 @@ func (s *sSettingGenerateTables) sliceContains(arr []string, value string) bool 
 	return slice.Contains(arr, value)
 }
 
+func (s *sSettingGenerateTables) hasField(columns []*entity.SettingGenerateColumns, fieldName string) bool {
+	for _, column := range columns {
+		if column.ColumnName == fieldName {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *sSettingGenerateTables) caseCamel(value string) string {
 	return gstr.CaseCamel(value)
 }
@@ -1106,14 +1117,149 @@ func (s *sSettingGenerateTables) parseColumnType(entity entity.SettingGenerateCo
 	} else if queryType == "notin" {
 		return "[]string"
 	} else {
-		return s.getModelColumnType(entity)
+		return s.getModelColumnType(entity.ColumnType)
 	}
 }
 
-func (s *sSettingGenerateTables) getModelColumnType(entity entity.SettingGenerateColumns) string {
-	value := entity.ColumnType
-	dataType, _ := s.parseDataType(value)
+func (s *sSettingGenerateTables) getModelColumnTypeFromColumName(columns []*entity.SettingGenerateColumns, columnName string) string {
+	for _, column := range columns {
+		if column.ColumnName == columnName {
+			return s.getModelColumnType(column.ColumnType)
+		}
+	}
+	return "string"
+}
+
+func (s *sSettingGenerateTables) getModelColumnType(columnType string) string {
+	dataType, _ := s.parseDataType(columnType)
 	//fmt.Println(value, "-", dataType)
+
+	dbType := utils.GetDbType()
+
+	// PostgreSQL 数据库特殊处理
+	if dbType == "postgres" {
+		// PostgreSQL 数组类型处理
+		if strings.HasSuffix(dataType, "[]") {
+			baseType := strings.TrimSuffix(dataType, "[]")
+			switch baseType {
+			case "text", "varchar", "char":
+				return "[]string"
+			case "int", "int2", "int4", "smallint":
+				return "[]int"
+			case "int8", "bigint":
+				return "[]int64"
+			case "float4", "real":
+				return "[]float32"
+			case "float8", "double", "numeric", "decimal":
+				return "[]float64"
+			case "bool", "boolean":
+				return "[]bool"
+			default:
+				return "[]string"
+			}
+		}
+
+		// PostgreSQL 内部数组类型表示（_type 格式）
+		if strings.HasPrefix(dataType, "_") {
+			baseType := strings.TrimPrefix(dataType, "_")
+			switch baseType {
+			case "text", "varchar", "char":
+				return "[]string"
+			case "int", "int2", "int4", "smallint":
+				return "[]int"
+			case "int8", "bigint":
+				return "[]int64"
+			case "float4", "real":
+				return "[]float32"
+			case "float8", "double", "numeric", "decimal":
+				return "[]float64"
+			case "bool", "boolean":
+				return "[]bool"
+			case "uuid":
+				return "[]string"
+			case "json", "jsonb":
+				return "[]string"
+			case "inet", "cidr":
+				return "[]string"
+			case "bytea":
+				return "[][]byte"
+			default:
+				return "[]string"
+			}
+		}
+
+		// PostgreSQL 特有数据类型
+		switch dataType {
+		case "serial", "serial4":
+			return "int"
+		case "bigserial", "serial8":
+			return "int64"
+		case "smallserial", "serial2":
+			return "int"
+		case "uuid":
+			return "string"
+		case "json", "jsonb":
+			return "string"
+		case "inet", "cidr":
+			return "string"
+		case "macaddr", "macaddr8":
+			return "string"
+		case "bytea":
+			return "[]byte"
+		case "boolean":
+			return "bool"
+		case "int4":
+			return "int"
+		case "float4", "real":
+			return "float32"
+		case "float8", "double precision":
+			return "float64"
+		case "numeric":
+			return "float64"
+		case "timestamptz", "timestamp with time zone":
+			return "*gtime.Time"
+		case "timetz", "time with time zone":
+			return "*gtime.Time"
+		case "interval":
+			return "string"
+		case "point", "line", "lseg", "box", "path", "polygon", "circle":
+			return "string"
+		case "bit", "bit varying", "varbit":
+			return "string"
+		case "money":
+			return "float64"
+		case "xml":
+			return "string"
+		case "tsvector", "tsquery":
+			return "string"
+		}
+	}
+
+	// MySQL 数据库特殊处理
+	if dbType == "mysql" {
+		switch dataType {
+		case "binary", "varbinary":
+			return "[]byte"
+		case "geometry", "point", "linestring", "polygon", "multipoint", "multilinestring", "multipolygon", "geometrycollection":
+			return "string"
+		case "json":
+			return "string"
+		case "bit":
+			return "int64"
+		case "unsigned tinyint", "tinyint unsigned":
+			return "uint8"
+		case "unsigned smallint", "smallint unsigned":
+			return "uint16"
+		case "unsigned mediumint", "mediumint unsigned":
+			return "uint32"
+		case "unsigned int", "int unsigned":
+			return "uint32"
+		case "unsigned bigint", "bigint unsigned":
+			return "uint64"
+		}
+	}
+
+	// 通用数据类型映射（MySQL 和 PostgreSQL 共有）
 	switch dataType {
 	case "decimal":
 		return "float64"
@@ -1133,13 +1279,17 @@ func (s *sSettingGenerateTables) getModelColumnType(entity entity.SettingGenerat
 		return "float32"
 	case "double":
 		return "float64"
-	case "bigint":
+	case "bigint", "int8":
 		return "int64"
-	case "int", "tinyint", "smallint", "mediumint":
+	case "int", "tinyint", "smallint", "int2", "mediumint":
 		return "int"
 	case "datetime", "timestamp":
 		return "*gtime.Time"
 	case "bool":
+		// MySQL 的 bool 类型映射为 int，PostgreSQL 的 boolean 已在上面处理
+		if dbType == "postgres" {
+			return "bool"
+		}
 		return "int"
 	case "text", "varchar", "char", "longtext", "mediumtext", "tinytext":
 		return "string"

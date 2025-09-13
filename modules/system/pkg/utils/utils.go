@@ -12,15 +12,17 @@ import (
 	"crypto/md5"
 	"database/sql"
 	"fmt"
-	"github.com/gogf/gf/v2/debug/gdebug"
 	"io"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strings"
+
+	"github.com/gogf/gf/v2/debug/gdebug"
 
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
@@ -304,6 +306,21 @@ func GetDbType() string {
 	return dbType
 }
 
+// GetFieldQuote 根据数据库类型返回字段引用符号
+func GetFieldQuote() string {
+	dbType := GetDbType()
+	if dbType == "postgres" {
+		return "\"" // PostgreSQL使用双引号
+	}
+	return "`" // MySQL使用反引号
+}
+
+// QuoteField 为字段名添加数据库兼容的引用符号
+func QuoteField(fieldName string) string {
+	quote := GetFieldQuote()
+	return quote + fieldName + quote
+}
+
 // UnzipFile 解压ZIP文件到指定目录
 func UnzipFile(zipPath string, destPath string) error {
 	// 打开ZIP文件
@@ -373,4 +390,18 @@ func UnzipFile(zipPath string, destPath string) error {
 	}
 
 	return nil
+}
+
+func HasField(obj interface{}, fieldName string) bool {
+	v := reflect.ValueOf(obj)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	if v.Kind() != reflect.Struct {
+		return false
+	}
+
+	field := v.FieldByName(fieldName)
+	return field.IsValid()
 }
