@@ -40,6 +40,7 @@ func BindController(group *ghttp.RouterGroup) {
 			system.CodeController,
 			system.DataMaintainController,
 			system.SystemModulesController,
+			system.DashboardController,
 		).Middleware(service.Middleware().AdminAuth)
 	})
 

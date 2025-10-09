@@ -18,6 +18,12 @@ import (
 )
 
 type (
+	IDashboard interface {
+		// GetStatistics 获取仪表板统计数据
+		GetStatistics(ctx context.Context) (statistics map[string]interface{}, err error)
+		// GetLoginChart 获取登录图表数据
+		GetLoginChart(ctx context.Context, days int) (chartData map[string]interface{}, err error)
+	}
 	IDataMaintain interface {
 		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.DataMaintainSearch) (rs []*res.DataMaintain, total int, err error)
 		GetColumnList(ctx context.Context, source string, tableName string) (rs map[string]*gdb.TableField, err error)
@@ -338,6 +344,7 @@ type (
 )
 
 var (
+	localDashboard                 IDashboard
 	localDataMaintain              IDataMaintain
 	localLogin                     ILogin
 	localSettingConfig             ISettingConfig
@@ -373,6 +380,17 @@ var (
 	localSystemUserPost            ISystemUserPost
 	localSystemUserRole            ISystemUserRole
 )
+
+func Dashboard() IDashboard {
+	if localDashboard == nil {
+		panic("implement not found for interface IDashboard, forgot register?")
+	}
+	return localDashboard
+}
+
+func RegisterDashboard(i IDashboard) {
+	localDashboard = i
+}
 
 func DataMaintain() IDataMaintain {
 	if localDataMaintain == nil {
