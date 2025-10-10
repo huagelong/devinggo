@@ -257,10 +257,7 @@ func (s *s{% .tableCaseCamelName %}) Save(ctx context.Context, in *req.{% .table
         return
     }
 
-    // 检查Level字段是否已存在且有值
-    needCalculateLevel := utils.HasField(saveData, "Level")
-    // 只有在Level字段不存在或为空时才自动计算
-    if needCalculateLevel {
+    {% if hasField  .columns "level" %}
         var level string
         if in.ParentId == 0 {
             level = ",0,"
@@ -275,7 +272,7 @@ func (s *s{% .tableCaseCamelName %}) Save(ctx context.Context, in *req.{% .table
             }
         }
         saveData.Level = level
-    }
+    {% end %}
 
     rs, err := s.Model(ctx).OmitNilData().Data(saveData).Insert()
     if utils.IsError(err) {
@@ -306,7 +303,6 @@ func (s *s{% .tableCaseCamelName %}) Update(ctx context.Context, in *req.{% .tab
     if err = gconv.Struct(in, &updateData); err != nil {
         return
     }
-    needCalculateLevel := utils.HasField(updateData, "Level")
     var {% .tableCaseCamelLowerName %}Item *entity.{% .tableCaseCamelName %}
     err = s.Model(ctx).Where("id", in.Id).Scan(&{% .tableCaseCamelLowerName %}Item)
     if utils.IsError(err) {
@@ -318,7 +314,7 @@ func (s *s{% .tableCaseCamelName %}) Update(ctx context.Context, in *req.{% .tab
         return
     }
 
-    if needCalculateLevel {
+    {% if hasField  .columns "level" %}
         var level string
         if in.ParentId == 0 {
             level = ",0,"
@@ -333,13 +329,13 @@ func (s *s{% .tableCaseCamelName %}) Update(ctx context.Context, in *req.{% .tab
             }
         }
         updateData.Level = level
-    }
+    {% end %}
     _, err = s.Model(ctx).OmitNilData().Data(updateData).Where("id", in.Id).Update()
 
     if utils.IsError(err) {
         return
     }
-    if needCalculateLevel {
+    {% if hasField  .columns "level" %}
         childLevelPrefix := fmt.Sprintf("%s%d,", {% .tableCaseCamelLowerName %}Item.Level, in.Id)
         var itemList []*entity.{% .tableCaseCamelName %}
 
@@ -358,40 +354,34 @@ func (s *s{% .tableCaseCamelName %}) Update(ctx context.Context, in *req.{% .tab
                 }
             }
         }
-    }
-
+    {% end %}
     return
 }
 {% end %}
 
 {% if contains .generateMenus "delete"  %}
 func (s *s{% .tableCaseCamelName %}) Delete(ctx context.Context, ids []{% getModelColumnTypeFromColumName .columns "id" %}) (err error) {
-    // 检查是否需要处理Level字段
-    doObj := do.{% .tableCaseCamelName %}{}
-    needCalculateLevel := utils.HasField(doObj, "Level")
+    {% if hasField  .columns "level" %}
+    // 为每个要删除的ID处理其子分类
+    for _, id := range ids {
+        var targetRecord *entity.{% .tableCaseCamelName %}
+        err = s.Model(ctx).Where("id", id).Scan(&targetRecord)
+        if utils.IsError(err) {
+            return err
+        }
 
-    if needCalculateLevel {
-            // 为每个要删除的ID处理其子分类
-         for _, id := range ids {
-            var targetRecord *entity.{% .tableCaseCamelName %}
-            err = s.Model(ctx).Where("id", id).Scan(&targetRecord)
+        if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+            childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+            // 批量删除所有子节点
+            _, err = s.Model(ctx).
+            Where("level LIKE ?", childLevelPrefix+"%").
+            Delete()
             if utils.IsError(err) {
                 return err
             }
-
-            if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
-                childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
-                // 批量删除所有子节点
-                _, err = s.Model(ctx).
-                Where("level LIKE ?", childLevelPrefix+"%").
-                Delete()
-                if utils.IsError(err) {
-                    return err
-                }
-            }
-         }
+        }
     }
-
+    {% end %}
     // 删除指定的记录
     _, err = s.Model(ctx).WhereIn("id", ids).Delete()
     if utils.IsError(err) {
@@ -401,33 +391,29 @@ func (s *s{% .tableCaseCamelName %}) Delete(ctx context.Context, ids []{% getMod
 }
 
 func (s *s{% .tableCaseCamelName %}) RealDelete(ctx context.Context, ids []{% getModelColumnTypeFromColumName .columns "id" %}) (err error) {
-    // 检查是否需要处理Level字段
-    doObj := do.{% .tableCaseCamelName %}{}
-    needCalculateLevel := utils.HasField(doObj, "Level")
+    {% if hasField  .columns "level" %}
+    // 为每个要删除的ID处理其子分类
+    for _, id := range ids {
+        var targetRecord *entity.{% .tableCaseCamelName %}
+        err = s.Model(ctx).Unscoped().Where("id", id).Scan(&targetRecord)
+        if utils.IsError(err) {
+            return err
+        }
 
-    if needCalculateLevel {
-        // 为每个要删除的ID处理其子分类
-        for _, id := range ids {
-            var targetRecord *entity.{% .tableCaseCamelName %}
-            err = s.Model(ctx).Unscoped().Where("id", id).Scan(&targetRecord)
+        if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+            childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+            // 批量物理删除所有子节点
+            _, err = s.Model(ctx).Unscoped().
+            Where("level LIKE ?", childLevelPrefix+"%").
+            Delete()
             if utils.IsError(err) {
                 return err
             }
-
-            if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
-                childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
-                // 批量物理删除所有子节点
-                _, err = s.Model(ctx).Unscoped().
-                Where("level LIKE ?", childLevelPrefix+"%").
-                Delete()
-                if utils.IsError(err) {
-                    return err
-                }
-            }
         }
     }
+    {% end %}
 
-    // 物理删除指定的记录
+    // 物理删除指定的记录   
     _, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
     if utils.IsError(err) {
        return
@@ -437,31 +423,27 @@ func (s *s{% .tableCaseCamelName %}) RealDelete(ctx context.Context, ids []{% ge
 {% end %}
 {% if contains .generateMenus "recycle"  %}
 func (s *s{% .tableCaseCamelName %}) Recovery(ctx context.Context, ids []{% getModelColumnTypeFromColumName .columns "id" %}) (err error) {
-    // 检查是否需要处理Level字段
-    doObj := do.{% .tableCaseCamelName %}{}
-    needCalculateLevel := utils.HasField(doObj, "Level")
+    {% if hasField  .columns "level" %}
+// 为每个要恢复的ID处理其子分类
+    for _, id := range ids {
+        var targetRecord *entity.{% .tableCaseCamelName %}
+        err = s.Model(ctx).Unscoped().Where("id", id).Scan(&targetRecord)
+        if utils.IsError(err) {
+            return err
+        }
 
-    if needCalculateLevel {
-        // 为每个要恢复的ID处理其子分类
-        for _, id := range ids {
-            var targetRecord *entity.{% .tableCaseCamelName %}
-            err = s.Model(ctx).Unscoped().Where("id", id).Scan(&targetRecord)
+        if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
+            childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
+            // 批量恢复所有子节点
+            _, err = s.Model(ctx).Unscoped().
+            Where("level LIKE ?", childLevelPrefix+"%").
+            Update(g.Map{"deleted_at": nil})
             if utils.IsError(err) {
                 return err
             }
-
-            if !g.IsEmpty(targetRecord) && !g.IsEmpty(targetRecord.Level) {
-                childLevelPrefix := fmt.Sprintf("%s%d,", targetRecord.Level, id)
-                // 批量恢复所有子节点
-                _, err = s.Model(ctx).Unscoped().
-                Where("level LIKE ?", childLevelPrefix+"%").
-                Update(g.Map{"deleted_at": nil})
-                if utils.IsError(err) {
-                    return err
-                }
-            }
         }
     }
+    {% end %}
 
     // 恢复指定的记录
     _, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
@@ -477,12 +459,7 @@ func (s *s{% .tableCaseCamelName %}) ChangeStatus(ctx context.Context, id {% get
     if utils.IsError(err) {
         return err
     }
-    doObj :=do.{% .tableCaseCamelName %}{}
-    needCalculateLevel := utils.HasField(doObj, "Level")
-    if utils.IsError(err) {
-        return err
-    }
-    if needCalculateLevel {
+    {% if hasField  .columns "level" %}
         var targetRecord *entity.{% .tableCaseCamelName %}
         err = s.Model(ctx).Where("id", id).Scan(&targetRecord)
         if utils.IsError(err) {
@@ -499,7 +476,7 @@ func (s *s{% .tableCaseCamelName %}) ChangeStatus(ctx context.Context, id {% get
                 return err
             }
         }
-    }
+    {% end %}
     return
 }
 {% end %}
