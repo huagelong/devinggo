@@ -14,6 +14,7 @@ import (
     "devinggo/internal/model/entity"
     "devinggo/modules/{% .table.ModuleName %}/model/req"
     "devinggo/modules/{% .table.ModuleName %}/model/res"
+    "devinggo/modules/system/pkg/handler"
     "devinggo/modules/system/pkg/hook"
     "devinggo/modules/system/pkg/orm"
     "devinggo/modules/system/pkg/utils"
@@ -56,7 +57,7 @@ func (s *s{% .tableCaseCamelName %}) Model(ctx context.Context) *gdb.Model {
 
 
 func (s *s{% .tableCaseCamelName %}) handleSearch(ctx context.Context, in *req.{% .tableCaseCamelName %}Search) (m *gdb.Model) {
-                m = s.Model(ctx)
+                m = s.Model(ctx).Handler(handler.FilterAuth)
 {% range $index, $elem := .columns %}
     {%if eq $elem.IsQuery 2 %}
         {%if eq $elem.QueryType "eq" %}
