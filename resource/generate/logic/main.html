@@ -14,7 +14,9 @@ import (
     "devinggo/internal/model/entity"
     "devinggo/modules/{% .table.ModuleName %}/model/req"
     "devinggo/modules/{% .table.ModuleName %}/model/res"
+    {% if or (eq .table.Type "single") (eq .table.Type "tree") (contains .generateMenus "export") %}
     "devinggo/modules/system/pkg/handler"
+    {% end %}
     "devinggo/modules/system/pkg/hook"
     "devinggo/modules/system/pkg/orm"
     "devinggo/modules/system/pkg/utils"
@@ -57,7 +59,7 @@ func (s *s{% .tableCaseCamelName %}) Model(ctx context.Context) *gdb.Model {
 
 
 func (s *s{% .tableCaseCamelName %}) handleSearch(ctx context.Context, in *req.{% .tableCaseCamelName %}Search) (m *gdb.Model) {
-                m = s.Model(ctx).Handler(handler.FilterAuth)
+                m = s.Model(ctx)
 {% range $index, $elem := .columns %}
     {%if eq $elem.IsQuery 2 %}
         {%if eq $elem.QueryType "eq" %}
@@ -122,7 +124,7 @@ func (s *s{% .tableCaseCamelName %}) handleSearch(ctx context.Context, in *req.{
 
 {% if eq .table.Type "single"  %}
 func (s *s{% .tableCaseCamelName %}) GetList(ctx context.Context,inReq *model.ListReq, in *req.{% .tableCaseCamelName %}Search) (out []*res.{% .tableCaseCamelName %}, err error) {
-    m := s.handleSearch(ctx, in)
+    m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
     m = orm.GetList(m, inReq)
     err = m.Scan(&out)
     if utils.IsError(err) {
@@ -132,7 +134,7 @@ func (s *s{% .tableCaseCamelName %}) GetList(ctx context.Context,inReq *model.Li
 }
 
 func (s *s{% .tableCaseCamelName %}) GetPageList(ctx context.Context, req *model.PageListReq, in *req.{% .tableCaseCamelName %}Search) (rs []*res.{% .tableCaseCamelName %}, total int, err error) {
-    m := s.handleSearch(ctx, in)
+    m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
     err = orm.GetPageList(m, req).ScanAndCount(&rs, &total, false)
     if utils.IsError(err) {
         return nil, 0, err
@@ -143,7 +145,7 @@ func (s *s{% .tableCaseCamelName %}) GetPageList(ctx context.Context, req *model
 
 {% if eq .table.Type "tree"  %}
 func (s *s{% .tableCaseCamelName %}) GetTreeList(ctx context.Context, inReq *model.ListReq, in *req.{% .tableCaseCamelName %}Search) (tree []*res.{% .tableCaseCamelName %}Tree, err error) {
-    m := s.handleSearch(ctx, in)
+    m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
     m = orm.GetList(m, inReq)
     entity := []res.{% .tableCaseCamelName %}{}
     err = m.Scan(&entity)
@@ -225,7 +227,7 @@ func (s *s{% .tableCaseCamelName %}) treeSelectList(nodes []res.{% .tableCaseCam
 }
 
 func (s *s{% .tableCaseCamelName %}) GetSelectTree(ctx context.Context, inReq *model.ListReq, in *req.{% .tableCaseCamelName %}Search ) (routes []*res.{% .tableCaseCamelName %}SelectTree, err error) {
-    m := s.handleSearch(ctx, in)
+    m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
     m = orm.GetList(m, inReq)
     entity := []res.{% .tableCaseCamelName %}{}
     err = m.Scan(&entity)
@@ -494,7 +496,7 @@ func (s *s{% .tableCaseCamelName %}) NumberOperation(ctx context.Context, id {% 
 
 {% if contains .generateMenus "export"  %}
 func (s *s{% .tableCaseCamelName %}) GetExportList(ctx context.Context, req *model.ListReq, in *req.{% .tableCaseCamelName %}Search) (res []*res.{% .tableCaseCamelName %}Excel, err error) {
-    m := s.handleSearch(ctx, in)
+    m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
     err = orm.GetList(m, req).Scan(&res)
     if utils.IsError(err) {
         return
