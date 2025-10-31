@@ -79,14 +79,13 @@ var (
 
 			// 使用更明显的方式输出成功信息和提示
 			successMsg := fmt.Sprintf("模块 '%s' 创建成功!", moduleName)
-			tipMsg := "提示: 请运行 'go run main.go migrate:up' 命令开启应用"
 
 			// 记录到日志
 			g.Log().Info(ctx, successMsg)
-			g.Log().Info(ctx, tipMsg)
-
+			// 自动添加到数据库
+			MigrateUp.Run(ctx)
 			// 同时直接输出到控制台，确保用户能看到
-			fmt.Printf("\n%s\n%s\n\n", successMsg, tipMsg)
+			fmt.Printf("\n%s\n\n", successMsg)
 			return nil
 		},
 	}
