@@ -143,10 +143,6 @@ http://localhost:8070/admin
 
 - 如果项目对您有帮助，请点右上角 "Star" 收藏项目，您的支持是我创作的动力！
 
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=huagelong/devinggo&type=Date)](https://www.star-history.com/#huagelong/devinggo&Date)
-
 ## 鸣谢
 
 1. [GoFrame](https://github.com/gogf/gf)
@@ -155,3 +151,7 @@ http://localhost:8070/admin
 4. [Pinia](https://pinia.vuejs.org/)
 5. [Vue3](https://v3.cn.vuejs.org/)
 6. [Vite5](https://cn.vitejs.dev/)
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=huagelong/devinggo&type=Date)](https://www.star-history.com/#huagelong/devinggo&Date)
