@@ -75,13 +75,13 @@ database:
 
   # 默认分组
   default:
-    link: "mysql:devinggo:mysql_zbCA5h@tcp(db-mysql-8adauv:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
+    link: "mysql:devinggo:mysql_zbCA5h@tcp(db-mysql-8adauv-kj2t23:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
     debug: true # 默认 false
 
 # doc: https://goframe.org/pages/viewpage.action?pageId=1114217
 redis:
   default:
-    address: db-redis-qftqfj:6379
+    address: db-redis-hzcvsm:6379
     pass: "redis_d5KQds"
     user: "default"
     # 是否强制设置为集群工作模式, 默认值：false.
@@ -102,7 +102,7 @@ redis:
     # 此值应该小于maxConnLifetime, 才有实际意义.
     idleTimeout: 10m
   cache:
-    address: db-redis-qftqfj:6379
+    address: db-redis-hzcvsm:6379
     pass: "redis_d5KQds"
     user: "default"
     db: 1
@@ -115,7 +115,7 @@ redis:
     readTimeout: 30s
     writeTimeout: 30s
   websocket:
-    address: db-redis-qftqfj:6379
+    address: db-redis-hzcvsm:6379
     pass: "redis_d5KQds"
     user: "default"
     db: 7
@@ -146,7 +146,7 @@ worker:
     - default: 3
     - low: 1
   redis:
-    address: db-redis-qftqfj:6379
+    address: db-redis-hzcvsm:6379
     pass: "redis_d5KQds"
     user: "default"
     db: 2
