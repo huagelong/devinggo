@@ -118,6 +118,13 @@ func (c *userController) IndexUser(ctx context.Context, in *system.IndexUserReq)
 
 	if !g.IsEmpty(items) {
 		for _, item := range items {
+			//获取用户所属部门
+			item.DeptIds, _ = service.SystemUserDept().GetDeptIdsByUserId(ctx, item.Id)
+			//获取用户所属角色
+			item.RoleIds, _ = service.SystemUserRole().GetRoleIdsByUserId(ctx, item.Id)
+			//获取用户所属岗位
+			item.PostIds, _ = service.SystemUserPost().GetPostIdsByUserId(ctx, item.Id)
+
 			out.Items = append(out.Items, *item)
 		}
 	} else {

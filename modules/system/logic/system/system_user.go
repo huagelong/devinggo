@@ -115,7 +115,6 @@ func (s *sSystemUser) ExistsByUsername(ctx context.Context, username string) (rs
 }
 
 func (s *sSystemUser) handleUserSearch(ctx context.Context, in *req.SystemUserSearch) (m *gdb.Model) {
-
 	m = s.Model(ctx)
 	if !g.IsEmpty(in.Status) {
 		m = m.Where(dao.SystemUser.Table()+".status", in.Status)
@@ -154,8 +153,16 @@ func (s *sSystemUser) handleUserSearch(ctx context.Context, in *req.SystemUserSe
 		m = m.LeftJoinOnFields(dao.SystemUserRole.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserRole.Columns().UserId).Where(dao.SystemUserRole.Table()+".role_id", in.RoleId)
 	}
 
+	if !g.IsEmpty(in.RoleIds) {
+		m = m.LeftJoinOnFields(dao.SystemUserRole.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserRole.Columns().UserId).WhereIn(dao.SystemUserRole.Table()+".role_id", in.RoleIds)
+	}
+
 	if !g.IsEmpty(in.PostId) {
 		m = m.LeftJoinOnFields(dao.SystemUserPost.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserPost.Columns().UserId).Where(dao.SystemUserPost.Table()+".post_id", in.RoleId)
+	}
+
+	if !g.IsEmpty(in.PostIds) {
+		m = m.LeftJoinOnFields(dao.SystemUserPost.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserPost.Columns().UserId).WhereIn(dao.SystemUserPost.Table()+".post_id", in.PostIds)
 	}
 
 	if !g.IsEmpty(in.DeptId) {
@@ -165,6 +172,21 @@ func (s *sSystemUser) handleUserSearch(ctx context.Context, in *req.SystemUserSe
 				newDeptIds := gconv.SliceInt64(result)
 				m = m.LeftJoinOnFields(dao.SystemUserDept.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserDept.Columns().UserId).WhereIn(dao.SystemUserDept.Columns().DeptId, newDeptIds)
 			}
+		}
+	}
+
+	if !g.IsEmpty(in.DeptIds) {
+		allDeptIds := make([]int64, 0)
+		for _, deptId := range in.DeptIds {
+			result, err := service.SystemDept().Model(ctx).Fields(dao.SystemDept.Columns().Id).Where(dao.SystemDept.Columns().Id, deptId).WhereOr("level like  ? ", "%,"+gconv.String(deptId)+",%").Array()
+			if !utils.IsError(err) {
+				if !g.IsEmpty(result) {
+					allDeptIds = append(allDeptIds, gconv.SliceInt64(result)...)
+				}
+			}
+		}
+		if !g.IsEmpty(allDeptIds) {
+			m = m.LeftJoinOnFields(dao.SystemUserDept.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserDept.Columns().UserId).WhereIn(dao.SystemUserDept.Columns().DeptId, allDeptIds)
 		}
 	}
 

@@ -13,12 +13,14 @@ import (
 	"devinggo/modules/system/consts"
 	"devinggo/modules/system/pkg/contexts"
 	"devinggo/modules/system/pkg/utils"
+	"devinggo/modules/system/pkg/utils/config"
 	"devinggo/modules/system/pkg/utils/slice"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"reflect"
+	"time"
 )
 
 // FilterAuth 过滤数据权限
@@ -55,7 +57,7 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 		}
 
 		getUserRoleIds := func(ctx context.Context, userId int64) (roles []int64) {
-			result, err := dao.SystemUserRole.Ctx(ctx).Fields(dao.SystemUserRole.Columns().RoleId).Where(dao.SystemUserRole.Columns().UserId, userId).Array()
+			result, err := dao.SystemUserRole.Ctx(ctx).Fields(dao.SystemUserRole.Columns().RoleId).Cache(setCacheOption(ctx)).Where(dao.SystemUserRole.Columns().UserId, userId).Array()
 			if utils.IsError(err) {
 				g.Log().Panicf(ctx, "get user roleIds err:%+v", err)
 				return
@@ -70,7 +72,7 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 		}
 
 		getUserDeptIds := func(ctx context.Context, userId int64) (depts []int64) {
-			result, err := dao.SystemUserDept.Ctx(ctx).Fields(dao.SystemUserDept.Columns().DeptId).Where(dao.SystemUserDept.Columns().UserId, userId).Array()
+			result, err := dao.SystemUserDept.Ctx(ctx).Fields(dao.SystemUserDept.Columns().DeptId).Cache(setCacheOption(ctx)).Where(dao.SystemUserDept.Columns().UserId, userId).Array()
 			if utils.IsError(err) {
 				g.Log().Panicf(ctx, "get user deptIds err:%+v", err)
 				return
@@ -87,7 +89,7 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 		user.RoleIds = getUserRoleIds(ctx, user.Id)
 		user.DeptIds = getUserDeptIds(ctx, user.Id)
 
-		err := dao.SystemRole.Ctx(ctx).WhereIn(dao.SystemRole.Columns().Id, user.RoleIds).Scan(&roles)
+		err := dao.SystemRole.Ctx(ctx).Cache(setCacheOption(ctx)).WhereIn(dao.SystemRole.Columns().Id, user.RoleIds).Scan(&roles)
 		if err != nil {
 			g.Log().Panicf(ctx, "failed to role information err:%+v", err)
 		}
@@ -104,7 +106,7 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 		}
 
 		getFromDeptIds := func(ctx context.Context, in []int64) []int64 {
-			result, err := dao.SystemUserDept.Ctx(ctx).Fields(dao.SystemUserDept.Columns().UserId).WhereIn(dao.SystemUserDept.Columns().DeptId, in).Array()
+			result, err := dao.SystemUserDept.Ctx(ctx).Fields(dao.SystemUserDept.Columns().UserId).Cache(setCacheOption(ctx)).WhereIn(dao.SystemUserDept.Columns().DeptId, in).Array()
 			if utils.IsError(err) {
 				g.Log().Panic(ctx, "failed to get member dept data", err)
 			}
@@ -118,12 +120,12 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 		}
 
 		getFromRoles := func(ctx context.Context, in []int64) []int64 {
-			deptIds, err := dao.SystemRoleDept.Ctx(ctx).Fields(dao.SystemRoleDept.Columns().DeptId).WhereIn(dao.SystemRoleDept.Columns().RoleId, in).Array()
+			deptIds, err := dao.SystemRoleDept.Ctx(ctx).Fields(dao.SystemRoleDept.Columns().DeptId).Cache(setCacheOption(ctx)).WhereIn(dao.SystemRoleDept.Columns().RoleId, in).Array()
 			if utils.IsError(err) {
 				g.Log().Panic(ctx, "failed to get role_dept dept data")
 			}
 
-			result, err := dao.SystemUserDept.Ctx(ctx).Fields(dao.SystemUserDept.Columns().UserId).WhereIn(dao.SystemUserDept.Columns().DeptId, deptIds).Array()
+			result, err := dao.SystemUserDept.Ctx(ctx).Fields(dao.SystemUserDept.Columns().UserId).Cache(setCacheOption(ctx)).WhereIn(dao.SystemUserDept.Columns().DeptId, deptIds).Array()
 			if utils.IsError(err) {
 				g.Log().Panic(ctx, "failed to get member dept data", err)
 			}
@@ -140,7 +142,7 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 			if len(in) > 0 {
 				for _, deptId := range in {
 					newDeptIds := make([]int64, 0)
-					result, err := dao.SystemDept.Ctx(ctx).Fields(dao.SystemDept.Columns().Id).Where(dao.SystemDept.Columns().Id, deptId).WhereOr("level like  ? ", "%,"+gconv.String(deptId)+",%").Array()
+					result, err := dao.SystemDept.Ctx(ctx).Fields(dao.SystemDept.Columns().Id).Cache(setCacheOption(ctx)).Where(dao.SystemDept.Columns().Id, deptId).WhereOr("level like  ? ", "%,"+gconv.String(deptId)+",%").Array()
 					if utils.IsError(err) {
 						g.Log().Panic(ctx, "failed to get system_dept dept data")
 					}
@@ -203,4 +205,23 @@ func getTableName(m *gdb.Model) string {
 
 func getTableFieds(m *gdb.Model) []string {
 	return slice.EscapeFieldsToSlice(m.GetFieldsStr())
+}
+
+func setCacheOption(ctx context.Context, duration ...time.Duration) gdb.CacheOption {
+	globalCache := config.GetConfigBool(ctx, "settings.enableGlobalDbCache", false)
+	var dura time.Duration
+	if globalCache {
+		if len(duration) > 0 {
+			dura = duration[0]
+		} else {
+			dura = time.Hour * 24
+		}
+	} else {
+		if len(duration) > 0 {
+			dura = duration[0]
+		} else {
+			dura = -1
+		}
+	}
+	return gdb.CacheOption{Duration: dura, Force: false}
 }

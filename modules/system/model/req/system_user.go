@@ -33,6 +33,11 @@ type SystemUser struct {
 }
 
 type SystemUserSearch struct {
+	Id               int64    `json:"id" description:"用户ID"` // 用户ID
+	DeptIds          []int64  `json:"dept_ids" description:"部门ID列表"`
+	RoleIds          []int64  `json:"role_ids" description:"角色ID列表"`
+	PostIds          []int64  `json:"post_ids" description:"岗位ID列表"`
+	Avatar           string   `json:"avatar"                description:"用户头像"`           // 用户头像
 	DeptId           int64    `json:"dept_id" description:"部门ID"`                         // 部门ID
 	Username         string   `json:"username"             description:"用户名"`             // 用户名
 	Nickname         string   `json:"nickname"            description:"用户昵称"`             // 用户昵称
