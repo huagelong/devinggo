@@ -36,6 +36,16 @@ type RecycleRes struct {
 	Data   []res.SystemListDeptTree `json:"data"  dc:"dept tree list" `
 }
 
+type ListReq struct {
+	g.Meta `path:"/dept/list" method:"get" tags:"部门" summary:"前端选择树（不需要权限）." x-exceptAuth:"true" x-permission:"system:dept:list" `
+	model.AuthorHeader
+}
+
+type ListRes struct {
+	g.Meta `mime:"application/json"`
+	Data   []res.SystemDept `json:"data"  dc:"dept tree list" `
+}
+
 type TreeReq struct {
 	g.Meta `path:"/dept/tree" method:"get" tags:"部门" summary:"前端选择树（不需要权限）." x-exceptAuth:"true" x-permission:"system:dept:tree" `
 	model.AuthorHeader

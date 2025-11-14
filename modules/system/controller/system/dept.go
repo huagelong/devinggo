@@ -10,6 +10,7 @@ import (
 	"context"
 	"devinggo/modules/system/api/system"
 	"devinggo/modules/system/controller/base"
+	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils/request"
@@ -90,6 +91,24 @@ func (c *deptController) GetLeaderList(ctx context.Context, in *system.GetLeader
 		out.Items = make([]res.SystemDeptLeaderInfo, 0)
 	}
 	out.PageRes.Pack(in, totalCount)
+
+	return
+}
+
+func (c *deptController) List(ctx context.Context, in *system.ListReq) (out *system.ListRes, err error) {
+	out = &system.ListRes{}
+	rs, err := service.SystemDept().GetList(ctx, &req.SystemDeptSearch{})
+	if err != nil {
+		return
+	}
+
+	if !g.IsEmpty(rs) {
+		for _, v := range rs {
+			out.Data = append(out.Data, *v)
+		}
+	} else {
+		out.Data = make([]res.SystemDept, 0)
+	}
 
 	return
 }

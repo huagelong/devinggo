@@ -66,6 +66,9 @@ type SystemUser struct {
 	UpdatedAt      *gtime.Time `json:"updated_at"            description:"更新时间"`           // 更新时间
 	Remark         string      `json:"remark"                description:"备注"`             // 备注
 	AppId          string      `json:"app_id"               description:"应用ID"`            // 应用ID
+	DeptIds        []int64     `json:"dept_ids"             description:"部门ID列表"`          // 部门ID列表
+	RoleIds        []int64     `json:"role_ids"             description:"角色ID列表"`          // 角色ID列表
+	PostIds        []int64     `json:"post_ids"             description:"岗位ID列表"`          // 岗位ID列表
 }
 
 type SystemUserFullInfo struct {

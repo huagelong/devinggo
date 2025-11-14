@@ -10,6 +10,7 @@ import (
 	"devinggo/modules/system/model/page"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
+
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -70,7 +71,7 @@ type GetTableColumnsRes struct {
 }
 
 type PreviewCodeReq struct {
-	g.Meta `path:"/code/preview" method:"get" tags:"代码生成" summary:"预览代码." x-permission:"system:code:preview" `
+	g.Meta `path:"/code/preview" method:"get" tags:"代码生成" summary:"预览代码." x-exceptAccessLog:"true" x-permission:"system:code:preview" `
 	model2.AuthorHeader
 	Id int64 `json:"id" dc:"id"`
 }

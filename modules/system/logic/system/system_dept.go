@@ -165,6 +165,20 @@ func (s *sSystemDept) handleSearch(ctx context.Context, in *req.SystemDeptSearch
 	return
 }
 
+func (s *sSystemDept) GetList(ctx context.Context, in *req.SystemDeptSearch) (out []*res.SystemDept, err error) {
+	inReq := &model.ListReq{
+		OrderBy:   "sort",
+		OrderType: "desc",
+	}
+	m := s.handleSearch(ctx, in)
+	m = orm.GetList(m, inReq)
+	err = m.Scan(&out)
+	if utils.IsError(err) {
+		return
+	}
+	return
+}
+
 func (s *sSystemDept) GetListTreeList(ctx context.Context, in *req.SystemDeptSearch) (tree []*res.SystemListDeptTree, err error) {
 	inReq := &model.ListReq{
 		Recycle: in.Recycle,

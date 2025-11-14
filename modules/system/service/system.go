@@ -151,6 +151,7 @@ type (
 	ISystemDept interface {
 		Model(ctx context.Context) *gdb.Model
 		GetSelectTree(ctx context.Context, userId int64) (tree []*res.SystemDeptTree, err error)
+		GetList(ctx context.Context, in *req.SystemDeptSearch) (out []*res.SystemDept, err error)
 		GetListTreeList(ctx context.Context, in *req.SystemDeptSearch) (tree []*res.SystemListDeptTree, err error)
 		GetRecycleTreeList(ctx context.Context, in *req.SystemDeptSearch) (tree []*res.SystemListDeptTree, err error)
 		GetTreeList(ctx context.Context, in *req.SystemDeptSearch) (tree []*res.SystemDeptTree, err error)
@@ -334,12 +335,15 @@ type (
 	}
 	ISystemUserDept interface {
 		Model(ctx context.Context) *gdb.Model
+		GetDeptIdsByUserId(ctx context.Context, userId int64) (deptIds []int64, err error)
 	}
 	ISystemUserPost interface {
 		Model(ctx context.Context) *gdb.Model
+		GetPostIdsByUserId(ctx context.Context, userId int64) (postIds []int64, err error)
 	}
 	ISystemUserRole interface {
 		Model(ctx context.Context) *gdb.Model
+		GetRoleIdsByUserId(ctx context.Context, userId int64) (roleIds []int64, err error)
 	}
 )
 

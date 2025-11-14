@@ -39,7 +39,7 @@ type GetNoticeListRes struct {
 }
 
 type GetLoginLogListReq struct {
-	g.Meta `path:"/common/getLoginLogList" method:"get" tags:"公共方法" summary:"获取登录日志列表." x-exceptAuth:"true" x-permission:"system:common:getLoginLogList"`
+	g.Meta `path:"/common/getLoginLogList" method:"get" tags:"公共方法" summary:"获取登录日志列表." x-exceptAuth:"true"`
 	model.AuthorHeader
 	model.PageListReq
 }
@@ -51,7 +51,7 @@ type GetLoginLogListRes struct {
 }
 
 type GetOperationLogListReq struct {
-	g.Meta `path:"/common/getOperationLogList" method:"get" tags:"公共方法" summary:"获取操作日志列表." x-exceptAuth:"true" x-permission:"system:common:getOperationLogList"`
+	g.Meta `path:"/common/getOperationLogList" method:"get" tags:"公共方法" summary:"获取操作日志列表." x-exceptAuth:"true"`
 	model.AuthorHeader
 	model.PageListReq
 }
