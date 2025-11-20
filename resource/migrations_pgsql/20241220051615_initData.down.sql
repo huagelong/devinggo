@@ -26,7 +26,7 @@ TRUNCATE TABLE system_role CASCADE;
 TRUNCATE TABLE system_role_dept CASCADE;
 TRUNCATE TABLE system_role_menu CASCADE;
 TRUNCATE TABLE system_uploadfile CASCADE;
-TRUNCATE TABLE system_user CASCADE;
+TRUNCATE TABLE "system_user" CASCADE;
 TRUNCATE TABLE system_user_dept CASCADE;
 TRUNCATE TABLE system_user_post CASCADE;
 TRUNCATE TABLE system_user_role CASCADE;
