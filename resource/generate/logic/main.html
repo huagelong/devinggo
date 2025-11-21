@@ -362,7 +362,7 @@ func (s *s{% .tableCaseCamelName %}) Update(ctx context.Context, in *req.{% .tab
 }
 {% end %}
 
-{% if contains .generateMenus "delete"  %}
+{% if or (contains .generateMenus "delete")  (contains .generateMenus "recycle")  %}
 func (s *s{% .tableCaseCamelName %}) Delete(ctx context.Context, ids []{% getModelColumnTypeFromColumName .columns "id" %}) (err error) {
     {% if hasField  .columns "level" %}
     // 为每个要删除的ID处理其子分类
@@ -392,7 +392,8 @@ func (s *s{% .tableCaseCamelName %}) Delete(ctx context.Context, ids []{% getMod
     }
     return
 }
-
+{% end %}
+{% if contains .generateMenus "recycle"  %}
 func (s *s{% .tableCaseCamelName %}) RealDelete(ctx context.Context, ids []{% getModelColumnTypeFromColumName .columns "id" %}) (err error) {
     {% if hasField  .columns "level" %}
     // 为每个要删除的ID处理其子分类
@@ -423,8 +424,6 @@ func (s *s{% .tableCaseCamelName %}) RealDelete(ctx context.Context, ids []{% ge
     }
     return
 }
-{% end %}
-{% if contains .generateMenus "recycle"  %}
 func (s *s{% .tableCaseCamelName %}) Recovery(ctx context.Context, ids []{% getModelColumnTypeFromColumName .columns "id" %}) (err error) {
     {% if hasField  .columns "level" %}
 // 为每个要恢复的ID处理其子分类

@@ -549,27 +549,27 @@ func (s *sSettingGenerateTables) generateOneCode(ctx context.Context, codePath s
 	}
 	tableCaseCamelLowerName := gstr.CaseCamelLower(tables.TableName)
 	apiCode := coders.Get("apiCode")
-	err = gfile.PutContents(codePath+"/"+tables.ModuleName+"/api/"+tables.TableName+".go", apiCode)
+	err = gfile.PutContents(codePath+"/server/modules/"+tables.ModuleName+"/api/"+tables.TableName+".go", apiCode)
 	if err != nil {
 		return
 	}
 	modelReqCode := coders.Get("modelReqCode")
-	err = gfile.PutContents(codePath+"/"+tables.ModuleName+"/model/req/"+tables.TableName+".go", modelReqCode)
+	err = gfile.PutContents(codePath+"/server/modules/"+tables.ModuleName+"/model/req/"+tables.TableName+".go", modelReqCode)
 	if err != nil {
 		return
 	}
 	modelResCode := coders.Get("modelResCode")
-	err = gfile.PutContents(codePath+"/"+tables.ModuleName+"/model/res/"+tables.TableName+".go", modelResCode)
+	err = gfile.PutContents(codePath+"/server/modules/"+tables.ModuleName+"/model/res/"+tables.TableName+".go", modelResCode)
 	if err != nil {
 		return
 	}
 	logicCode := coders.Get("logicCode")
-	err = gfile.PutContents(codePath+"/"+tables.ModuleName+"/logic/"+tables.ModuleName+"/"+tables.TableName+".go", logicCode)
+	err = gfile.PutContents(codePath+"/server/modules/"+tables.ModuleName+"/logic/"+tables.ModuleName+"/"+tables.TableName+".go", logicCode)
 	if err != nil {
 		return
 	}
 	controllerCode := coders.Get("controllerCode")
-	err = gfile.PutContents(codePath+"/"+tables.ModuleName+"/controller/"+tables.TableName+".go", controllerCode)
+	err = gfile.PutContents(codePath+"/server/modules/"+tables.ModuleName+"/controller/"+tables.TableName+".go", controllerCode)
 	if err != nil {
 		return
 	}
@@ -584,21 +584,21 @@ func (s *sSettingGenerateTables) generateOneCode(ctx context.Context, codePath s
 	version := startTime.In(timezone).Format("20060102150405")
 	basename := fmt.Sprintf("%s_%s.%s%s", version, tables.TableName, "up", ext)
 	basenameDown := fmt.Sprintf("%s_%s.%s%s", version, tables.TableName, "down", ext)
-	err = gfile.PutContents(codePath+"/sql/"+basename, sqlCode)
+	err = gfile.PutContents(codePath+"/server/resource/migrations_pgsql/"+basename, sqlCode)
 	if err != nil {
 		return
 	}
-	err = gfile.PutContents(codePath+"/sql/"+basenameDown, downSqlCode)
+	err = gfile.PutContents(codePath+"/server/resource/migrations_pgsql/"+basenameDown, downSqlCode)
 	if err != nil {
 		return
 	}
 	vueCode := coders.Get("vueCode")
-	err = gfile.PutContents(codePath+"/vue/views/"+tables.ModuleName+"/"+tableCaseCamelLowerName+"/index.vue", vueCode)
+	err = gfile.PutContents(codePath+"/admin/src/views/"+tables.ModuleName+"/"+tableCaseCamelLowerName+"/index.vue", vueCode)
 	if err != nil {
 		return
 	}
 	jsApiCode := coders.Get("jsApiCode")
-	err = gfile.PutContents(codePath+"/vue/api/"+tables.ModuleName+"/"+tableCaseCamelLowerName+".js", jsApiCode)
+	err = gfile.PutContents(codePath+"/admin/src/api/"+tables.ModuleName+"/"+tableCaseCamelLowerName+".js", jsApiCode)
 	if err != nil {
 		return
 	}
@@ -633,7 +633,7 @@ func (s *sSettingGenerateTables) generateModelRes(ctx context.Context, view *gvi
 	tableCaseCamelName := gstr.CaseCamel(tables.TableName)
 	tableCaseCamelLowerName := gstr.CaseCamelLower(tables.TableName)
 	generateMenus := gstr.Split(tables.GenerateMenus, ",")
-	hasGtime := s.hasGtime(ctx, columns, []string{"isList"})
+	hasGtime := s.hasGtimeNoDataType(ctx, columns)
 	code, err = view.Parse(context.TODO(), "model/res.html", g.Map{"table": tables, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName, "columns": columns, "hasGtime": hasGtime, "generateMenus": generateMenus})
 	if err != nil {
 		return
@@ -904,7 +904,7 @@ func (s *sSettingGenerateTables) getOptions(ctx context.Context, tables *entity.
 		options.Set("operationColumn", true)
 		options.Set("edit", g.Map{"show": true, "api": tableCaseCamelLowerName + ".update", "auth": []string{authCode + ":update"}})
 	}
-	if s.sliceContains(generateMenus, "delete") {
+	if s.sliceContains(generateMenus, "delete") || s.sliceContains(generateMenus, "recycle") {
 		options.Set("operationColumn", true)
 		options.Set("delete", g.Map{"show": true, "api": tableCaseCamelLowerName + ".deletes", "auth": []string{authCode + ":delete"}})
 		if s.sliceContains(generateMenus, "recycle") {
@@ -912,6 +912,7 @@ func (s *sSettingGenerateTables) getOptions(ctx context.Context, tables *entity.
 			options.Set("recovery", g.Map{"show": true, "api": tableCaseCamelLowerName + ".recoverys", "auth": []string{authCode + ":recovery"}})
 		}
 	}
+
 	requestRoute := gstr.ToLower(tables.ModuleName) + "/" + tableCaseCamelLowerName
 	if s.sliceContains(generateMenus, "import") {
 		options.Set("import", g.Map{"show": true, "url": "'" + requestRoute + "/import'", "templateUrl": "'" + requestRoute + "/downloadTemplate'", "auth": []string{authCode + ":import"}})
@@ -1036,6 +1037,16 @@ func (s *sSettingGenerateTables) hasGtime(ctx context.Context, columns []*entity
 					return true
 				}
 			}
+		}
+	}
+	return false
+}
+
+func (s *sSettingGenerateTables) hasGtimeNoDataType(ctx context.Context, columns []*entity.SettingGenerateColumns) bool {
+	for _, column := range columns {
+		parseColumnType := s.parseColumnType(*column)
+		if parseColumnType == "*gtime.Time" {
+			return true
 		}
 	}
 	return false

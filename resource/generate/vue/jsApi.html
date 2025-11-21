@@ -142,7 +142,7 @@ read (id) {
 },
 {% end %}
 
-{% if contains .generateMenus "delete"  %}
+{% if or (contains .generateMenus "delete")  (contains .generateMenus "recycle")  %}
 /**
 * 将{% .tableCaseCamelLowerName %}删除，有软删除则移动到回收站
 * @returns

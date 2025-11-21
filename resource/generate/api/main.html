@@ -111,7 +111,7 @@ type Update{% .tableCaseCamelName %}Res struct {
 }
 {% end %}
 
-{% if contains .generateMenus "delete"  %}
+{% if or (contains .generateMenus "delete")  (contains .generateMenus "recycle")  %}
 type Delete{% .tableCaseCamelName %}Req struct {
     g.Meta `path:"/{% .tableCaseCamelLowerName %}/delete" method:"delete" tags:"{%  cleanStr .table.TableComment %}" summary:"删除" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:delete"`
     model.AuthorHeader
@@ -125,7 +125,6 @@ type Delete{% .tableCaseCamelName %}Res struct {
 {% end %}
 
 {% if contains .generateMenus "recycle"  %}
-
 type Recycle{% .tableCaseCamelName %}Req struct {
     g.Meta `path:"/{% .tableCaseCamelLowerName %}/recycle" method:"get" tags:"{%  cleanStr .table.TableComment %}" summary:"回收站列表" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:recycle" `
     model.AuthorHeader
