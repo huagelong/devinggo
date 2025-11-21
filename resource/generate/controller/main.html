@@ -55,7 +55,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Index(ctx context.Context, in
    out.PageRes.Pack(in, totalCount)
    return
 }
-
+{% if contains .generateMenus "recycle"  %}
 func (c *{% .tableCaseCamelLowerName %}Controller) Recycle(ctx context.Context, in *api.Recycle{% .tableCaseCamelName %}Req) (out *api.Recycle{% .tableCaseCamelName %}Res, err error) {
     out = &api.Recycle{% .tableCaseCamelName %}Res{}
     pageListReq := &in.PageListReq
@@ -75,7 +75,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Recycle(ctx context.Context, 
   out.PageRes.Pack(in, totalCount)
     return
 }
-
+{% end %}
 func (c *{% .tableCaseCamelLowerName %}Controller) List(ctx context.Context, in *api.List{% .tableCaseCamelName %}Req) (out *api.List{% .tableCaseCamelName %}Res, err error) { 
     out = &api.List{% .tableCaseCamelName %}Res{}
     rs, err := service.{% .tableCaseCamelName %}().GetList(ctx, &in.ListReq, &in.{% .tableCaseCamelName %}Search)
@@ -110,7 +110,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) TreeIndex(ctx context.Context
     }
     return
 }
-
+{% if contains .generateMenus "recycle"  %}
 func (c *{% .tableCaseCamelLowerName %}Controller) TreeRecycle(ctx context.Context, in *api.TreeRecycle{% .tableCaseCamelName %}Req) (out *api.TreeRecycle{% .tableCaseCamelName %}Res, err error) {
     out = &api.TreeRecycle{% .tableCaseCamelName %}Res{}
     listReq := &in.ListReq
@@ -128,7 +128,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) TreeRecycle(ctx context.Conte
     }
     return
 }
-
+{% end %}
 func (c *{% .tableCaseCamelLowerName %}Controller) Tree(ctx context.Context, in *api.Tree{% .tableCaseCamelName %}Req) (out *api.Tree{% .tableCaseCamelName %}Res, err error) {
     out = &api.Tree{% .tableCaseCamelName %}Res{}
     items, err := service.{% .tableCaseCamelName %}().GetSelectTree(ctx, &in.ListReq, &in.{% .tableCaseCamelName %}Search)
@@ -179,7 +179,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Update(ctx context.Context, i
     return
 }
 {% end %}
-{% if contains .generateMenus "delete"  %}
+
+{% if or (contains .generateMenus "delete")  (contains .generateMenus "recycle")  %}
 func (c *{% .tableCaseCamelLowerName %}Controller) Delete(ctx context.Context, in *api.Delete{% .tableCaseCamelName %}Req) (out *api.Delete{% .tableCaseCamelName %}Res, err error) {
     out = &api.Delete{% .tableCaseCamelName %}Res{}
     err = service.{% .tableCaseCamelName %}().Delete(ctx, in.Ids)
@@ -188,6 +189,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Delete(ctx context.Context, i
     }
     return
 }
+{% end %}
+{% if contains .generateMenus "recycle"  %}
 func (c *{% .tableCaseCamelLowerName %}Controller) RealDelete(ctx context.Context, in *api.RealDelete{% .tableCaseCamelName %}Req) (out *api.RealDelete{% .tableCaseCamelName %}Res, err error) {
     out = &api.RealDelete{% .tableCaseCamelName %}Res{}
     err = service.{% .tableCaseCamelName %}().RealDelete(ctx, in.Ids)
@@ -196,8 +199,6 @@ func (c *{% .tableCaseCamelLowerName %}Controller) RealDelete(ctx context.Contex
     }
     return
 }
-{% end %}
-{% if contains .generateMenus "recycle"  %}
 func (c *{% .tableCaseCamelLowerName %}Controller) Recovery(ctx context.Context, in *api.Recovery{% .tableCaseCamelName %}Req) (out *api.Recovery{% .tableCaseCamelName %}Res, err error) {
     out = &api.Recovery{% .tableCaseCamelName %}Res{}
     err = service.{% .tableCaseCamelName %}().Recovery(ctx, in.Ids)

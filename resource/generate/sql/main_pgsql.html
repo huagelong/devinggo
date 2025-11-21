@@ -62,7 +62,7 @@ BEGIN
     VALUES (menu_id, menu_level, '{%.table.MenuName%}' || '状态变更', '{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}' || ':changeStatus', NULL, NULL, NULL, NULL, '2', 'B', '1', 0, {%.adminId%}, NULL, NOW(), NOW(), NULL, NULL);
 {%end%}
 
-{% if contains .generateMenus "delete"  %}
+{% if or (contains .generateMenus "delete")  (contains .generateMenus "recycle")  %}
     -- Insert delete menu
     INSERT INTO "{%.menuTableName%}"("parent_id", "level", "name", "code", "icon", "route", "component", "redirect", "is_hidden", "type", "status", "sort", "created_by", "updated_by", "created_at", "updated_at", "deleted_at", "remark") 
     VALUES (menu_id, menu_level, '{%.table.MenuName%}' || '删除', '{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}' || ':delete', NULL, NULL, NULL, NULL, '2', 'B', '1', 0, {%.adminId%}, NULL, NOW(), NOW(), NULL, NULL);
