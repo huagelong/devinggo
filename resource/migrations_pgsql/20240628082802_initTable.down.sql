@@ -26,7 +26,7 @@ drop table if exists system_role;
 drop table if exists system_role_dept;
 drop table if exists system_role_menu;
 drop table if exists system_uploadfile;
-drop table if exists system_user;
+drop table if exists "system_user";
 drop table if exists system_user_dept;
 drop table if exists system_user_post;
 drop table if exists system_user_role;
