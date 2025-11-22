@@ -729,7 +729,7 @@ func (s *sSettingGenerateTables) generateVue(ctx context.Context, view *gview.Vi
 	tableCaseCamelLowerName := gstr.CaseCamelLower(tables.TableName)
 	generateMenus := gstr.Split(tables.GenerateMenus, ",")
 	adminId := service.SystemUser().GetSupserAdminId(ctx)
-	columnsView, err := s.getColumns(ctx, columns)
+	columnsView, err := s.getColumns(ctx, columns, tables)
 	if err != nil {
 		return
 	}
@@ -752,7 +752,7 @@ func (s *sSettingGenerateTables) generateJsApi(ctx context.Context, view *gview.
 	tableCaseCamelLowerName := gstr.CaseCamelLower(tables.TableName)
 	generateMenus := gstr.Split(tables.GenerateMenus, ",")
 	adminId := service.SystemUser().GetSupserAdminId(ctx)
-	columnsView, err := s.getColumns(ctx, columns)
+	columnsView, err := s.getColumns(ctx, columns, tables)
 	if err != nil {
 		return
 	}
@@ -772,13 +772,14 @@ func (s *sSettingGenerateTables) generateJsApi(ctx context.Context, view *gview.
 	return
 }
 
-func (s *sSettingGenerateTables) getColumns(ctx context.Context, columns []*entity.SettingGenerateColumns) (string, error) {
+func (s *sSettingGenerateTables) getColumns(ctx context.Context, columns []*entity.SettingGenerateColumns, tables *entity.SettingGenerateTables) (string, error) {
 	options := make([]*gmap.StrAnyMap, 0)
 	for _, column := range columns {
 		tmp := gmap.NewStrAnyMap()
+		formType := s.getViewType(column.ViewType)
 		tmp.Set("title", column.ColumnComment)
 		tmp.Set("dataIndex", column.ColumnName)
-		tmp.Set("formType", s.getViewType(column.ViewType))
+		tmp.Set("formType", formType)
 		if column.IsQuery == 2 {
 			tmp.Set("search", true)
 		} else {
@@ -841,6 +842,13 @@ func (s *sSettingGenerateTables) getColumns(ctx context.Context, columns []*enti
 
 		if !g.IsEmpty(column.DictType) {
 			tmp.Set("dict", g.Map{"name": column.DictType, "props": g.Map{"label": "title", "value": "key"}, "translation": true})
+		}
+
+		if formType == "tree-select" || formType == "treeSelect" {
+			tableCaseCamelLowerName := gstr.CaseCamelLower(tables.TableName)
+			requestRoute := gstr.ToLower(tables.ModuleName) + "/" + tableCaseCamelLowerName
+			tmp.Set("dict", g.Map{"url": requestRoute + "/tree", "params": g.Map{"onlyMenu": true}})
+			tmp.Set("addDefaultValue", 0)
 		}
 
 		if column.ViewType == "password" {
