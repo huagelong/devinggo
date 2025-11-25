@@ -847,7 +847,7 @@ func (s *sSettingGenerateTables) getColumns(ctx context.Context, columns []*enti
 		if formType == "tree-select" || formType == "treeSelect" {
 			tableCaseCamelLowerName := gstr.CaseCamelLower(tables.TableName)
 			requestRoute := gstr.ToLower(tables.ModuleName) + "/" + tableCaseCamelLowerName
-			tmp.Set("dict", g.Map{"url": requestRoute + "/tree", "params": g.Map{"onlyMenu": true}})
+			tmp.Set("dict", g.Map{"url": requestRoute + "/tree", "params": g.Map{"onlyMenu": true}, "translation": true})
 			tmp.Set("addDefaultValue", 0)
 		}
 
