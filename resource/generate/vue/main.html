@@ -20,6 +20,16 @@
                           :default-checked="record.status == 1" />
             </template>
             {% end %}
+
+            {%range $key, $column := .columns %}
+                {% if and (or (eq $column.ColumnName "created_by") (eq $column.ColumnName "updated_by")) (eq $column.IsList 2)  %}
+                    <template #{% $column.ColumnName %}="{ record }">
+                        {{ record.{% $column.ColumnName %}_related.nickname }}
+                    </template>
+                {% end %}
+            {%end%}
+
+
         </ma-crud>
     </div>
 </template>
