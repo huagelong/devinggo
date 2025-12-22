@@ -20,6 +20,7 @@ type SettingGenerateTables struct {
 	BelongMenuId  int64       `json:"belong_menu_id"   description:"所属菜单"`                                                     // 所属菜单
 	PackageName   string      `json:"package_name"      description:"控制器包名"`                                                   // 控制器包名
 	Type          string      `json:"type"                     description:"生成类型，single 单表CRUD，tree 树表CRUD，parent_sub父子表CRUD"` // 生成类型，single 单表CRUD，tree 树表CRUD，parent_sub父子表CRUD
+	TplType       string      `json:"tpl_type"               description:"Vue模板类型: default(Arco Design) / ruoyi(RuoYi)"`  // Vue模板类型
 	GenerateType  int         `json:"generate_type"    description:"1 压缩包下载 2 生成到模块"`                                          // 1 压缩包下载 2 生成到模块
 	GenerateMenus string      `json:"generate_menus"  description:"生成菜单列表"`                                                    // 生成菜单列表
 	BuildMenu     int         `json:"build_menu"          description:"是否构建菜单"`                                                // 是否构建菜单

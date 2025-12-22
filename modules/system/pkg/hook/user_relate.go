@@ -27,9 +27,9 @@ func UserRelate(ctx context.Context, result gdb.Result, fieldNames []string) (gd
 			}
 		}
 	}
-
+	g.Log().Debug(ctx, "UserRelate", "memberIds", memberIds)
 	if len(memberIds) == 0 {
-		return result, nil
+		return emptyUserRelate(result, fieldNames), nil
 	}
 	memberIds = slice.Unique(memberIds)
 
@@ -54,7 +54,12 @@ func UserRelate(ctx context.Context, result gdb.Result, fieldNames []string) (gd
 	for _, record := range result {
 		for _, fieldName := range fieldNames {
 			cacheName := fieldName + "_relate"
-			record[cacheName] = gvar.New(findMember(record[fieldName]))
+			realMember := findMember(record[fieldName])
+			if realMember != nil {
+				record[cacheName] = gvar.New(realMember)
+			} else {
+				record[cacheName] = gvar.New(g.Map{})
+			}
 		}
 	}
 	return result, nil

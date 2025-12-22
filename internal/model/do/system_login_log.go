@@ -12,14 +12,14 @@ import (
 // SystemLoginLog is the golang structure of table system_login_log for DAO operations like Where/Data.
 type SystemLoginLog struct {
 	g.Meta     `orm:"table:system_login_log, do:true"`
-	Id         interface{} // 主键
-	Username   interface{} // 用户名
-	Ip         interface{} // 登录IP地址
-	IpLocation interface{} // IP所属地
-	Os         interface{} // 操作系统
-	Browser    interface{} // 浏览器
-	Status     interface{} // 登录状态 (1成功 2失败)
-	Message    interface{} // 提示消息
+	Id         any         // 主键
+	Username   any         // 用户名
+	Ip         any         // 登录IP地址
+	IpLocation any         // IP所属地
+	Os         any         // 操作系统
+	Browser    any         // 浏览器
+	Status     any         // 登录状态 (1成功 2失败)
+	Message    any         // 提示消息
 	LoginTime  *gtime.Time // 登录时间
-	Remark     interface{} // 备注
+	Remark     any         // 备注
 }

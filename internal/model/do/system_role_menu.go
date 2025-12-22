@@ -11,6 +11,6 @@ import (
 // SystemRoleMenu is the golang structure of table system_role_menu for DAO operations like Where/Data.
 type SystemRoleMenu struct {
 	g.Meta `orm:"table:system_role_menu, do:true"`
-	RoleId interface{} // 角色主键
-	MenuId interface{} // 菜单主键
+	RoleId any // 角色主键
+	MenuId any // 菜单主键
 }

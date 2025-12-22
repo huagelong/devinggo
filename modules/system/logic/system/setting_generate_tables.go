@@ -270,6 +270,7 @@ func (s *sSettingGenerateTables) SyncCode(ctx context.Context, id int64) (err er
 func (s *sSettingGenerateTables) UpdateTableAndColumns(ctx context.Context, in *req.TableAndColumnsUpdate) (err error) {
 
 	updateData := &do.SettingGenerateTables{
+		// TplType:       in.TplType,
 		GenerateType:  in.GenerateType,
 		BuildMenu:     in.BuildMenu,
 		MenuName:      in.MenuName,
@@ -464,6 +465,7 @@ func (s *sSettingGenerateTables) getOneCode(ctx context.Context, id int64) (rs *
 	view.BindFunc("caseCamel", s.caseCamel)
 	view.BindFunc("cleanStr", s.cleanStr)
 	view.BindFunc("parseColumnType", s.parseColumnType)
+	view.BindFunc("parseSimpleColumnType", s.parseSimpleColumnType)
 	view.BindFunc("getModelColumnType", s.getModelColumnType)
 	view.BindFunc("getModelColumnTypeFromColumName", s.getModelColumnTypeFromColumName)
 	apiCode, err := s.generateApi(ctx, view, tables, columns)
@@ -620,7 +622,7 @@ func (s *sSettingGenerateTables) generateApi(ctx context.Context, view *gview.Vi
 func (s *sSettingGenerateTables) generateModelReq(ctx context.Context, view *gview.View, tables *entity.SettingGenerateTables, columns []*entity.SettingGenerateColumns) (code string, err error) {
 	tableCaseCamelName := gstr.CaseCamel(tables.TableName)
 	tableCaseCamelLowerName := gstr.CaseCamelLower(tables.TableName)
-	hasGtime := s.hasGtime(ctx, columns, []string{"isInsert", "isEdit", "isQuery"})
+	hasGtime := s.hasGtimeNoDataType(ctx, columns)
 	code, err = view.Parse(context.TODO(), "model/req.html", g.Map{"table": tables, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName, "columns": columns, "hasGtime": hasGtime})
 	if err != nil {
 		return
@@ -729,17 +731,69 @@ func (s *sSettingGenerateTables) generateVue(ctx context.Context, view *gview.Vi
 	tableCaseCamelLowerName := gstr.CaseCamelLower(tables.TableName)
 	generateMenus := gstr.Split(tables.GenerateMenus, ",")
 	adminId := service.SystemUser().GetSupserAdminId(ctx)
+
+	// ... existing code ...
+
+	// 直接获取列配置数组而不是字符串
 	columnsView, err := s.getColumns(ctx, columns, tables)
 	if err != nil {
 		return
 	}
+
 	OptionsView, err := s.getOptions(ctx, tables, columns)
 	if err != nil {
 		return
 	}
 
 	authCode := tables.ModuleName + "_" + tableCaseCamelLowerName
-	code, err = view.Parse(context.TODO(), "vue/main.html", g.Map{"table": tables, "authCode": authCode, "adminId": adminId, "OptionsView": OptionsView, "columnsView": columnsView, "generateMenus": generateMenus, "tableCaseCamelName": tableCaseCamelName, "tableCaseCamelLowerName": tableCaseCamelLowerName})
+
+	// 根据 tpl_type 选择模板
+	var tplPath string
+	var treeConfig g.Map
+	var columnsViewForTemplate interface{}
+	var OptionsViewForTemplate string
+
+	g.Log().Infof(ctx, "[generateVue] 表名: %s, tplType: %s, type: %s", tables.TableName, tables.TplType, tables.Type)
+	if tables.TplType == "ruoyi" {
+		// RuoYi 模板使用数据数组
+		columnsViewForTemplate = columnsView
+		OptionsViewForTemplate = "" // RuoYi 模板不使用 OptionsView
+		if tables.Type == "tree" {
+			tplPath = "vue/ruoyi/main-tree.html"
+			// 提取树表配置
+			jOptions := gjson.New(tables.Options)
+			treeConfig = g.Map{
+				"tree_id":        jOptions.Get("tree_id").String(),
+				"tree_parent_id": jOptions.Get("tree_parent_id").String(),
+				"tree_name":      jOptions.Get("tree_name").String(),
+			}
+		} else {
+			tplPath = "vue/ruoyi/main.html"
+		}
+	} else {
+		// 默认模板使用 JavaScript 代码字符串
+		columnsViewForTemplate = "const columns = reactive(" + s.marshalColumnsToJson(columnsView) + ")"
+		OptionsViewForTemplate = OptionsView
+		tplPath = "vue/main.html"
+	}
+	g.Log().Infof(ctx, "[generateVue] 选择的模板路径: %s", tplPath)
+
+	data := g.Map{
+		"table":                   tables,
+		"columns":                 columns,
+		"authCode":                authCode,
+		"adminId":                 adminId,
+		"OptionsView":             OptionsViewForTemplate,
+		"columnsView":             columnsViewForTemplate,
+		"generateMenus":           generateMenus,
+		"tableCaseCamelName":      tableCaseCamelName,
+		"tableCaseCamelLowerName": tableCaseCamelLowerName,
+	}
+	if treeConfig != nil {
+		data["treeConfig"] = treeConfig
+	}
+
+	code, err = view.Parse(ctx, tplPath, data)
 	if err != nil {
 		return
 	}
@@ -772,98 +826,97 @@ func (s *sSettingGenerateTables) generateJsApi(ctx context.Context, view *gview.
 	return
 }
 
-func (s *sSettingGenerateTables) getColumns(ctx context.Context, columns []*entity.SettingGenerateColumns, tables *entity.SettingGenerateTables) (string, error) {
-	options := make([]*gmap.StrAnyMap, 0)
+func (s *sSettingGenerateTables) getColumns(ctx context.Context, columns []*entity.SettingGenerateColumns, tables *entity.SettingGenerateTables) (interface{}, error) {
+	options := make([]g.Map, 0)
 	for _, column := range columns {
-		tmp := gmap.NewStrAnyMap()
+		tmp := g.Map{}
 		formType := s.getViewType(column.ViewType)
-		tmp.Set("title", column.ColumnComment)
-		tmp.Set("dataIndex", column.ColumnName)
-		tmp.Set("formType", formType)
+		tmp["title"] = column.ColumnComment
+		tmp["dataIndex"] = column.ColumnName
+		tmp["formType"] = formType
 		if column.IsQuery == 2 {
-			tmp.Set("search", true)
+			tmp["search"] = true
 		} else {
-			tmp.Set("search", false)
+			tmp["search"] = false
 		}
 		if column.IsInsert == 2 {
-			tmp.Set("addDisplay", true)
+			tmp["addDisplay"] = true
 		} else {
-			tmp.Set("addDisplay", false)
+			tmp["addDisplay"] = false
 		}
 		if column.IsEdit == 2 {
-			tmp.Set("editDisplay", true)
+			tmp["editDisplay"] = true
 		} else {
-			tmp.Set("editDisplay", false)
+			tmp["editDisplay"] = false
 		}
 		if column.IsList == 2 {
-			tmp.Set("hide", false)
+			tmp["hide"] = false
 		} else {
-			tmp.Set("hide", true)
+			tmp["hide"] = true
 		}
 		if column.IsRequired == 2 {
-			tmp.Set("commonRules", g.Map{"required": true, "message": "请输入" + column.ColumnComment})
+			tmp["commonRules"] = g.Map{"required": true, "message": "请输入" + column.ColumnComment}
 		} else {
-			tmp.Set("commonRules", g.Map{"required": false, "message": "请输入" + column.ColumnComment})
+			tmp["commonRules"] = g.Map{"required": false, "message": "请输入" + column.ColumnComment}
 		}
 		if column.IsSort == 2 {
-			tmp.Set("sortable", g.Map{"sortDirections": []string{"ascend", "descend"}, "sorter": true})
+			tmp["sortable"] = g.Map{"sortDirections": []string{"ascend", "descend"}, "sorter": true}
 		} else {
-			tmp.Set("sortable", g.Map{})
+			tmp["sortable"] = g.Map{}
 		}
 
 		if !g.IsEmpty(column.AllowRoles) {
-			tmp.Set("roles", gstr.Split(column.AllowRoles, ","))
+			tmp["roles"] = gstr.Split(column.AllowRoles, ",")
 		}
 
 		if !g.IsEmpty(column.Options) {
 			j, err := gjson.DecodeToJson(column.Options)
 			if err != nil {
-				return "", err
+				return nil, err
 			}
 			collection := g.Map{}
 			if !g.IsEmpty(j.Get("collection")) {
 				collection = j.Get("collection").Map()
 			}
-			// collection 与 tmp 合并
-			tmp.Merge(gmap.NewStrAnyMapFrom(j.Map()))
+			// ... existing code ...
+			for k, v := range j.Map() {
+				tmp[k] = v
+			}
 			if (column.ViewType == "select" || column.ViewType == "radio" || column.ViewType == "checkbox" || column.ViewType == "transfer") && !g.IsEmpty(collection) {
-				tmp.Set("dict", g.Map{"data": collection, "translation": true})
+				tmp["dict"] = g.Map{"data": collection, "translation": true}
 			}
 
 			if column.ViewType == "date" && j.Get("mode").String() == "date" {
-				tmp.Remove("mode")
+				delete(tmp, "mode")
 				if !g.IsEmpty(j.Get("range")) {
-					tmp.Set("formType", "range")
-					tmp.Remove("range")
+					tmp["formType"] = "range"
+					delete(tmp, "range")
 				}
 			}
-			tmp.Remove("collection")
+			delete(tmp, "collection")
 		}
 
 		if !g.IsEmpty(column.DictType) {
-			tmp.Set("dict", g.Map{"name": column.DictType, "props": g.Map{"label": "title", "value": "key"}, "translation": true})
+			tmp["dict"] = g.Map{"name": column.DictType, "props": g.Map{"label": "title", "value": "key"}, "translation": true}
 		}
 
 		if formType == "tree-select" || formType == "treeSelect" {
 			tableCaseCamelLowerName := gstr.CaseCamelLower(tables.TableName)
 			requestRoute := gstr.ToLower(tables.ModuleName) + "/" + tableCaseCamelLowerName
-			tmp.Set("dict", g.Map{"url": requestRoute + "/tree", "params": g.Map{"onlyMenu": true}, "translation": true})
-			tmp.Set("addDefaultValue", 0)
+			tmp["dict"] = g.Map{"url": requestRoute + "/tree", "params": g.Map{"onlyMenu": true}, "translation": true}
+			tmp["addDefaultValue"] = 0
 		}
 
 		if column.ViewType == "password" {
-			tmp.Set("type", "password")
+			tmp["type"] = "password"
 		}
 		options = append(options, tmp)
 	}
 	if g.IsEmpty(options) {
-		return "", nil
+		return nil, nil
 	} else {
-		optionsJsonSTr, err := s.jsonFormat(options, false)
-		if err != nil {
-			return "", err
-		}
-		return "const columns = reactive(" + optionsJsonSTr + ")", nil
+		// 返回数组对象而不是字符串
+		return options, nil
 	}
 }
 
@@ -877,6 +930,7 @@ func (s *sSettingGenerateTables) getOptions(ctx context.Context, tables *entity.
 	options.Set("pk", "'"+s.getPk(columns)+"'")
 	options.Set("operationColumn", false)
 	options.Set("operationColumnWidth", 160)
+	options.Set("searchColNumber", 3)
 	options.Set("formOption", g.Map{"viewType": "'" + s.getComponentType(tables) + "'", "width": 600})
 
 	jOptions := gjson.New(tables.Options)
@@ -901,7 +955,12 @@ func (s *sSettingGenerateTables) getOptions(ctx context.Context, tables *entity.
 		})
 	}
 	authCode := tables.ModuleName + ":" + tableCaseCamelLowerName
-	options.Set("api", tableCaseCamelLowerName+".getPageList")
+	if tables.Type == "tree" {
+		options.Set("api", tableCaseCamelLowerName+".getList")
+	} else {
+		options.Set("api", tableCaseCamelLowerName+".getPageList")
+	}
+
 	if s.sliceContains(generateMenus, "recycle") {
 		options.Set("recycleApi", tableCaseCamelLowerName+".getPageRecycleList")
 	}
@@ -933,6 +992,18 @@ func (s *sSettingGenerateTables) getOptions(ctx context.Context, tables *entity.
 		return "", err
 	}
 	return "const options = reactive(" + optionsJsonSTr + ")", nil
+}
+
+func (s *sSettingGenerateTables) marshalColumnsToJson(columnsView interface{}) string {
+	if columnsView == nil {
+		return "[]"
+	}
+	jsonData := gjson.New(columnsView)
+	jsonString, err := jsonData.ToJsonIndentString()
+	if err != nil {
+		return "[]"
+	}
+	return jsonString
 }
 
 func (s *sSettingGenerateTables) getComponentType(tables *entity.SettingGenerateTables) string {
@@ -1013,6 +1084,7 @@ func (s *sSettingGenerateTables) getViewType(viewType string) string {
 		"editor":         "editor",
 		"wangEditor":     "wang-editor",
 		"codeEditor":     "code-editor",
+		"markdownEditor": "markdown-editor",
 	}
 	if _, ok := viewTypes[viewType]; ok {
 		return viewTypes[viewType]
@@ -1138,6 +1210,10 @@ func (s *sSettingGenerateTables) parseColumnType(entity entity.SettingGenerateCo
 	} else {
 		return s.getModelColumnType(entity.ColumnType)
 	}
+}
+
+func (s *sSettingGenerateTables) parseSimpleColumnType(entity entity.SettingGenerateColumns) string {
+	return s.getModelColumnType(entity.ColumnType)
 }
 
 func (s *sSettingGenerateTables) getModelColumnTypeFromColumName(columns []*entity.SettingGenerateColumns, columnName string) string {
