@@ -270,7 +270,7 @@ func (s *sSettingGenerateTables) SyncCode(ctx context.Context, id int64) (err er
 func (s *sSettingGenerateTables) UpdateTableAndColumns(ctx context.Context, in *req.TableAndColumnsUpdate) (err error) {
 
 	updateData := &do.SettingGenerateTables{
-		// TplType:       in.TplType,
+		TplType:       in.TplType,
 		GenerateType:  in.GenerateType,
 		BuildMenu:     in.BuildMenu,
 		MenuName:      in.MenuName,
