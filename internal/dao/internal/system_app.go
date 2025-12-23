@@ -11,14 +11,15 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// SystemAppDao is the data access object for table system_app.
+// SystemAppDao is the data access object for the table system_app.
 type SystemAppDao struct {
-	table   string           // table is the underlying table name of the DAO.
-	group   string           // group is the database configuration group name of current DAO.
-	columns SystemAppColumns // columns contains all the column names of Table for convenient usage.
+	table    string             // table is the underlying table name of the DAO.
+	group    string             // group is the database configuration group name of the current DAO.
+	columns  SystemAppColumns   // columns contains all the column names of Table for convenient usage.
+	handlers []gdb.ModelHandler // handlers for customized model modification.
 }
 
-// SystemAppColumns defines and stores column names for table system_app.
+// SystemAppColumns defines and stores column names for the table system_app.
 type SystemAppColumns struct {
 	Id          string // 主键
 	GroupId     string // 应用组ID
@@ -35,7 +36,7 @@ type SystemAppColumns struct {
 	Remark      string // 备注
 }
 
-// systemAppColumns holds the columns for table system_app.
+// systemAppColumns holds the columns for the table system_app.
 var systemAppColumns = SystemAppColumns{
 	Id:          "id",
 	GroupId:     "group_id",
@@ -53,44 +54,49 @@ var systemAppColumns = SystemAppColumns{
 }
 
 // NewSystemAppDao creates and returns a new DAO object for table data access.
-func NewSystemAppDao() *SystemAppDao {
+func NewSystemAppDao(handlers ...gdb.ModelHandler) *SystemAppDao {
 	return &SystemAppDao{
-		group:   "default",
-		table:   "system_app",
-		columns: systemAppColumns,
+		group:    "default",
+		table:    "system_app",
+		columns:  systemAppColumns,
+		handlers: handlers,
 	}
 }
 
-// DB retrieves and returns the underlying raw database management object of current DAO.
+// DB retrieves and returns the underlying raw database management object of the current DAO.
 func (dao *SystemAppDao) DB() gdb.DB {
 	return g.DB(dao.group)
 }
 
-// Table returns the table name of current dao.
+// Table returns the table name of the current DAO.
 func (dao *SystemAppDao) Table() string {
 	return dao.table
 }
 
-// Columns returns all column names of current dao.
+// Columns returns all column names of the current DAO.
 func (dao *SystemAppDao) Columns() SystemAppColumns {
 	return dao.columns
 }
 
-// Group returns the configuration group name of database of current dao.
+// Group returns the database configuration group name of the current DAO.
 func (dao *SystemAppDao) Group() string {
 	return dao.group
 }
 
-// Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
+// Ctx creates and returns a Model for the current DAO. It automatically sets the context for the current operation.
 func (dao *SystemAppDao) Ctx(ctx context.Context) *gdb.Model {
-	return dao.DB().Model(dao.table).Safe().Ctx(ctx)
+	model := dao.DB().Model(dao.table)
+	for _, handler := range dao.handlers {
+		model = handler(model)
+	}
+	return model.Safe().Ctx(ctx)
 }
 
 // Transaction wraps the transaction logic using function f.
-// It rollbacks the transaction and returns the error from function f if it returns non-nil error.
+// It rolls back the transaction and returns the error if function f returns a non-nil error.
 // It commits the transaction and returns nil if function f returns nil.
 //
-// Note that, you should not Commit or Rollback the transaction in function f
+// Note: Do not commit or roll back the transaction in function f,
 // as it is automatically handled by this function.
 func (dao *SystemAppDao) Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error) {
 	return dao.Ctx(ctx).Transaction(ctx, f)

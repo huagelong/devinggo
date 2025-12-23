@@ -11,14 +11,15 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// SettingGenerateTablesDao is the data access object for table setting_generate_tables.
+// SettingGenerateTablesDao is the data access object for the table setting_generate_tables.
 type SettingGenerateTablesDao struct {
-	table   string                       // table is the underlying table name of the DAO.
-	group   string                       // group is the database configuration group name of current DAO.
-	columns SettingGenerateTablesColumns // columns contains all the column names of Table for convenient usage.
+	table    string                       // table is the underlying table name of the DAO.
+	group    string                       // group is the database configuration group name of the current DAO.
+	columns  SettingGenerateTablesColumns // columns contains all the column names of Table for convenient usage.
+	handlers []gdb.ModelHandler           // handlers for customized model modification.
 }
 
-// SettingGenerateTablesColumns defines and stores column names for table setting_generate_tables.
+// SettingGenerateTablesColumns defines and stores column names for the table setting_generate_tables.
 type SettingGenerateTablesColumns struct {
 	Id            string // 主键
 	TableName     string // 表名称
@@ -40,9 +41,10 @@ type SettingGenerateTablesColumns struct {
 	UpdatedAt     string // 更新时间
 	Remark        string // 备注
 	Source        string // db连接群组
+	TplType       string // Vue模板类型: default(Arco Design) / ruoyi(RuoYi)
 }
 
-// settingGenerateTablesColumns holds the columns for table setting_generate_tables.
+// settingGenerateTablesColumns holds the columns for the table setting_generate_tables.
 var settingGenerateTablesColumns = SettingGenerateTablesColumns{
 	Id:            "id",
 	TableName:     "table_name",
@@ -64,47 +66,53 @@ var settingGenerateTablesColumns = SettingGenerateTablesColumns{
 	UpdatedAt:     "updated_at",
 	Remark:        "remark",
 	Source:        "source",
+	TplType:       "tpl_type",
 }
 
 // NewSettingGenerateTablesDao creates and returns a new DAO object for table data access.
-func NewSettingGenerateTablesDao() *SettingGenerateTablesDao {
+func NewSettingGenerateTablesDao(handlers ...gdb.ModelHandler) *SettingGenerateTablesDao {
 	return &SettingGenerateTablesDao{
-		group:   "default",
-		table:   "setting_generate_tables",
-		columns: settingGenerateTablesColumns,
+		group:    "default",
+		table:    "setting_generate_tables",
+		columns:  settingGenerateTablesColumns,
+		handlers: handlers,
 	}
 }
 
-// DB retrieves and returns the underlying raw database management object of current DAO.
+// DB retrieves and returns the underlying raw database management object of the current DAO.
 func (dao *SettingGenerateTablesDao) DB() gdb.DB {
 	return g.DB(dao.group)
 }
 
-// Table returns the table name of current dao.
+// Table returns the table name of the current DAO.
 func (dao *SettingGenerateTablesDao) Table() string {
 	return dao.table
 }
 
-// Columns returns all column names of current dao.
+// Columns returns all column names of the current DAO.
 func (dao *SettingGenerateTablesDao) Columns() SettingGenerateTablesColumns {
 	return dao.columns
 }
 
-// Group returns the configuration group name of database of current dao.
+// Group returns the database configuration group name of the current DAO.
 func (dao *SettingGenerateTablesDao) Group() string {
 	return dao.group
 }
 
-// Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
+// Ctx creates and returns a Model for the current DAO. It automatically sets the context for the current operation.
 func (dao *SettingGenerateTablesDao) Ctx(ctx context.Context) *gdb.Model {
-	return dao.DB().Model(dao.table).Safe().Ctx(ctx)
+	model := dao.DB().Model(dao.table)
+	for _, handler := range dao.handlers {
+		model = handler(model)
+	}
+	return model.Safe().Ctx(ctx)
 }
 
 // Transaction wraps the transaction logic using function f.
-// It rollbacks the transaction and returns the error from function f if it returns non-nil error.
+// It rolls back the transaction and returns the error if function f returns a non-nil error.
 // It commits the transaction and returns nil if function f returns nil.
 //
-// Note that, you should not Commit or Rollback the transaction in function f
+// Note: Do not commit or roll back the transaction in function f,
 // as it is automatically handled by this function.
 func (dao *SettingGenerateTablesDao) Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error) {
 	return dao.Ctx(ctx).Transaction(ctx, f)

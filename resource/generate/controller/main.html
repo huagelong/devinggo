@@ -16,17 +16,13 @@ import (
 "context"
 "github.com/gogf/gf/v2/container/gmap"
 "github.com/gogf/gf/v2/frame/g"
-{% if or (contains .generateMenus "export")  (contains .generateMenus "import")  %}
 "devinggo/modules/system/pkg/excel"
-{% end %}
-{% if contains .generateMenus "import"  %}
 "devinggo/internal/dao"
 "github.com/gogf/gf/v2/database/gdb"
 "devinggo/internal/model/do"
 "devinggo/modules/system/pkg/utils"
 "devinggo/modules/system/myerror"
 "github.com/gogf/gf/v2/util/gconv"
-{% end %}
 )
 
 var (
@@ -55,7 +51,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Index(ctx context.Context, in
    out.PageRes.Pack(in, totalCount)
    return
 }
-{% if contains .generateMenus "recycle"  %}
+
 func (c *{% .tableCaseCamelLowerName %}Controller) Recycle(ctx context.Context, in *api.Recycle{% .tableCaseCamelName %}Req) (out *api.Recycle{% .tableCaseCamelName %}Res, err error) {
     out = &api.Recycle{% .tableCaseCamelName %}Res{}
     pageListReq := &in.PageListReq
@@ -75,7 +71,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Recycle(ctx context.Context, 
   out.PageRes.Pack(in, totalCount)
     return
 }
-{% end %}
+
 func (c *{% .tableCaseCamelLowerName %}Controller) List(ctx context.Context, in *api.List{% .tableCaseCamelName %}Req) (out *api.List{% .tableCaseCamelName %}Res, err error) { 
     out = &api.List{% .tableCaseCamelName %}Res{}
     rs, err := service.{% .tableCaseCamelName %}().GetList(ctx, &in.ListReq, &in.{% .tableCaseCamelName %}Search)
@@ -110,7 +106,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) TreeIndex(ctx context.Context
     }
     return
 }
-{% if contains .generateMenus "recycle"  %}
+
 func (c *{% .tableCaseCamelLowerName %}Controller) TreeRecycle(ctx context.Context, in *api.TreeRecycle{% .tableCaseCamelName %}Req) (out *api.TreeRecycle{% .tableCaseCamelName %}Res, err error) {
     out = &api.TreeRecycle{% .tableCaseCamelName %}Res{}
     listReq := &in.ListReq
@@ -128,7 +124,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) TreeRecycle(ctx context.Conte
     }
     return
 }
-{% end %}
+
 func (c *{% .tableCaseCamelLowerName %}Controller) Tree(ctx context.Context, in *api.Tree{% .tableCaseCamelName %}Req) (out *api.Tree{% .tableCaseCamelName %}Res, err error) {
     out = &api.Tree{% .tableCaseCamelName %}Res{}
     items, err := service.{% .tableCaseCamelName %}().GetSelectTree(ctx, &in.ListReq, &in.{% .tableCaseCamelName %}Search)
@@ -146,7 +142,6 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Tree(ctx context.Context, in 
 }
 {% end %}
 
-{% if contains .generateMenus "save"  %}
 func (c *{% .tableCaseCamelLowerName %}Controller) Save(ctx context.Context, in *api.Save{% .tableCaseCamelName %}Req) (out *api.Save{% .tableCaseCamelName %}Res, err error) {
     out = &api.Save{% .tableCaseCamelName %}Res{}
     id, err := service.{% .tableCaseCamelName %}().Save(ctx, &in.{% .tableCaseCamelName %}Save)
@@ -156,9 +151,8 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Save(ctx context.Context, in 
     out.Id = id
    return
 }
-{% end %}
 
-{% if contains .generateMenus "read"  %}
+
 func (c *{% .tableCaseCamelLowerName %}Controller) Read(ctx context.Context, in *api.Read{% .tableCaseCamelName %}Req) (out *api.Read{% .tableCaseCamelName %}Res, err error) {
     out = &api.Read{% .tableCaseCamelName %}Res{}
     info, err := service.{% .tableCaseCamelName %}().GetById(ctx, in.Id)
@@ -168,8 +162,23 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Read(ctx context.Context, in 
     out.Data = *info
     return
 }
-{% end %}
-{% if contains .generateMenus "update"  %}
+
+func (c *{% .tableCaseCamelLowerName %}Controller) ReadByIds(ctx context.Context, in *api.ReadByIds{% .tableCaseCamelName %}Req) (out *api.ReadByIds{% .tableCaseCamelName %}Res, err error) {
+    out = &api.ReadByIds{% .tableCaseCamelName %}Res{}
+    rs, err := service.{% .tableCaseCamelName %}().GetByIds(ctx, in.Ids)
+    if err != nil {
+        return
+    }
+    if !g.IsEmpty(rs) {
+        for _, v := range rs {
+            out.Data = append(out.Data, *v)
+        }
+    } else {
+        out.Data = make([]res.{% .tableCaseCamelName %}, 0)
+    }
+    return
+}
+
 func (c *{% .tableCaseCamelLowerName %}Controller) Update(ctx context.Context, in *api.Update{% .tableCaseCamelName %}Req) (out *api.Update{% .tableCaseCamelName %}Res, err error) {
     out = &api.Update{% .tableCaseCamelName %}Res{}
     err = service.{% .tableCaseCamelName %}().Update(ctx, &in.{% .tableCaseCamelName %}Update)
@@ -178,9 +187,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Update(ctx context.Context, i
     }
     return
 }
-{% end %}
 
-{% if or (contains .generateMenus "delete")  (contains .generateMenus "recycle")  %}
 func (c *{% .tableCaseCamelLowerName %}Controller) Delete(ctx context.Context, in *api.Delete{% .tableCaseCamelName %}Req) (out *api.Delete{% .tableCaseCamelName %}Res, err error) {
     out = &api.Delete{% .tableCaseCamelName %}Res{}
     err = service.{% .tableCaseCamelName %}().Delete(ctx, in.Ids)
@@ -189,8 +196,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Delete(ctx context.Context, i
     }
     return
 }
-{% end %}
-{% if contains .generateMenus "recycle"  %}
+
 func (c *{% .tableCaseCamelLowerName %}Controller) RealDelete(ctx context.Context, in *api.RealDelete{% .tableCaseCamelName %}Req) (out *api.RealDelete{% .tableCaseCamelName %}Res, err error) {
     out = &api.RealDelete{% .tableCaseCamelName %}Res{}
     err = service.{% .tableCaseCamelName %}().RealDelete(ctx, in.Ids)
@@ -207,7 +213,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Recovery(ctx context.Context,
     }
     return
 }
-{% end %}
+
 
 {% if contains .generateMenus "changeStatus"  %}
 func (c *{% .tableCaseCamelLowerName %}Controller) ChangeStatus(ctx context.Context, in *api.ChangeStatus{% .tableCaseCamelName %}Req) (out *api.ChangeStatus{% .tableCaseCamelName %}Res, err error) {
@@ -230,7 +236,6 @@ func (c *{% .tableCaseCamelLowerName %}Controller) NumberOperation(ctx context.C
 }
 {% end %}
 
-{% if contains .generateMenus "export"  %}
 func (c *{% .tableCaseCamelLowerName %}Controller) Export(ctx context.Context, in *api.Export{% .tableCaseCamelName %}Req) (out *api.Export{% .tableCaseCamelName %}Res, err error) {
     var (
         fileName  = "{% .tableCaseCamelLowerName %}"
@@ -256,9 +261,7 @@ func (c *{% .tableCaseCamelLowerName %}Controller) Export(ctx context.Context, i
     }
     return
 }
-{% end %}
 
-{% if contains .generateMenus "import"  %}
 func (c *{% .tableCaseCamelLowerName %}Controller) Import(ctx context.Context, in *api.Import{% .tableCaseCamelName %}Req) (out *api.Import{% .tableCaseCamelName %}Res, err error) {
     tmpPath := utils.GetTmpDir()
     fileName, err := in.File.Save(tmpPath, true)
@@ -312,8 +315,6 @@ func (c *{% .tableCaseCamelLowerName %}Controller) DownloadTemplate(ctx context.
     }
     return
 }
-
-{% end %}
 
 func (c *{% .tableCaseCamelLowerName %}Controller) Remote(ctx context.Context, in *api.Remote{% .tableCaseCamelName %}Req) (out *api.Remote{% .tableCaseCamelName %}Res, err error) {
     out = &api.Remote{% .tableCaseCamelName %}Res{}

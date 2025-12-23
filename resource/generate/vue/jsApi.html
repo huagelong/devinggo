@@ -35,7 +35,7 @@ getList (params = {}) {
 * 获取{% .tableCaseCamelLowerName %}列表
 * @returns
 */
-getPageList (params = {}) {
+getList (params = {}) {
     return request({
         url: '{% .requestRoute %}/index',
         method: 'get',
@@ -56,7 +56,7 @@ tree () {
 
 {% end %}
 
-{% if contains .generateMenus "recycle"  %}
+
 /**
 * 从回收站获取{% .tableCaseCamelLowerName %}数据列表
 * @returns
@@ -100,10 +100,7 @@ realDeletes (data) {
         data
     })
 },
-{% end %}
 
-
-{% if contains .generateMenus "save"  %}
 /**
 * 添加{% .tableCaseCamelLowerName %}
 * @returns
@@ -115,8 +112,8 @@ save (data = {}) {
         data
     })
 },
-{% end %}
-{% if contains .generateMenus "update"  %}
+
+
 /**
 * 更新{% .tableCaseCamelLowerName %}数据
 * @returns
@@ -128,8 +125,8 @@ update (id, data = {}) {
         data
     })
 },
-{% end %}
-{% if contains .generateMenus "read"  %}
+
+
 /**
 * 读取{% .tableCaseCamelLowerName %}
 * @returns
@@ -140,9 +137,15 @@ read (id) {
         method: 'get'
     })
 },
-{% end %}
 
-{% if or (contains .generateMenus "delete")  (contains .generateMenus "recycle")  %}
+readByIds (data = {}) {
+    return request({
+        url: '{% .requestRoute %}/readByIds',
+        method: 'post',
+        data
+    })
+},
+
 /**
 * 将{% .tableCaseCamelLowerName %}删除，有软删除则移动到回收站
 * @returns
@@ -154,7 +157,7 @@ deletes (data) {
         data
     })
 },
-{% end %}
+
 
 {% if contains .generateMenus "changeStatus"  %}
 /**
@@ -184,7 +187,7 @@ numberOperation (data = {}) {
 },
 {% end %}
 
-{% if contains .generateMenus "import"  %}
+
 /**
 * {% .tableCaseCamelLowerName %}导入
 * @returns
@@ -208,9 +211,9 @@ downloadTemplate () {
         responseType: 'blob'
     })
 },
-{% end %}
 
-{% if contains .generateMenus "export"  %}
+
+
 /**
 * {% .tableCaseCamelLowerName %}导出
 * @returns
@@ -223,6 +226,16 @@ exportExcel (params = {}) {
         params
     })
 },
-{% end %}
 
+/**
+* 远程批量查询标签
+* @returns
+*/
+remote (data = {}) {
+    return request({
+        url: '{% .requestRoute %}/remote',
+        method: 'post',
+        data
+    })
+},
 }

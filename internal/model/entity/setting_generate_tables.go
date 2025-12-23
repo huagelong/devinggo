@@ -30,4 +30,5 @@ type SettingGenerateTables struct {
 	UpdatedAt     *gtime.Time `json:"updatedAt"     orm:"updated_at"     description:"更新时间"`                                             // 更新时间
 	Remark        string      `json:"remark"        orm:"remark"         description:"备注"`                                               // 备注
 	Source        string      `json:"source"        orm:"source"         description:"db连接群组"`                                           // db连接群组
+	TplType       string      `json:"tplType"       orm:"tpl_type"       description:"Vue模板类型: default(Arco Design) / ruoyi(RuoYi)"`     // Vue模板类型: default(Arco Design) / ruoyi(RuoYi)
 }

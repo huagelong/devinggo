@@ -10,27 +10,33 @@ package req
 import "github.com/gogf/gf/v2/os/gtime"
 {% end %}
 
+type {% .tableCaseCamelName %}FilterOptions struct {
+{% range $index, $elem := .columns %}
+{% caseCamel $elem.ColumnName %}  {% parseColumnType $elem %} `json:"{% $elem.ColumnName %}" description:"{% cleanStr $elem.ColumnComment %}" `
+{% end %}
+}
+
 type {% .tableCaseCamelName %}Search struct {
 {% range $index, $elem := .columns %}
- {%if eq $elem.IsQuery 2 %}
-  {% caseCamel $elem.ColumnName %}  {% parseColumnType $elem %} `json:"{% $elem.ColumnName %}" description:"{% cleanStr $elem.ColumnComment %}" `
- {%end %}
+{%if eq $elem.IsQuery 2 %}
+{% caseCamel $elem.ColumnName %}  {% parseColumnType $elem %} `json:"{% $elem.ColumnName %}" description:"{% cleanStr $elem.ColumnComment %}" `
+{%end %}
 {% end %}
 }
 
 type {% .tableCaseCamelName %}Save struct {
 {% range $index, $elem := .columns %}
- {%if eq $elem.IsInsert 2 %}
-  {% caseCamel $elem.ColumnName %}  {% parseColumnType $elem %} `json:"{% $elem.ColumnName %}" {%if eq $elem.IsRequired 2 %} v:"required" {%end %} description:"{% cleanStr $elem.ColumnComment %}" `
- {%end %}
+{%if and (eq $elem.IsInsert 2) (ne $elem.IsPk 2) %}
+{% caseCamel $elem.ColumnName %}  {% parseColumnType $elem %} `json:"{% $elem.ColumnName %}" {%if eq $elem.IsRequired 2 %} v:"required" {%end %} description:"{% cleanStr $elem.ColumnComment %}" `
+{%end %}
 {% end %}
 }
 
 type {% .tableCaseCamelName %}Update struct {
 {% range $index, $elem := .columns %}
- {%if or (eq $elem.IsEdit 2) (eq $elem.IsPk 2) %}
-  {% caseCamel $elem.ColumnName %}  {% parseColumnType $elem %} `json:"{% $elem.ColumnName %}" {%if eq $elem.IsRequired 2 %} v:"required" {%end %} description:"{% cleanStr $elem.ColumnComment %}" `
- {%end %}
+{%if or (eq $elem.IsEdit 2) (eq $elem.IsPk 2) %}
+{% caseCamel $elem.ColumnName %}  {% parseColumnType $elem %} `json:"{% $elem.ColumnName %}" {%if eq $elem.IsRequired 2 %} v:"required" {%end %} description:"{% cleanStr $elem.ColumnComment %}" `
+{%end %}
 {% end %}
 }
 
