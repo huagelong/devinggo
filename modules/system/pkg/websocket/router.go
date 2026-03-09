@@ -39,7 +39,7 @@ func ProcessData(ctx context.Context, client *Client, message []byte) {
 		glob.WithWsLog().Warning(ctx, "ProcessData gconv error:", err)
 		return
 	}
-	glob.WithWsLog().Debug(ctx, "ws request：", request)
+	// glob.WithWsLog().Debug(ctx, "ws request：", request)
 
 	switch request.Event {
 	case Subscribe:

@@ -11,14 +11,15 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// SystemUploadfileDao is the data access object for table system_uploadfile.
+// SystemUploadfileDao is the data access object for the table system_uploadfile.
 type SystemUploadfileDao struct {
-	table   string                  // table is the underlying table name of the DAO.
-	group   string                  // group is the database configuration group name of current DAO.
-	columns SystemUploadfileColumns // columns contains all the column names of Table for convenient usage.
+	table    string                  // table is the underlying table name of the DAO.
+	group    string                  // group is the database configuration group name of the current DAO.
+	columns  SystemUploadfileColumns // columns contains all the column names of Table for convenient usage.
+	handlers []gdb.ModelHandler      // handlers for customized model modification.
 }
 
-// SystemUploadfileColumns defines and stores column names for table system_uploadfile.
+// SystemUploadfileColumns defines and stores column names for the table system_uploadfile.
 type SystemUploadfileColumns struct {
 	Id          string // 主键
 	StorageMode string // 存储模式 (1 本地 2 阿里云 3 七牛云 4 腾讯云)
@@ -39,7 +40,7 @@ type SystemUploadfileColumns struct {
 	Remark      string // 备注
 }
 
-// systemUploadfileColumns holds the columns for table system_uploadfile.
+// systemUploadfileColumns holds the columns for the table system_uploadfile.
 var systemUploadfileColumns = SystemUploadfileColumns{
 	Id:          "id",
 	StorageMode: "storage_mode",
@@ -61,44 +62,49 @@ var systemUploadfileColumns = SystemUploadfileColumns{
 }
 
 // NewSystemUploadfileDao creates and returns a new DAO object for table data access.
-func NewSystemUploadfileDao() *SystemUploadfileDao {
+func NewSystemUploadfileDao(handlers ...gdb.ModelHandler) *SystemUploadfileDao {
 	return &SystemUploadfileDao{
-		group:   "default",
-		table:   "system_uploadfile",
-		columns: systemUploadfileColumns,
+		group:    "default",
+		table:    "system_uploadfile",
+		columns:  systemUploadfileColumns,
+		handlers: handlers,
 	}
 }
 
-// DB retrieves and returns the underlying raw database management object of current DAO.
+// DB retrieves and returns the underlying raw database management object of the current DAO.
 func (dao *SystemUploadfileDao) DB() gdb.DB {
 	return g.DB(dao.group)
 }
 
-// Table returns the table name of current dao.
+// Table returns the table name of the current DAO.
 func (dao *SystemUploadfileDao) Table() string {
 	return dao.table
 }
 
-// Columns returns all column names of current dao.
+// Columns returns all column names of the current DAO.
 func (dao *SystemUploadfileDao) Columns() SystemUploadfileColumns {
 	return dao.columns
 }
 
-// Group returns the configuration group name of database of current dao.
+// Group returns the database configuration group name of the current DAO.
 func (dao *SystemUploadfileDao) Group() string {
 	return dao.group
 }
 
-// Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
+// Ctx creates and returns a Model for the current DAO. It automatically sets the context for the current operation.
 func (dao *SystemUploadfileDao) Ctx(ctx context.Context) *gdb.Model {
-	return dao.DB().Model(dao.table).Safe().Ctx(ctx)
+	model := dao.DB().Model(dao.table)
+	for _, handler := range dao.handlers {
+		model = handler(model)
+	}
+	return model.Safe().Ctx(ctx)
 }
 
 // Transaction wraps the transaction logic using function f.
-// It rollbacks the transaction and returns the error from function f if it returns non-nil error.
+// It rolls back the transaction and returns the error if function f returns a non-nil error.
 // It commits the transaction and returns nil if function f returns nil.
 //
-// Note that, you should not Commit or Rollback the transaction in function f
+// Note: Do not commit or roll back the transaction in function f,
 // as it is automatically handled by this function.
 func (dao *SystemUploadfileDao) Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error) {
 	return dao.Ctx(ctx).Transaction(ctx, f)

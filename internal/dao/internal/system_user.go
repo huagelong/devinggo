@@ -11,14 +11,15 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// SystemUserDao is the data access object for table system_user.
+// SystemUserDao is the data access object for the table system_user.
 type SystemUserDao struct {
-	table   string            // table is the underlying table name of the DAO.
-	group   string            // group is the database configuration group name of current DAO.
-	columns SystemUserColumns // columns contains all the column names of Table for convenient usage.
+	table    string             // table is the underlying table name of the DAO.
+	group    string             // group is the database configuration group name of the current DAO.
+	columns  SystemUserColumns  // columns contains all the column names of Table for convenient usage.
+	handlers []gdb.ModelHandler // handlers for customized model modification.
 }
 
-// SystemUserColumns defines and stores column names for table system_user.
+// SystemUserColumns defines and stores column names for the table system_user.
 type SystemUserColumns struct {
 	Id             string // 用户ID，主键
 	Username       string // 用户名
@@ -42,7 +43,7 @@ type SystemUserColumns struct {
 	Remark         string // 备注
 }
 
-// systemUserColumns holds the columns for table system_user.
+// systemUserColumns holds the columns for the table system_user.
 var systemUserColumns = SystemUserColumns{
 	Id:             "id",
 	Username:       "username",
@@ -67,44 +68,49 @@ var systemUserColumns = SystemUserColumns{
 }
 
 // NewSystemUserDao creates and returns a new DAO object for table data access.
-func NewSystemUserDao() *SystemUserDao {
+func NewSystemUserDao(handlers ...gdb.ModelHandler) *SystemUserDao {
 	return &SystemUserDao{
-		group:   "default",
-		table:   "system_user",
-		columns: systemUserColumns,
+		group:    "default",
+		table:    "system_user",
+		columns:  systemUserColumns,
+		handlers: handlers,
 	}
 }
 
-// DB retrieves and returns the underlying raw database management object of current DAO.
+// DB retrieves and returns the underlying raw database management object of the current DAO.
 func (dao *SystemUserDao) DB() gdb.DB {
 	return g.DB(dao.group)
 }
 
-// Table returns the table name of current dao.
+// Table returns the table name of the current DAO.
 func (dao *SystemUserDao) Table() string {
 	return dao.table
 }
 
-// Columns returns all column names of current dao.
+// Columns returns all column names of the current DAO.
 func (dao *SystemUserDao) Columns() SystemUserColumns {
 	return dao.columns
 }
 
-// Group returns the configuration group name of database of current dao.
+// Group returns the database configuration group name of the current DAO.
 func (dao *SystemUserDao) Group() string {
 	return dao.group
 }
 
-// Ctx creates and returns the Model for current DAO, It automatically sets the context for current operation.
+// Ctx creates and returns a Model for the current DAO. It automatically sets the context for the current operation.
 func (dao *SystemUserDao) Ctx(ctx context.Context) *gdb.Model {
-	return dao.DB().Model(dao.table).Safe().Ctx(ctx)
+	model := dao.DB().Model(dao.table)
+	for _, handler := range dao.handlers {
+		model = handler(model)
+	}
+	return model.Safe().Ctx(ctx)
 }
 
 // Transaction wraps the transaction logic using function f.
-// It rollbacks the transaction and returns the error from function f if it returns non-nil error.
+// It rolls back the transaction and returns the error if function f returns a non-nil error.
 // It commits the transaction and returns nil if function f returns nil.
 //
-// Note that, you should not Commit or Rollback the transaction in function f
+// Note: Do not commit or roll back the transaction in function f,
 // as it is automatically handled by this function.
 func (dao *SystemUserDao) Transaction(ctx context.Context, f func(ctx context.Context, tx gdb.TX) error) (err error) {
 	return dao.Ctx(ctx).Transaction(ctx, f)

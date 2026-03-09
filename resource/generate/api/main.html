@@ -12,9 +12,7 @@ import (
     "devinggo/modules/{% .table.ModuleName %}/model/req"
     "devinggo/modules/{% .table.ModuleName %}/model/res"
     "github.com/gogf/gf/v2/frame/g"
-{% if contains .generateMenus "import"  %}
     "github.com/gogf/gf/v2/net/ghttp"
-{% end %}
 )
 
 {% if eq .table.Type "single"  %}
@@ -73,7 +71,7 @@ type Tree{% .tableCaseCamelName %}Res struct {
 
 {% end %}
 
-{% if contains .generateMenus "save"  %}
+
 type Save{% .tableCaseCamelName %}Req struct {
     g.Meta `path:"/{% .tableCaseCamelLowerName %}/save" method:"post" tags:"{%  cleanStr .table.TableComment %}" summary:"新增" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:save"`
     model.AuthorHeader
@@ -84,9 +82,8 @@ type Save{% .tableCaseCamelName %}Res struct {
     g.Meta `mime:"application/json"`
     Id  {% getModelColumnTypeFromColumName .columns "id" %} `json:"id" dc:"id"`
 }
-{% end %}
 
-{% if contains .generateMenus "read"  %}
+
 type Read{% .tableCaseCamelName %}Req struct {
     g.Meta `path:"/{% .tableCaseCamelLowerName %}/read/{Id}" method:"get" tags:"{%  cleanStr .table.TableComment %}" summary:"获取单个信息" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:read"`
     model.AuthorHeader
@@ -97,9 +94,18 @@ type Read{% .tableCaseCamelName %}Res struct {
     g.Meta `mime:"application/json"`
     Data   res.{% .tableCaseCamelName %} `json:"data" dc:"信息数据"`
 }
-{% end %}
 
-{% if contains .generateMenus "update"  %}
+type ReadByIds{% .tableCaseCamelName %}Req struct {
+    g.Meta `path:"/{% .tableCaseCamelLowerName %}/readByIds" method:"post" tags:"{%  cleanStr .table.TableComment %}" summary:"根据 ids 获取信息列表" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:read"`
+    model.AuthorHeader
+    Ids []{% getModelColumnTypeFromColumName .columns "id" %} `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
+}
+
+type ReadByIds{% .tableCaseCamelName %}Res struct {
+    g.Meta `mime:"application/json"`
+    Data   []res.{% .tableCaseCamelName %} `json:"data" dc:"信息数据"`
+}
+
 type Update{% .tableCaseCamelName %}Req struct {
     g.Meta `path:"/{% .tableCaseCamelLowerName %}/update/{Id}" method:"put" tags:"{%  cleanStr .table.TableComment %}" summary:"更新" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:update"`
     model.AuthorHeader
@@ -109,9 +115,8 @@ type Update{% .tableCaseCamelName %}Req struct {
 type Update{% .tableCaseCamelName %}Res struct {
     g.Meta `mime:"application/json"`
 }
-{% end %}
 
-{% if or (contains .generateMenus "delete")  (contains .generateMenus "recycle")  %}
+
 type Delete{% .tableCaseCamelName %}Req struct {
     g.Meta `path:"/{% .tableCaseCamelLowerName %}/delete" method:"delete" tags:"{%  cleanStr .table.TableComment %}" summary:"删除" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:delete"`
     model.AuthorHeader
@@ -122,9 +127,6 @@ type Delete{% .tableCaseCamelName %}Res struct {
     g.Meta `mime:"application/json"`
 }
 
-{% end %}
-
-{% if contains .generateMenus "recycle"  %}
 type Recycle{% .tableCaseCamelName %}Req struct {
     g.Meta `path:"/{% .tableCaseCamelLowerName %}/recycle" method:"get" tags:"{%  cleanStr .table.TableComment %}" summary:"回收站列表" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:recycle" `
     model.AuthorHeader
@@ -137,6 +139,7 @@ type Recycle{% .tableCaseCamelName %}Res struct {
     page.PageRes
     Items []res.{% .tableCaseCamelName %} `json:"items"  dc:"list" `
 }
+
 {% if eq .table.Type "tree"  %}
 type TreeRecycle{% .tableCaseCamelName %}Req struct {
     g.Meta `path:"/{% .tableCaseCamelLowerName %}/recycleList" method:"get" tags:"{%  cleanStr .table.TableComment %}" summary:"分页列表" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:recycle" `
@@ -171,9 +174,7 @@ type Recovery{% .tableCaseCamelName %}Res struct {
         g.Meta `mime:"application/json"`
 }
 
-{% end %}
 
-{% if contains .generateMenus "export"  %}
 type Export{% .tableCaseCamelName %}Req struct {
     g.Meta `path:"/{% .tableCaseCamelLowerName %}/export" method:"post" tags:"{%  cleanStr .table.TableComment %}" summary:"导出" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:export"`
     model.AuthorHeader
@@ -184,9 +185,7 @@ type Export{% .tableCaseCamelName %}Req struct {
 type Export{% .tableCaseCamelName %}Res struct {
     g.Meta `mime:"application/json"`
 }
-{% end %}
 
-{% if contains .generateMenus "import"  %}
 type Import{% .tableCaseCamelName %}Req struct {
     g.Meta `path:"/{% .tableCaseCamelLowerName %}/import" method:"post" mime:"multipart/form-data" tags:"{%  cleanStr .table.TableComment %}" summary:"导入" x-permission:"{% .table.ModuleName %}:{% .tableCaseCamelLowerName %}:import"`
     model.AuthorHeader
@@ -205,8 +204,6 @@ type DownloadTemplate{% .tableCaseCamelName %}Req struct {
 type DownloadTemplate{% .tableCaseCamelName %}Res struct {
     g.Meta `mime:"application/json"`
 }
-
-{% end %}
 
 {% if contains .generateMenus "changeStatus"  %}
 type ChangeStatus{% .tableCaseCamelName %}Req struct {

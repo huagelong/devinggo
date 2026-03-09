@@ -11,7 +11,7 @@ import (
 // SystemQueueMessageReceive is the golang structure of table system_queue_message_receive for DAO operations like Where/Data.
 type SystemQueueMessageReceive struct {
 	g.Meta     `orm:"table:system_queue_message_receive, do:true"`
-	MessageId  interface{} // 队列消息主键
-	UserId     interface{} // 接收用户主键
-	ReadStatus interface{} // 已读状态 (1未读 2已读)
+	MessageId  any // 队列消息主键
+	UserId     any // 接收用户主键
+	ReadStatus any // 已读状态 (1未读 2已读)
 }

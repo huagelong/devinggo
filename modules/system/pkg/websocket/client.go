@@ -94,7 +94,7 @@ func (c *Client) write(ctx context.Context) {
 				// 发送数据错误 关闭连接
 				return
 			}
-			glob.WithWsLog().Debug(ctx, "response:", message)
+			// glob.WithWsLog().Debug(ctx, "response:", message)
 
 			utils.SafeGo(ctx, func(ctx context.Context) {
 				c.updateMsgLog(ctx, message)
