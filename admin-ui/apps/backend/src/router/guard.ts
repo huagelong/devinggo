@@ -112,8 +112,15 @@ function setupAccessGuard(router: Router) {
         routes: accessRoutes,
       });
 
+      // 根据用户 dashboard 设置过滤菜单（非超级管理员只显示一个首页）
+      const filteredMenus = filterDashboardMenus(
+        accessibleMenus as any[],
+        userInfo.dashboard,
+        userRoles.includes('superAdmin'),
+      );
+
       // 保存菜单信息和路由信息
-      accessStore.setAccessMenus(accessibleMenus as any[]);
+      accessStore.setAccessMenus(filteredMenus);
       accessStore.setAccessRoutes(accessibleRoutes);
       accessStore.setIsAccessChecked(true);
     })();
@@ -133,6 +140,38 @@ function setupAccessGuard(router: Router) {
       ...router.resolve(decodeURIComponent(redirectPath)),
       replace: true,
     };
+  });
+}
+
+/**
+ * 根据用户 dashboard 设置过滤首页菜单
+ * 非超级管理员只显示一个首页（分析页或工作台）
+ */
+function filterDashboardMenus(
+  menus: any[],
+  dashboard?: string,
+  isSuperAdmin = false,
+): any[] {
+  if (isSuperAdmin || !dashboard) {
+    return menus;
+  }
+
+  const hidePath = dashboard === 'statistics' ? '/workspace' : '/analytics';
+
+  return menus.map((menu) => {
+    const filtered = { ...menu };
+    if (filtered.children?.length > 0) {
+      filtered.children = filtered.children.filter(
+        (child: any) => child.path !== hidePath,
+      );
+      // 递归处理子菜单
+      filtered.children = filterDashboardMenus(
+        filtered.children,
+        dashboard,
+        isSuperAdmin,
+      );
+    }
+    return filtered;
   });
 }
 

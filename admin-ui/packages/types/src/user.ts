@@ -10,6 +10,10 @@ interface UserInfo extends BasicUserInfo {
    * 首页地址
    */
   homePath: string;
+  /**
+   * 后台首页类型
+   */
+  dashboard?: string;
 
   /**
    * accessToken
