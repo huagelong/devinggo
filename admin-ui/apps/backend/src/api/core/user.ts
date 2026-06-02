@@ -41,14 +41,14 @@ const DASHBOARD_HOME_PATH_MAP: Record<string, string> = {
 
 function resolveHomePath(dashboard?: string): string {
   if (!dashboard) {
-    return '/analytics';
+    return '/workspace';
   }
 
   if (dashboard.startsWith('/')) {
     return dashboard;
   }
 
-  return DASHBOARD_HOME_PATH_MAP[dashboard] || '/analytics';
+  return DASHBOARD_HOME_PATH_MAP[dashboard] || '/workspace';
 }
 
 // Module-level cache to avoid duplicated requests in the same event loop.

@@ -490,7 +490,7 @@ func (s *sSystemUser) Save(ctx context.Context, in *req.SystemUserSave) (id int6
 		systemUser.Password = newPassword
 	}
 	if in.UserType == consts.TypeSysUser {
-		systemUser.Dashboard = "statistics"
+		systemUser.Dashboard = "work"
 	}
 	rs, err := s.Model(ctx).Data(systemUser).Insert()
 	if utils.IsError(err) {
