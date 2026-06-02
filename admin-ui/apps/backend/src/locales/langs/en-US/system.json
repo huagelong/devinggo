@@ -419,6 +419,7 @@
     "queryCandidateUser": "Search User",
     "deleteSelected": "Delete Selected",
     "confirmDeleteLeader": "Are you sure to remove this leader?",
+    "topDept": "Top Level Department",
     "editTitle": "Edit Department",
     "createTitle": "New Department",
     "confirmDelete": "Are you sure to delete this department?",

@@ -144,7 +144,14 @@ async function open(data?: Partial<DeptApi.SubmitPayload>) {
       {
         fieldName: 'parent_id',
         componentProps: {
-          data: deptTree,
+          data: [
+            {
+              id: 0,
+              label: $t('system.dept.topDept'),
+              value: 0,
+              children: deptTree,
+            },
+          ],
         },
       },
     ]);

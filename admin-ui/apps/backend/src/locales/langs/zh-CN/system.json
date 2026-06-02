@@ -419,6 +419,7 @@
     "queryCandidateUser": "查询用户",
     "deleteSelected": "删除所选",
     "confirmDeleteLeader": "确认移除该领导吗？",
+    "topDept": "顶级部门",
     "editTitle": "编辑部门",
     "createTitle": "新增部门",
     "confirmDelete": "确认删除该部门吗？",

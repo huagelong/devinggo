@@ -75,19 +75,7 @@ func (s *sSystemDept) GetSelectTree(ctx context.Context, userId int64) (tree []*
 		return
 	}
 	// 构建原有的部门树
-	originalTree := s.treeList(systemDeptEntity)
-
-	// 创建默认根节点
-	rootNode := &res.SystemDeptTree{
-		Id:       0,
-		ParentId: -1,
-		Value:    0,
-		Label:    "根节点",
-		Children: originalTree,
-	}
-
-	// 返回包含根节点的树结构
-	tree = []*res.SystemDeptTree{rootNode}
+	tree = s.treeList(systemDeptEntity)
 
 	return
 }

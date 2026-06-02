@@ -321,26 +321,7 @@ func (s *sSystemMenu) GetSelectTree(ctx context.Context, userId int64, onlyMenu,
 		return
 	}
 	// 构建原有的菜单树
-	originalTree := s.treeSelectList(systemMenuEntity)
-
-	defaultNode := &res.SystemDeptSelectItem{
-		Id:       0,
-		ParentId: -1,
-		Value:    0,
-		Label:    "根节点",
-	}
-	// 创建默认根节点
-	rootNode := &res.SystemDeptSelectTree{
-		Children: originalTree,
-	}
-
-	rootNode.Id = defaultNode.Id
-	rootNode.ParentId = defaultNode.ParentId
-	rootNode.Value = defaultNode.Value
-	rootNode.Label = defaultNode.Label
-
-	// 返回包含根节点的树结构
-	routes = []*res.SystemDeptSelectTree{rootNode}
+	routes = s.treeSelectList(systemMenuEntity)
 
 	return
 }
