@@ -49,6 +49,19 @@
     "accessSource": "访问来源",
     "home": "首页",
     "dashboard": "仪表盘",
-    "chart": "图表"
+    "chart": "图表",
+    "welcomeDesc": "祝您今天工作愉快！",
+    "today": "今天是",
+    "myMessages": "我的消息",
+    "unreadCount": "条未读",
+    "viewAll": "查看全部",
+    "noUnreadMessages": "暂无未读消息",
+    "markAsRead": "标为已读",
+    "myInfo": "我的信息",
+    "editProfile": "编辑资料",
+    "systemNotice": "系统公告",
+    "announcement": "公告",
+    "more": "更多",
+    "justNow": "刚刚"
   }
 }

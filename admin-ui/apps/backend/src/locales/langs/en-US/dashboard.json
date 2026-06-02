@@ -49,6 +49,19 @@
     "accessSource": "Access Source",
     "home": "Home",
     "dashboard": "Dashboard",
-    "chart": "Charts"
+    "chart": "Charts",
+    "welcomeDesc": "Have a great day at work!",
+    "today": "Today is",
+    "myMessages": "My Messages",
+    "unreadCount": " unread",
+    "viewAll": "View All",
+    "noUnreadMessages": "No unread messages",
+    "markAsRead": "Mark as read",
+    "myInfo": "My Info",
+    "editProfile": "Edit Profile",
+    "systemNotice": "System Notice",
+    "announcement": "Announcement",
+    "more": "More",
+    "justNow": "Just now"
   }
 }

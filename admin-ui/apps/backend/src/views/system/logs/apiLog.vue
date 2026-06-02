@@ -7,24 +7,16 @@ import { $t } from '@vben/locales';
 import { Page } from '@vben/common-ui';
 
 import { message } from '#/adapter/tdesign';
-import {
-  deleteApiLog,
-  getApiLogPageList,
-} from '#/api/system/log';
+import { getApiLogPageList } from '#/api/system/log';
 import { logger } from '#/utils/logger';
 
-import {
-  DeleteIcon,
-  SearchIcon,
-} from 'tdesign-icons-vue-next';
+import { SearchIcon } from 'tdesign-icons-vue-next';
 import {
   Button,
   DateRangePicker,
   Form,
   FormItem,
   Input,
-  Popconfirm,
-  Space,
   Table,
   Tag,
 } from 'tdesign-vue-next';
@@ -33,7 +25,6 @@ defineOptions({ name: 'SystemApiLog' });
 
 const loading = ref(false);
 const tableData = ref<LogApi.ApiLogItem[]>([]);
-const selectedRowKeys = ref<number[]>([]);
 const searchForm = ref<{ api_name: string; access_name: string; ip: string; access_time: string[] }>({
   api_name: '',
   access_name: '',
@@ -51,7 +42,6 @@ const pagination = ref({
 });
 
 const columns = [
-  { colKey: 'row-select', type: 'multiple' as const, width: 50 },
   { colKey: 'api_name', title: $t('system.logs.apiName'), width: 180 },
   { colKey: 'access_name', title: $t('system.logs.accessName'), width: 140 },
   { colKey: 'response_code', title: $t('system.logs.responseCode'), width: 100 },
@@ -59,7 +49,6 @@ const columns = [
   { colKey: 'ip_location', title: $t('system.logs.ipLocation'), width: 120 },
   { colKey: 'access_time', title: $t('system.logs.accessTime'), width: 180 },
   { colKey: 'remark', title: $t('system.logs.remark'), ellipsis: true },
-  { colKey: 'action', title: $t('common.action'), width: 100, fixed: 'right' as const },
 ];
 
 async function fetchTableData() {
@@ -86,33 +75,6 @@ async function fetchTableData() {
   }
 }
 
-async function handleDelete(row: LogApi.ApiLogItem) {
-  try {
-    await deleteApiLog([row.id]);
-    message.success($t('common.deleteSuccess'));
-    await fetchTableData();
-  } catch (error) {
-    logger.error(error);
-    message.error($t('common.deleteFailed'));
-  }
-}
-
-async function handleBatchDelete() {
-  if (selectedRowKeys.value.length === 0) {
-    message.warning($t('common.selectLogFirst'));
-    return;
-  }
-  try {
-    await deleteApiLog(selectedRowKeys.value);
-    message.success($t('common.batchDeleteSuccess'));
-    selectedRowKeys.value = [];
-    await fetchTableData();
-  } catch (error) {
-    logger.error(error);
-    message.error($t('common.batchDeleteFailed'));
-  }
-}
-
 function handleSearch() {
   pagination.value.current = 1;
   void fetchTableData();
@@ -128,10 +90,6 @@ function handlePageChange(pageInfo: { current: number; pageSize: number }) {
   pagination.value.current = pageInfo.current;
   pagination.value.pageSize = pageInfo.pageSize;
   void fetchTableData();
-}
-
-function handleSelectChange(keys: Array<string | number>) {
-  selectedRowKeys.value = keys as number[];
 }
 
 onMounted(() => {
@@ -186,26 +144,15 @@ onMounted(() => {
       </div>
 
       <div class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
-        <div class="mb-3 flex items-center">
-          <Space>
-            <Button theme="danger" variant="outline" @click="handleBatchDelete">
-              <template #icon><DeleteIcon /></template>
-              {{ $t('common.batchDelete') }}
-            </Button>
-          </Space>
-        </div>
-
         <Table
           :columns="columns"
           :data="tableData"
           :loading="loading"
           :pagination="pagination"
-          :selected-row-keys="selectedRowKeys"
           row-key="id"
           hover
           stripe
           @page-change="handlePageChange"
-          @select-change="handleSelectChange"
         >
           <template #response_code="{ row }">
             <Tag :theme="String(row.response_code) === '200' ? 'success' : 'danger'" variant="light">
@@ -217,18 +164,6 @@ onMounted(() => {
             <span class="block max-w-[320px] truncate">
               {{ row?.remark || '-' }}
             </span>
-          </template>
-
-          <template #action="{ row }">
-            <Popconfirm
-              :content="$t('system.logs.confirmDeleteApiLogSingle')"
-              @confirm="handleDelete(row)"
-            >
-              <Button size="small" theme="danger" variant="outline">
-                <template #icon><DeleteIcon /></template>
-                {{ $t('common.delete') }}
-              </Button>
-            </Popconfirm>
           </template>
         </Table>
       </div>
