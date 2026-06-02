@@ -17,7 +17,7 @@ import { uploadImageFileApi } from '#/api/system/upload';
 import { getDeptTree } from '#/api/system/dept';
 import { getPostList } from '#/api/system/post';
 import { getRoleList } from '#/api/system/role';
-import { getDictOptions } from '#/composables/crud/use-dict-options';
+import { useDictOptions } from '#/composables/crud/use-dict-options';
 import { getUserDetail, saveUser, updateUser } from '#/api/system/user';
 
 const emit = defineEmits(['success']);
@@ -263,6 +263,7 @@ async function open(data?: UserModalOpenData) {
   modalApi.setState({ title: data?.id ? $t('system.user.editTitle') : $t('system.user.createTitle') });
   modalApi.open();
 
+  const { getDictOptions } = useDictOptions();
   const [roleRes, postRes, deptRes, userTypeDict] = await Promise.all([
     getRoleList().catch(() => null),
     getPostList().catch(() => null),
