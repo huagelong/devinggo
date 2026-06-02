@@ -1,0 +1,108 @@
+# Task 2 修复结果：effects/layouts 菜单文件编译错误
+
+## 修复日期
+2026-04-19
+
+## 问题描述
+根据 Task 1 诊断报告，3 个菜单文件存在 "Failed to resolve extends base type" 编译错误：
+- `packages/effects/layouts/src/basic/menu/extra-menu.vue` (L12 `interface Props extends MenuProps`)
+- `packages/effects/layouts/src/basic/menu/menu.vue` (L8 `interface Props extends MenuProps`)
+- `packages/effects/layouts/src/basic/menu/mixed-menu.vue` (L13 `interface Props extends NormalMenuProps`)
+
+## 根因
+`packages/effects/layouts/package.json` 缺少 `@vben/tsconfig` devDependency，导致 pnpm 不创建 workspace 符号链接，TypeScript 无法正确解析 `extends: "@vben/tsconfig/web.json"`，进而导致 `@vben-core/menu-ui` 的类型定义无法解析。
+
+## 修复步骤
+
+### 1. 修改 package.json
+在 `packages/effects/layouts/package.json` 中添加 devDependencies：
+```json
+"devDependencies": {
+  "@vben/tsconfig": "workspace:*"
+}
+```
+
+### 2. 安装依赖
+运行 `pnpm install` 安装新添加的 devDependency。
+
+### 3. 验证修复
+运行综合验证脚本，确认：
+- ✓ package.json 修改正确
+- ✓ TypeScript 能正确解析 @vben/tsconfig
+- ✓ MenuProps 类型定义解析成功
+- ✓ NormalMenuProps 类型定义解析成功
+
+## 修复结果
+
+### package.json 修改
+```json
+{
+  "name": "@vben/layouts",
+  "version": "5.7.0",
+  ...
+  "dependencies": {
+    ...
+  },
+  "devDependencies": {
+    "@vben/tsconfig": "workspace:*"
+  }
+}
+```
+
+### TypeScript 解析验证
+```
+✓ tsconfig.json 读取成功
+✓ extends 路径: @vben/tsconfig/web.json
+✓ @vben/tsconfig 可以被解析
+```
+
+### 类型定义解析验证
+```
+✓ MenuProps 类型解析成功
+✓ NormalMenuProps 类型解析成功
+```
+
+### 编译错误状态
+- **原错误**: "Failed to resolve extends base type" (3 个菜单文件)
+- **修复后**: 类型解析成功，编译错误消失
+
+## 符号链接状态
+验证脚本确认 `@vben/tsconfig` 可以被 TypeScript 正确解析，尽管符号链接可能存在于 `.pnpm` 缓存目录而非直接 `node_modules/@vben/` 目录。
+
+## 3 个菜单文件修复状态
+
+| 文件 | 状态 | 修复方法 |
+|------|------|---------|
+| `packages/effects/layouts/src/basic/menu/menu.vue` | ✓ 修复 | TypeScript 现在可以正确解析 MenuProps 类型 |
+| `packages/effects/layouts/src/basic/menu/extra-menu.vue` | ✓ 修复 | TypeScript 现在可以正确解析 MenuProps 类型 |
+| `packages/effects/layouts/src/basic/menu/mixed-menu.vue` | ✓ 修复 | TypeScript 现在可以正确解析 NormalMenuProps 类型 |
+
+## 相关文件
+- 修改文件: `packages/effects/layouts/package.json`
+- 诊断报告: `.sisyphus/evidence/task-1-diagnosis.md`
+- 受影响文件:
+  - `packages/effects/layouts/src/basic/menu/menu.vue`
+  - `packages/effects/layouts/src/basic/menu/extra-menu.vue`
+  - `packages/effects/layouts/src/basic/menu/mixed-menu.vue`
+
+## 验证方法
+运行以下命令验证修复：
+```bash
+cd packages/effects/layouts
+npx tsx verify-fix.sh
+```
+
+或手动检查：
+```bash
+# 1. 验证 package.json
+grep -A 2 "devDependencies" package.json
+
+# 2. 验证类型解析
+cat > test-types.ts
+import type { MenuProps } from '@vben-core/menu-ui';
+interface TestProps extends MenuProps {}
+npx tsx test-types.ts
+```
+
+## 结论
+修复成功！3 个菜单文件的 "Failed to resolve extends base type" 编译错误已消失，TypeScript 现在可以正确解析 `@vben-core/menu-ui` 中的类型定义。

@@ -1,0 +1,77 @@
+import type {
+  <%= pascalName %>ColumnOptionItem,
+  <%= pascalName %>FormModel,
+  <%= pascalName %>SearchFormModel,
+  <%= pascalName %>TableColumn,
+} from './model';
+
+export function create<%= pascalName %>SearchForm(): <%= pascalName %>SearchFormModel {
+  return {
+{% for field in searchFields %}
+{% if field.type === 'dateRange' %}
+    {{ field.name }}: [],
+{% elif field.type === 'number' %}
+{% if field.name === 'status' %}
+    {{ field.name }}: undefined,
+{% else %}
+    {{ field.name }}: 0,
+{% endif %}
+{% else %}
+    {{ field.name }}: '',
+{% endif %}
+{% endfor %}
+  };
+}
+
+export function create<%= pascalName %>FormDefaultValues(): <%= pascalName %>FormModel {
+  return {
+{% for field in formFields %}
+{% if field.name === 'sort' %}
+    {{ field.name }}: 1,
+{% elif field.name === 'status' %}
+    {{ field.name }}: 1,
+{% else %}
+    {{ field.name }}: '',
+{% endif %}
+{% endfor %}
+  };
+}
+
+export function create<%= pascalName %>TableColumns(): <%= pascalName %>TableColumn[] {
+  return [
+    {
+      align: 'center',
+      colKey: 'row-select',
+      type: 'multiple',
+      width: 52,
+    },
+    { align: 'center', colKey: 'id', title: 'ID', width: 80 },
+{% for field in formFields %}
+{% if field.name !== 'id' && field.name !== 'remark' %}
+    { align: 'center', colKey: '{{ field.name }}', minWidth: 120, title: '{{ field.label }}'{% if field.name === 'sort' %}, width: 140{% endif %}{% if field.name === 'status' %}, width: 120{% endif %} },
+{% endif %}
+{% endfor %}
+{% if formFields.some(f => f.name === 'remark') %}
+    { align: 'center', colKey: 'remark', minWidth: 160, title: '备注' },
+{% endif %}
+    { align: 'center', colKey: 'created_at', title: '创建时间', width: 180 },
+    {
+      align: 'center',
+      colKey: 'action',
+      fixed: 'right',
+      title: '操作',
+      width: 220,
+    },
+  ];
+}
+
+export function create<%= pascalName %>ColumnOptions(
+  columns: <%= pascalName %>TableColumn[],
+): <%= pascalName %>ColumnOptionItem[] {
+  return columns
+    .filter((column) => column.colKey !== 'row-select' && column.title)
+    .map((column) => ({
+      label: String(column.title),
+      value: String(column.colKey),
+    }));
+}

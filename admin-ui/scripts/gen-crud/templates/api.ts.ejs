@@ -1,0 +1,77 @@
+import { requestClient } from '#/api/request';
+import type { BatchIdsPayload, StatusValue } from '#/types/common';
+import type { PageQuery, PageResponse } from '#/types/paging';
+
+export namespace <%= pascalName %>Api {
+  export interface ListItem {
+    id: number;
+{% for field in formFields %}
+{% if field.name !== 'id' %}
+    {{ field.name }}: {{ field.type === 'number' ? 'number' : 'string' }}{% if field.name === 'remark' || field.name === 'code' %}?{% endif %};
+{% endif %}
+{% endfor %}
+  }
+
+  export interface ListQuery extends Partial<PageQuery> {
+{% for field in searchFields %}
+{% if field.name !== 'created_at' %}
+    {{ field.name }}?: {{ field.type === 'number' ? 'number' : 'string' }};
+{% else %}
+    {{ field.name }}?: string[];
+{% endif %}
+{% endfor %}
+  }
+
+  export interface SubmitPayload {
+{% for field in formFields %}
+{% if field.name !== 'id' %}
+    {{ field.name }}{% if field.name === 'sort' || field.name === 'status' %}: number{% else %}: string{% endif %};
+{% endif %}
+{% endfor %}
+  }
+
+  export interface ChangeStatusPayload {
+    id: number;
+    status: number;
+  }
+
+  export type BatchPayload = BatchIdsPayload<number>;
+  export type ListResponse = PageResponse<ListItem>;
+  export type OptionListResponse = ListItem[] | ListResponse;
+}
+
+export function get<%= pascalName %>PageList(params: <%= pascalName %>Api.ListQuery) {
+  return requestClient.get<<%= pascalName %>Api.ListResponse>('/system/<%= name %>/index', { params });
+}
+
+export function get<%= pascalName %>List(params?: <%= pascalName %>Api.ListQuery) {
+  return requestClient.get<<%= pascalName %>Api.OptionListResponse>('/system/<%= name %>/list', { params });
+}
+
+export function getRecycle<%= pascalName %>List(params: <%= pascalName %>Api.ListQuery) {
+  return requestClient.get<<%= pascalName %>Api.ListResponse>('/system/<%= name %>/recycle', { params });
+}
+
+export function save<%= pascalName %>(data: <%= pascalName %>Api.SubmitPayload) {
+  return requestClient.post<void>('/system/<%= name %>/save', data);
+}
+
+export function update<%= pascalName %>(id: number, data: <%= pascalName %>Api.SubmitPayload) {
+  return requestClient.put<void>(`/system/<%= name %>/update/${id}`, data);
+}
+
+export function delete<%= pascalName %>(ids: number[]) {
+  return requestClient.delete<void>('/system/<%= name %>/delete', { data: { ids } });
+}
+
+export function realDelete<%= pascalName %>(ids: number[]) {
+  return requestClient.delete<void>('/system/<%= name %>/realDelete', { data: { ids } });
+}
+
+export function recovery<%= pascalName %>(ids: number[]) {
+  return requestClient.put<void>('/system/<%= name %>/recovery', { ids });
+}
+
+export function change<%= pascalName %>Status(data: <%= pascalName %>Api.ChangeStatusPayload) {
+  return requestClient.put<void>('/system/<%= name %>/changeStatus', data);
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@vben/gen-crud",
+  "version": "5.7.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "node src/index.ts",
+    "start": "node dist/index.mjs"
+  },
+  "dependencies": {
+    "cac": "catalog:"
+  },
+  "bin": {
+    "gen-crud": "./src/index.ts"
+  }
+}

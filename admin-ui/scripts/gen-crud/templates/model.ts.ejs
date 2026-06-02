@@ -1,0 +1,28 @@
+import type { <%= pascalName %>Api } from '#/api/<%= module %>/<%= name %>';
+import type { OptionItem } from '#/types/common';
+
+export type <%= pascalName %>ListItem = <%= pascalName %>Api.ListItem;
+
+export interface <%= pascalName %>SearchFormModel {
+{% for field in searchFields %}
+  {{ field.name }}{% if field.type === 'dateRange' %}: string[]{% elif field.type === 'number' %}{% if field.name === 'status' %}?: number{% else %}: number{% endif %}{% else %}: string{% endif %};
+{% endfor %}
+}
+
+export interface <%= pascalName %>FormModel {
+{% for field in formFields %}
+  {{ field.name }}{% if field.type === 'number' %}{% if field.name === 'sort' %}: number{% elif field.name === 'status' %}: number{% endif %}{% else %}: string{% endif %};
+{% endfor %}
+}
+
+export type <%= pascalName %>ColumnOptionItem = OptionItem<string>;
+
+export interface <%= pascalName %>TableColumn {
+  align?: 'left' | 'center' | 'right';
+  colKey: string;
+  fixed?: 'left' | 'right';
+  minWidth?: number;
+  title?: string;
+  type?: 'multiple' | 'single';
+  width?: number;
+}

@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pusher Protocol v8.3.0 测试客户端（完整版）</title>
+    <!-- TweetNaCl 加密库（支持 Encrypted Channels）-->
+    <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js"></script>
+    <!-- Pusher.js 8.3.0 -->
+    <script src="https://js.pusher.com/8.3.0/pusher.min.js"></script>
+    <!-- CryptoJS（用于密码加密）-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            color: #555;
+            margin-top: 0;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.connecting {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        input, button, select {
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .danger {
+            background: #f44336;
+        }
+        
+        .danger:hover {
+            background: #da190b;
+        }
+        
+        #logs {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .log-event {
+            color: #4CAF50;
+        }
+        
+        .log-data {
+            color: #2196F3;
+        }
+        
+        .log-error {
+            color: #f44336;
+        }
+        
+        .log-time {
+            color: #999;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        code {
+            background: rgba(0,0,0,0.05);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Pusher Protocol v8.3.0 测试客户端（完整版）</h1>
+    <div class="info-box" style="background: #e7f3ff; border-left: 4px solid #2196F3; padding: 10px; margin-bottom: 20px;">
+        <strong>✨ 新功能:</strong> 支持 Encrypted Channels 和 Presence Client Events Metadata
+    </div>
+    
+    <div class="container">
+        <h2>� 用户登录</h2>
+        <div>
+            <label>用户名: </label>
+            <input type="text" id="username" value="superAdmin" style="width: 200px;">
+            <label>密码: </label>
+            <input type="password" id="password" value="admin123" style="width: 200px;">
+            <button onclick="login()">🔑 登录</button>
+            <button onclick="logout()" class="danger">🚪 退出</button>
+        </div>
+        <div id="loginStatus" class="status disconnected">● 未登录</div>
+        <div class="info-box" id="userInfo" style="display: none;">
+            <strong>用户信息:</strong> <span id="userDetail">-</span>
+        </div>        <div class="info-box" style="background: #fff3cd; border-left-color: #ffc107;">
+            <strong>🔐 安全说明:</strong> 密码使用 AES-ECB 加密传输（密钥需与配置文件 <code>settings.aesKey</code> 一致）
+        </div>    </div>
+    
+    <div class="container">
+        <h2>📡 连接配置</h2>
+        <div>
+            <label>App Key: </label>
+            <input type="text" id="appKey" value="devinggo-app-key" style="width: 300px;">
+        </div>
+        <div>
+            <label>WebSocket Host: </label>
+            <input type="text" id="wsHost" value="localhost" style="width: 200px;">
+            <label>Port: </label>
+            <input type="number" id="wsPort" value="8070" style="width: 80px;">
+        </div>
+        <div>
+            <label>JWT Token: </label>
+            <input type="text" id="token" placeholder="登录后自动填充" style="width: 400px;" readonly>
+        </div>
+        <div>
+            <label>Channel Auth Transport: </label>
+            <select id="channelAuthTransport" style="width: 120px;">
+                <option value="ajax" selected>ajax</option>
+                <option value="jsonp">jsonp</option>
+            </select>
+            <label>User Auth Transport: </label>
+            <select id="userAuthTransport" style="width: 120px;">
+                <option value="ajax" selected>ajax</option>
+                <option value="jsonp">jsonp</option>
+            </select>
+        </div>
+        <div>
+            <button onclick="connect()">🔌 连接</button>
+            <button onclick="disconnect()" class="danger">❌ 断开</button>
+        </div>
+        <div id="status" class="status disconnected">● 未连接</div>
+        <div class="info-box">
+            <strong>Socket ID:</strong> <span id="socketId">-</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>👤 User Authentication / Signin 测试</h2>
+        <div>
+            <button onclick="signinUser()">🔐 调用 pusher.signin()</button>
+            <button onclick="testUserAuthJSONP()">🧪 测试 user-auth JSONP</button>
+            <button onclick="testChannelAuthJSONP()">🧪 测试 channel-auth JSONP</button>
+        </div>
+        <div style="margin-top: 10px;">
+            <strong>状态:</strong> <span id="signinStatus">未触发</span>
+        </div>
+        <div class="info-box" style="background: #fff3cd; border-left-color: #ffc107;">
+            <strong>提示:</strong> JSONP 测试无法携带自定义 Header，若你的认证中间件仅接受 Header Token，JSONP 可能失败。
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📦 批量频道授权测试</h2>
+        <div>
+            <label>频道列表(逗号分隔): </label>
+            <input type="text" id="batchAuthChannels" value="private-user-123,presence-lobby,private-encrypted-secure" style="width: 520px;">
+        </div>
+        <div>
+            <button onclick="testBatchAuthPost()">🚀 测试 /system/pusher/auth/batch (POST)</button>
+            <button onclick="testBatchAuthJSONP()">🧪 测试 /system/pusher/auth/batch (GET/JSONP)</button>
+        </div>
+        <div style="margin-top: 10px;">
+            <strong>结果:</strong> <span id="batchAuthStatus">等待测试...</span>
+        </div>
+    </div>
+    
+    <div class="grid">
+        <div class="container">
+            <h2>📢 Public Channel</h2>
+            <div>
+                <input type="text" id="publicChannel" value="chat-room" placeholder="频道名">
+                <button onclick="subscribePublic()">订阅</button>
+            </div>
+            <div style="margin-top: 10px;">
+                <strong>状态:</strong> <span id="publicStatus">未订阅</span>
+            </div>
+            <div style="margin-top: 10px;">
+                <button onclick="testPublicClientEvent()" class="danger">
+                    ⚠️ 测试Public频道Client Event（应失败）
+                </button>
+            </div>
+        </div>
+        
+        <div class="container">
+            <h2>🔒 Private Channel</h2>
+            <div>
+                <input type="text" id="privateChannel" value="private-user-123" placeholder="private-*">
+                <button onclick="subscribePrivate()">订阅</button>
+            </div>
+            <div style="margin-top: 10px;">
+                <strong>状态:</strong> <span id="privateStatus">未订阅</span>
+            </div>
+            <div style="margin-top: 10px;">
+                <input type="text" id="clientEvent" value="client-typing" placeholder="client-*">
+                <input type="text" id="clientEventData" value='{"user":"Alice"}' placeholder="JSON数据">
+                <button onclick="sendClientEvent()">发送Client Event</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>👥 Presence Channel</h2>
+        <div>
+            <input type="text" id="presenceChannel" value="presence-lobby" placeholder="presence-*">
+            <button onclick="subscribePresence()">订阅</button>
+        </div>
+        <div style="margin-top: 10px;">
+            <strong>状态:</strong> <span id="presenceStatus">未订阅</span>
+        </div>
+        <div id="membersInfo" style="margin-top: 10px;"></div>
+        <div style="margin-top: 15px; padding: 10px; background: #f9f9f9; border-radius: 4px;">
+            <strong>💬 Client Events 测试（含 user_id metadata）:</strong>
+            <div style="margin-top: 10px;">
+                <input type="text" id="presenceMessage" placeholder="输入消息..." style="width: 250px;">
+                <button onclick="sendPresenceTyping()">📤 发送 typing 事件</button>
+                <button onclick="sendPresenceCustom()">✨ 发送自定义事件</button>
+            </div>
+            <div id="presenceClientEventLog" style="margin-top: 10px; padding: 8px; background: white; border-radius: 4px; min-height: 40px; font-size: 12px; color: #666;"></div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>🔐 Encrypted Channel (private-encrypted-*)</h2>
+        <div>
+            <input type="text" id="encryptedChannel" value="private-encrypted-secure" placeholder="private-encrypted-*">
+            <button onclick="subscribeEncrypted()">订阅加密频道</button>
+            <button onclick="unsubscribeEncrypted()" class="danger">取消订阅</button>
+        </div>
+        <div style="margin-top: 10px;">
+            <strong>状态:</strong> <span id="encryptedStatus">未订阅</span>
+        </div>
+        <div id="encryptedInfo" style="margin-top: 10px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+            <strong>⚠️ 重要限制:</strong>
+            <ul style="margin: 5px 0; padding-left: 20px; font-size: 13px;">
+                <li><strong style="color: #d9534f;">Encrypted Channels 不支持 Client Events</strong>（Pusher.js 官方限制）</li>
+                <li>仅支持服务器推送的加密消息（HTTP Events API）</li>
+                <li>需要 TweetNaCl 库支持（已自动加载）</li>
+                <li>加密由客户端自动处理，服务器端只负责路由</li>
+                <li>使用场景：接收服务器推送的敏感数据（如支付通知、个人信息等）</li>
+            </ul>
+        </div>
+        <div style="margin-top: 10px; padding: 10px; background: #e7f3ff; border-left: 4px solid #2196F3; border-radius: 4px;">
+            <strong>💡 测试说明:</strong>
+            <p style="margin: 5px 0; font-size: 13px;">
+                要测试加密消息接收，需要使用 HTTP Events API 推送消息。<br>
+                示例命令（PowerShell）：
+            </p>
+            <pre style="background: #f5f5f5; padding: 8px; border-radius: 4px; font-size: 12px; overflow-x: auto;">$body = @{
+    name = "encrypted-message"
+    channel = "private-encrypted-secure"
+    data = '{"message":"这是加密消息"}'
+} | ConvertTo-Json
+Invoke-RestMethod -Uri "http://localhost:8070/apps/devinggo-app-id/events" `
+    -Method POST -Body $body -ContentType "application/json"</pre>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>🧪 速率限制测试</h2>
+        <div>
+            <button onclick="testRateLimit()">快速发送11条Client Event（测试速率限制）</button>
+        </div>
+        <div style="margin-top: 10px;">
+            <strong>结果:</strong> <span id="rateLimitResult">等待测试...</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>📋 事件日志</h2>
+        <button onclick="clearLogs()">清空日志</button>
+        <div id="logs"></div>
+    </div>
+    
+    <script>
+        let pusher = null;
+        let publicChannelObj = null;
+        let privateChannelObj = null;
+        let presenceChannelObj = null;
+        let encryptedChannelObj = null;
+        
+        // AES加密配置（与后端保持一致）
+        const AES_KEY = '1234567890123456';  // 16字节密钥（AES-128）
+        
+        /**
+         * AES-ECB加密（与后端secure.AESEncrypt保持一致）
+         * @param {string} plaintext - 明文
+         * @param {string} key - 密钥（16字节）
+         * @returns {string} Base64编码的密文
+         */
+        function aesEncrypt(plaintext, key) {
+            const keyHex = CryptoJS.enc.Utf8.parse(key);
+            const encrypted = CryptoJS.AES.encrypt(plaintext, keyHex, {
+                mode: CryptoJS.mode.ECB,
+                padding: CryptoJS.pad.Pkcs7
+            });
+            return encrypted.toString();  // 返回Base64编码
+        }
+        
+        function log(message, type = 'info') {
+            try {
+                const logs = document.getElementById('logs');
+                if (!logs) {
+                    console.error('❌ 找不到#logs元素！');
+                    return;
+                }
+                const time = new Date().toLocaleTimeString();
+                const className = type === 'error' ? 'log-error' : (type === 'event' ? 'log-event' : 'log-data');
+                logs.innerHTML += `<div><span class="log-time">[${time}]</span> <span class="${className}">${message}</span></div>`;
+                logs.scrollTop = logs.scrollHeight;
+            } catch (e) {
+                console.error('❌ log()函数错误:', e);
+            }
+        }
+        
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+        
+        function updateLoginStatus(status, isLoggedIn, userInfo = null) {
+            const statusEl = document.getElementById('loginStatus');
+            statusEl.textContent = status;
+            statusEl.className = 'status ' + (isLoggedIn ? 'connected' : 'disconnected');
+            
+            const userInfoEl = document.getElementById('userInfo');
+            if (isLoggedIn && userInfo) {
+                userInfoEl.style.display = 'block';
+                document.getElementById('userDetail').textContent = userInfo;
+            } else {
+                userInfoEl.style.display = 'none';
+            }
+        }
+        
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const wsHost = document.getElementById('wsHost').value;
+            const wsPort = document.getElementById('wsPort').value;
+            
+            if (!username || !password) {
+                alert('请输入用户名和密码');
+                return;
+            }
+            
+            log('🔑 正在登录: ' + username, 'event');
+            
+            // AES加密密码
+            const encryptedPassword = aesEncrypt(password, AES_KEY);
+            log('🔐 密码已加密（AES-ECB）', 'data');
+            
+            try {
+                const response = await fetch(`http://${wsHost}:${wsPort}/system/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: encryptedPassword  // 发送加密后的密码
+                    })
+                });
+                
+                const result = await response.json();
+                
+                // 调试：打印完整响应
+                console.log('🔍 登录接口响应:', result);
+                console.log('🔍 result.code:', result.code, '(类型:', typeof result.code, ')');
+                console.log('🔍 result.success:', result.success);
+                console.log('🔍 result.data:', result.data);
+                console.log('🔍 result.data.token:', result.data?.token);
+                
+                // 后端成功时返回: { code: 0, success: true, data: { token, expire } }
+                if (result.success && result.data && result.data.token) {
+                    const token = result.data.token;
+                    const expire = result.data.expire;
+                    
+                    // 保存token到输入框
+                    document.getElementById('token').value = token;
+                    
+                    // 保存到localStorage（带错误处理）
+                    try {
+                        localStorage.setItem('pusher_test_token', token);
+                        localStorage.setItem('pusher_test_username', username);
+                        log('💾 Token已保存到localStorage', 'data');
+                        
+                        // 验证保存是否成功
+                        const savedToken = localStorage.getItem('pusher_test_token');
+                        const savedUsername = localStorage.getItem('pusher_test_username');
+                        if (savedToken && savedUsername) {
+                            log('✅ localStorage验证成功: token和username已保存', 'data');
+                        } else {
+                            log('⚠️ localStorage验证失败: 数据未正确保存', 'error');
+                        }
+                    } catch (e) {
+                        log('❌ localStorage保存失败: ' + e.message, 'error');
+                        log('⚠️ 可能原因: 浏览器隐私模式、localStorage被禁用、或使用file://协议', 'error');
+                    }
+                    
+                    updateLoginStatus('● 已登录', true, `${username} (Token过期时间: ${new Date(expire * 1000).toLocaleString()})`);
+                    log('✅ 登录成功！Token已自动填充', 'event');
+                    log('💾 Token前50字符: ' + token.substring(0, 50) + '...', 'data');
+                } else {
+                    log('❌ 登录失败: ' + (result.message || '未知错误'), 'error');
+                    alert('登录失败: ' + (result.message || '未知错误'));
+                }
+            } catch (error) {
+                log('❌ 登录请求失败: ' + error.message, 'error');
+                alert('登录请求失败: ' + error.message);
+            }
+        }
+        
+        async function logout() {
+            const token = document.getElementById('token').value;
+            const wsHost = document.getElementById('wsHost').value;
+            const wsPort = document.getElementById('wsPort').value;
+            
+            if (!token) {
+                alert('未登录');
+                return;
+            }
+            
+            log('🚪 正在退出登录...', 'event');
+            
+            try {
+                const response = await fetch(`http://${wsHost}:${wsPort}/system/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                
+                const result = await response.json();
+                
+                // 后端成功时返回: { code: 0, success: true }
+                if (result.success) {
+                    // 清空token
+                    document.getElementById('token').value = '';
+                    localStorage.removeItem('pusher_test_token');
+                    localStorage.removeItem('pusher_test_username');
+                    
+                    updateLoginStatus('● 未登录', false);
+                    log('✅ 已退出登录', 'event');
+                    
+                    // 断开WebSocket连接
+                    if (pusher) {
+                        disconnect();
+                    }
+                } else {
+                    log('⚠️ 退出登录响应异常: ' + (result.message || '未知错误'), 'error');
+                    // 即使后端返回失败也清空本地token（容错处理）
+                    document.getElementById('token').value = '';
+                    localStorage.removeItem('pusher_test_token');
+                    localStorage.removeItem('pusher_test_username');
+                    updateLoginStatus('● 未登录', false);
+                }
+            } catch (error) {
+                log('❌ 退出请求失败: ' + error.message, 'error');
+                
+                // 即使请求失败也清空本地token
+                document.getElementById('token').value = '';
+                localStorage.removeItem('pusher_test_token');
+                updateLoginStatus('● 未登录', false);
+            }
+        }
+        
+        function updateStatus(status, isConnected) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = status;
+            statusEl.className = 'status ' + (isConnected ? 'connected' : (status.includes('连接中') ? 'connecting' : 'disconnected'));
+        }
+        
+        function connect() {
+            const appKey = document.getElementById('appKey').value;
+            const wsHost = document.getElementById('wsHost').value;
+            const wsPort = document.getElementById('wsPort').value;
+            const token = document.getElementById('token').value;
+            const channelAuthTransport = document.getElementById('channelAuthTransport').value;
+            const userAuthTransport = document.getElementById('userAuthTransport').value;
+            
+            updateStatus('● 连接中...', false);
+            log('🔌 正在连接到 ' + wsHost + ':' + wsPort, 'event');
+            
+            // 配置对象：支持加密频道
+            const pusherConfig = {
+                wsHost: wsHost,
+                wsPort: wsPort,
+                forceTLS: false,
+                enabledTransports: ['ws'],
+                cluster: 'mt1',
+                disableStats: true,
+                channelAuthorization: {
+                    endpoint: `http://${wsHost}:${wsPort}/system/pusher/auth`,
+                    transport: channelAuthTransport,
+                    params: token ? {
+                        authorization: token
+                    } : {},
+                    headers: token ? {
+                        'Authorization': 'Bearer ' + token
+                    } : {}
+                },
+                userAuthentication: {
+                    endpoint: `http://${wsHost}:${wsPort}/system/pusher/user-auth`,
+                    transport: userAuthTransport,
+                    params: token ? {
+                        authorization: token
+                    } : {},
+                    headers: token ? {
+                        'Authorization': 'Bearer ' + token
+                    } : {}
+                }
+            };
+            
+            // 如果 NaCl 库可用，添加加密支持
+            if (typeof nacl !== 'undefined') {
+                pusherConfig.nacl = nacl;
+                log('✅ 加密库已就绪，支持 Encrypted Channels', 'data');
+            } else {
+                log('⚠️ NaCl 库未加载，Encrypted Channels 不可用', 'error');
+            }
+            
+            pusher = new Pusher(appKey, pusherConfig);
+            
+            pusher.connection.bind('connected', function() {
+                updateStatus('● 已连接', true);
+                const socketId = pusher.connection.socket_id;
+                document.getElementById('socketId').textContent = socketId;
+                log('✅ 连接成功！Socket ID: ' + socketId, 'event');
+                log('🔧 channelAuthTransport=' + channelAuthTransport + ', userAuthTransport=' + userAuthTransport, 'data');
+            });
+            
+            pusher.connection.bind('disconnected', function() {
+                updateStatus('● 已断开', false);
+                log('❌ 连接已断开', 'error');
+            });
+            
+            pusher.connection.bind('error', function(err) {
+                log('❌ 连接错误: ' + JSON.stringify(err), 'error');
+            });
+
+            if (pusher.user && typeof pusher.user.bind === 'function') {
+                pusher.user.bind('pusher:signin_success', function(data) {
+                    document.getElementById('signinStatus').textContent = '✅ signin_success';
+                    log('✅ 收到 pusher:signin_success => ' + JSON.stringify(data), 'event');
+                    const userDataType = data && data.user_data !== undefined ? typeof data.user_data : 'undefined';
+                    const isString = userDataType === 'string';
+                    log('🔎 signin_success.user_data 类型检测: type=' + userDataType + ', isString=' + isString, isString ? 'data' : 'error');
+                });
+
+                pusher.user.bind('pusher:signin_error', function(data) {
+                    document.getElementById('signinStatus').textContent = '❌ signin_error';
+                    log('❌ 收到 pusher:signin_error => ' + JSON.stringify(data), 'error');
+                });
+            }
+            
+            // 监听所有Pusher错误事件（包括客户端事件错误）
+            pusher.connection.bind('pusher:error', function(err) {
+                log('❌ Pusher错误: ' + JSON.stringify(err), 'error');
+                console.error('Pusher error:', err);
+            });
+            
+            // 启用Pusher调试日志（在控制台输出）
+            Pusher.logToConsole = true;
+            log('🔧 已启用Pusher调试日志（请查看浏览器控制台）', 'data');
+        }
+        
+        function disconnect() {
+            if (pusher) {
+                pusher.disconnect();
+                updateStatus('● 未连接', false);
+                document.getElementById('socketId').textContent = '-';
+                document.getElementById('signinStatus').textContent = '未触发';
+                log('🔌 已断开连接', 'event');
+            }
+        }
+
+        function signinUser() {
+            if (!pusher || pusher.connection.state !== 'connected') {
+                alert('请先连接 WebSocket');
+                return;
+            }
+            if (typeof pusher.signin !== 'function') {
+                log('❌ 当前 pusher-js 不支持 pusher.signin()', 'error');
+                return;
+            }
+
+            document.getElementById('signinStatus').textContent = '⏳ signin中...';
+            log('🔐 调用 pusher.signin()', 'event');
+            try {
+                pusher.signin();
+            } catch (e) {
+                document.getElementById('signinStatus').textContent = '❌ 调用失败';
+                log('❌ pusher.signin() 调用异常: ' + e.message, 'error');
+            }
+        }
+
+        function jsonpRequest(url, params = {}, timeoutMs = 10000) {
+            return new Promise((resolve, reject) => {
+                const callbackName = '__jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+                const query = new URLSearchParams({ ...params, callback: callbackName }).toString();
+                const script = document.createElement('script');
+                let timer = null;
+
+                window[callbackName] = function(payload) {
+                    cleanup();
+                    resolve(payload);
+                };
+
+                function cleanup() {
+                    if (timer) clearTimeout(timer);
+                    if (script.parentNode) script.parentNode.removeChild(script);
+                    delete window[callbackName];
+                }
+
+                script.onerror = function() {
+                    cleanup();
+                    reject(new Error('JSONP script load error'));
+                };
+
+                timer = setTimeout(() => {
+                    cleanup();
+                    reject(new Error('JSONP timeout'));
+                }, timeoutMs);
+
+                script.src = `${url}?${query}`;
+                document.body.appendChild(script);
+            });
+        }
+
+        async function testUserAuthJSONP() {
+            if (!pusher || pusher.connection.state !== 'connected') {
+                alert('请先连接 WebSocket');
+                return;
+            }
+            const wsHost = document.getElementById('wsHost').value;
+            const wsPort = document.getElementById('wsPort').value;
+            const socketId = pusher.connection.socket_id;
+            const token = document.getElementById('token').value;
+
+            log('🧪 测试 user-auth JSONP 开始...', 'event');
+            try {
+                const payload = await jsonpRequest(`http://${wsHost}:${wsPort}/system/pusher/user-auth`, {
+                    socket_id: socketId,
+                    ...(token ? { authorization: token } : {})
+                });
+                log('✅ user-auth JSONP 成功: ' + JSON.stringify(payload), 'data');
+            } catch (e) {
+                log('❌ user-auth JSONP 失败: ' + e.message, 'error');
+            }
+        }
+
+        async function testChannelAuthJSONP() {
+            if (!pusher || pusher.connection.state !== 'connected') {
+                alert('请先连接 WebSocket');
+                return;
+            }
+            const wsHost = document.getElementById('wsHost').value;
+            const wsPort = document.getElementById('wsPort').value;
+            const socketId = pusher.connection.socket_id;
+            const channel = document.getElementById('privateChannel').value;
+            const token = document.getElementById('token').value;
+
+            log('🧪 测试 channel-auth JSONP 开始... channel=' + channel, 'event');
+            try {
+                const payload = await jsonpRequest(`http://${wsHost}:${wsPort}/system/pusher/auth`, {
+                    socket_id: socketId,
+                    channel_name: channel,
+                    ...(token ? { authorization: token } : {})
+                });
+                log('✅ channel-auth JSONP 成功: ' + JSON.stringify(payload), 'data');
+            } catch (e) {
+                log('❌ channel-auth JSONP 失败: ' + e.message, 'error');
+            }
+        }
+
+        function parseBatchChannels() {
+            const raw = document.getElementById('batchAuthChannels').value || '';
+            return raw.split(',').map(s => s.trim()).filter(Boolean);
+        }
+
+        async function testBatchAuthPost() {
+            if (!pusher || pusher.connection.state !== 'connected') {
+                alert('请先连接 WebSocket');
+                return;
+            }
+
+            const wsHost = document.getElementById('wsHost').value;
+            const wsPort = document.getElementById('wsPort').value;
+            const token = document.getElementById('token').value;
+            const socketId = pusher.connection.socket_id;
+            const channels = parseBatchChannels();
+
+            if (!channels.length) {
+                alert('请输入至少一个频道');
+                return;
+            }
+
+            document.getElementById('batchAuthStatus').textContent = '⏳ POST 测试中...';
+            log('🚀 测试批量授权 POST: channels=' + JSON.stringify(channels), 'event');
+
+            try {
+                const response = await fetch(`http://${wsHost}:${wsPort}/system/pusher/auth/batch`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+                    },
+                    body: JSON.stringify({
+                        socket_id: socketId,
+                        channel_names: channels
+                    })
+                });
+
+                const result = await response.json();
+                document.getElementById('batchAuthStatus').textContent = response.ok ? '✅ POST 成功' : '❌ POST 失败';
+                log((response.ok ? '✅' : '❌') + ' 批量授权 POST 返回: ' + JSON.stringify(result), response.ok ? 'data' : 'error');
+            } catch (e) {
+                document.getElementById('batchAuthStatus').textContent = '❌ POST 异常';
+                log('❌ 批量授权 POST 异常: ' + e.message, 'error');
+            }
+        }
+
+        async function testBatchAuthJSONP() {
+            if (!pusher || pusher.connection.state !== 'connected') {
+                alert('请先连接 WebSocket');
+                return;
+            }
+
+            const wsHost = document.getElementById('wsHost').value;
+            const wsPort = document.getElementById('wsPort').value;
+            const socketId = pusher.connection.socket_id;
+            const channels = parseBatchChannels();
+            const token = document.getElementById('token').value;
+
+            if (!channels.length) {
+                alert('请输入至少一个频道');
+                return;
+            }
+
+            document.getElementById('batchAuthStatus').textContent = '⏳ JSONP 测试中...';
+            log('🧪 测试批量授权 JSONP: channels=' + JSON.stringify(channels), 'event');
+
+            try {
+                const result = await jsonpRequest(`http://${wsHost}:${wsPort}/system/pusher/auth/batch`, {
+                    socket_id: socketId,
+                    channel_names: channels.join(','),
+                    ...(token ? { authorization: token } : {})
+                });
+                document.getElementById('batchAuthStatus').textContent = '✅ JSONP 成功';
+                log('✅ 批量授权 JSONP 返回: ' + JSON.stringify(result), 'data');
+            } catch (e) {
+                document.getElementById('batchAuthStatus').textContent = '❌ JSONP 失败';
+                log('❌ 批量授权 JSONP 失败: ' + e.message, 'error');
+            }
+        }
+        
+        function subscribePublic() {
+            if (!pusher) {
+                alert('请先连接！');
+                return;
+            }
+            
+            const channel = document.getElementById('publicChannel').value;
+            log('📢 订阅Public频道: ' + channel, 'event');
+            
+            publicChannelObj = pusher.subscribe(channel);
+            
+            publicChannelObj.bind('pusher:subscription_succeeded', function() {
+                document.getElementById('publicStatus').textContent = '✅ 已订阅';
+                log('✅ Public频道订阅成功: ' + channel, 'event');
+            });
+            
+            publicChannelObj.bind('pusher:subscription_error', function(err) {
+                document.getElementById('publicStatus').textContent = '❌ 订阅失败';
+                log('❌ Public频道订阅失败: ' + JSON.stringify(err), 'error');
+            });
+            
+            // 监听所有事件
+            publicChannelObj.bind_global(function(event, data) {
+                if (!event.startsWith('pusher:')) {
+                    log('📨 [' + channel + '] 收到事件: ' + event + ' => ' + JSON.stringify(data), 'data');
+                }
+            });
+
+            // 监听频道错误（包括 Client Event 错误）
+            publicChannelObj.bind('pusher:error', function(err) {
+                log('❌ [' + channel + '] 频道错误: ' + JSON.stringify(err), 'error');
+            });
+        }
+
+        function testPublicClientEvent() {
+            if (!publicChannelObj) {
+                alert('请先订阅Public频道！');
+                return;
+            }
+
+            log('⚠️ 尝试在Public频道发送Client Event（应返回错误）', 'event');
+
+            // 先绑定错误监听器
+            publicChannelObj.bind('pusher:error', function errorHandler(err) {
+                log('✅ 收到预期的错误: ' + JSON.stringify(err), 'event');
+                // 移除监听器避免重复绑定
+                publicChannelObj.unbind('pusher:error', errorHandler);
+            });
+
+            // 尝试发送（服务器会拒绝）
+            publicChannelObj.trigger('client-test', {message: 'This should fail'});
+        }
+        
+        function subscribePrivate() {
+            if (!pusher) {
+                alert('请先连接！');
+                return;
+            }
+            
+            const channel = document.getElementById('privateChannel').value;
+            log('🔒 订阅Private频道: ' + channel + '（需要HTTP认证）', 'event');
+            
+            privateChannelObj = pusher.subscribe(channel);
+            
+            privateChannelObj.bind('pusher:subscription_succeeded', function() {
+                document.getElementById('privateStatus').textContent = '✅ 已订阅';
+                log('✅ Private频道订阅成功: ' + channel, 'event');
+                log('🔍 [Debug] privateChannelObj.subscribed = true', 'data');
+            });
+            
+            privateChannelObj.bind('pusher:subscription_error', function(err) {
+                document.getElementById('privateStatus').textContent = '❌ 订阅失败（检查认证）';
+                log('❌ Private频道订阅失败: ' + JSON.stringify(err), 'error');
+                console.error('Subscription error:', err);
+            });
+            
+            // 监听频道错误（包括客户端事件发送错误）
+            privateChannelObj.bind('pusher:error', function(err) {
+                log('❌ [' + channel + '] 频道错误: ' + JSON.stringify(err), 'error');
+                console.error('Channel error:', err);
+            });
+            
+            // 监听Client Event
+            privateChannelObj.bind_global(function(event, data) {
+                if (event.startsWith('client-')) {
+                    log('📨 [' + channel + '] 收到Client Event: ' + event + ' => ' + JSON.stringify(data), 'data');
+                } else if (!event.startsWith('pusher:')) {
+                    // 其他服务器端事件
+                    log('📨 [' + channel + '] 收到服务器事件: ' + event + ' => ' + JSON.stringify(data), 'data');
+                }
+            });
+        }
+        
+        function sendClientEvent() {
+            try {
+                log('🔍 [Debug] sendClientEvent() 函数被调用', 'event');
+                
+                // 检查 Pusher 连接状态
+                if (!pusher) {
+                    const msg = '❌ 请先连接WebSocket！';
+                    alert(msg);
+                    log(msg, 'error');
+                    return;
+                }
+                
+                log('🔍 [Debug] Pusher连接状态: ' + pusher.connection.state, 'data');
+                
+                if (pusher.connection.state !== 'connected') {
+                    const msg = '❌ WebSocket未连接，当前状态: ' + pusher.connection.state;
+                    alert(msg);
+                    log(msg, 'error');
+                    return;
+                }
+                
+                // 检查 Private 频道订阅状态
+                if (!privateChannelObj) {
+                    const msg = '❌ 请先订阅Private频道！';
+                    alert(msg);
+                    log(msg, 'error');
+                    return;
+                }
+                
+                log('🔍 [Debug] privateChannelObj 存在', 'data');
+                log('🔍 [Debug] privateChannelObj.subscribed: ' + privateChannelObj.subscribed, 'data');
+                log('🔍 [Debug] privateChannelObj.subscriptionPending: ' + privateChannelObj.subscriptionPending, 'data');
+                log('🔍 [Debug] privateChannelObj.subscriptionCancelled: ' + privateChannelObj.subscriptionCancelled, 'data');
+                
+                // 修复：不检查 subscribed 属性，直接尝试发送
+                // Pusher.js 的 subscribed 属性可能不可靠，只要订阅成功事件触发了就可以发送
+                
+                const event = document.getElementById('clientEvent').value;
+                const dataStr = document.getElementById('clientEventData').value;
+                
+                log('🔍 [Debug] 事件名: ' + event, 'data');
+                log('🔍 [Debug] 数据字符串: ' + dataStr, 'data');
+                
+                if (!event) {
+                    const msg = '❌ 请输入事件名';
+                    alert(msg);
+                    log(msg, 'error');
+                    return;
+                }
+                
+                if (!event.startsWith('client-')) {
+                    const msg = '❌ Client Event名称必须以 "client-" 开头';
+                    alert(msg);
+                    log(msg, 'error');
+                    return;
+                }
+                
+                const data = JSON.parse(dataStr);
+                log('📤 发送Client Event: ' + event + ' => ' + JSON.stringify(data), 'event');
+                
+                const success = privateChannelObj.trigger(event, data);
+                log('🔍 [Debug] trigger() 返回值: ' + success, 'data');
+                
+                if (success) {
+                    log('✅ Client Event已发送', 'event');
+                } else {
+                    log('⚠️ Client Event发送可能失败（trigger返回false）', 'error');
+                }
+                
+            } catch (e) {
+                const msg = '❌ 发送失败: ' + e.message;
+                alert(msg);
+                log(msg, 'error');
+                console.error('sendClientEvent error:', e);
+            }
+        }
+        
+        function subscribePresence() {
+            if (!pusher) {
+                alert('请先连接！');
+                return;
+            }
+            
+            const channel = document.getElementById('presenceChannel').value;
+            log('👥 订阅Presence频道: ' + channel + '（需要HTTP认证）', 'event');
+            
+            presenceChannelObj = pusher.subscribe(channel);
+            
+            presenceChannelObj.bind('pusher:subscription_succeeded', function(members) {
+                document.getElementById('presenceStatus').textContent = '✅ 已订阅';
+                log('✅ Presence频道订阅成功: ' + channel, 'event');
+                
+                // 详细调试：打印members对象的所有信息
+                console.log('========== Members 对象详细信息 ==========');
+                console.log('🔍 members 对象:', members);
+                console.log('🔍 typeof members:', typeof members);
+                console.log('🔍 members.count:', members.count);
+                console.log('🔍 members.members:', members.members);
+                console.log('🔍 members.me:', members.me);
+                console.log('🔍 members.myID:', members.myID);
+                console.log('🔍 typeof members.each:', typeof members.each);
+                console.log('🔍 typeof members.get:', typeof members.get);
+                console.log('🔍 Object.keys(members):', Object.keys(members));
+                
+                // 尝试遍历 members 的所有属性
+                for (let key in members) {
+                    console.log('🔍 members[' + key + ']:', members[key]);
+                }
+                console.log('==========================================');
+                
+                const memberCount = members.count || 0;
+                log('👥 当前成员数: ' + memberCount, 'data');
+                
+                // 尝试使用 get 方法获取成员
+                if (typeof members.get === 'function' && members.myID) {
+                    try {
+                        const me = members.get(members.myID);
+                        log('👤 当前用户 (使用get): ' + JSON.stringify(me), 'data');
+                    } catch (e) {
+                        log('❌ members.get() 失败: ' + e.message, 'error');
+                    }
+                }
+                
+                updateMembersInfo(members);
+            });
+            
+            presenceChannelObj.bind('pusher:subscription_error', function(err) {
+                document.getElementById('presenceStatus').textContent = '❌ 订阅失败（检查认证）';
+                log('❌ Presence频道订阅失败: ' + JSON.stringify(err), 'error');
+            });
+            
+            presenceChannelObj.bind('pusher:member_added', function(member) {
+                log('👤 新成员加入: ' + member.id + ' => ' + JSON.stringify(member.info), 'event');
+                updateMembersInfo(presenceChannelObj.members);
+            });
+            
+            presenceChannelObj.bind('pusher:member_removed', function(member) {
+                log('👤 成员离开: ' + member.id, 'event');
+                updateMembersInfo(presenceChannelObj.members);
+            });
+            
+            // ⚠️ 监听 Client Events 并检查 metadata（user_id）
+            presenceChannelObj.bind('client-typing', function(data, metadata) {
+                console.log('🔍 收到 client-typing:', { data, metadata });
+                const logEl = document.getElementById('presenceClientEventLog');
+                
+                if (metadata && metadata.user_id) {
+                    const msg = '✅ typing 事件 (发送者: ' + metadata.user_id + '): ' + JSON.stringify(data);
+                    log(msg, 'event');
+                    logEl.innerHTML = '<span style="color: green;">' + msg + '</span>';
+                } else {
+                    const msg = '❌ typing 事件缺少 user_id metadata! data=' + JSON.stringify(data);
+                    log(msg, 'error');
+                    logEl.innerHTML = '<span style="color: red;">' + msg + '</span>';
+                }
+            });
+            
+            presenceChannelObj.bind('client-custom', function(data, metadata) {
+                console.log('🔍 收到 client-custom:', { data, metadata });
+                const logEl = document.getElementById('presenceClientEventLog');
+                
+                if (metadata && metadata.user_id) {
+                    const msg = '✅ 自定义事件 (发送者: ' + metadata.user_id + '): ' + JSON.stringify(data);
+                    log(msg, 'event');
+                    logEl.innerHTML = '<span style="color: green;">' + msg + '</span>';
+                } else {
+                    const msg = '❌ 自定义事件缺少 user_id metadata! data=' + JSON.stringify(data);
+                    log(msg, 'error');
+                    logEl.innerHTML = '<span style="color: red;">' + msg + '</span>';
+                }
+            });
+        }
+        
+        function updateMembersInfo(members) {
+            const membersInfo = document.getElementById('membersInfo');
+            
+            // Pusher.js Members 对象结构调试
+            console.log('🔍 [updateMembersInfo] members:', members);
+            console.log('🔍 [updateMembersInfo] members.count:', members.count);
+            console.log('🔍 [updateMembersInfo] members.presence:', members.presence);
+            
+            // 如果 members 本身没有 count，尝试从 presence 属性获取
+            let actualMembers = members;
+            if (members.presence && typeof members.presence === 'object') {
+                console.log('🔍 检测到 presence 嵌套结构，使用 members.presence');
+                actualMembers = members.presence;
+            }
+            
+            const memberCount = actualMembers.count || 0;
+            const memberIds = actualMembers.ids || [];
+            const memberHash = actualMembers.hash || {};
+            
+            console.log('🔍 memberCount:', memberCount);
+            console.log('🔍 memberIds:', memberIds);
+            console.log('🔍 memberHash:', memberHash);
+            
+            membersInfo.innerHTML = '<strong>当前成员:</strong> ' + memberCount + ' 人<br>';
+            
+            if (memberCount === 0 || memberIds.length === 0) {
+                membersInfo.innerHTML += '<em>暂无成员</em><br>';
+                return;
+            }
+            
+            // 直接遍历 ids 和 hash
+            console.log('🔍 开始遍历 memberIds...');
+            memberIds.forEach(function(memberId) {
+                console.log('🔍 处理成员ID:', memberId, '类型:', typeof memberId);
+                console.log('🔍 memberHash[memberId]:', memberHash[memberId]);
+                console.log('🔍 memberHash 所有键:', Object.keys(memberHash));
+                
+                const memberInfo = memberHash[memberId];
+                if (memberInfo) {
+                    membersInfo.innerHTML += '• ' + memberId + ': ' + JSON.stringify(memberInfo) + '<br>';
+                    console.log('✅ 显示成员:', memberId, memberInfo);
+                } else {
+                    console.log('❌ 未找到成员信息:', memberId);
+                    // 尝试所有键
+                    console.log('🔍 尝试直接遍历 memberHash:');
+                    for (let key in memberHash) {
+                        console.log('  - key:', key, '(类型:', typeof key, '), value:', memberHash[key]);
+                        if (key == memberId) {  // 使用 == 而不是 ===，允许类型转换
+                            console.log('  ✅ 找到匹配（使用 == 比较）');
+                            membersInfo.innerHTML += '• ' + key + ': ' + JSON.stringify(memberHash[key]) + '<br>';
+                        }
+                    }
+                }
+            });
+            
+            // 显示当前用户信息
+            if (actualMembers.me) {
+                log('👤 当前用户: ' + JSON.stringify(actualMembers.me), 'data');
+            }
+        }
+        
+        function testRateLimit() {
+            if (!privateChannelObj) {
+                alert('请先订阅Private频道！');
+                return;
+            }
+
+            document.getElementById('rateLimitResult').textContent = '测试中...';
+            log('🧪 开始速率限制测试：快速发送11条Client Event（速率限制10条/秒）', 'event');
+
+            let sentCount = 0;
+            let rateLimitErrorCount = 0;
+
+            // 监听速率限制错误
+            function rateLimitErrorHandler(err) {
+                if (err && err.code === 4301) {
+                    rateLimitErrorCount++;
+                    log('❌ 收到速率限制错误: ' + JSON.stringify(err), 'error');
+                }
+            }
+
+            privateChannelObj.bind('pusher:error', rateLimitErrorHandler);
+
+            for (let i = 0; i < 11; i++) {
+                setTimeout(() => {
+                    sentCount++;
+                    privateChannelObj.trigger('client-ratelimit-test', {seq: i + 1});
+                    log('📤 第' + (i + 1) + '条消息已发送', 'data');
+
+                    if (i === 10) {
+                        setTimeout(() => {
+                            // 移除错误监听器
+                            privateChannelObj.unbind('pusher:error', rateLimitErrorHandler);
+
+                            const result = `已发送: ${sentCount}条, 速率限制错误: ${rateLimitErrorCount}个`;
+                            document.getElementById('rateLimitResult').textContent = result;
+                            log('🧪 速率限制测试完成: ' + result, 'event');
+
+                            if (rateLimitErrorCount > 0) {
+                                log('✅ 速率限制生效（超出限制被拒绝）', 'event');
+                            } else {
+                                log('⚠️ 可能未触发速率限制（检查发送间隔）', 'data');
+                            }
+                        }, 1000);
+                    }
+                }, i * 80); // 每80ms发送1条（约12.5次/秒，确保触发限制）
+            }
+        }
+        
+        // ========== Encrypted Channel 功能 ==========
+        function subscribeEncrypted() {
+            if (!pusher) {
+                alert('请先连接！');
+                return;
+            }
+            
+            // 检查 NaCl 库
+            if (typeof nacl === 'undefined') {
+                alert('NaCl 加密库未加载，无法订阅加密频道！请刷新页面。');
+                log('❌ NaCl 库未加载，无法订阅加密频道', 'error');
+                return;
+            }
+            
+            const channel = document.getElementById('encryptedChannel').value;
+            log('🔐 订阅加密频道: ' + channel + '（需要HTTP认证，客户端自动加密）', 'event');
+            
+            encryptedChannelObj = pusher.subscribe(channel);
+            
+            encryptedChannelObj.bind('pusher:subscription_succeeded', function() {
+                document.getElementById('encryptedStatus').textContent = '✅ 已订阅（加密模式）';
+                log('✅ 加密频道订阅成功: ' + channel, 'event');
+                log('🔒 所有消息将自动加密/解密（NaCl 端到端加密）', 'data');
+                log('⚠️ 注意：Encrypted Channels 不支持 Client Events（仅接收服务器推送）', 'data');
+            });
+            
+            encryptedChannelObj.bind('pusher:subscription_error', function(err) {
+                document.getElementById('encryptedStatus').textContent = '❌ 订阅失败';
+                log('❌ 加密频道订阅失败: ' + JSON.stringify(err), 'error');
+            });
+            
+            // 监听服务器推送的加密消息（会自动解密）
+            encryptedChannelObj.bind('encrypted-message', function(data) {
+                log('📩 收到加密消息（已自动解密）: ' + JSON.stringify(data), 'event');
+            });
+            
+            // 监听所有事件用于调试
+            encryptedChannelObj.bind_global(function(eventName, data) {
+                if (!eventName.startsWith('pusher:')) {
+                    log('📨 收到加密频道事件: ' + eventName + ' => ' + JSON.stringify(data), 'event');
+                }
+            });
+        }
+        
+        // ⚠️ Encrypted Channels 不支持 Client Events（已移除 sendEncryptedEvent 功能）
+        // 这是 Pusher.js 的官方限制，加密频道仅支持服务器推送
+        
+        function unsubscribeEncrypted() {
+            if (encryptedChannelObj) {
+                const channel = document.getElementById('encryptedChannel').value;
+                pusher.unsubscribe(channel);
+                encryptedChannelObj = null;
+                document.getElementById('encryptedStatus').textContent = '未订阅';
+                log('🔌 已取消订阅加密频道', 'event');
+            }
+        }
+        
+        // ========== Presence Client Events Metadata 功能 ==========
+        function sendPresenceTyping() {
+            if (!presenceChannelObj) {
+                alert('请先订阅 Presence 频道！');
+                return;
+            }
+            
+            const message = document.getElementById('presenceMessage').value || '正在输入...';
+            const data = {
+                message: message,
+                timestamp: new Date().toISOString()
+            };
+            
+            presenceChannelObj.trigger('client-typing', data);
+            log('📤 已发送 typing 事件: ' + JSON.stringify(data), 'event');
+            document.getElementById('presenceClientEventLog').innerHTML = '<span style="color: #666;">等待其他成员响应...</span>';
+        }
+        
+        function sendPresenceCustom() {
+            if (!presenceChannelObj) {
+                alert('请先订阅 Presence 频道！');
+                return;
+            }
+            
+            const message = document.getElementById('presenceMessage').value || '自定义消息';
+            const data = {
+                action: 'custom_action',
+                message: message,
+                timestamp: new Date().toISOString()
+            };
+            
+            presenceChannelObj.trigger('client-custom', data);
+            log('📤 已发送自定义事件: ' + JSON.stringify(data), 'event');
+            document.getElementById('presenceClientEventLog').innerHTML = '<span style="color: #666;">等待其他成员响应...</span>';
+        }
+
+        // 页面初始化 - 使用 DOMContentLoaded 确保 DOM 完全加载
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+        });
+
+        function initializePage() {
+            // 检查 DOM 是否准备好
+            const logsEl = document.getElementById('logs');
+            if (!logsEl) {
+                console.error('❌ #logs 元素不存在，延迟 100ms 后重试');
+                setTimeout(initializePage, 100);
+                return;
+            }
+
+            // 页面加载时的提示
+            log('👋 欢迎使用Pusher Protocol v8.3.0测试客户端（完整版）', 'event');
+            log('📖 使用说明:', 'event');
+            log('1. 先登录获取JWT Token（默认：superAdmin/admin123）', 'data');
+            log('2. 配置连接信息并点击"连接"', 'data');
+            log('3. 测试Public/Private/Presence/Encrypted频道订阅', 'data');
+            log('4. 测试 Client Events 和 Presence metadata', 'data');
+            log('5. 运行速率限制测试', 'data');
+            log('', 'data');
+            log('🔐 安全提示: 密码使用AES-ECB加密传输（密钥: 1234567890123456）', 'data');
+            log('', 'data');
+
+            // 检查 NaCl 加密库
+            if (typeof nacl !== 'undefined') {
+                log('✅ TweetNaCl 加密库已加载，支持 Encrypted Channels', 'data');
+                console.log('✅ NaCl 版本信息:', nacl);
+            } else {
+                log('❌ TweetNaCl 加密库未加载，Encrypted Channels 功能不可用', 'error');
+                console.error('❌ NaCl 未定义');
+            }
+            log('', 'data');
+
+            // 检查localStorage是否可用
+            try {
+                const testKey = '__test_localStorage__';
+                localStorage.setItem(testKey, 'test');
+                localStorage.removeItem(testKey);
+                log('✅ localStorage可用', 'data');
+            } catch (e) {
+                log('❌ localStorage不可用: ' + e.message, 'error');
+                log('⚠️ 请确保: 1) 不在隐私模式下浏览 2) 未禁用localStorage 3) 使用http://协议而非file://', 'error');
+            }
+
+            // 恢复登录状态（从localStorage）
+            try {
+                const savedToken = localStorage.getItem('pusher_test_token');
+                const savedUsername = localStorage.getItem('pusher_test_username');
+
+                if (savedToken && savedUsername) {
+                    document.getElementById('token').value = savedToken;
+                    updateLoginStatus('● 已登录', true, `${savedUsername} (Token已从缓存恢复)`);
+                    log('', 'data');
+                    log('💾 已从缓存恢复登录状态: ' + savedUsername, 'event');
+                } else {
+                    log('ℹ️ 未找到缓存的登录信息', 'data');
+                }
+            } catch (e) {
+                log('⚠️ 恢复登录状态失败: ' + e.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

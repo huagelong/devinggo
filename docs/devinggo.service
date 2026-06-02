@@ -1,0 +1,12 @@
+[Service]
+Type=simple
+WorkingDirectory=/opt/devinggo/
+# 启动的脚本命令
+ExecStart=/opt/devinggo/devinggo -gf.gmode=product
+# 重启条件
+Restart=always
+# 几秒后重启
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

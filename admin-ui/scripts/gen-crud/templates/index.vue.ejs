@@ -1,0 +1,356 @@
+<script lang="ts" setup>
+import type { <%= pascalName %>ListItem } from './model';
+
+import { computed, onMounted, ref } from 'vue';
+
+import { Page } from '@vben/common-ui';
+import { message } from '#/adapter/tdesign';
+
+import {
+  AddIcon,
+  DeleteIcon,
+  EditIcon,
+  SearchIcon,
+} from 'tdesign-icons-vue-next';
+import {
+  Button,
+  DateRangePicker,
+  Form,
+  FormItem,
+  Input,
+  Popconfirm,
+  Select,
+  Space,
+  Switch,
+  Table,
+} from 'tdesign-vue-next';
+
+import CrudToolbar from '#/components/crud/crud-toolbar.vue';
+import {
+  change<%= pascalName %>Status,
+  delete<%= pascalName %>,
+  realDelete<%= pascalName %>,
+  recovery<%= pascalName %>,
+} from '#/api/<%= module %>/<%= name %>';
+import type { DictOption } from '#/composables/crud/use-dict-options';
+import { useDictOptions } from '#/composables/crud/use-dict-options';
+
+import <%= pascalName %>Modal from './components/<%= name %>-modal.vue';
+import type { <%= pascalName %>TableColumn } from './model';
+import { create<%= pascalName %>ColumnOptions, create<%= pascalName %>TableColumns } from './schemas';
+import { use<%= pascalName %>Crud } from './use-<%= name %>-crud';
+
+defineOptions({ name: 'System<%= pascalName %>' });
+
+type <%= pascalName %>ModalInstance = {
+  open: (data?: Partial<<%= pascalName %>ListItem>) => void;
+};
+
+const <%= camelName %>ModalRef = ref<<%= pascalName %>ModalInstance>();
+const statusOptions = ref<DictOption[]>([]);
+
+const columns: <%= pascalName %>TableColumn[] = create<%= pascalName %>TableColumns();
+const columnOptions = create<%= pascalName %>ColumnOptions(columns);
+const allColumnKeys = columnOptions.map((item) => item.value);
+const visibleColumns = ref<string[]>([...allColumnKeys]);
+
+const displayColumns = computed({
+  get: () => ['row-select', ...visibleColumns.value],
+  set: (value: string[]) => {
+    visibleColumns.value = value.filter((item) => item !== 'row-select');
+  },
+});
+
+const {
+  clearSelectedRowKeys,
+  fetchTableData,
+  handlePageChange,
+  handleReset,
+  handleSearch,
+  handleSelectChange,
+  isRecycleBin,
+  loading,
+  pagination,
+  searchForm,
+  selectedRowKeys,
+  tableData,
+  toggleRecycleBin,
+} = use<%= pascalName %>Crud();
+
+const { getDictOptions } = useDictOptions();
+
+function toIds(keys: Array<number | string>) {
+  return keys.map((key) => Number(key));
+}
+
+async function fetchStatusOptions() {
+  const options = await getDictOptions('data_status');
+  statusOptions.value =
+    options.length > 0
+      ? options
+      : [
+          { label: '正常', value: 1 },
+          { label: '停用', value: 2 },
+        ];
+}
+
+function handleAdd() {
+  <%= camelName %>ModalRef.value?.open();
+}
+
+function handleEdit(row: <%= pascalName %>ListItem) {
+  <%= camelName %>ModalRef.value?.open(row);
+}
+
+async function handleDelete(row: <%= pascalName %>ListItem) {
+  try {
+    await (isRecycleBin.value ? realDelete<%= pascalName %>([row.id]) : delete<%= pascalName %>([row.id]));
+    message.success('操作成功');
+    await fetchTableData();
+  } catch (error) {
+    console.error(error);
+    message.error('删除失败，请稍后重试');
+  }
+}
+
+async function handleBatchDelete() {
+  if (selectedRowKeys.value.length === 0) {
+    message.warning('请选择需要操作的数据');
+    return;
+  }
+
+  const ids = toIds(selectedRowKeys.value);
+  try {
+    await (isRecycleBin.value ? realDelete<%= pascalName %>(ids) : delete<%= pascalName %>(ids));
+    message.success('操作成功');
+    clearSelectedRowKeys();
+    await fetchTableData();
+  } catch (error) {
+    console.error(error);
+    message.error('批量删除失败，请稍后重试');
+  }
+}
+
+async function handleRecovery(row: <%= pascalName %>ListItem) {
+  try {
+    await recovery<%= pascalName %>([row.id]);
+    message.success('恢复成功');
+    await fetchTableData();
+  } catch (error) {
+    console.error(error);
+    message.error('恢复失败，请稍后重试');
+  }
+}
+
+async function handleBatchRecovery() {
+  if (selectedRowKeys.value.length === 0) {
+    message.warning('请选择需要操作的数据');
+    return;
+  }
+
+  const ids = toIds(selectedRowKeys.value);
+  try {
+    await recovery<%= pascalName %>(ids);
+    message.success('恢复成功');
+    clearSelectedRowKeys();
+    await fetchTableData();
+  } catch (error) {
+    console.error(error);
+    message.error('批量恢复失败，请稍后重试');
+  }
+}
+
+async function handleStatusChange(row: <%= pascalName %>ListItem, checked: boolean) {
+  const status = checked ? 1 : 2;
+  try {
+    await change<%= pascalName %>Status({ id: row.id, status });
+    message.success('状态更新成功');
+    await fetchTableData();
+  } catch (error) {
+    console.error(error);
+    message.error('状态更新失败，请稍后重试');
+  }
+}
+
+function handleSuccess() {
+  void fetchTableData();
+}
+
+function handleTableSelectChange(keys: Array<number | string>) {
+  handleSelectChange(keys);
+}
+
+function handleStatusSwitchChange(row: <%= pascalName %>ListItem, value: unknown) {
+  void handleStatusChange(row, Boolean(value));
+}
+
+onMounted(() => {
+  void fetchStatusOptions();
+  void fetchTableData();
+});
+</script>
+
+<template>
+  <Page auto-content-height>
+    <div class="flex h-full flex-col gap-3">
+      <div class="rounded-md bg-white p-4">
+        <Form :data="searchForm" label-width="80px" colon>
+          <div class="grid grid-cols-4 gap-x-4">
+{% for field in searchFields %}
+{% if field.name === 'name' %}
+            <FormItem label="名称" name="{{ field.name }}">
+              <Input
+                v-model="searchForm.{{ field.name }}"
+                placeholder="请输入名称"
+                clearable
+              />
+            </FormItem>
+{% elif field.name === 'code' %}
+            <FormItem label="编码" name="{{ field.name }}">
+              <Input
+                v-model="searchForm.{{ field.name }}"
+                placeholder="请输入编码"
+                clearable
+              />
+            </FormItem>
+{% elif field.name === 'status' %}
+            <FormItem label="状态" name="{{ field.name }}">
+              <Select
+                v-model="searchForm.{{ field.name }}"
+                :options="statusOptions"
+                placeholder="请选择状态"
+                clearable
+                class="w-full"
+              />
+            </FormItem>
+{% elif field.type === 'dateRange' %}
+            <FormItem label="创建时间" name="{{ field.name }}" class="col-span-2">
+              <DateRangePicker
+                v-model="searchForm.{{ field.name }}"
+                :placeholder="['开始时间', '结束时间']"
+                clearable
+                class="w-full"
+              />
+            </FormItem>
+{% else %}
+            <FormItem label="{{ field.label }}" name="{{ field.name }}">
+              <Input
+                v-model="searchForm.{{ field.name }}"
+                placeholder="请输入"
+                clearable
+              />
+            </FormItem>
+{% endif %}
+{% endfor %}
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <Button theme="default" @click="handleReset">重置</Button>
+            <Button theme="primary" @click="handleSearch">
+              <template #icon><SearchIcon /></template>
+              查询
+            </Button>
+          </div>
+        </Form>
+      </div>
+
+      <div class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+        <div class="mb-3 flex items-center justify-between">
+          <Space>
+            <template v-if="!isRecycleBin">
+              <Button theme="primary" @click="handleAdd">
+                <template #icon><AddIcon /></template>
+                新增
+              </Button>
+              <Button theme="danger" variant="outline" @click="handleBatchDelete">
+                <template #icon><DeleteIcon /></template>
+                删除
+              </Button>
+            </template>
+            <template v-else>
+              <Button theme="success" @click="handleBatchRecovery">恢复</Button>
+              <Button theme="danger" @click="handleBatchDelete">彻底删除</Button>
+            </template>
+          </Space>
+
+          <CrudToolbar
+            v-model="visibleColumns"
+            :column-options="columnOptions"
+            :is-recycle-bin="isRecycleBin"
+            @refresh="fetchTableData"
+            @toggle-recycle="toggleRecycleBin"
+          />
+        </div>
+
+        <Table
+          v-model:display-columns="displayColumns"
+          :columns="columns"
+          :data="tableData"
+          :loading="loading"
+          :pagination="pagination"
+          :selected-row-keys="selectedRowKeys"
+          row-key="id"
+          hover
+          stripe
+          @page-change="handlePageChange"
+          @select-change="handleTableSelectChange"
+        >
+{% if formFields.some(f => f.name === 'status') %}
+          <template #status="{ row }">
+            <Switch
+              :disabled="isRecycleBin"
+              :value="row.status === 1"
+              @change="(value: unknown) => handleStatusSwitchChange(row, value)"
+            />
+          </template>
+{% endif %}
+
+          <template #action="{ row }">
+            <div class="flex items-center justify-center gap-1">
+              <template v-if="!isRecycleBin">
+                <Button
+                  size="small"
+                  theme="primary"
+                  variant="outline"
+                  @click="handleEdit(row)"
+                >
+                  <template #icon><EditIcon /></template>
+                  编辑
+                </Button>
+                <Popconfirm
+                  content="确认删除吗？"
+                  @confirm="handleDelete(row)"
+                >
+                  <Button size="small" theme="danger" variant="outline">
+                    <template #icon><DeleteIcon /></template>
+                    删除
+                  </Button>
+                </Popconfirm>
+              </template>
+
+              <template v-else>
+                <Popconfirm
+                  content="确认恢复吗？"
+                  @confirm="handleRecovery(row)"
+                >
+                  <Button size="small" theme="primary" variant="outline">
+                    恢复
+                  </Button>
+                </Popconfirm>
+                <Popconfirm
+                  content="确认彻底删除吗？"
+                  @confirm="handleDelete(row)"
+                >
+                  <Button size="small" theme="danger" variant="outline">
+                    彻底删除
+                  </Button>
+                </Popconfirm>
+              </template>
+            </div>
+          </template>
+        </Table>
+      </div>
+    </div>
+
+    <<%= pascalName %>Modal ref="<%= camelName %>ModalRef" @success="handleSuccess" />
+  </Page>
+</template>
