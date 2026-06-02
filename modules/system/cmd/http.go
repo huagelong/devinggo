@@ -55,7 +55,7 @@ var (
 			if err != nil {
 				return err
 			}
-			s.AddStaticPath("/upload", uploadPath)
+			s.AddStaticPath("/uploads", uploadPath)
 			// doc
 			if gmode.IsDevelop() {
 				enhanceOpenAPIDoc(s)
