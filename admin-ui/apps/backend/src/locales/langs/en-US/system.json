@@ -27,6 +27,7 @@
     "setHome": "Set Homepage",
     "clearCache": "Update Cache",
     "systemUser": "System User",
+    "normalUser": "Normal User",
     "allDepts": "All Departments",
     "searchDept": "Search Department",
     "exportFilename": "User List.xlsx",
