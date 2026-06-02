@@ -19,7 +19,7 @@ gfcli:
   gen:
     dao:
       - tablesEx: "system_migrations"
-        link: "pgsql:host=db-pgsql-8adauv-kj2t23 port=5432 dbname=devinggo user=devinggo password=mysql_zbCA5h sslmode=disable TimeZone=Asia/Shanghai"
+        link: "pgsql:postgres:168wang@tcp(122.152.211.127:5432)/devinggo4?sslmode=disable&TimeZone=Asia/Shanghai"
         jsonCase: "CamelLower"
         descriptionTag:  true
         noModelComment:  false

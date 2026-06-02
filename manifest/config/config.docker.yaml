@@ -75,7 +75,7 @@ database:
 
   # 默认分组
   default:
-    link: "pgsql:host=db-pgsql-8adauv-kj2t23 port=5432 dbname=devinggo user=devinggo password=mysql_zbCA5h sslmode=disable TimeZone=Asia/Shanghai"
+    link: "pgsql:postgres:168wang@tcp(122.152.211.127:5432)/devinggo4?sslmode=disable&TimeZone=Asia/Shanghai"
     debug: true # 默认 false
 
 # doc: https://goframe.org/pages/viewpage.action?pageId=1114217
