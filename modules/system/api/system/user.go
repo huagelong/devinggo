@@ -39,9 +39,9 @@ type UpdateInfoRes struct {
 type ModifyPasswordReq struct {
 	g.Meta `path:"/user/modifyPassword" method:"post" tags:"管理员信息" summary:"修改密码" x-exceptAuth:"true" x-permission:"system:user:modifyPassword"`
 	model.AuthorHeader
-	NewPassword             string `json:"newPassword" v:"required|length:7,20#请输入新密码|密码长度为7~20位"`
-	NewPasswordConfirmation string `json:"newPasswordConfirmation" v:"required|length:7,20#请输入确认密码|确认密码长度为7~20位"`
-	OldPassword             string `json:"oldPassword" v:"required|length:7,20#请输入旧密码|密码长度为7~20位"`
+	NewPassword             string `json:"newPassword" v:"required#请输入新密码"`
+	NewPasswordConfirmation string `json:"newPasswordConfirmation" v:"required#请输入确认密码"`
+	OldPassword             string `json:"oldPassword" v:"required#请输入旧密码"`
 }
 
 type ModifyPasswordRes struct {

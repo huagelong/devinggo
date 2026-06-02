@@ -71,9 +71,27 @@ func (c *userController) UpdateInfo(ctx context.Context, in *system.UpdateInfoRe
 // ModifyPassword changes the current user's password after verifying the old password.
 func (c *userController) ModifyPassword(ctx context.Context, in *system.ModifyPasswordReq) (out *system.ModifyPasswordRes, err error) {
 
-	newPassword := in.NewPassword
-	oldPassword := in.OldPassword
-	newPasswordConfirmation := in.NewPasswordConfirmation
+	aesKey := config.GetConfigString(ctx, "settings.aesKey")
+	if aesKey == "" {
+		return nil, myerror.ValidationFailed(ctx, "系统加密配置异常")
+	}
+
+	newPassword, err := secure.AESDecrypt(in.NewPassword, aesKey)
+	if err != nil {
+		return nil, myerror.ValidationFailed(ctx, "新密码解析失败")
+	}
+	oldPassword, err := secure.AESDecrypt(in.OldPassword, aesKey)
+	if err != nil {
+		return nil, myerror.ValidationFailed(ctx, "旧密码解析失败")
+	}
+	newPasswordConfirmation, err := secure.AESDecrypt(in.NewPasswordConfirmation, aesKey)
+	if err != nil {
+		return nil, myerror.ValidationFailed(ctx, "确认密码解析失败")
+	}
+
+	if len(newPassword) < 7 || len(newPassword) > 20 {
+		return nil, myerror.ValidationFailed(ctx, "密码长度为7~20位")
+	}
 	userId := c.UserId
 
 	if newPassword != newPasswordConfirmation {
