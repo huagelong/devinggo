@@ -27,6 +27,7 @@
     "setHome": "设置首页",
     "clearCache": "更新缓存",
     "systemUser": "系统用户",
+    "normalUser": "普通用户",
     "allDepts": "所有部门",
     "searchDept": "搜索部门",
     "exportFilename": "用户列表.xlsx",

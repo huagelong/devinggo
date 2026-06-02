@@ -219,7 +219,10 @@ const [Form, formApi] = useVbenForm({
       component: 'Select',
       defaultValue: '100',
       componentProps: {
-        options: [{ label: $t('system.user.systemUser'), value: '100' }],
+        options: [
+          { label: $t('system.user.systemUser'), value: '100' },
+          { label: $t('system.user.normalUser'), value: '200' },
+        ],
         placeholder: $t('ui.placeholder.select', [$t('system.user.userType')]),
       },
       rules: 'required',
