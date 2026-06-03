@@ -7,6 +7,25 @@ import { computed, onMounted, ref } from 'vue';
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
+import {
+  AddIcon,
+  DeleteIcon,
+  EditIcon,
+  SearchIcon,
+} from 'tdesign-icons-vue-next';
+import {
+  Button,
+  DateRangePicker,
+  EnhancedTable as Table,
+  Form,
+  FormItem,
+  Input,
+  Popconfirm,
+  Select,
+  Space,
+  Switch,
+} from 'tdesign-vue-next';
+
 import { message } from '#/adapter/tdesign';
 import { logger } from '#/utils/logger';
 import {

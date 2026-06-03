@@ -155,30 +155,28 @@ onMounted(() => {
       </div>
 
       <div class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
-        <div class="min-h-0 flex-1 overflow-hidden">
-          <Table
-            :columns="columns"
-            :data="tableData"
-            :loading="loading"
-            :pagination="pagination"
-            row-key="id"
-            hover
-            stripe
-            @page-change="handlePageChange"
-          >
-          <template #status="{ row }">
-            <Tag :theme="row.status === 1 ? 'success' : 'danger'" variant="light">
-              {{ row.status === 1 ? $t('system.logs.loginSuccess') : $t('system.logs.loginFailed') }}
-            </Tag>
-          </template>
+        <Table
+          :columns="columns"
+          :data="tableData"
+          :loading="loading"
+          :pagination="pagination"
+          row-key="id"
+          hover
+          stripe
+          @page-change="handlePageChange"
+        >
+        <template #status="{ row }">
+          <Tag :theme="row.status === 1 ? 'success' : 'danger'" variant="light">
+            {{ row.status === 1 ? $t('system.logs.loginSuccess') : $t('system.logs.loginFailed') }}
+          </Tag>
+        </template>
 
-          <template #message="{ row }">
-            <span class="block max-w-[320px] truncate">
-              {{ row?.message || '-' }}
-            </span>
-          </template>
-          </Table>
-        </div>
+        <template #message="{ row }">
+          <span class="block max-w-[320px] truncate">
+            {{ row?.message || '-' }}
+          </span>
+        </template>
+        </Table>
       </div>
     </div>
   </Page>
