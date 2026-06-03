@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { UploadTreeItem } from './model';
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -12,6 +12,8 @@ import CrudToolbar from '#/components/crud/crud-toolbar.vue';
 
 import {
   DeleteIcon,
+  FullscreenExitIcon,
+  FullscreenIcon,
   SearchIcon,
   UploadIcon,
 } from 'tdesign-icons-vue-next';
@@ -27,6 +29,7 @@ import {
   Space,
   Table,
   Tag,
+  Tooltip,
   Tree,
   Upload,
 } from 'tdesign-vue-next';
@@ -44,6 +47,8 @@ defineOptions({ name: 'SystemUpload' });
 const selectedTreeKey = ref<string[]>(['all']);
 const treeData = ref<UploadTreeItem[]>(defaultUploadTreeData);
 const uploadingFiles = ref(0);
+const tableContainerRef = ref<HTMLElement>();
+const isFullscreen = ref(false);
 
 const columns: UploadTableColumn[] = createUploadTableColumns();
 const columnOptions = createUploadColumnOptions(columns);
@@ -108,8 +113,25 @@ function getStorageModeText(mode?: number) {
   return mode === 1 ? $t('common.local') : $t('common.cloudStorage');
 }
 
+function handleFullscreenChange() {
+  isFullscreen.value = !!document.fullscreenElement;
+}
+
+function toggleFullscreen() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+    return;
+  }
+  tableContainerRef.value?.requestFullscreen();
+}
+
 onMounted(() => {
   void fetchTableData();
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('fullscreenchange', handleFullscreenChange);
 });
 </script>
 
@@ -197,7 +219,7 @@ onMounted(() => {
         </div>
 
         <!-- Table Area -->
-        <div class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+        <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
           <div class="mb-3 flex items-center justify-between">
             <Space>
                 <Button theme="danger" variant="outline" @click="handleBatchDelete">
@@ -206,12 +228,23 @@ onMounted(() => {
               </Button>
             </Space>
 
-            <CrudToolbar
-              v-model="displayColumns"
-              :column-options="columnOptions"
-              :is-recycle-bin="false"
-              @refresh="fetchTableData"
-            />
+            <div class="flex items-center gap-2">
+              <Tooltip :content="isFullscreen ? $t('common.exitFullscreen') : $t('common.fullscreen')">
+                <Button shape="square" variant="outline" @click="toggleFullscreen">
+                  <template #icon>
+                    <FullscreenExitIcon v-if="isFullscreen" />
+                    <FullscreenIcon v-else />
+                  </template>
+                </Button>
+              </Tooltip>
+
+              <CrudToolbar
+                v-model="displayColumns"
+                :column-options="columnOptions"
+                :is-recycle-bin="false"
+                @refresh="fetchTableData"
+              />
+            </div>
           </div>
 
           <div class="min-h-0 flex-1 overflow-hidden">

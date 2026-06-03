@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { AttachmentListItem, AttachmentTreeItem } from './model';
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 import { $t } from '@vben/locales';
 import { Page } from '@vben/common-ui';
@@ -18,6 +18,8 @@ import CrudToolbar from '#/components/crud/crud-toolbar.vue';
 import {
   AppIcon,
   DeleteIcon,
+  FullscreenExitIcon,
+  FullscreenIcon,
   SearchIcon,
 } from 'tdesign-icons-vue-next';
 import {
@@ -30,6 +32,7 @@ import {
   Space,
   Table,
   Tag,
+  Tooltip,
   Tree,
 } from 'tdesign-vue-next';
 
@@ -43,6 +46,9 @@ import {
 import { useAttachmentCrud } from './use-attachment-crud';
 
 defineOptions({ name: 'SystemAttachment' });
+
+const tableContainerRef = ref<HTMLElement>();
+const isFullscreen = ref(false);
 
 const viewMode = ref<'list' | 'window'>('list');
 const selectedTreeKey = ref<string[]>(['all']);
@@ -165,6 +171,18 @@ function switchViewMode() {
   viewMode.value = viewMode.value === 'list' ? 'window' : 'list';
 }
 
+function handleFullscreenChange() {
+  isFullscreen.value = !!document.fullscreenElement;
+}
+
+function toggleFullscreen() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+    return;
+  }
+  tableContainerRef.value?.requestFullscreen();
+}
+
 function isImageType(mimeType: string): boolean {
   return /^image\//.test(mimeType);
 }
@@ -191,7 +209,12 @@ function getFileExtension(mimeType: string): string {
 }
 
 onMounted(() => {
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
   void fetchTableData();
+});
+
+onUnmounted(() => {
+  document.removeEventListener('fullscreenchange', handleFullscreenChange);
 });
 </script>
 
@@ -248,7 +271,7 @@ onMounted(() => {
           </Form>
         </div>
 
-        <div class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+        <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
           <div class="mb-3 flex items-center justify-between">
             <Space>
               <template v-if="!isRecycleBin">
@@ -263,7 +286,7 @@ onMounted(() => {
               </template>
             </Space>
 
-            <Space>
+            <div class="flex items-center gap-2">
               <Button
                 theme="default"
                 variant="outline"
@@ -275,6 +298,15 @@ onMounted(() => {
                 {{ viewMode === 'list' ? $t('system.attachment.windowMode') : $t('system.attachment.listMode') }}
               </Button>
 
+              <Tooltip :content="isFullscreen ? $t('common.exitFullscreen') : $t('common.fullscreen')">
+                <Button shape="square" variant="outline" @click="toggleFullscreen">
+                  <template #icon>
+                    <FullscreenExitIcon v-if="isFullscreen" />
+                    <FullscreenIcon v-else />
+                  </template>
+                </Button>
+              </Tooltip>
+
               <CrudToolbar
                 v-model="visibleColumns"
                 :column-options="columnOptions"
@@ -282,7 +314,7 @@ onMounted(() => {
                 @refresh="fetchTableData"
                 @toggle-recycle="toggleRecycleBin"
               />
-            </Space>
+            </div>
           </div>
 
           <!-- List View -->

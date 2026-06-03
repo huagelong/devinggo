@@ -1,8 +1,13 @@
 <script lang="ts" setup>
 import { $t } from '@vben/locales';
 
-import { AddIcon, DeleteIcon } from 'tdesign-icons-vue-next';
-import { Button, Space } from 'tdesign-vue-next';
+import {
+  AddIcon,
+  DeleteIcon,
+  FullscreenExitIcon,
+  FullscreenIcon,
+} from 'tdesign-icons-vue-next';
+import { Button, Space, Tooltip } from 'tdesign-vue-next';
 
 import CrudToolbar from '#/components/crud/crud-toolbar.vue';
 
@@ -13,6 +18,7 @@ interface ColumnOption {
 
 interface Props {
   isRecycleBin: boolean;
+  isFullscreen: boolean;
   visibleColumns: string[];
   columnOptions: ColumnOption[];
 }
@@ -21,6 +27,7 @@ interface Emits {
   (e: 'add'): void;
   (e: 'batch-delete'): void;
   (e: 'batch-recovery'): void;
+  (e: 'toggle-fullscreen'): void;
   (e: 'refresh'): void;
   (e: 'toggle-recycle'): void;
   (e: 'update:visibleColumns', value: string[]): void;
@@ -49,6 +56,10 @@ function handleToggleRecycle() {
   emit('toggle-recycle');
 }
 
+function handleToggleFullscreen() {
+  emit('toggle-fullscreen');
+}
+
 function handleUpdateVisibleColumns(value: string[]) {
   emit('update:visibleColumns', value);
 }
@@ -73,13 +84,24 @@ function handleUpdateVisibleColumns(value: string[]) {
       </template>
     </Space>
 
-    <CrudToolbar
-      :model-value="visibleColumns"
-      :column-options="columnOptions"
-      :is-recycle-bin="isRecycleBin"
-      @update:model-value="handleUpdateVisibleColumns"
-      @refresh="handleRefresh"
-      @toggle-recycle="handleToggleRecycle"
-    />
+    <div class="flex items-center gap-2">
+      <Tooltip :content="isFullscreen ? $t('common.exitFullscreen') : $t('common.fullscreen')">
+        <Button shape="square" variant="outline" @click="handleToggleFullscreen">
+          <template #icon>
+            <FullscreenExitIcon v-if="isFullscreen" />
+            <FullscreenIcon v-else />
+          </template>
+        </Button>
+      </Tooltip>
+
+      <CrudToolbar
+        :model-value="visibleColumns"
+        :column-options="columnOptions"
+        :is-recycle-bin="isRecycleBin"
+        @update:model-value="handleUpdateVisibleColumns"
+        @refresh="handleRefresh"
+        @toggle-recycle="handleToggleRecycle"
+      />
+    </div>
   </div>
 </template>

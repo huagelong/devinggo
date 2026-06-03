@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { MessageApi } from '#/api/core/message';
+import type { NoticeApi } from '#/api/system/notice';
 
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -12,6 +13,7 @@ import {
   getQueueMessageReceiveListApi,
   updateQueueMessageReadStatusApi,
 } from '#/api/core/message';
+import { getNoticePageList } from '#/api/system/notice';
 import { logger } from '#/utils/logger';
 
 const userStore = useUserStore();
@@ -21,11 +23,15 @@ const router = useRouter();
 // 加载状态
 const loading = ref({
   messages: false,
+  notices: false,
 });
 
 // 未读消息列表
 const unreadMessages = ref<MessageApi.QueueMessageItem[]>([]);
 const unreadCount = ref(0);
+
+// 系统公告列表
+const noticeList = ref<NoticeApi.ListItem[]>([]);
 
 // 快捷导航候选配置（通过菜单原始标题匹配，自动获取正确路径）
 const quickNavCandidates = [
@@ -136,6 +142,22 @@ async function fetchUnreadMessages() {
   }
 }
 
+// 获取系统公告
+async function fetchNoticeList() {
+  loading.value.notices = true;
+  try {
+    const res = await getNoticePageList({
+      page: 1,
+      pageSize: 5,
+    });
+    noticeList.value = res.items || [];
+  } catch (error) {
+    logger.error('Failed to fetch notice list', error);
+  } finally {
+    loading.value.notices = false;
+  }
+}
+
 // 标记消息为已读
 async function markAsRead(message: MessageApi.QueueMessageItem) {
   try {
@@ -196,6 +218,7 @@ function getGreeting() {
 
 onMounted(() => {
   fetchUnreadMessages();
+  fetchNoticeList();
 });
 </script>
 
@@ -376,10 +399,18 @@ onMounted(() => {
               {{ $t('dashboard.workspace.more') }}
             </button>
           </div>
-          <div class="space-y-3">
+          <div v-if="loading.notices" class="py-8 text-center text-gray-500">
+            {{ $t('common.loading') }}
+          </div>
+
+          <div v-else-if="noticeList.length === 0" class="py-8 text-center text-gray-500">
+            {{ $t('dashboard.workspace.noNotice') }}
+          </div>
+
+          <div v-else class="space-y-3">
             <div
-              v-for="i in 3"
-              :key="i"
+              v-for="notice in noticeList"
+              :key="notice.id"
               :class="[
                 'rounded-lg border border-gray-100 p-3 transition-all',
                 noticePath ? 'cursor-pointer hover:bg-gray-50' : '',
@@ -390,9 +421,9 @@ onMounted(() => {
                 <span class="rounded bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-600">
                   {{ $t('dashboard.workspace.announcement') }}
                 </span>
-                <span class="truncate text-sm text-gray-900">系统维护通知</span>
+                <span class="truncate text-sm text-gray-900">{{ notice.title }}</span>
               </div>
-              <p class="mt-1 text-xs text-gray-500">2024-01-15</p>
+              <p class="mt-1 text-xs text-gray-500">{{ notice.created_at ? new Date(notice.created_at).toLocaleDateString() : '' }}</p>
             </div>
           </div>
         </div>

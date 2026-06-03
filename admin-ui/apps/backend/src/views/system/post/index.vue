@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
@@ -10,6 +10,8 @@ import {
   AddIcon,
   DeleteIcon,
   EditIcon,
+  FullscreenExitIcon,
+  FullscreenIcon,
   SearchIcon,
 } from 'tdesign-icons-vue-next';
 import {
@@ -24,6 +26,7 @@ import {
   Space,
   Switch,
   Table,
+  Tooltip,
 } from 'tdesign-vue-next';
 
 import CrudToolbar from '#/components/crud/crud-toolbar.vue';
@@ -49,6 +52,8 @@ type PostModalInstance = {
 };
 
 const postModalRef = ref<PostModalInstance>();
+const tableContainerRef = ref<HTMLElement>();
+const isFullscreen = ref(false);
 const statusOptions = ref<DictOption[]>([]);
 
 const columns: PostTableColumn[] = createPostTableColumns();
@@ -204,9 +209,26 @@ function handleStatusSwitchChange(row: PostListItem, value: unknown) {
   void handleStatusChange(row, Boolean(value));
 }
 
+function handleFullscreenChange() {
+  isFullscreen.value = !!document.fullscreenElement;
+}
+
+function toggleFullscreen() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+    return;
+  }
+  tableContainerRef.value?.requestFullscreen();
+}
+
 onMounted(() => {
   void fetchStatusOptions();
   void fetchTableData();
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('fullscreenchange', handleFullscreenChange);
 });
 </script>
 
@@ -258,7 +280,7 @@ onMounted(() => {
         </Form>
       </div>
 
-      <div class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
         <div class="mb-3 flex items-center justify-between">
           <Space>
             <template v-if="!isRecycleBin">
@@ -277,13 +299,24 @@ onMounted(() => {
             </template>
           </Space>
 
-          <CrudToolbar
-            v-model="visibleColumns"
-            :column-options="columnOptions"
-            :is-recycle-bin="isRecycleBin"
-            @refresh="fetchTableData"
-            @toggle-recycle="toggleRecycleBin"
-          />
+          <div class="flex items-center gap-2">
+            <Tooltip :content="isFullscreen ? $t('common.exitFullscreen') : $t('common.fullscreen')">
+              <Button shape="square" variant="outline" @click="toggleFullscreen">
+                <template #icon>
+                  <FullscreenExitIcon v-if="isFullscreen" />
+                  <FullscreenIcon v-else />
+                </template>
+              </Button>
+            </Tooltip>
+
+            <CrudToolbar
+              v-model="visibleColumns"
+              :column-options="columnOptions"
+              :is-recycle-bin="isRecycleBin"
+              @refresh="fetchTableData"
+              @toggle-recycle="toggleRecycleBin"
+            />
+          </div>
         </div>
 
         <Table

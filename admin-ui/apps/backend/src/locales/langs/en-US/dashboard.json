@@ -63,6 +63,7 @@
     "announcement": "Announcement",
     "more": "More",
     "justNow": "Just now",
-    "noQuickNav": "No quick navigation"
+    "noQuickNav": "No quick navigation",
+    "noNotice": "No notice"
   }
 }

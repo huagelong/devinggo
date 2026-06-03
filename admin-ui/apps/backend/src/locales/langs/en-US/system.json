@@ -68,6 +68,7 @@
     "createTitle": "New Dictionary",
     "editDataTitle": "Edit Dictionary Data",
     "editDictData": "Edit Dictionary Data",
+    "createDictData": "New \"{0}\" Dictionary Data",
     "createDataTitle": "New \"{0}\" Data",
     "maintainDataTitle": "Manage \"{0}\" Dictionary Data",
     "maintainDictData": "Manage Dictionary Data",

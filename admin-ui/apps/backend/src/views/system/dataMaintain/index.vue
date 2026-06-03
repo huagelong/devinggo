@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { DataMaintainApi } from '#/api/system/data-maintain';
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { $t } from '@vben/locales';
@@ -16,6 +16,8 @@ import CrudToolbar from '#/components/crud/crud-toolbar.vue';
 import { logger } from '#/utils/logger';
 
 import {
+  FullscreenExitIcon,
+  FullscreenIcon,
   InfoCircleFilledIcon,
   SearchIcon,
 } from 'tdesign-icons-vue-next';
@@ -28,6 +30,7 @@ import {
   Popup,
   Space,
   Table,
+  Tooltip,
 } from 'tdesign-vue-next';
 
 import DataMaintainDetailPanel from './components/data-maintain-detail-panel.vue';
@@ -40,6 +43,9 @@ import {
 import { useDataMaintainCrud } from './use-data-maintain-crud';
 
 defineOptions({ name: 'SystemDataMaintain' });
+
+const tableContainerRef = ref<HTMLElement>();
+const isFullscreen = ref(false);
 
 const { hasAccessByCodes } = useAccess();
 const canView = computed(() =>
@@ -151,11 +157,28 @@ async function handleFragment(row: DataMaintainListItem) {
   }
 }
 
+function handleFullscreenChange() {
+  isFullscreen.value = !!document.fullscreenElement;
+}
+
+function toggleFullscreen() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+    return;
+  }
+  tableContainerRef.value?.requestFullscreen();
+}
+
 onMounted(() => {
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
   if (!canView.value) {
     return;
   }
   void fetchTableData();
+});
+
+onUnmounted(() => {
+  document.removeEventListener('fullscreenchange', handleFullscreenChange);
 });
 </script>
 
@@ -186,7 +209,7 @@ onMounted(() => {
         </Form>
       </div>
 
-      <div class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
         <div class="mb-3 flex items-center justify-between">
           <Space>
             <Button variant="outline" @click="handleUnimplementedAction($t('system.dataMaintain.viewFields'))">
@@ -203,12 +226,23 @@ onMounted(() => {
             </Popup>
           </Space>
 
-          <CrudToolbar
-            v-model="displayColumns"
-            :column-options="columnOptions"
-            :is-recycle-bin="false"
-            @refresh="fetchTableData"
-          />
+          <div class="flex items-center gap-2">
+            <Tooltip :content="isFullscreen ? $t('common.exitFullscreen') : $t('common.fullscreen')">
+              <Button shape="square" variant="outline" @click="toggleFullscreen">
+                <template #icon>
+                  <FullscreenExitIcon v-if="isFullscreen" />
+                  <FullscreenIcon v-else />
+                </template>
+              </Button>
+            </Tooltip>
+
+            <CrudToolbar
+              v-model="displayColumns"
+              :column-options="columnOptions"
+              :is-recycle-bin="false"
+              @refresh="fetchTableData"
+            />
+          </div>
         </div>
 
         <div v-if="!canView" class="rounded-md border border-dashed border-gray-300 p-6 text-center text-gray-500">

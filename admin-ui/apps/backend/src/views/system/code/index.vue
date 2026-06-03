@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { CodeListItem } from './model';
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -18,6 +18,8 @@ import {
   DeleteIcon,
   EditIcon,
   ExportIcon,
+  FullscreenExitIcon,
+  FullscreenIcon,
   RefreshIcon,
   SearchIcon,
 } from 'tdesign-icons-vue-next';
@@ -31,6 +33,7 @@ import {
   Space,
   Table,
   Tag,
+  Tooltip,
 } from 'tdesign-vue-next';
 
 import EditInfo from './components/edit-info.vue';
@@ -46,6 +49,9 @@ import {
 import { useCodeCrud } from './use-code-crud';
 
 defineOptions({ name: 'SystemCode' });
+
+const tableContainerRef = ref<HTMLElement>();
+const isFullscreen = ref(false);
 
 type LoadTableInstance = {
   open: () => void;
@@ -168,8 +174,25 @@ function handleSuccess() {
   void fetchTableData();
 }
 
+function handleFullscreenChange() {
+  isFullscreen.value = !!document.fullscreenElement;
+}
+
+function toggleFullscreen() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+    return;
+  }
+  tableContainerRef.value?.requestFullscreen();
+}
+
 onMounted(() => {
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
   void fetchTableData();
+});
+
+onUnmounted(() => {
+  document.removeEventListener('fullscreenchange', handleFullscreenChange);
 });
 </script>
 
@@ -205,7 +228,7 @@ onMounted(() => {
         </Form>
       </div>
 
-      <div class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
         <div class="mb-3 flex items-center justify-between">
           <Space>
             <Button theme="primary" @click="handleOpenLoadTable">
@@ -223,11 +246,22 @@ onMounted(() => {
             </Button>
           </Space>
 
-          <CrudToolbar
-            v-model="visibleColumns"
-            :column-options="columnOptions"
-            @refresh="fetchTableData"
-          />
+          <div class="flex items-center gap-2">
+            <Tooltip :content="isFullscreen ? $t('common.exitFullscreen') : $t('common.fullscreen')">
+              <Button shape="square" variant="outline" @click="toggleFullscreen">
+                <template #icon>
+                  <FullscreenExitIcon v-if="isFullscreen" />
+                  <FullscreenIcon v-else />
+                </template>
+              </Button>
+            </Tooltip>
+
+            <CrudToolbar
+              v-model="visibleColumns"
+              :column-options="columnOptions"
+              @refresh="fetchTableData"
+            />
+          </div>
         </div>
 
         <Table

@@ -2,7 +2,7 @@
 import type { RoleApi } from '#/api/system/role';
 import type { DictOption } from '#/composables/crud/use-dict-options';
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -44,6 +44,8 @@ type RolePermissionModalInstance = {
 const roleModalRef = ref<RoleModalInstance>();
 const roleMenuPermissionModalRef = ref<RolePermissionModalInstance>();
 const roleDataPermissionModalRef = ref<RolePermissionModalInstance>();
+const tableContainerRef = ref<HTMLElement>();
+const isFullscreen = ref(false);
 const statusOptions = ref<DictOption[]>([]);
 
 const columns: RoleTableColumn[] = createRoleTableColumns();
@@ -75,6 +77,18 @@ const {
 } = useRoleCrud();
 
 const { getDictOptions } = useDictOptions();
+
+function handleFullscreenChange() {
+  isFullscreen.value = !!document.fullscreenElement;
+}
+
+function toggleFullscreen() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+    return;
+  }
+  tableContainerRef.value?.requestFullscreen();
+}
 
 function toIds(keys: Array<number | string>) {
   return keys.map((key) => Number(key));
@@ -234,6 +248,11 @@ function handleStatusSwitchChange(row: RoleListItem, value: unknown) {
 onMounted(() => {
   void fetchStatusOptions();
   void fetchTableData();
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('fullscreenchange', handleFullscreenChange);
 });
 </script>
 
@@ -248,14 +267,16 @@ onMounted(() => {
         @update:form-data="(val) => Object.assign(searchForm, val)"
       />
 
-      <div class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
         <RoleActionToolbar
           :is-recycle-bin="isRecycleBin"
+          :is-fullscreen="isFullscreen"
           :visible-columns="visibleColumns"
           :column-options="columnOptions"
           @add="handleAdd"
           @batch-delete="handleBatchDelete"
           @batch-recovery="handleBatchRecovery"
+          @toggle-fullscreen="toggleFullscreen"
           @refresh="fetchTableData"
           @toggle-recycle="toggleRecycleBin"
           @update:visible-columns="(val) => (visibleColumns = val)"
