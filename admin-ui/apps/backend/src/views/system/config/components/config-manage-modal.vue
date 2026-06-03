@@ -104,7 +104,7 @@ function handleEdit(row: ConfigApi.ConfigItem) {
 
 async function handleDelete(row: ConfigApi.ConfigItem) {
   try {
-    await deleteConfig({ ids: [row.id] });
+    await deleteConfig({ ids: [row.key] });
     MessagePlugin.success($t('common.deleteSuccess'));
     await fetchTableData();
   } catch (error) {
@@ -192,7 +192,7 @@ defineExpose({
           ]"
           :data="tableData"
           :loading="loading"
-          row-key="id"
+          row-key="key"
           hover
           stripe
           table-layout="fixed"

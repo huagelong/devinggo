@@ -184,12 +184,12 @@ const [Modal, modalApi] = useVbenModal({
       }
 
       modalApi.setState({ confirmLoading: true });
-      if (payload.id) {
+      if (payload.key) {
         await updateConfig(payload);
       } else {
         await saveConfig(payload);
       }
-      MessagePlugin.success(payload.id ? $t('common.updateSuccess') : $t('common.createSuccess'));
+      MessagePlugin.success(payload.key ? $t('common.updateSuccess') : $t('common.createSuccess'));
       emit('success');
       modalApi.close();
     } catch (error) {
@@ -235,7 +235,7 @@ async function fetchStatusOptions() {
 
 async function open(options?: OpenOptions) {
   modalApi.setState({
-    title: options?.data?.id ? $t('system.config.editTitle') : $t('system.config.addConfigTitle'),
+    title: options?.data?.key ? $t('system.config.editTitle') : $t('system.config.addConfigTitle'),
   });
   modalApi.open();
 
