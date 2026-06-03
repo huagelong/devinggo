@@ -272,7 +272,7 @@ onMounted(() => {
           />
         </div>
 
-        <div class="min-h-0 flex-1 overflow-hidden">
+        <div class="min-h-0 flex-1 overflow-auto">
           <Table
             v-model:display-columns="displayColumns"
             :columns="columns"
