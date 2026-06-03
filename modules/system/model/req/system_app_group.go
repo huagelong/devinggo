@@ -16,6 +16,7 @@ type SystemAppGroupSave struct {
 	Name   string `json:"name" v:"required|length:1,32#请输入分组名称|分组名称长度必须在1到32之间"`
 	Status int    `json:"status"`
 	Remark string `json:"remark"`
+	Sort   int    `json:"sort"`
 }
 
 type SystemAppGroupUpdate struct {
@@ -23,4 +24,5 @@ type SystemAppGroupUpdate struct {
 	Name   string `json:"name" v:"required|length:1,32#请输入分组名称|分组名称长度必须在1到32之间"`
 	Status int    `json:"status"`
 	Remark string `json:"remark"`
+	Sort   int    `json:"sort"`
 }
