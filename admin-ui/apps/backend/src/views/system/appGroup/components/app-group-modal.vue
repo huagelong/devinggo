@@ -46,17 +46,6 @@ const [Form, formApi] = useVbenForm({
       rules: 'required',
     },
     {
-      component: 'InputNumber',
-      componentProps: {
-        max: 1000,
-        min: 0,
-      },
-      defaultValue: 1,
-      fieldName: 'sort',
-      label: $t('common.sort'),
-      rules: 'required',
-    },
-    {
       component: 'RadioGroup',
       componentProps: {
         options: [

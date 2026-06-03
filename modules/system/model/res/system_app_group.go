@@ -17,5 +17,4 @@ type SystemAppGroup struct {
 	CreatedAt *gtime.Time `json:"created_at"  description:"创建时间"`            // 创建时间
 	UpdatedAt *gtime.Time `json:"updated_at"  description:"更新时间"`            // 更新时间
 	Remark    string      `json:"remark"         description:"备注"`           // 备注
-	Sort      int         `json:"sort"           description:"排序"`           // 排序
 }

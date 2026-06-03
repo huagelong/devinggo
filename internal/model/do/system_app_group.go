@@ -21,5 +21,4 @@ type SystemAppGroup struct {
 	UpdatedAt *gtime.Time //
 	DeletedAt *gtime.Time //
 	Remark    any         //
-	Sort      any         //
 }

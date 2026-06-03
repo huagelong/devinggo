@@ -19,5 +19,4 @@ type SystemAppGroup struct {
 	UpdatedAt *gtime.Time `json:"updatedAt" orm:"updated_at" description:""` //
 	DeletedAt *gtime.Time `json:"deletedAt" orm:"deleted_at" description:""` //
 	Remark    string      `json:"remark"    orm:"remark"     description:""` //
-	Sort      int         `json:"sort"      orm:"sort"       description:""` //
 }
