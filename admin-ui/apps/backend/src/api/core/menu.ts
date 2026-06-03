@@ -25,7 +25,7 @@ interface BackendRouter {
  * 递归转换后端路由数据为 vben RouteRecordStringComponent 格式
  * - type=B（按钮）：过滤掉，不生成路由（仅用于权限码控制）
  * - type=M 且有 component：页面路由，component 字符串交由 generateRoutesByBackend 解析
- * - type=M 且无 component：目录/分组路由，使用 BasicLayout 作为布局
+ * - type=M 且无 component：目录/分组路由，不设置组件，子路由通过 Root 的 BasicLayout 渲染
  * - type=I：IFrame 路由
  */
 function transformBackendRouters(
@@ -54,8 +54,9 @@ function transformBackendRouters(
         ? router.component
         : `views/${router.component}`;
     } else {
-      // 无 component 的目录/分组节点，作为布局容器
-      component = 'BasicLayout';
+      // 无 component 的目录/分组节点，不设置组件
+      // Root 路由已提供 BasicLayout，子路由通过嵌套的 router-view 渲染
+      component = '';
     }
 
     const route: RouteRecordStringComponent = {

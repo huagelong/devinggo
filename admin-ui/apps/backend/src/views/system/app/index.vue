@@ -255,19 +255,18 @@ onMounted(() => {
 
         <div class="min-h-0 flex-1 overflow-hidden">
           <Table
-          v-model:display-columns="displayColumns"
-          :columns="columns"
-          :data="tableData"
-          :loading="loading"
-          :pagination="pagination"
-          :selected-row-keys="selectedRowKeys"
-          height="100%"
-          row-key="id"
-          hover
-          stripe
-          @page-change="handlePageChange"
-          @select-change="handleTableSelectChange"
-        >
+            v-model:display-columns="displayColumns"
+            :columns="columns"
+            :data="tableData"
+            :loading="loading"
+            :pagination="pagination"
+            :selected-row-keys="selectedRowKeys"
+            row-key="id"
+            hover
+            stripe
+            @page-change="handlePageChange"
+            @select-change="handleTableSelectChange"
+          >
           <template #status="{ row }">
             <Switch
               :disabled="isRecycleBin"

@@ -237,7 +237,8 @@ onMounted(() => {
                   </Button>
                 </Space>
               </template>
-            </Table>
+              </Table>
+            </div>
           </div>
 
           <!-- Right: Cache Content -->

@@ -95,7 +95,6 @@ function handleUpdateDisplayColumns(value: string[]) {
     :pagination="pagination"
     :selected-row-keys="selectedRowKeys"
     :scroll="scrollConfig"
-    height="100%"
     row-key="id"
     hover
     stripe

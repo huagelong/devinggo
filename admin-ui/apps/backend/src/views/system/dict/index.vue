@@ -280,20 +280,19 @@ onMounted(() => {
 
         <div class="min-h-0 flex-1 overflow-hidden">
           <Table
-          v-model:display-columns="displayColumns"
-          :columns="columns"
-          :data="tableData"
-          :loading="loading"
-          :pagination="pagination"
-          :selected-row-keys="selectedRowKeys"
-          height="100%"
-          row-key="id"
-          hover
-          stripe
-          table-layout="fixed"
-          @page-change="handlePageChange"
-          @select-change="handleSelectChange"
-        >
+            v-model:display-columns="displayColumns"
+            :columns="columns"
+            :data="tableData"
+            :loading="loading"
+            :pagination="pagination"
+            :selected-row-keys="selectedRowKeys"
+            row-key="id"
+            hover
+            stripe
+            table-layout="fixed"
+            @page-change="handlePageChange"
+            @select-change="handleSelectChange"
+          >
           <template #code="{ row }">
             <Button v-if="!isRecycleBin" theme="primary" variant="text" @click="handleOpenData(row)">
               {{ row?.code }}
