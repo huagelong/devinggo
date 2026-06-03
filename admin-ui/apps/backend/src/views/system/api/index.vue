@@ -281,7 +281,8 @@ onMounted(() => {
           @update:visible-columns="(val) => (visibleColumns = val)"
         />
 
-        <ApiTable
+        <div class="min-h-0 flex-1 overflow-hidden">
+          <ApiTable
           :columns="columns"
           :data="tableData"
           :loading="loading"
@@ -300,6 +301,7 @@ onMounted(() => {
           @recovery="handleRecovery"
           @update:display-columns="(val) => (displayColumns = val)"
         />
+        </div>
       </div>
     </div>
 

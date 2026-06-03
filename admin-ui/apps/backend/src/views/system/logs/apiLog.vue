@@ -144,16 +144,17 @@ onMounted(() => {
       </div>
 
       <div class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
-        <Table
-          :columns="columns"
-          :data="tableData"
-          :loading="loading"
-          :pagination="pagination"
-          row-key="id"
-          hover
-          stripe
-          @page-change="handlePageChange"
-        >
+        <div class="min-h-0 flex-1 overflow-hidden">
+          <Table
+            :columns="columns"
+            :data="tableData"
+            :loading="loading"
+            :pagination="pagination"
+            row-key="id"
+            hover
+            stripe
+            @page-change="handlePageChange"
+          >
           <template #response_code="{ row }">
             <Tag :theme="String(row.response_code) === '200' ? 'success' : 'danger'" variant="light">
               {{ row.response_code }}
@@ -165,7 +166,8 @@ onMounted(() => {
               {{ row?.remark || '-' }}
             </span>
           </template>
-        </Table>
+          </Table>
+        </div>
       </div>
     </div>
   </Page>

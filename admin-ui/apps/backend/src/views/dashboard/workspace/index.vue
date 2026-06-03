@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import type { MessageApi } from '#/api/core/message';
 
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { $t } from '@vben/locales';
-import { preferences } from '@vben/preferences';
-import { useUserStore } from '@vben/stores';
+import { useAccessStore, useUserStore } from '@vben/stores';
+import { VbenIcon } from '@vben/common-ui';
 
 import {
   getQueueMessageReceiveListApi,
@@ -15,6 +15,7 @@ import {
 import { logger } from '#/utils/logger';
 
 const userStore = useUserStore();
+const accessStore = useAccessStore();
 const router = useRouter();
 
 // 加载状态
@@ -26,65 +27,96 @@ const loading = ref({
 const unreadMessages = ref<MessageApi.QueueMessageItem[]>([]);
 const unreadCount = ref(0);
 
-// 快捷导航
-const quickNavItems = [
+// 快捷导航候选配置（通过菜单原始标题匹配，自动获取正确路径）
+const quickNavCandidates = [
   {
     color: '#3b82f6',
     description: $t('system.user.title'),
     icon: 'lucide:users',
-    path: '/system/user',
+    matchTitle: '用户管理',
     title: $t('system.user.title'),
   },
   {
     color: '#10b981',
     description: $t('system.role.title'),
     icon: 'lucide:shield',
-    path: '/system/role',
+    matchTitle: '角色管理',
     title: $t('system.role.title'),
   },
   {
     color: '#f59e0b',
     description: $t('system.dept.title'),
     icon: 'lucide:building',
-    path: '/system/dept',
+    matchTitle: '部门管理',
     title: $t('system.dept.title'),
   },
   {
     color: '#8b5cf6',
-    description: $t('system.menu.title'),
+    description: $t('system.menu.manageTitle'),
     icon: 'lucide:menu',
-    path: '/system/menu',
-    title: $t('system.menu.title'),
+    matchTitle: '菜单管理',
+    title: $t('system.menu.manageTitle'),
   },
   {
     color: '#ef4444',
     description: $t('system.dict.title'),
     icon: 'lucide:book-open',
-    path: '/system/dict',
+    matchTitle: '数据字典',
     title: $t('system.dict.title'),
   },
   {
     color: '#06b6d4',
-    description: $t('system.notice.title'),
+    description: $t('system.notice.manageTitle'),
     icon: 'lucide:bell',
-    path: '/system/notice',
-    title: $t('system.notice.title'),
+    matchTitle: '系统公告',
+    title: $t('system.notice.manageTitle'),
   },
   {
     color: '#ec4899',
     description: $t('system.config.title'),
     icon: 'lucide:settings',
-    path: '/system/config',
+    matchTitle: '配置',
     title: $t('system.config.title'),
   },
   {
     color: '#6366f1',
     description: $t('system.logs.title'),
     icon: 'lucide:file-text',
-    path: '/system/logs/loginLog',
+    matchTitle: '登录日志',
     title: $t('system.logs.title'),
   },
 ];
+
+// 从用户菜单中查找指定标题的菜单项
+function findMenuByTitle(menus: any[], title: string): any | undefined {
+  for (const menu of menus) {
+    if (menu.name === title) {
+      return menu;
+    }
+    if (menu.children?.length > 0) {
+      const found = findMenuByTitle(menu.children, title);
+      if (found) return found;
+    }
+  }
+  return undefined;
+}
+
+// 根据用户权限过滤后的快捷导航
+const quickNavItems = computed(() => {
+  return quickNavCandidates
+    .map((candidate) => {
+      const menu = findMenuByTitle(accessStore.accessMenus, candidate.matchTitle);
+      if (menu) {
+        return {
+          ...candidate,
+          path: menu.path,
+          icon: menu.icon || candidate.icon,
+        };
+      }
+      return null;
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
+});
 
 // 获取未读消息
 async function fetchUnreadMessages() {
@@ -124,6 +156,15 @@ function goToMessageCenter() {
 function navigateTo(path: string) {
   router.push(path);
 }
+
+// 获取指定标题菜单的路径
+function getMenuPath(title: string): string | undefined {
+  const menu = findMenuByTitle(accessStore.accessMenus, title);
+  return menu?.path;
+}
+
+// 公告页面路径
+const noticePath = computed(() => getMenuPath('系统公告'));
 
 // 格式化时间
 function formatTime(time: string) {
@@ -200,7 +241,10 @@ onMounted(() => {
           <h2 class="mb-4 text-lg font-semibold text-gray-900">
             {{ $t('dashboard.workspace.quickNav') }}
           </h2>
-          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div v-if="quickNavItems.length === 0" class="py-8 text-center text-gray-500">
+            {{ $t('dashboard.workspace.noQuickNav') }}
+          </div>
+          <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             <div
               v-for="item in quickNavItems"
               :key="item.path"
@@ -211,15 +255,12 @@ onMounted(() => {
                 class="mb-3 flex h-10 w-10 items-center justify-center rounded-lg"
                 :style="{ backgroundColor: item.color + '15' }"
               >
-                <svg
+                <VbenIcon
+                  :icon="item.icon"
                   class="h-5 w-5"
                   :style="{ color: item.color }"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <use :href="`#${item.icon}`" />
-                </svg>
+                  fallback
+                />
               </div>
               <div class="text-sm font-medium text-gray-900">{{ item.title }}</div>
               <div class="mt-1 text-xs text-gray-500">{{ item.description }}</div>
@@ -328,8 +369,9 @@ onMounted(() => {
               {{ $t('dashboard.workspace.systemNotice') }}
             </h2>
             <button
+              v-if="noticePath"
               class="text-sm text-blue-600 hover:text-blue-700"
-              @click="navigateTo('/system/notice')"
+              @click="navigateTo(noticePath)"
             >
               {{ $t('dashboard.workspace.more') }}
             </button>
@@ -338,8 +380,11 @@ onMounted(() => {
             <div
               v-for="i in 3"
               :key="i"
-              class="cursor-pointer rounded-lg border border-gray-100 p-3 transition-all hover:bg-gray-50"
-              @click="navigateTo('/system/notice')"
+              :class="[
+                'rounded-lg border border-gray-100 p-3 transition-all',
+                noticePath ? 'cursor-pointer hover:bg-gray-50' : '',
+              ]"
+              @click="noticePath && navigateTo(noticePath)"
             >
               <div class="flex items-center gap-2">
                 <span class="rounded bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-600">

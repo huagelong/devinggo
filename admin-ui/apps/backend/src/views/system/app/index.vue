@@ -253,13 +253,15 @@ onMounted(() => {
           />
         </div>
 
-        <Table
+        <div class="min-h-0 flex-1 overflow-hidden">
+          <Table
           v-model:display-columns="displayColumns"
           :columns="columns"
           :data="tableData"
           :loading="loading"
           :pagination="pagination"
           :selected-row-keys="selectedRowKeys"
+          height="100%"
           row-key="id"
           hover
           stripe
@@ -317,6 +319,7 @@ onMounted(() => {
             </div>
           </template>
         </Table>
+        </div>
       </div>
     </div>
 

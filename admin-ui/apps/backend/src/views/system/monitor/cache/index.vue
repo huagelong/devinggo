@@ -131,7 +131,7 @@ onMounted(() => {
 
 <template>
   <Page auto-content-height>
-    <div class="flex flex-col gap-3">
+    <div class="flex h-full flex-col gap-3">
       <!-- Redis Info Panel -->
       <Card :title="$t('system.monitor.cache.redisInfo')" class="w-full">
         <Row :gutter="24">
@@ -188,10 +188,10 @@ onMounted(() => {
       </Card>
 
       <!-- Cache Data Management -->
-      <Card :title="$t('system.monitor.cache.dataManagement')">
-        <div class="flex gap-4">
+      <Card :title="$t('system.monitor.cache.dataManagement')" class="flex min-h-0 flex-1 flex-col">
+        <div class="flex h-full gap-4">
           <!-- Left: Cache Key Table -->
-          <div class="w-2/3">
+          <div class="flex min-h-0 w-2/3 flex-col">
             <Input
               v-model="searchKey"
               :placeholder="$t('system.monitor.cache.searchKeyPlaceholder')"
@@ -201,19 +201,20 @@ onMounted(() => {
               <template #prefix><SearchIcon /></template>
             </Input>
 
-            <Table
-              :columns="columns"
-              :data="filteredData"
-              :loading="loading"
-              row-key="name"
-              :row-selection="{
-                type: 'checkbox',
-                showCheckedAll: true,
-              }"
-              hover
-              stripe
-              @select-change="handleSelectChange"
-            >
+            <div class="min-h-0 flex-1 overflow-hidden">
+              <Table
+                :columns="columns"
+                :data="filteredData"
+                :loading="loading"
+                row-key="name"
+                :row-selection="{
+                  type: 'checkbox',
+                  showCheckedAll: true,
+                }"
+                hover
+                stripe
+                @select-change="handleSelectChange"
+              >
               <template #action="{ row }">
                 <Space>
                   <Button
@@ -240,12 +241,12 @@ onMounted(() => {
           </div>
 
           <!-- Right: Cache Content -->
-          <div class="w-1/3">
+          <div class="flex min-h-0 w-1/3 flex-col">
             <Textarea
               v-model="cacheContent"
               readonly
               :placeholder="$t('system.monitor.cache.contentPlaceholder')"
-              class="h-full min-h-[400px] w-full"
+              class="min-h-0 flex-1 w-full"
             />
           </div>
         </div>

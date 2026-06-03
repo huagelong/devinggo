@@ -286,14 +286,15 @@ onMounted(() => {
           </div>
 
           <!-- List View -->
-          <Table
-            v-if="viewMode === 'list'"
+          <div v-if="viewMode === 'list'" class="min-h-0 flex-1 overflow-hidden">
+            <Table
             v-model:display-columns="displayColumns"
             :columns="columns"
             :data="tableData"
             :loading="loading"
             :pagination="pagination"
             :selected-row-keys="selectedRowKeys"
+            height="100%"
             row-key="id"
             hover
             stripe
@@ -362,6 +363,7 @@ onMounted(() => {
               </div>
             </template>
           </Table>
+          </div>
 
           <!-- Window View (Gallery) -->
           <div v-else class="grid grid-cols-4 gap-4">

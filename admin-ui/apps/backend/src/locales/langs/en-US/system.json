@@ -1,6 +1,7 @@
 {
   "user": {
     "title": "Admin Info",
+    "lastLogin": "Last Login",
     "username": "Username",
     "dept": "Department",
     "role": "Role",
@@ -34,6 +35,7 @@
     "templateFilename": "User Import Template.xlsx"
   },
   "role": {
+    "title": "Role Management",
     "name": "Role Name",
     "code": "Role Code",
     "dataScope": "Data Scope",
@@ -56,6 +58,7 @@
     "deptFilterScope": "Filter by Department"
   },
   "dict": {
+    "title": "Dictionary Management",
     "name": "Dictionary Name",
     "code": "Dictionary Code",
     "dictData": "Dictionary Data",
@@ -92,6 +95,7 @@
   },
   "notice": {
     "title": "Notice Title",
+    "manageTitle": "Notice Management",
     "type": "Notice Type",
     "content": "Notice Content",
     "noticeType": "Notice",
@@ -109,6 +113,7 @@
     "confirmPermanentDelete": "Are you sure to permanently delete this notice?"
   },
   "config": {
+    "title": "Config Management",
     "name": "Config Name",
     "code": "Config Key",
     "value": "Config Value",
@@ -327,6 +332,7 @@
   },
   "menu": {
     "title": "Menu Name",
+    "manageTitle": "Menu Management",
     "code": "Menu Code",
     "parentMenu": "Parent Menu",
     "type": "Menu Type",
@@ -403,6 +409,7 @@
     "deleteLog": "Delete Log"
   },
   "dept": {
+    "title": "Department Management",
     "name": "Department Name",
     "code": "Department Code",
     "leader": "Leader",
@@ -463,6 +470,7 @@
     }
   },
   "logs": {
+    "title": "Log Management",
     "loginLog": "Login Log",
     "operLog": "Operation Log",
     "apiLog": "API Log",

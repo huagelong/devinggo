@@ -62,6 +62,7 @@
     "systemNotice": "System Notice",
     "announcement": "Announcement",
     "more": "More",
-    "justNow": "Just now"
+    "justNow": "Just now",
+    "noQuickNav": "No quick navigation"
   }
 }
