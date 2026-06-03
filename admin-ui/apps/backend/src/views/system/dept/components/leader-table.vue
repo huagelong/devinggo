@@ -9,11 +9,11 @@ import type { PrimaryTableCol, TableRowData } from 'tdesign-vue-next/es/table/ty
 interface LeaderItem {
   id: number;
   username: string;
-  nickname: string;
-  phone: string;
-  email: string;
-  status: number;
-  leader_add_time: string;
+  nickname?: string;
+  phone?: string;
+  email?: string;
+  status?: number | string;
+  leader_add_time?: string;
 }
 
 interface Props {

@@ -1,7 +1,7 @@
 import { requestClient } from '#/api/request';
 import type { BatchIdsPayload, StatusValue } from '#/types/common';
 import type { PageQuery, PageResponse } from '#/types/paging';
-import { validateRoleListItem, validateRoleDetail, logValidationWarning } from '#/api/validation';
+import { validateRoleListItem, logValidationWarning } from '#/api/validation';
 
 export namespace RoleApi {
   export interface ListItem {

@@ -7,12 +7,12 @@ import type { PrimaryTableCol, TableRowData } from 'tdesign-vue-next/es/table/ty
 interface CandidateUser {
   id: number;
   username: string;
-  nickname: string;
-  phone: string;
-  email: string;
-  dept_name: string;
-  role_name: string;
-  post_name: string;
+  nickname?: string;
+  phone?: string;
+  email?: string;
+  dept_name?: string;
+  role_name?: string;
+  post_name?: string;
 }
 
 interface Props {

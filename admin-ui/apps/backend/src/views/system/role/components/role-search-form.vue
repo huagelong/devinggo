@@ -17,8 +17,8 @@ interface Props {
   formData: {
     name: string;
     code: string;
-    status: number | undefined;
-    created_at: string[] | undefined;
+    status?: number | undefined;
+    created_at?: string[] | undefined;
   };
   statusOptions: DictOption[];
 }
@@ -54,7 +54,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :value="formData.name"
             :placeholder="$t('ui.placeholder.input', [$t('system.role.name')])"
             clearable
-            @change="(val: string) => updateField('name', val)"
+            @change="(val: any) => updateField('name', val)"
           />
         </FormItem>
         <FormItem :label="$t('system.role.code')" name="code">
@@ -62,7 +62,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :value="formData.code"
             :placeholder="$t('ui.placeholder.input', [$t('system.role.code')])"
             clearable
-            @change="(val: string) => updateField('code', val)"
+            @change="(val: any) => updateField('code', val)"
           />
         </FormItem>
         <FormItem :label="$t('common.status')" name="status">
@@ -72,7 +72,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :placeholder="$t('ui.placeholder.select', [$t('common.status')])"
             clearable
             class="w-full"
-            @change="(val: number | undefined) => updateField('status', val)"
+            @change="(val: any) => updateField('status', val)"
           />
         </FormItem>
         <FormItem :label="$t('common.createTime')" name="created_at">
@@ -81,7 +81,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :placeholder="[$t('common.startTime'), $t('common.endTime')]"
             clearable
             class="w-full"
-            @change="(val: string[] | undefined) => updateField('created_at', val)"
+            @change="(val: any) => updateField('created_at', val)"
           />
         </FormItem>
       </div>

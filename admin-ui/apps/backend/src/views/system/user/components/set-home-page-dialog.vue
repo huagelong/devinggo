@@ -26,7 +26,7 @@ function handleUpdateVisible(value: boolean) {
   emit('update:visible', value);
 }
 
-function handleUpdateSelectedHomePage(value: string | undefined) {
+function handleUpdateSelectedHomePage(value: any) {
   emit('update:selectedHomePage', value);
 }
 

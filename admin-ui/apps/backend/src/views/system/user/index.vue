@@ -290,7 +290,7 @@ onUnmounted(() => {
       :selected-home-page="selectedHomePage"
       :home-page-options="homePageOptions"
       :loading="setHomePageLoading"
-      @update:selected-home-page="(val) => (selectedHomePage = val)"
+      @update:selected-home-page="(val) => (selectedHomePage = val ?? '')"
       @save="handleSetHomePage"
       @cancel="setHomePageVisible = false"
     />

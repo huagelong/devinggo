@@ -44,7 +44,7 @@ function updateField(field: keyof Props['formData'], value: string | number | un
             :placeholder="$t('ui.placeholder.input', [$t('system.dept.username')])"
             clearable
             size="small"
-            @change="(val: string) => updateField('username', val)"
+            @change="(val: any) => updateField('username', val)"
           />
         </FormItem>
         <FormItem :label="$t('system.dept.nickname')" name="nickname">
@@ -53,7 +53,7 @@ function updateField(field: keyof Props['formData'], value: string | number | un
             :placeholder="$t('ui.placeholder.input', [$t('system.dept.nickname')])"
             clearable
             size="small"
-            @change="(val: string) => updateField('nickname', val)"
+            @change="(val: any) => updateField('nickname', val)"
           />
         </FormItem>
         <FormItem :label="$t('common.status')" name="status">
@@ -63,7 +63,7 @@ function updateField(field: keyof Props['formData'], value: string | number | un
             :placeholder="$t('ui.placeholder.select', [$t('common.status')])"
             clearable
             size="small"
-            @change="(val: number | undefined) => updateField('status', val)"
+            @change="(val: any) => updateField('status', val)"
           />
         </FormItem>
       </div>

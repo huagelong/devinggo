@@ -38,7 +38,7 @@ function updateFormValue(groupId: number, key: string, value: unknown) {
   if (!newFormMap[groupId]) {
     newFormMap[groupId] = {};
   }
-  newFormMap[groupId] = { ...newFormMap[groupId], [key]: value };
+    newFormMap[groupId] = { ...newFormMap[groupId]!, [key]: value } as ConfigFormModel;
   emit('update:configFormMap', newFormMap);
 }
 </script>

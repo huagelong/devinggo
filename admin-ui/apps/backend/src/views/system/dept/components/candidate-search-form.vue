@@ -49,7 +49,7 @@ function updateField(field: keyof Props['formData'], value: string | number | un
           :placeholder="$t('ui.placeholder.input', [$t('system.user.username')])"
           clearable
           size="small"
-          @change="(val: string) => updateField('username', val)"
+          @change="(val: any) => updateField('username', val)"
         />
       </FormItem>
       <FormItem :label="$t('system.user.nickname')" name="nickname">
@@ -58,7 +58,7 @@ function updateField(field: keyof Props['formData'], value: string | number | un
           :placeholder="$t('ui.placeholder.input', [$t('system.user.nickname')])"
           clearable
           size="small"
-          @change="(val: string) => updateField('nickname', val)"
+          @change="(val: any) => updateField('nickname', val)"
         />
       </FormItem>
       <FormItem :label="$t('system.user.phone')" name="phone">
@@ -67,7 +67,7 @@ function updateField(field: keyof Props['formData'], value: string | number | un
           :placeholder="$t('ui.placeholder.input', [$t('system.user.phone')])"
           clearable
           size="small"
-          @change="(val: string) => updateField('phone', val)"
+          @change="(val: any) => updateField('phone', val)"
         />
       </FormItem>
       <FormItem :label="$t('system.user.email')" name="email">
@@ -76,7 +76,7 @@ function updateField(field: keyof Props['formData'], value: string | number | un
           :placeholder="$t('ui.placeholder.input', [$t('system.user.email')])"
           clearable
           size="small"
-          @change="(val: string) => updateField('email', val)"
+          @change="(val: any) => updateField('email', val)"
         />
       </FormItem>
     </div>
@@ -88,7 +88,7 @@ function updateField(field: keyof Props['formData'], value: string | number | un
           clearable
           size="small"
           :placeholder="$t('ui.placeholder.select', [$t('system.user.dept')])"
-          @change="(val: number | undefined) => updateField('dept_id', val)"
+          @change="(val: any) => updateField('dept_id', val)"
         />
       </FormItem>
       <FormItem :label="$t('system.user.role')" name="role_id">
@@ -98,7 +98,7 @@ function updateField(field: keyof Props['formData'], value: string | number | un
           clearable
           size="small"
           :placeholder="$t('ui.placeholder.select', [$t('system.user.role')])"
-          @change="(val: number | undefined) => updateField('role_id', val)"
+          @change="(val: any) => updateField('role_id', val)"
         />
       </FormItem>
       <FormItem :label="$t('system.user.post')" name="post_id">
@@ -108,7 +108,7 @@ function updateField(field: keyof Props['formData'], value: string | number | un
           clearable
           size="small"
           :placeholder="$t('ui.placeholder.select', [$t('system.user.post')])"
-          @change="(val: number | undefined) => updateField('post_id', val)"
+          @change="(val: any) => updateField('post_id', val)"
         />
       </FormItem>
     </div>

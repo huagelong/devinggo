@@ -15,19 +15,20 @@ import {
 import type { DeptApi } from '#/api/system/dept';
 import type { PostApi } from '#/api/system/post';
 import type { RoleApi } from '#/api/system/role';
+import type { IdType } from '#/types/common';
 import type { DictOption } from '#/composables/crud/use-dict-options';
 
 interface Props {
   formData: {
     username: string;
-    dept_ids: number[] | undefined;
-    role_id: number | undefined;
+    dept_ids?: IdType[] | undefined;
+    role_id?: number | undefined;
     phone: string;
-    post_id: number | undefined;
+    post_id?: number | undefined;
     email: string;
-    status: number | undefined;
-    user_type: string | undefined;
-    created_at: string[] | undefined;
+    status?: number | undefined;
+    user_type?: string | undefined;
+    created_at?: string[] | undefined;
   };
   roleOptions: RoleApi.ListItem[];
   postOptions: PostApi.ListItem[];
@@ -67,7 +68,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :value="formData.username"
             :placeholder="$t('ui.placeholder.input', [$t('system.user.username')])"
             clearable
-            @change="(val: string) => updateField('username', val)"
+            @change="(val: any) => updateField('username', val)"
           />
         </FormItem>
         <FormItem :label="$t('system.user.dept')" name="dept_ids">
@@ -80,7 +81,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :placeholder="$t('ui.placeholder.select', [$t('system.user.dept')])"
             clearable
             class="w-full"
-            @change="(val: number[] | undefined) => updateField('dept_ids', val)"
+            @change="(val: any) => updateField('dept_ids', val)"
           />
         </FormItem>
         <FormItem :label="$t('system.user.role')" name="role_id">
@@ -91,7 +92,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :placeholder="$t('ui.placeholder.select', [$t('system.user.role')])"
             clearable
             class="w-full"
-            @change="(val: number | undefined) => updateField('role_id', val)"
+            @change="(val: any) => updateField('role_id', val)"
           />
         </FormItem>
         <FormItem :label="$t('system.user.phone')" name="phone">
@@ -99,7 +100,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :value="formData.phone"
             :placeholder="$t('ui.placeholder.input', [$t('system.user.phone')])"
             clearable
-            @change="(val: string) => updateField('phone', val)"
+            @change="(val: any) => updateField('phone', val)"
           />
         </FormItem>
         <FormItem :label="$t('system.user.post')" name="post_id">
@@ -110,7 +111,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :placeholder="$t('ui.placeholder.select', [$t('system.user.post')])"
             clearable
             class="w-full"
-            @change="(val: number | undefined) => updateField('post_id', val)"
+            @change="(val: any) => updateField('post_id', val)"
           />
         </FormItem>
         <FormItem :label="$t('system.user.email')" name="email">
@@ -118,7 +119,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :value="formData.email"
             :placeholder="$t('ui.placeholder.input', [$t('system.user.email')])"
             clearable
-            @change="(val: string) => updateField('email', val)"
+            @change="(val: any) => updateField('email', val)"
           />
         </FormItem>
         <FormItem :label="$t('common.status')" name="status">
@@ -128,7 +129,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :placeholder="$t('ui.placeholder.select', [$t('common.status')])"
             clearable
             class="w-full"
-            @change="(val: number | undefined) => updateField('status', val)"
+            @change="(val: any) => updateField('status', val)"
           />
         </FormItem>
         <FormItem :label="$t('system.user.userType')" name="user_type">
@@ -138,7 +139,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :placeholder="$t('ui.placeholder.select', [$t('system.user.userType')])"
             clearable
             class="w-full"
-            @change="(val: string | undefined) => updateField('user_type', val)"
+            @change="(val: any) => updateField('user_type', val)"
           />
         </FormItem>
         <FormItem :label="$t('system.user.registerTime')" name="created_at" class="col-span-1">
@@ -147,7 +148,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :placeholder="[$t('common.startTime'), $t('common.endTime')]"
             clearable
             class="w-full"
-            @change="(val: string[] | undefined) => updateField('created_at', val)"
+            @change="(val: any) => updateField('created_at', val)"
           />
         </FormItem>
       </div>

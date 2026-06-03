@@ -16,11 +16,11 @@ import type { DictOption } from '#/composables/crud/use-dict-options';
 
 interface Props {
   formData: {
-    group_id: IdType | undefined;
+    group_id?: IdType | undefined;
     name: string;
     access_name: string;
-    request_mode: string | undefined;
-    status: number | undefined;
+    request_mode?: string | number | undefined;
+    status?: number | undefined;
     created_at: string[] | undefined;
   };
   groupOptions: OptionItem<IdType>[];
@@ -61,7 +61,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :placeholder="$t('ui.placeholder.select')"
             clearable
             class="w-full"
-            @change="(val: IdType | undefined) => updateField('group_id', val)"
+            @change="(val: any) => updateField('group_id', val)"
           />
         </FormItem>
         <FormItem :label="$t('system.api.name')" name="name">
@@ -69,7 +69,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :value="formData.name"
             :placeholder="$t('ui.placeholder.input')"
             clearable
-            @change="(val: string) => updateField('name', val)"
+            @change="(val: any) => updateField('name', val)"
           />
         </FormItem>
         <FormItem :label="$t('system.api.code')" name="access_name">
@@ -77,7 +77,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :value="formData.access_name"
             :placeholder="$t('ui.placeholder.input')"
             clearable
-            @change="(val: string) => updateField('access_name', val)"
+            @change="(val: any) => updateField('access_name', val)"
           />
         </FormItem>
         <FormItem :label="$t('system.api.requestMode')" name="request_mode">
@@ -87,7 +87,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :placeholder="$t('ui.placeholder.select')"
             clearable
             class="w-full"
-            @change="(val: string | undefined) => updateField('request_mode', val)"
+            @change="(val: any) => updateField('request_mode', val)"
           />
         </FormItem>
         <FormItem :label="$t('common.status')" name="status">
@@ -97,7 +97,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :placeholder="$t('ui.placeholder.select')"
             clearable
             class="w-full"
-            @change="(val: number | undefined) => updateField('status', val)"
+            @change="(val: any) => updateField('status', val)"
           />
         </FormItem>
         <FormItem :label="$t('common.createTime')" name="created_at" class="col-span-2">
@@ -106,7 +106,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
             :placeholder="[$t('common.startTime'), $t('common.endTime')]"
             clearable
             class="w-full"
-            @change="(val: string[] | undefined) => updateField('created_at', val)"
+            @change="(val: any) => updateField('created_at', val)"
           />
         </FormItem>
       </div>
