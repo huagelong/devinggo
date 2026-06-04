@@ -353,7 +353,6 @@ func (s *sToken) ParseLoginUser(r *ghttp.Request, appId string) (*model.Identity
 	if g.IsEmpty(appId) {
 		appId = user.AppId
 	}
-	g.Log().Debugf(ctx, "appId:%v, userId:%v", appId, user.Id)
 	var (
 		// 认证key
 		authKey = s.GetAuthKey(token)

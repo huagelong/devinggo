@@ -22,8 +22,6 @@ func (s *sMiddleware) AdminAuth(r *ghttp.Request) {
 	// 不需要验证登录的路由地址
 	if !s.IsExceptLogin(ctx) {
 		// 检查登录
-		g.Log().Debug(ctx, "检查登录path:", g.RequestFromCtx(ctx).RequestURI)
-		g.Log().Debug(ctx, "检查登录user:", contexts.GetUser(ctx))
 		if g.IsEmpty(contexts.GetUser(ctx)) || contexts.GetUser(ctx).Id == 0 {
 			response.Unauthorized(r, "未登录或登录状态已过期，需要重新登录")
 			return
