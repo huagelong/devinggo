@@ -41,14 +41,13 @@ function updateField(field: keyof Props['formData'], value: string | number | un
 </script>
 
 <template>
-  <Form :data="formData" label-width="90px" layout="inline" colon size="small">
-    <div class="grid grid-cols-4 gap-x-4 gap-y-3">
+  <Form :data="formData" label-width="90px" colon>
+    <div class="grid grid-cols-4 gap-x-4 gap-y-3 items-end">
       <FormItem :label="$t('system.user.username')" name="username">
         <Input
           :value="formData.username"
           :placeholder="$t('ui.placeholder.input', [$t('system.user.username')])"
           clearable
-          size="small"
           @change="(val: any) => updateField('username', val)"
         />
       </FormItem>
@@ -57,7 +56,7 @@ function updateField(field: keyof Props['formData'], value: string | number | un
           :value="formData.nickname"
           :placeholder="$t('ui.placeholder.input', [$t('system.user.nickname')])"
           clearable
-          size="small"
+
           @change="(val: any) => updateField('nickname', val)"
         />
       </FormItem>
@@ -66,7 +65,7 @@ function updateField(field: keyof Props['formData'], value: string | number | un
           :value="formData.phone"
           :placeholder="$t('ui.placeholder.input', [$t('system.user.phone')])"
           clearable
-          size="small"
+
           @change="(val: any) => updateField('phone', val)"
         />
       </FormItem>
@@ -75,18 +74,16 @@ function updateField(field: keyof Props['formData'], value: string | number | un
           :value="formData.email"
           :placeholder="$t('ui.placeholder.input', [$t('system.user.email')])"
           clearable
-          size="small"
+
           @change="(val: any) => updateField('email', val)"
         />
       </FormItem>
-    </div>
-    <div class="grid grid-cols-3 gap-x-4 gap-y-3 mt-4">
       <FormItem :label="$t('system.user.dept')" name="dept_id">
         <Select
           :value="formData.dept_id"
           :options="deptOptions"
           clearable
-          size="small"
+
           :placeholder="$t('ui.placeholder.select', [$t('system.user.dept')])"
           @change="(val: any) => updateField('dept_id', val)"
         />
@@ -96,7 +93,7 @@ function updateField(field: keyof Props['formData'], value: string | number | un
           :value="formData.role_id"
           :options="roleOptions"
           clearable
-          size="small"
+
           :placeholder="$t('ui.placeholder.select', [$t('system.user.role')])"
           @change="(val: any) => updateField('role_id', val)"
         />
@@ -106,19 +103,19 @@ function updateField(field: keyof Props['formData'], value: string | number | un
           :value="formData.post_id"
           :options="postOptions"
           clearable
-          size="small"
+
           :placeholder="$t('ui.placeholder.select', [$t('system.user.post')])"
           @change="(val: any) => updateField('post_id', val)"
         />
       </FormItem>
-    </div>
-    <div class="flex justify-end gap-2 pt-4">
-      <Button size="small" theme="default" @click="handleReset">
-        {{ $t('common.reset') }}
-      </Button>
-      <Button size="small" theme="primary" @click="handleSearch">
-        {{ $t('common.search') }}
-      </Button>
+      <div class="flex justify-end gap-2 pb-[7px]">
+        <Button theme="default" @click="handleReset">
+          {{ $t('common.reset') }}
+        </Button>
+        <Button theme="primary" @click="handleSearch">
+          {{ $t('common.search') }}
+        </Button>
+      </div>
     </div>
   </Form>
 </template>

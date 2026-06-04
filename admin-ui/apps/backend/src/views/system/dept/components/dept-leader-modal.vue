@@ -357,15 +357,15 @@ defineExpose({
       <!-- Action Toolbar -->
       <div class="flex items-center justify-between rounded-md border border-gray-100 bg-white px-4 py-3">
         <Space>
-          <Button size="small" theme="primary" @click="openAddLeaderDialog">
+          <Button theme="primary" @click="openAddLeaderDialog">
             {{ $t('system.dept.addLeader') }}
           </Button>
-          <Button size="small" theme="danger" variant="outline" @click="handleBatchDeleteLeaders">
+          <Button theme="danger" variant="outline" @click="handleBatchDeleteLeaders">
             {{ $t('system.dept.deleteSelected') }}
           </Button>
         </Space>
         <Space>
-          <Button size="small" theme="default" variant="outline" @click="fetchLeaderList">
+          <Button theme="default" variant="outline" @click="fetchLeaderList">
             {{ $t('common.refresh') }}
           </Button>
         </Space>
@@ -410,10 +410,10 @@ defineExpose({
           />
 
           <div class="flex justify-end gap-2">
-            <Button size="small" theme="default" variant="outline" @click="closeAddLeaderDialog">
+            <Button theme="default" variant="outline" @click="closeAddLeaderDialog">
               {{ $t('common.cancel') }}
             </Button>
-            <Button size="small" theme="primary" @click="handleAddLeaders">
+            <Button theme="primary" @click="handleAddLeaders">
               {{ $t('common.confirm') }}
             </Button>
           </div>
