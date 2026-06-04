@@ -88,7 +88,7 @@ func (s *sSystemNotice) GetPageListForSearch(ctx context.Context, req *model.Pag
 func (s *sSystemNotice) handleSearch(ctx context.Context, in *req.SystemNoticeSearch) (m *gdb.Model) {
 	m = s.Model(ctx)
 	if !g.IsEmpty(in.Title) {
-		m = m.Where("title", in.Title)
+		m = m.Where("title like ?", "%"+in.Title+"%")
 	}
 
 	if !g.IsEmpty(in.Type) {
