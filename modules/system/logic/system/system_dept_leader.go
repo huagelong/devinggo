@@ -51,16 +51,16 @@ func (s *sSystemDeptLeader) GetPageList(ctx context.Context, req *model.PageList
 		"=",
 		dao.SystemDeptLeader.Columns().UserId,
 	)
-	m = m.Where(dao.SystemDeptLeader.Table()+"."+dao.SystemDeptLeader.Columns().DeptId+" = ?", search.DeptId)
+	m = m.WherePrefix(dao.SystemDeptLeader.Table(), dao.SystemDeptLeader.Columns().DeptId, search.DeptId)
 	if !g.IsEmpty(search.Username) {
-		m = m.Where(dao.SystemUser.Table()+"."+dao.SystemUser.Columns().Username+" like ?", "%"+search.Username+"%")
+		m = m.WherePrefixLike(dao.SystemUser.Table(), dao.SystemUser.Columns().Username, "%"+search.Username+"%")
 	}
 	if !g.IsEmpty(search.Nickname) {
-		m = m.Where(dao.SystemUser.Table()+"."+dao.SystemUser.Columns().Nickname+" like ?", "%"+search.Nickname+"%")
+		m = m.WherePrefixLike(dao.SystemUser.Table(), dao.SystemUser.Columns().Nickname, "%"+search.Nickname+"%")
 	}
 
 	if !g.IsEmpty(search.Status) {
-		m = m.Where(dao.SystemUser.Table()+"."+dao.SystemUser.Columns().Status+" = ?", search.Status)
+		m = m.WherePrefix(dao.SystemUser.Table(), dao.SystemUser.Columns().Status, search.Status)
 	}
 	req.OrderBy = fmt.Sprintf(`"%s"."%s"`, dao.SystemUser.Table(), dao.SystemUser.Columns().Id)
 	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&res, &total)

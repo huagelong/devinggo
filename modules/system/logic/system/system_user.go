@@ -130,52 +130,52 @@ func (s *sSystemUser) ExistsByUsername(ctx context.Context, username string) (rs
 func (s *sSystemUser) handleUserSearch(ctx context.Context, in *req.SystemUserSearch) (m *gdb.Model) {
 	m = s.Model(ctx)
 	if !g.IsEmpty(in.Status) {
-		m = m.Where(dao.SystemUser.Table()+".status", in.Status)
+		m = m.WherePrefix(dao.SystemUser.Table(), dao.SystemUser.Columns().Status, in.Status)
 	}
 
 	if !g.IsEmpty(in.Phone) {
-		m = m.Where(dao.SystemUser.Table()+".phone", in.Phone)
+		m = m.WherePrefix(dao.SystemUser.Table(), dao.SystemUser.Columns().Phone, in.Phone)
 	}
 
 	if !g.IsEmpty(in.Username) {
-		m = m.Where(dao.SystemUser.Table()+".username like ? ", "%"+in.Username+"%")
+		m = m.WherePrefixLike(dao.SystemUser.Table(), dao.SystemUser.Columns().Username, "%"+in.Username+"%")
 	}
 
 	if !g.IsEmpty(in.Nickname) {
-		m = m.Where(dao.SystemUser.Table()+".nickname like ? ", "%"+in.Nickname+"%")
+		m = m.WherePrefixLike(dao.SystemUser.Table(), dao.SystemUser.Columns().Nickname, "%"+in.Nickname+"%")
 	}
 
 	if !g.IsEmpty(in.Username) && in.FilterSuperAdmin {
 		supserAdminId := s.GetSupserAdminId(ctx)
-		m = m.WhereNot(dao.SystemUser.Table()+".id", supserAdminId)
+		m = m.WherePrefixNot(dao.SystemUser.Table(), dao.SystemUser.Columns().Id, supserAdminId)
 	}
 	if !g.IsEmpty(in.CreatedAt) {
 		if len(in.CreatedAt) > 0 {
-			m = m.WhereGTE(dao.SystemUser.Table()+".created_at", in.CreatedAt[0]+" 00:00:00")
+			m = m.WherePrefixGTE(dao.SystemUser.Table(), dao.SystemUser.Columns().CreatedAt, in.CreatedAt[0]+" 00:00:00")
 		}
 		if len(in.CreatedAt) > 1 {
-			m = m.WhereLTE(dao.SystemUser.Table()+".created_at", in.CreatedAt[1]+"23:59:59")
+			m = m.WherePrefixLTE(dao.SystemUser.Table(), dao.SystemUser.Columns().CreatedAt, in.CreatedAt[1]+"23:59:59")
 		}
 	}
 
 	if !g.IsEmpty(in.UserIds) {
-		m = m.WhereIn(dao.SystemUser.Table()+".id", in.UserIds)
+		m = m.WherePrefixIn(dao.SystemUser.Table(), dao.SystemUser.Columns().Id, in.UserIds)
 	}
 
 	if !g.IsEmpty(in.RoleId) {
-		m = m.LeftJoinOnFields(dao.SystemUserRole.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserRole.Columns().UserId).Where(dao.SystemUserRole.Table()+".role_id", in.RoleId)
+		m = m.LeftJoinOnFields(dao.SystemUserRole.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserRole.Columns().UserId).WherePrefix(dao.SystemUserRole.Table(), dao.SystemUserRole.Columns().RoleId, in.RoleId)
 	}
 
 	if !g.IsEmpty(in.RoleIds) {
-		m = m.LeftJoinOnFields(dao.SystemUserRole.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserRole.Columns().UserId).WhereIn(dao.SystemUserRole.Table()+".role_id", in.RoleIds)
+		m = m.LeftJoinOnFields(dao.SystemUserRole.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserRole.Columns().UserId).WherePrefixIn(dao.SystemUserRole.Table(), dao.SystemUserRole.Columns().RoleId, in.RoleIds)
 	}
 
 	if !g.IsEmpty(in.PostId) {
-		m = m.LeftJoinOnFields(dao.SystemUserPost.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserPost.Columns().UserId).Where(dao.SystemUserPost.Table()+".post_id", in.RoleId)
+		m = m.LeftJoinOnFields(dao.SystemUserPost.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserPost.Columns().UserId).WherePrefix(dao.SystemUserPost.Table(), dao.SystemUserPost.Columns().PostId, in.RoleId)
 	}
 
 	if !g.IsEmpty(in.PostIds) {
-		m = m.LeftJoinOnFields(dao.SystemUserPost.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserPost.Columns().UserId).WhereIn(dao.SystemUserPost.Table()+".post_id", in.PostIds)
+		m = m.LeftJoinOnFields(dao.SystemUserPost.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserPost.Columns().UserId).WherePrefixIn(dao.SystemUserPost.Table(), dao.SystemUserPost.Columns().PostId, in.PostIds)
 	}
 
 	if !g.IsEmpty(in.DeptId) {

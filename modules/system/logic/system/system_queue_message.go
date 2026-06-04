@@ -50,7 +50,7 @@ func (s *sSystemQueueMessage) GetReceiveUserPageList(ctx context.Context, req *m
 		fmt.Sprintf(`"%s"."username"`, dao.SystemUser.Table()),
 		fmt.Sprintf(`"%s"."nickname"`, dao.SystemUser.Table()),
 	).InnerJoinOnFields(dao.SystemQueueMessageReceive.Table(), "id", "=", "user_id")
-	m = m.Where(dao.SystemQueueMessageReceive.Table()+".message_id", messageId)
+	m = m.WherePrefix(dao.SystemQueueMessageReceive.Table(), dao.SystemQueueMessageReceive.Columns().MessageId, messageId)
 	req.OrderBy = fmt.Sprintf(`"%s"."%s"`, dao.SystemUser.Table(), dao.SystemUser.Columns().CreatedAt)
 	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&rs, &total)
 	if utils.IsError(err) {
@@ -72,25 +72,25 @@ func (s *sSystemQueueMessage) GetPageList(ctx context.Context, req *model.PageLi
 	m := service.SystemQueueMessageReceive().Model(ctx).InnerJoinOnFields(dao.SystemQueueMessage.Table(), "message_id", "=", "id")
 
 	if !g.IsEmpty(contentType) && contentType != "all" {
-		m = m.Where(dao.SystemQueueMessage.Table()+".content_type", contentType)
+		m = m.WherePrefix(dao.SystemQueueMessage.Table(), dao.SystemQueueMessage.Columns().ContentType, contentType)
 	}
 	if !g.IsEmpty(title) {
-		m = m.WhereLike(dao.SystemQueueMessage.Table()+".title", "%"+title+"%")
+		m = m.WherePrefixLike(dao.SystemQueueMessage.Table(), dao.SystemQueueMessage.Columns().Title, "%"+title+"%")
 	}
 
 	if !g.IsEmpty(createdAtArr) {
 		if len(createdAtArr) > 0 {
-			m = m.WhereGTE(dao.SystemQueueMessage.Table()+".created_at", createdAtArr[0]+" 00:00:00")
+			m = m.WherePrefixGTE(dao.SystemQueueMessage.Table(), dao.SystemQueueMessage.Columns().CreatedAt, createdAtArr[0]+" 00:00:00")
 		}
 
 		if len(createdAtArr) > 1 {
-			m = m.WhereLTE(dao.SystemQueueMessage.Table()+".created_at", createdAtArr[1]+"23:59:59")
+			m = m.WherePrefixLTE(dao.SystemQueueMessage.Table(), dao.SystemQueueMessage.Columns().CreatedAt, createdAtArr[1]+"23:59:59")
 		}
 	}
 
-	m = m.Where(dao.SystemQueueMessageReceive.Table()+".user_id", userId)
+	m = m.WherePrefix(dao.SystemQueueMessageReceive.Table(), dao.SystemQueueMessageReceive.Columns().UserId, userId)
 	if readStatusInt != 0 {
-		m = m.Where(dao.SystemQueueMessageReceive.Table()+".read_status", readStatusInt)
+		m = m.WherePrefix(dao.SystemQueueMessageReceive.Table(), dao.SystemQueueMessageReceive.Columns().ReadStatus, readStatusInt)
 	}
 
 	req.OrderBy = fmt.Sprintf(`"%s"."%s"`, dao.SystemQueueMessageReceive.Table(), dao.SystemQueueMessageReceive.Columns().MessageId)

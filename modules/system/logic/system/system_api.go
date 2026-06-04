@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+	"fmt"
 
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
@@ -61,7 +62,7 @@ func (s *sSystemApi) GetPageListForSearch(ctx context.Context, req *model.PageLi
 
 func (s *sSystemApi) GetList(ctx context.Context, in *req.SystemApiSearch) (out []*res.SystemApi, err error) {
 	inReq := &model.ListReq{
-		OrderBy:   dao.SystemApi.Table() + ".created_by",
+		OrderBy:   fmt.Sprintf(`"%s"."%s"`, dao.SystemApi.Table(), dao.SystemApi.Columns().CreatedBy),
 		OrderType: "desc",
 	}
 	m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
