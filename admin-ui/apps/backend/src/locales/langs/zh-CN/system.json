@@ -362,7 +362,9 @@
   "app": {
     "name": "应用名称",
     "code": "应用标识",
+    "secret": "应用密钥",
     "description": "应用描述",
+    "group": "所属分组",
     "editTitle": "编辑应用",
     "createTitle": "新增应用",
     "confirmDelete": "确认删除该应用吗？",

@@ -362,7 +362,9 @@
   "app": {
     "name": "App Name",
     "code": "App Code",
+    "secret": "App Secret",
     "description": "App Description",
+    "group": "Group",
     "editTitle": "Edit App",
     "createTitle": "New App",
     "confirmDelete": "Are you sure to delete this app?",

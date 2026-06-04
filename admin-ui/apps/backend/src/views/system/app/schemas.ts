@@ -9,18 +9,20 @@ import { $t } from '@vben/locales';
 
 export function createAppSearchForm(): AppSearchFormModel {
   return {
+    app_name: '',
     created_at: [],
-    name: '',
     status: undefined,
   };
 }
 
 export function createAppFormDefaultValues(): AppFormModel {
   return {
-    intro: '',
-    name: '',
+    app_name: '',
+    app_id: '',
+    app_secret: '',
+    description: '',
+    group_id: undefined,
     remark: '',
-    sort: 1,
     status: 1,
   };
 }
@@ -34,10 +36,10 @@ export function createAppTableColumns(): AppTableColumn[] {
       width: 52,
     },
     { colKey: 'id', title: 'ID', width: 80 },
-    { colKey: 'name', title: $t('system.app.name'), minWidth: 160 },
+    { colKey: 'app_name', title: $t('system.app.name'), minWidth: 160 },
     { colKey: 'app_id', title: 'AppId', minWidth: 200 },
-    { colKey: 'intro', title: $t('system.app.description'), minWidth: 200 },
-    { colKey: 'sort', title: $t('common.sort'), width: 120 },
+    { colKey: 'description', title: $t('system.app.description'), minWidth: 200 },
+    { colKey: 'group_name', title: $t('system.app.group'), minWidth: 120 },
     { colKey: 'status', title: $t('common.status'), width: 120 },
     { colKey: 'created_at', title: $t('common.createTime'), width: 180 },
     {

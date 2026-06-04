@@ -101,15 +101,37 @@ func (s *sSystemApp) BindApp(ctx context.Context, Id int64, ApiIds []int64) (err
 
 func (s *sSystemApp) GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemAppSearch) (rs []*res.SystemApp, total int, err error) {
 	m := s.handleSearch(ctx, in)
-	var entity []*entity.SystemApp
-	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&entity, &total)
+	var appList []*entity.SystemApp
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&appList, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SystemApp, 0)
-	if !g.IsEmpty(entity) {
-		if err = gconv.Structs(entity, &rs); utils.IsError(err) {
+	if !g.IsEmpty(appList) {
+		if err = gconv.Structs(appList, &rs); utils.IsError(err) {
 			return nil, 0, err
+		}
+		// 获取分组名称
+		groupIds := make([]int64, 0)
+		for _, item := range rs {
+			if item.GroupId > 0 {
+				groupIds = append(groupIds, item.GroupId)
+			}
+		}
+		if len(groupIds) > 0 {
+			var groups []*entity.SystemAppGroup
+			err = service.SystemAppGroup().Model(ctx).WhereIn("id", groupIds).Scan(&groups)
+			if !utils.IsError(err) && !g.IsEmpty(groups) {
+				groupMap := make(map[int64]string)
+				for _, group := range groups {
+					groupMap[group.Id] = group.Name
+				}
+				for _, item := range rs {
+					if name, ok := groupMap[item.GroupId]; ok {
+						item.GroupName = name
+					}
+				}
+			}
 		}
 	}
 	return

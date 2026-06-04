@@ -10,13 +10,15 @@ import { $t } from '@vben/locales';
 import { MessagePlugin } from 'tdesign-vue-next';
 
 import { useVbenForm } from '#/adapter/form';
-import { saveApp, updateApp } from '#/api/system/app';
+import { getAppGroupPageList } from '#/api/system/app-group';
+import { getAppId, getAppSecret, saveApp, updateApp } from '#/api/system/app';
 
 import { createAppFormDefaultValues } from '../schemas';
 
 const emit = defineEmits(['success']);
 
 const baseValues = ref<AppApi.SubmitPayload>(createAppFormDefaultValues());
+const groupOptions = ref<{ label: string; value: number }[]>([]);
 
 const [Form, formApi] = useVbenForm({
   showDefaultActions: false,
@@ -39,7 +41,7 @@ const [Form, formApi] = useVbenForm({
       componentProps: {
         placeholder: $t('ui.placeholder.input'),
       },
-      fieldName: 'name',
+      fieldName: 'app_name',
       label: $t('system.app.name'),
       rules: 'required',
     },
@@ -48,19 +50,36 @@ const [Form, formApi] = useVbenForm({
       componentProps: {
         placeholder: $t('ui.placeholder.input'),
       },
-      fieldName: 'intro',
-      label: $t('system.app.description'),
+      fieldName: 'app_id',
+      label: $t('system.app.code'),
+      rules: 'required',
     },
     {
-      component: 'InputNumber',
+      component: 'Input',
       componentProps: {
-        max: 1000,
-        min: 0,
+        placeholder: $t('ui.placeholder.input'),
       },
-      defaultValue: 1,
-      fieldName: 'sort',
-      label: $t('common.sort'),
+      fieldName: 'app_secret',
+      label: $t('system.app.secret'),
       rules: 'required',
+    },
+    {
+      component: 'Select',
+      componentProps: {
+        options: groupOptions.value,
+        placeholder: $t('ui.placeholder.select'),
+      },
+      fieldName: 'group_id',
+      label: $t('system.app.group'),
+      rules: 'required',
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        placeholder: $t('ui.placeholder.input'),
+      },
+      fieldName: 'description',
+      label: $t('system.app.description'),
     },
     {
       component: 'RadioGroup',
@@ -122,12 +141,39 @@ const [Modal, modalApi] = useVbenModal({
   class: 'w-[900px] max-w-[94vw]',
 });
 
+async function fetchGroupOptions() {
+  try {
+    const res = await getAppGroupPageList({ pageSize: 999 });
+    const items = (res as any)?.items || [];
+    groupOptions.value = items.map((item: any) => ({
+      label: item.name,
+      value: item.id,
+    }));
+  } catch (error) {
+    logger.error(error);
+  }
+}
+
 async function open(data?: Partial<AppApi.SubmitPayload>) {
+  await fetchGroupOptions();
   const defaultValues = createAppFormDefaultValues();
   baseValues.value = {
     ...defaultValues,
     ...data,
   };
+
+  if (!data?.id) {
+    try {
+      const [idRes, secretRes] = await Promise.all([
+        getAppId(),
+        getAppSecret(),
+      ]);
+      baseValues.value.app_id = (idRes as any)?.app_id || '';
+      baseValues.value.app_secret = (secretRes as any)?.app_secret || '';
+    } catch (error) {
+      logger.error(error);
+    }
+  }
 
   modalApi.setState({
     title: data?.id ? $t('system.app.editTitle') : $t('system.app.createTitle'),

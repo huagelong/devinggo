@@ -232,9 +232,9 @@ onUnmounted(() => {
       <div class="rounded-md bg-white p-4">
         <Form :data="searchForm" label-width="90px" layout="inline" colon>
           <div class="grid grid-cols-4 gap-x-4 gap-y-3">
-            <FormItem :label="$t('system.app.name')" name="name">
+            <FormItem :label="$t('system.app.name')" name="app_name">
               <Input
-                v-model="searchForm.name"
+                v-model="searchForm.app_name"
                 :placeholder="$t('ui.placeholder.input')"
                 clearable
               />

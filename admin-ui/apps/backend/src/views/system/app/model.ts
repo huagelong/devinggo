@@ -6,8 +6,8 @@ export type AppListItem = AppApi.ListItem;
 export type AppFormModel = AppApi.SubmitPayload;
 
 export interface AppSearchFormModel {
+  app_name: string;
   created_at: string[];
-  name: string;
   status?: number;
 }
 

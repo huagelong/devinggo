@@ -13,7 +13,7 @@ export function useAppCrud() {
       context.isRecycleBin ? getRecycleAppList(params) : getAppPageList(params),
     buildParams: (form) => {
       const params: AppApi.ListQuery = {};
-      if (form.name) params.name = form.name;
+      if (form.app_name) params.app_name = form.app_name;
       if (form.status !== undefined) params.status = form.status;
       if (form.created_at?.length === 2 && form.created_at[0]) {
         params.created_at = form.created_at;

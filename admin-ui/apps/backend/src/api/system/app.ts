@@ -5,30 +5,32 @@ import type { PageQuery, PageResponse } from '#/types/paging';
 export namespace AppApi {
   export interface ListItem {
     app_id?: string;
+    app_name?: string;
     app_secret?: string;
     created_at?: string;
+    description?: string;
+    group_id?: number;
+    group_name?: string;
     id: number;
-    intro?: string;
-    name: string;
     remark?: string;
-    sort?: number;
     status?: StatusValue;
     updated_at?: string;
   }
 
   export interface ListQuery extends Partial<PageQuery> {
+    app_name?: string;
     created_at?: string[];
-    name?: string;
     status?: StatusValue;
   }
 
   export interface SubmitPayload {
     app_id?: string;
+    app_name?: string;
+    app_secret?: string;
+    description?: string;
+    group_id?: number;
     id?: number;
-    intro?: string;
-    name: string;
     remark?: string;
-    sort?: number;
     status?: StatusValue;
   }
 
