@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { $t } from '@vben/locales';
 
-import { AddIcon, SettingIcon } from 'tdesign-icons-vue-next';
+import { AddIcon, RefreshIcon, SettingIcon } from 'tdesign-icons-vue-next';
 import { Button, Space } from 'tdesign-vue-next';
 
 interface Props {
@@ -12,6 +12,8 @@ interface Emits {
   (e: 'add-group'): void;
   (e: 'manage'): void;
   (e: 'delete-group'): void;
+  (e: 'create'): void;
+  (e: 'refresh'): void;
 }
 
 defineProps<Props>();
@@ -28,11 +30,23 @@ function handleManage() {
 function handleDeleteGroup() {
   emit('delete-group');
 }
+
+function handleCreate() {
+  emit('create');
+}
+
+function handleRefresh() {
+  emit('refresh');
+}
 </script>
 
 <template>
   <div class="config-toolbar flex items-center justify-between">
     <Space>
+      <Button theme="primary" @click="handleCreate">
+        <template #icon><AddIcon /></template>
+        {{ $t('system.config.addConfigTitle') }}
+      </Button>
       <Button
         theme="primary"
         variant="outline"
@@ -57,6 +71,14 @@ function handleDeleteGroup() {
         @click="handleDeleteGroup"
       >
         {{ $t('system.config.deleteGroup') }}
+      </Button>
+      <Button
+        theme="default"
+        variant="outline"
+        @click="handleRefresh"
+      >
+        <template #icon><RefreshIcon /></template>
+        {{ $t('common.refresh') }}
       </Button>
     </Space>
   </div>

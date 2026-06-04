@@ -19,7 +19,6 @@ import {
   updateConfigByKeys,
 } from '#/api/system/config';
 
-import ConfigAddPanel from './components/config-add-panel.vue';
 import ConfigFormModal from './components/config-form-modal.vue';
 import ConfigGroupModal from './components/config-group-modal.vue';
 import ConfigGroupTabs from './components/config-group-tabs.vue';
@@ -254,12 +253,14 @@ onMounted(() => {
   <Page auto-content-height>
     <div class="flex h-full flex-col gap-5">
       <div class="flex flex-col gap-5 lg:flex-row">
-        <div class="config-card flex-1 lg:w-2/3">
+        <div class="config-card flex-1">
           <ConfigToolbar
             :active-group-key="activeGroupKey"
             @add-group="configGroupModalRef?.open()"
+            @create="configFormModalRef?.open()"
             @manage="handleManage"
             @delete-group="activeGroupKey && handleDeleteGroup(activeGroupKey)"
+            @refresh="fetchGroups"
           />
 
           <ConfigGroupTabs
@@ -275,9 +276,6 @@ onMounted(() => {
           />
         </div>
 
-        <div class="config-card lg:w-1/3">
-          <ConfigAddPanel @create="configFormModalRef?.open()" />
-        </div>
       </div>
     </div>
 
