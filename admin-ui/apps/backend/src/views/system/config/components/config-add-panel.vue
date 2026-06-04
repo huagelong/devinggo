@@ -16,7 +16,7 @@ function handleCreate() {
 </script>
 
 <template>
-  <div class="config-card lg:w-1/2">
+  <div class="config-add-panel">
     <div class="config-right-head flex items-center justify-between">
       <h3 class="text-lg font-semibold">{{ $t('system.config.addConfigTitle') }}</h3>
       <Button theme="primary" @click="handleCreate">
@@ -35,50 +35,63 @@ function handleCreate() {
 </template>
 
 <style scoped>
-.config-card {
-  border: 1px solid var(--td-component-border, #e7e7e7);
-  border-radius: 10px;
-  background: #fff;
-  padding: 16px 18px;
-  box-shadow: 0 6px 18px rgb(15 23 42 / 4%);
+.config-add-panel {
+  width: 100%;
 }
 
 .config-right-head {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.config-right-head h3 {
+  color: var(--td-text-color-primary, #1f2937);
+  font-size: 16px;
 }
 
 .config-add-tip {
-  margin: 0;
+  margin: 0 0 20px 0;
   color: var(--td-text-color-secondary, #6b7280);
   line-height: 1.7;
+  font-size: 13px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border-left: 3px solid #3b82f6;
 }
 
 .config-empty-state {
-  margin-top: 20px;
-  min-height: 320px;
-  border: 1px dashed #d9e3f3;
+  min-height: 360px;
+  border: 1px dashed #dbeafe;
   border-radius: 12px;
-  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  color: #5f6f85;
+  gap: 14px;
+  color: #4b5563;
+  transition: all 0.3s ease;
+}
+
+.config-empty-state:hover {
+  border-color: #93c5fd;
+  background: linear-gradient(180deg, #e8f2ff 0%, #ffffff 100%);
 }
 
 .config-empty-icon {
-  font-size: 24px;
+  font-size: 36px;
   color: #3b82f6;
 }
 
 @media (max-width: 1023px) {
-  .config-card {
-    padding: 14px;
-  }
-
   .config-empty-state {
     min-height: 200px;
+  }
+
+  .config-add-tip {
+    margin-bottom: 16px;
   }
 }
 </style>

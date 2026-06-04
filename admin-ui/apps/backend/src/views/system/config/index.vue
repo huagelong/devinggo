@@ -254,7 +254,7 @@ onMounted(() => {
   <Page auto-content-height>
     <div class="flex h-full flex-col gap-5">
       <div class="flex flex-col gap-5 lg:flex-row">
-        <div class="config-card lg:w-1/2">
+        <div class="config-card flex-1 lg:w-2/3">
           <ConfigToolbar
             :active-group-key="activeGroupKey"
             @add-group="configGroupModalRef?.open()"
@@ -275,7 +275,9 @@ onMounted(() => {
           />
         </div>
 
-        <ConfigAddPanel @create="configFormModalRef?.open()" />
+        <div class="config-card lg:w-1/3">
+          <ConfigAddPanel @create="configFormModalRef?.open()" />
+        </div>
       </div>
     </div>
 
@@ -290,8 +292,13 @@ onMounted(() => {
   border: 1px solid var(--td-component-border, #e7e7e7);
   border-radius: 10px;
   background: #fff;
-  padding: 16px 18px;
+  padding: 20px 24px;
   box-shadow: 0 6px 18px rgb(15 23 42 / 4%);
+  transition: box-shadow 0.3s ease;
+}
+
+.config-card:hover {
+  box-shadow: 0 8px 24px rgb(15 23 42 / 6%);
 }
 
 @media (max-width: 1023px) {

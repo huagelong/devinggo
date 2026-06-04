@@ -61,7 +61,7 @@ function updateFormValue(groupId: number, key: string, value: unknown) {
           v-if="configFormMap[group.id]"
           :data="configFormMap[group.id]!"
           class="config-edit-form"
-          label-width="200px" layout="inline" colon
+          label-width="auto" colon
         >
           <div class="config-form-list">
             <FormItem
@@ -71,16 +71,20 @@ function updateFormValue(groupId: number, key: string, value: unknown) {
               :name="field.key"
               class="config-field-item"
             >
-              <ConfigFieldRenderer
-                :model-value="configFormMap[group.id]![field.key]"
-                :field="field"
-                @update:model-value="(val: unknown) => updateFormValue(group.id, field.key, val)"
-              />
-              <div
-                v-if="field.remark"
-                class="config-field-remark"
-              >
-                {{ field.remark }}
+              <div class="field-content">
+                <div style="width: 100%">
+                  <ConfigFieldRenderer
+                    :model-value="configFormMap[group.id]![field.key]"
+                    :field="field"
+                    @update:model-value="(val: unknown) => updateFormValue(group.id, field.key, val)"
+                  />
+                </div>
+                <div
+                  v-if="field.remark"
+                  class="config-field-remark"
+                >
+                  {{ field.remark }}
+                </div>
               </div>
             </FormItem>
           </div>
@@ -115,7 +119,6 @@ function updateFormValue(groupId: number, key: string, value: unknown) {
 .config-form-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
 }
 
 .config-edit-form {
@@ -124,14 +127,20 @@ function updateFormValue(groupId: number, key: string, value: unknown) {
 
 .config-field-item {
   margin-bottom: 0 !important;
-  padding: 12px 8px;
-  border-bottom: 1px dashed #f0f2f5;
+  padding: 18px 16px;
+  border-bottom: 1px solid #f0f2f5;
+  transition: background-color 0.2s ease;
+}
+
+.config-field-item:hover {
+  background-color: #fafbfc;
 }
 
 .config-field-remark {
-  margin-left: 10px;
+  margin-top: 6px;
+  margin-left: 0;
   font-size: 13px;
-  color: #8a94a6;
+  color: #9ca3af;
   line-height: 1.5;
 }
 
@@ -142,36 +151,77 @@ function updateFormValue(groupId: number, key: string, value: unknown) {
 .config-edit-form :deep(.t-form__item) {
   width: 100%;
   margin-right: 0;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start;
 }
 
 .config-edit-form :deep(.t-form__label) {
-  padding-right: 12px;
-  color: var(--td-text-color-secondary, #6b7280);
+  min-width: 160px;
+  flex-shrink: 0;
+  padding-right: 16px;
+  color: var(--td-text-color-primary, #374151);
   font-weight: 500;
   line-height: 40px;
+  font-size: 14px;
 }
 
 .config-edit-form :deep(.t-form__controls) {
   flex: 1;
   min-width: 0;
+  max-width: 100%;
+}
+
+.config-edit-form :deep(.t-form__controls-content) {
+  display: block !important;
+  width: 100%;
+}
+
+.field-content {
+  display: block;
+  width: 100%;
 }
 
 .config-edit-form :deep(.t-input),
+.config-edit-form :deep(.t-textarea),
 .config-edit-form :deep(.t-textarea__inner),
 .config-edit-form :deep(.t-select),
 .config-edit-form :deep(.t-select__wrap) {
   border-radius: 8px;
+  width: 100% !important;
+  max-width: 100%;
+}
+
+.config-edit-form :deep(.t-radio-group),
+.config-edit-form :deep(.t-checkbox-group) {
+  width: 100%;
 }
 
 .config-save-bar {
-  margin-top: 16px;
+  margin-top: 0;
+  padding: 16px 20px;
   display: flex;
   justify-content: flex-end;
+  border-top: 1px solid #f0f2f5;
+  background: linear-gradient(to bottom, #fafbfc, #ffffff);
+  border-radius: 0 0 10px 10px;
+}
+
+.config-tabs :deep(.t-tabs__content) {
+  margin-top: 4px;
 }
 
 @media (max-width: 1023px) {
   .config-content {
     min-height: auto;
+  }
+
+  .config-field-item {
+    padding: 14px 12px;
+  }
+
+  .config-save-bar {
+    padding: 12px 16px;
   }
 }
 </style>

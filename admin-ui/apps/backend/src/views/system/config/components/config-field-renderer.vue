@@ -61,12 +61,14 @@ const normalizedInputType = computed(() =>
       v-model="innerValue"
       allow-clear
       :placeholder="$t('common.enterContent')"
+      style="width: 100%"
     />
     <Textarea
       v-else-if="normalizedInputType === 'textarea'"
       v-model="innerValue"
       :autosize="{ minRows: 3, maxRows: 6 }"
       :placeholder="$t('common.enterContent')"
+      style="width: 100%"
     />
     <ConfigRichTextEditor
       v-else-if="normalizedInputType === 'editor'"
@@ -124,18 +126,24 @@ const normalizedInputType = computed(() =>
       v-model="innerValue"
       allow-clear
       :placeholder="$t('common.enterContent')"
+      style="width: 100%"
     />
   </div>
 </template>
 
 <style scoped>
+.config-field-renderer {
+  width: 100%;
+}
+
 .config-field-renderer :deep(.t-input),
 .config-field-renderer :deep(.t-textarea),
 .config-field-renderer :deep(.t-select),
 .config-field-renderer :deep(.t-tree-select),
 .config-field-renderer :deep(.t-date-picker),
 .config-field-renderer :deep(.t-range-input) {
-  width: 100%;
+  width: 100% !important;
+  max-width: 100%;
 }
 
 .config-field-renderer :deep(.t-input),

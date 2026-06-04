@@ -144,6 +144,7 @@ func isDuplicateKeyError(err error) bool {
 
 func (s *sSettingConfig) UpdateConfig(ctx context.Context, data *req.SettingConfigUpdate) (err error) {
 	saveData := do.SettingConfig{
+		GroupId:          data.GroupId,
 		Name:             data.Name,
 		Key:              data.Key,
 		Value:            data.Value,
@@ -152,7 +153,15 @@ func (s *sSettingConfig) UpdateConfig(ctx context.Context, data *req.SettingConf
 		Sort:             data.Sort,
 		Remark:           data.Remark,
 	}
-	_, err = s.Model(ctx).Where(dao.SettingConfig.Columns().Key, data.Key).Data(saveData).Update()
+	count, err := s.Model(ctx).Where(dao.SettingConfig.Columns().Key, data.Key).Count()
+	if utils.IsError(err) {
+		return err
+	}
+	if count > 0 {
+		_, err = s.Model(ctx).Where(dao.SettingConfig.Columns().Key, data.Key).Data(saveData).Update()
+	} else {
+		_, err = s.Model(ctx).Data(saveData).Insert()
+	}
 	if utils.IsError(err) {
 		return err
 	}

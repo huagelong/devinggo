@@ -64,9 +64,9 @@ function handleDeleteGroup() {
 
 <style scoped>
 .config-toolbar {
-  margin-bottom: 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--td-component-stroke, #f0f1f2);
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f2f5;
 }
 
 .config-toolbar :deep(.t-space) {
