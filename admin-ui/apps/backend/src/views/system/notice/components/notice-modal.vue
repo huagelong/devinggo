@@ -3,7 +3,7 @@ import { logger } from '#/utils/logger';
 import type { NoticeApi } from '#/api/system/notice';
 import type { DictOption } from '#/composables/crud/use-dict-options';
 
-import { computed, nextTick, ref } from 'vue';
+import { computed, markRaw, nextTick, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -14,6 +14,7 @@ import { useVbenForm } from '#/adapter/form';
 import { saveNotice, updateNotice } from '#/api/system/notice';
 import { useDictOptions } from '#/composables/crud/use-dict-options';
 
+import ConfigRichTextEditor from '#/views/system/config/components/config-rich-text-editor.vue';
 import UserSelectModal from './user-select-modal.vue';
 
 const emit = defineEmits(['success']);
@@ -84,16 +85,11 @@ const [Form, formApi] = useVbenForm({
       label: $t('system.notice.receiveUser'),
     },
     {
-      component: 'Textarea',
-      componentProps: {
-        autosize: { minRows: 8, maxRows: 20 },
-        placeholder: $t('system.notice.contentPlaceholder'),
-      },
+      component: markRaw(ConfigRichTextEditor),
       fieldName: 'content',
       formItemClass: 'md:col-span-2',
       label: $t('system.notice.content'),
       rules: 'required',
-      description: $t('system.notice.contentDescription'),
     },
     {
       component: 'Textarea',
