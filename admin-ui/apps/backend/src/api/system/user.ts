@@ -25,6 +25,7 @@ export namespace UserApi {
     dept_id?: IdType;
     dept_ids?: IdType[];
     email?: string;
+    nickname?: string;
     phone?: string;
     post_id?: number;
     role_id?: number;

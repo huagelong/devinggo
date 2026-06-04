@@ -106,6 +106,7 @@
     "contentPlaceholder": "Enter notice content (HTML format supported)",
     "contentTip": "HTML format supported, basic tags can be used for formatting",
     "selectReceiveUser": "Select recipients",
+    "selectUser": "Select User",
     "contentDescription": "HTML format supported, basic tags can be used for formatting",
     "editTitle": "Edit Notice",
     "createTitle": "New Notice",

@@ -106,6 +106,7 @@
     "contentPlaceholder": "请输入公告内容（支持 HTML 格式）",
     "contentTip": "支持 HTML 格式，可使用基础标签排版",
     "selectReceiveUser": "请选择接收用户",
+    "selectUser": "选择用户",
     "contentDescription": "支持 HTML 格式，可使用基础标签排版",
     "editTitle": "编辑公告",
     "createTitle": "新增公告",

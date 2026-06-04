@@ -42,6 +42,8 @@ const {
   fieldName,
   formFieldProps,
   hide,
+  hideLabel,
+  hideRequiredMark,
   label,
   labelClass,
   labelWidth,

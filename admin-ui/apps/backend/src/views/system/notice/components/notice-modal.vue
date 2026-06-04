@@ -3,20 +3,18 @@ import { logger } from '#/utils/logger';
 import type { NoticeApi } from '#/api/system/notice';
 import type { DictOption } from '#/composables/crud/use-dict-options';
 
-import { markRaw, nextTick, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
-import { MessagePlugin, Select } from 'tdesign-vue-next';
+import { Button, MessagePlugin } from 'tdesign-vue-next';
 
 import { useVbenForm } from '#/adapter/form';
-import { getUserInfoByIds } from '#/api/system/common';
-import { getUserList } from '#/api/system/user';
 import { saveNotice, updateNotice } from '#/api/system/notice';
 import { useDictOptions } from '#/composables/crud/use-dict-options';
 
-type UserSelectOption = { label: string; value: number };
+import UserSelectModal from './user-select-modal.vue';
 
 const emit = defineEmits(['success']);
 
@@ -33,15 +31,13 @@ function normalizeNoticeTypeOptions(options: DictOption[]) {
 }
 
 const noticeTypeOptions = ref<DictOption[]>([]);
-const userOptions = ref<UserSelectOption[]>([]);
-const userLoading = ref(false);
 const isEdit = ref(false);
+const userSelectVisible = ref(false);
+const selectedUserIds = ref<number[]>([]);
+
+const selectedUserCount = computed(() => selectedUserIds.value.length);
 
 const { getDictOptions } = useDictOptions();
-
-const handleUserSearch = (value: string) => {
-  void fetchUserOptions(value);
-};
 
 function createNoticeTypeProps(disabled?: boolean) {
   return {
@@ -50,25 +46,13 @@ function createNoticeTypeProps(disabled?: boolean) {
   };
 }
 
-function createUserSelectProps(disabled?: boolean) {
-  return {
-    multiple: true,
-    filterable: true,
-    placeholder: $t('system.notice.selectReceiveUser'),
-    loading: userLoading.value,
-    options: userOptions.value,
-    onSearch: handleUserSearch,
-    disabled: typeof disabled === 'boolean' ? disabled : isEdit.value,
-    minCollapsedNum: 3,
-  };
-}
-
 const [Form, formApi] = useVbenForm({
   showDefaultActions: false,
+  layout: 'vertical',
   commonConfig: {
     labelWidth: 90,
   },
-  wrapperClass: 'grid-cols-1 md:grid-cols-2',
+  wrapperClass: 'grid-cols-1',
   schema: [
     {
       component: 'Input',
@@ -92,10 +76,11 @@ const [Form, formApi] = useVbenForm({
       rules: 'required',
     },
     {
-      component: markRaw(Select),
-      componentProps: createUserSelectProps(),
+      component: 'Input',
       defaultValue: [],
       fieldName: 'users',
+      hideLabel: true,
+      formItemClass: 'md:col-span-2',
       label: $t('system.notice.receiveUser'),
     },
     {
@@ -143,7 +128,7 @@ const [Modal, modalApi] = useVbenModal({
       modalApi.setState({ confirmLoading: false });
     }
   },
-  class: 'w-[1000px] max-w-[94vw]',
+  class: 'w-[1000px] max-w-[94vw] !p-4',
 });
 
 function updateNoticeTypeSchema() {
@@ -151,15 +136,6 @@ function updateNoticeTypeSchema() {
     {
       fieldName: 'type',
       componentProps: createNoticeTypeProps(),
-    },
-  ]);
-}
-
-function updateUserSchema() {
-  formApi.updateSchema([
-    {
-      fieldName: 'users',
-      componentProps: createUserSelectProps(),
     },
   ]);
 }
@@ -172,81 +148,37 @@ async function fetchNoticeTypeOptions() {
   updateNoticeTypeSchema();
 }
 
-function normalizeUserOption(item: {
-  id: number | string;
-  nickname?: string;
-  username: string;
-}): UserSelectOption | null {
-  const value = Number(item.id);
-  if (Number.isNaN(value)) {
-    return null;
-  }
-  return {
-    label: item.nickname ? `${item.nickname} (${item.username})` : item.username,
-    value,
-  };
+function openUserSelect() {
+  userSelectVisible.value = true;
 }
 
-async function fetchUserOptions(keyword = '') {
-  userLoading.value = true;
-  updateUserSchema();
-  try {
-    const response = await getUserList({
-      page: 1,
-      pageSize: 50,
-      username: keyword || undefined,
-    });
-    const list = response.items ?? [];
-    userOptions.value = list
-      .map(normalizeUserOption)
-      .filter((item): item is UserSelectOption => Boolean(item));
-  } catch (error) {
-    logger.error(error);
-  } finally {
-    userLoading.value = false;
-    updateUserSchema();
-  }
+function handleUserSelectConfirm(ids: number[]) {
+  selectedUserIds.value = ids;
+  formApi.setFieldValue('users', ids);
 }
 
-async function ensureSelectedUsers(userIds?: number[]) {
-  if (!Array.isArray(userIds) || userIds.length === 0) {
-    return;
-  }
-  try {
-    const response = await getUserInfoByIds({ ids: userIds });
-    if (!Array.isArray(response)) return;
-    const existingIds = new Set(userOptions.value.map((item) => item.value));
-    const extraOptions = response
-      .map(normalizeUserOption)
-      .filter((item): item is UserSelectOption => {
-        if (!item) return false;
-        return !existingIds.has(item.value);
-      });
-    if (extraOptions.length > 0) {
-      userOptions.value = [...userOptions.value, ...extraOptions];
-      updateUserSchema();
-    }
-  } catch (error) {
-    logger.error(error);
-  }
+function clearSelectedUsers() {
+  selectedUserIds.value = [];
+  formApi.setFieldValue('users', []);
 }
 
 async function open(data?: NoticeApi.SubmitPayload) {
   isEdit.value = Boolean(data?.id);
   updateNoticeTypeSchema();
-  updateUserSchema();
   modalApi.setState({
     title: isEdit.value ? $t('system.notice.editTitle') : $t('system.notice.createTitle'),
   });
   modalApi.open();
-  await Promise.all([fetchNoticeTypeOptions(), fetchUserOptions()]);
+  await fetchNoticeTypeOptions();
   await formApi.resetForm();
   if (data) {
-    await ensureSelectedUsers(data.users);
+    selectedUserIds.value = data.users ?? [];
     formApi.setValues({
       ...data,
       users: data.users ?? [],
     });
+  } else {
+    selectedUserIds.value = [];
   }
   await nextTick();
   await formApi.resetValidate();
@@ -259,6 +191,40 @@ defineExpose({
 
 <template>
   <Modal>
-    <Form />
+    <Form>
+      <template #users>
+        <div class="flex flex-col gap-1">
+          <label class="flex items-center gap-1 text-sm leading-6">
+            <span>{{ $t('system.notice.receiveUser') }}</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <Button theme="primary" @click="openUserSelect">
+              {{ $t('system.notice.selectUser') }}
+            </Button>
+            <span v-if="selectedUserCount > 0" class="text-blue-600">
+              已选择 {{ selectedUserCount }} 位
+            </span>
+            <span v-else class="text-gray-400">
+              {{ $t('system.notice.receiveUserPlaceholder') }}
+            </span>
+            <Button
+              v-if="selectedUserCount > 0"
+              theme="default"
+              variant="text"
+              size="small"
+              @click="clearSelectedUsers"
+            >
+              清空
+            </Button>
+          </div>
+        </div>
+      </template>
+    </Form>
   </Modal>
+
+  <UserSelectModal
+    v-model:visible="userSelectVisible"
+    :selected-ids="selectedUserIds"
+    @confirm="handleUserSelectConfirm"
+  />
 </template>

@@ -33,7 +33,7 @@ const props = withDefaults(
     commonConfig: () => ({}),
     globalCommonConfig: () => ({}),
     showCollapseButton: false,
-    wrapperClass: 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3',
+    wrapperClass: 'grid-cols-1',
   },
 );
 
@@ -45,6 +45,8 @@ const wrapperClass = computed(() => {
   const cls = ['flex'];
   if (props.layout === 'inline') {
     cls.push('flex-wrap gap-x-2');
+  } else if (props.layout === 'vertical') {
+    cls.push(props.compact ? 'gap-x-2' : 'gap-x-4', 'flex-col');
   } else {
     cls.push(props.compact ? 'gap-x-2' : 'gap-x-4', 'flex-col grid');
   }
