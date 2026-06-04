@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"devinggo/internal/dao"
@@ -19,6 +20,7 @@ import (
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
+	"devinggo/modules/system/pkg/websocket"
 	"devinggo/modules/system/service"
 
 	"github.com/gogf/gf/v2/database/gdb"
@@ -169,7 +171,7 @@ func (s *sSystemQueueMessage) SendMessage(ctx context.Context, sendReq *req.Syst
 					UserId:    v,
 				}
 				_, _ = service.SystemQueueMessageReceive().Model(ctx).Data(receiveData).Insert()
-				s.sendWs(ctx, v)
+				s.sendWs(ctx, v, messageId)
 			}
 		} else {
 			//获取所有有效用户，循环插入
@@ -179,39 +181,57 @@ func (s *sSystemQueueMessage) SendMessage(ctx context.Context, sendReq *req.Syst
 	return
 }
 
-func (s *sSystemQueueMessage) sendWs(ctx context.Context, userId int64) {
-	pageReq := &model.PageListReq{
-		OrderBy:   "created_at",
-		OrderType: "desc",
-	}
-	pageReq.Page = 1
-	pageReq.PageSize = 5
-	search := &req.SystemQueueMessageSearch{
-		ReadStatus: "1",
-	}
-	rs, _, err := service.SystemQueueMessage().GetPageList(ctx, pageReq, userId, search)
-	if utils.IsError(err) {
-		g.Log().Error(ctx, err)
+func (s *sSystemQueueMessage) sendWs(ctx context.Context, userId int64, messageId int64) {
+	message := &entity.SystemQueueMessage{}
+	err := s.Model(ctx).Where("id", messageId).Scan(message)
+	if utils.IsError(err) || g.IsEmpty(message.Id) {
+		g.Log().Error(ctx, "sendWs: query message failed:", err)
 		return
 	}
-	toId := gconv.String(userId)
 
-	// 扩展点：适配Pusher协议的消息推送
-	// Pusher协议下需要通过HTTP API发送或使用频道广播
-	// 暂时注释掉旧的实现
-	/*
-		clientIdWResponse := &websocket2.ClientIdWResponse{
-			SocketID: toId,
-			PusherResponse: &websocket2.PusherResponse{
-				Event: "custom-new-message",
-				Channel: "",
-				Data: marshalData(rs),
-			},
+	notificationData := g.Map{
+		"id":           message.Id,
+		"title":        message.Title,
+		"content":      message.Content,
+		"content_type": message.ContentType,
+		"send_by":      message.SendBy,
+		"created_at":   "",
+	}
+	if message.CreatedAt != nil {
+		notificationData["created_at"] = message.CreatedAt.Format("Y-m-d H:i:s")
+	}
+
+	sendUserInfo, err := service.SystemUser().GetInfoById(ctx, message.SendBy)
+	if err == nil && !g.IsEmpty(sendUserInfo) {
+		notificationData["send_user"] = g.Map{
+			"id":       sendUserInfo.Id,
+			"nickname": sendUserInfo.Nickname,
+			"username": sendUserInfo.Username,
 		}
-		websocket2.PublishSocketIdMessage(ctx, toId, clientIdWResponse)
-	*/
-	_ = toId
-	_ = rs
+	}
+
+	dataJson, err := json.Marshal(notificationData)
+	if err != nil {
+		g.Log().Error(ctx, "sendWs: marshal notification data failed:", err)
+		return
+	}
+
+	channel := fmt.Sprintf("private-adminuser-%d", userId)
+	pusherResponse := &websocket.PusherResponse{
+		Event:   "notification:new",
+		Channel: channel,
+		Data:    string(dataJson),
+	}
+
+	websocket.SendToChannel(channel, pusherResponse)
+
+	topicMsg := &websocket.TopicWResponse{
+		Topic:          channel,
+		PusherResponse: pusherResponse,
+	}
+	if err := websocket.PublishChannelMessage(ctx, channel, topicMsg); err != nil {
+		g.Log().Warning(ctx, "sendWs: cross-server publish failed:", err)
+	}
 }
 
 func (s *sSystemQueueMessage) saveAllUserMessageReceive(ctx context.Context, messageId int64, page int) (err error) {
@@ -231,6 +251,7 @@ func (s *sSystemQueueMessage) saveAllUserMessageReceive(ctx context.Context, mes
 			UserId:    v.Id,
 		}
 		_, _ = service.SystemQueueMessageReceive().Model(ctx).Data(receiveData).Insert()
+		s.sendWs(ctx, v.Id, messageId)
 	}
 	_ = s.saveAllUserMessageReceive(ctx, messageId, page+1)
 	return

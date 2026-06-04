@@ -35,7 +35,7 @@ export function useRealtimeNotifications() {
     }
 
     // 1. Private user channel — personal notifications
-    const userChannel = subscribePrivate(`user-${userId}`);
+    const userChannel = subscribePrivate(`adminuser-${userId}`);
 
     cleanups.push(
       bind(

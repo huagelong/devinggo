@@ -28,11 +28,18 @@ import {
   getQueueMessageReceiveListApi,
   updateQueueMessageReadStatusApi,
 } from '#/api/core/message';
+import { useRealtimeNotifications } from '#/composables/pusher';
 import { sanitizeHtml } from '#/utils/sanitize';
 import { logger } from '#/utils/logger';
 import LoginForm from '#/views/_core/authentication/login.vue';
 
 const router = useRouter();
+
+const {
+  start: startRealtime,
+  stop: stopRealtime,
+  latestNotification,
+} = useRealtimeNotifications();
 
 // 通知消息列表
 const notifications = ref<NotificationItem[]>([]);
@@ -182,10 +189,22 @@ function stopPolling() {
 onMounted(() => {
   fetchMessages();
   startPolling();
+  try {
+    startRealtime();
+  } catch (error) {
+    logger.error('Failed to start realtime notifications', error);
+  }
 });
 
 onUnmounted(() => {
   stopPolling();
+  stopRealtime();
+});
+
+watch(latestNotification, (notification) => {
+  if (notification) {
+    fetchMessages();
+  }
 });
 
 const menus = computed(() => [

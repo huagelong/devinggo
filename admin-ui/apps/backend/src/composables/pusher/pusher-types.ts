@@ -7,7 +7,7 @@
 export const Channels = {
   // Private user channel — receives personal notifications
   user(userId: number | string) {
-    return `private-user-${userId}`;
+    return `private-adminuser-${userId}`;
   },
 
   // System-wide public channel for broadcast messages
