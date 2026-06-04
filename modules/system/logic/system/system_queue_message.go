@@ -109,6 +109,8 @@ func (s *sSystemQueueMessage) GetPageList(ctx context.Context, req *model.PageLi
 				g.Log().Error(ctx, errorm)
 				continue
 			}
+			// 设置阅读状态
+			systemQueueMessageTmp.ReadStatus = v.ReadStatus
 
 			userInfo, errorm := service.SystemUser().GetInfoById(ctx, newUserId)
 			if utils.IsError(errorm) {

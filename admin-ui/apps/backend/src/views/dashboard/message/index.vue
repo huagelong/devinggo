@@ -62,7 +62,32 @@ const selectedRowKeys = ref<number[]>([]);
 const columns: PrimaryTableCol[] = [
   { colKey: 'row-select', type: 'multiple' as const, width: 50 },
   { title: $t('dashboard.message.sender'), colKey: 'send_user.nickname', width: 120 },
-  { title: $t('dashboard.message.msgTitle'), colKey: 'title', ellipsis: true },
+  {
+    title: $t('dashboard.message.msgTitle'),
+    colKey: 'title',
+    ellipsis: true,
+    cell: (h: any, params: any) => {
+      const row = params.row as MessageApi.QueueMessageItem;
+      const isUnread = row.read_status === 1 || (row as any).read_status_int === 1;
+      return h('div', {
+        class: 'flex items-center gap-2',
+      }, [
+        isUnread
+          ? h('span', {
+              class:
+                'inline-block w-2 h-2 rounded-full bg-red-500 shrink-0',
+            })
+          : h('span', { class: 'w-2 h-2 shrink-0' }),
+        h(
+          'span',
+          {
+            class: isUnread ? 'font-semibold' : '',
+          },
+          row.title,
+        ),
+      ]);
+    },
+  },
   { title: $t('dashboard.message.msgType'), colKey: 'content_type', width: 100 },
   { title: $t('dashboard.message.sendTime'), colKey: 'created_at', width: 180 },
   { title: $t('common.action'), colKey: 'action', width: 150, align: 'center' },
@@ -318,6 +343,7 @@ watch(latestNotification, (notification) => {
           :selected-row-keys="selectedRowKeys"
           @page-change="onPageChange"
           @select-change="onSelectChange"
+          :row-class-name="({ row }: { row: MessageApi.QueueMessageItem }) => (row.read_status === 1 || (row as any).read_status_int === 1) ? 'unread-row' : ''"
           :max-height="height - 300"
           height="100%"
           table-layout="fixed"
@@ -384,5 +410,14 @@ watch(latestNotification, (notification) => {
   font-weight: 500;
   color: #165dff;
   background-color: #f3f4f6;
+}
+
+:deep(.unread-row) {
+  background-color: #f0f7ff !important;
+  border-left: 3px solid #165dff;
+}
+
+:deep(.unread-row:hover) {
+  background-color: #e6f0ff !important;
 }
 </style>

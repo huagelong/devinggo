@@ -39,6 +39,7 @@ const emit = defineEmits<{
   read: [NotificationItem];
   remove: [NotificationItem];
   viewAll: [];
+  click: [NotificationItem];
 }>();
 
 const router = useRouter();
@@ -65,6 +66,8 @@ function handleClick(item: NotificationItem) {
   // 如果通知项有链接，点击时跳转
   if (item.link) {
     navigateTo(item.link, item.query, item.state);
+  } else {
+    emit('click', item);
   }
 }
 

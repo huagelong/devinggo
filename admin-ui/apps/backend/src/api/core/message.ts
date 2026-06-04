@@ -7,6 +7,7 @@ export namespace MessageApi {
     id: number;
     username: string;
     nickname: string;
+    avatar?: string;
   }
 
   export interface QueueMessageItem {
@@ -21,7 +22,7 @@ export namespace MessageApi {
     updated_at: string;
     remark: string;
     send_user: SendUser;
-    read_status?: number; // 1 未读, 2 已读
+    read_status: number; // 1 未读, 2 已读
   }
 
   export interface QueueMessageQuery extends Partial<PageQuery> {
