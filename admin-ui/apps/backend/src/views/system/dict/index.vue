@@ -309,6 +309,7 @@ onUnmounted(() => {
             @refresh="fetchTableData"
             @toggle-recycle="toggleRecycleBin"
           />
+          </div>
         </div>
 
         <div class="min-h-0 flex-1 overflow-auto">

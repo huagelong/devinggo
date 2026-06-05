@@ -246,51 +246,53 @@ onUnmounted(() => {
     <div class="flex h-full flex-col gap-3">
       <div class="rounded-md bg-white p-4">
         <Form :data="searchForm" label-width="80px" layout="inline" colon>
-          <div class="grid grid-cols-4 gap-x-4 gap-y-3">
-            <FormItem :label="$t('system.dept.name')" name="name">
-              <Input
-                v-model="searchForm.name"
-                :placeholder="$t('ui.placeholder.input', [$t('system.dept.name')])"
-                clearable
-              />
-            </FormItem>
-            <FormItem :label="$t('system.dept.leader')" name="leader">
-              <Input
-                v-model="searchForm.leader"
-                :placeholder="$t('ui.placeholder.input', [$t('system.dept.leader')])"
-                clearable
-              />
-            </FormItem>
-            <FormItem :label="$t('system.user.phone')" name="phone">
-              <Input
-                v-model="searchForm.phone"
-                :placeholder="$t('ui.placeholder.input', [$t('system.user.phone')])"
-                clearable
-              />
-            </FormItem>
-            <FormItem :label="$t('common.status')" name="status">
-              <Select
-                v-model="searchForm.status"
-                :options="statusOptions"
-                :placeholder="$t('ui.placeholder.select', [$t('common.status')])"
-                clearable
-              />
-            </FormItem>
-            <FormItem :label="$t('common.createTime')" name="created_at" class="col-span-2">
-              <DateRangePicker
-                v-model="searchForm.created_at"
-                :placeholder="[$t('common.startTime'), $t('common.endTime')]"
-                clearable
-                class="w-full"
-              />
-            </FormItem>
-          </div>
-          <div class="flex justify-end gap-2 pt-2">
-            <Button theme="default" @click="handleReset">{{ $t('common.reset') }}</Button>
-            <Button theme="primary" @click="handleSearch">
-              <template #icon><SearchIcon /></template>
-              {{ $t('common.query') }}
-            </Button>
+          <div class="w-full">
+            <div class="grid grid-cols-4 gap-x-4 gap-y-3 w-full">
+              <FormItem :label="$t('system.dept.name')" name="name">
+                <Input
+                  v-model="searchForm.name"
+                  :placeholder="$t('ui.placeholder.input', [$t('system.dept.name')])"
+                  clearable
+                />
+              </FormItem>
+              <FormItem :label="$t('system.dept.leader')" name="leader">
+                <Input
+                  v-model="searchForm.leader"
+                  :placeholder="$t('ui.placeholder.input', [$t('system.dept.leader')])"
+                  clearable
+                />
+              </FormItem>
+              <FormItem :label="$t('system.user.phone')" name="phone">
+                <Input
+                  v-model="searchForm.phone"
+                  :placeholder="$t('ui.placeholder.input', [$t('system.user.phone')])"
+                  clearable
+                />
+              </FormItem>
+              <FormItem :label="$t('common.status')" name="status">
+                <Select
+                  v-model="searchForm.status"
+                  :options="statusOptions"
+                  :placeholder="$t('ui.placeholder.select', [$t('common.status')])"
+                  clearable
+                />
+              </FormItem>
+              <FormItem :label="$t('common.createTime')" name="created_at" class="col-span-2">
+                <DateRangePicker
+                  v-model="searchForm.created_at"
+                  :placeholder="[$t('common.startTime'), $t('common.endTime')]"
+                  clearable
+                  class="w-full"
+                />
+              </FormItem>
+            </div>
+            <div class="flex justify-start gap-2 pt-4">
+              <Button theme="default" @click="handleReset">{{ $t('common.reset') }}</Button>
+              <Button theme="primary" @click="handleSearch">
+                <template #icon><SearchIcon /></template>
+                {{ $t('common.query') }}
+              </Button>
+            </div>
           </div>
         </Form>
       </div>
