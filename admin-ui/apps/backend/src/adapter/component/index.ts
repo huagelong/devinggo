@@ -56,6 +56,9 @@ const TreeSelect = defineAsyncComponent(
   () => import('tdesign-vue-next/es/tree-select'),
 );
 const Upload = defineAsyncComponent(() => import('tdesign-vue-next/es/upload'));
+const CodeEditor = defineAsyncComponent(
+  () => import('#/components/code-editor/code-editor.vue'),
+);
 
 const withDefaultPlaceholder = <T extends Component>(
   component: T,
@@ -98,6 +101,7 @@ export type ComponentType =
   | 'AutoComplete'
   | 'Checkbox'
   | 'CheckboxGroup'
+  | 'CodeEditor'
   | 'DatePicker'
   | 'DefaultButton'
   | 'Divider'
@@ -201,6 +205,7 @@ async function initComponentAdapter() {
     Space,
     Switch,
     Textarea: withDefaultPlaceholder(Textarea, 'input'),
+    CodeEditor,
     TimePicker,
     TreeSelect: withDefaultPlaceholder(TreeSelect, 'select'),
     Upload,

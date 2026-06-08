@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { logger } from '#/utils/logger';
 import type { CrontabApi } from '#/api/system/crontab';
 
 import { nextTick, ref } from 'vue';
@@ -10,12 +9,14 @@ import { $t } from '@vben/locales';
 import { MessagePlugin } from 'tdesign-vue-next';
 
 import { useVbenForm } from '#/adapter/form';
-import { saveCrontab, updateCrontab } from '#/api/system/crontab';
+import { getCrontabTarget, saveCrontab, updateCrontab } from '#/api/system/crontab';
+import { logger } from '#/utils/logger';
 
 import {
-  crontabFinallyOptions,
-  crontabTypeOptions,
   createCrontabFormDefaultValues,
+  crontabSingletonOptions,
+  crontabStatusOptions,
+  crontabTypeOptions,
 } from '../schemas';
 
 const emit = defineEmits(['success']);
@@ -29,7 +30,7 @@ const [Form, formApi] = useVbenForm({
   commonConfig: {
     labelWidth: 100,
   },
-  wrapperClass: 'grid-cols-1 md:grid-cols-2',
+  wrapperClass: 'grid-cols-1',
   schema: [
     {
       component: 'Input',
@@ -43,61 +44,104 @@ const [Form, formApi] = useVbenForm({
     {
       component: 'Input',
       componentProps: {
-        placeholder: $t('ui.placeholder.input'),
+        placeholder: $t('ui.placeholder.input', [$t('system.crontab.name')]),
       },
       fieldName: 'name',
       label: $t('system.crontab.name'),
       rules: 'required',
     },
     {
-      component: 'RadioGroup',
+      component: 'Select',
       componentProps: {
         options: crontabTypeOptions,
+        placeholder: $t('ui.placeholder.select', [$t('system.crontab.taskType')]),
+        onChange: (value: number) => {
+          formApi.updateSchema([
+            {
+              fieldName: 'target',
+              componentProps: {
+                api: getCrontabTarget,
+                params: { type: value },
+                resultField: 'data',
+                placeholder: $t('ui.placeholder.select', [$t('system.crontab.target')]),
+              },
+            },
+          ]);
+          formApi.setFieldValue('target', undefined);
+        },
       },
       defaultValue: 1,
       fieldName: 'type',
       label: $t('system.crontab.taskType'),
-    },
-    {
-      component: 'Input',
-      componentProps: {
-        placeholder: $t('ui.placeholder.input'),
-      },
-      fieldName: 'rule',
-      label: $t('system.crontab.rule'),
       rules: 'required',
     },
     {
       component: 'Input',
       componentProps: {
-        placeholder: $t('ui.placeholder.input'),
+        placeholder: $t('ui.placeholder.input', [$t('system.crontab.rule')]),
+      },
+      description: $t('system.crontab.expression'),
+      fieldName: 'rule',
+      label: $t('system.crontab.rule'),
+      rules: 'required',
+    },
+    {
+      component: 'ApiSelect',
+      componentProps: {
+        api: getCrontabTarget,
+        params: { type: 1 },
+        resultField: 'data',
+        placeholder: $t('ui.placeholder.select', [$t('system.crontab.target')]),
       },
       fieldName: 'target',
       label: $t('system.crontab.target'),
       rules: 'required',
     },
     {
+      component: 'CodeEditor',
+      componentProps: {
+        placeholder: $t('ui.placeholder.input', [$t('system.crontab.parameter')]),
+      },
+      description:
+        '必须json格式,例子: {"name":"name1", "value":"shuju1"} URL任务参数例子: {"url":"http://www.example.com","method":"get", "header":{},"params":{}}',
+      fieldName: 'parameter',
+      label: $t('system.crontab.parameter'),
+    },
+    {
       component: 'RadioGroup',
       componentProps: {
-        options: crontabFinallyOptions,
+        options: crontabSingletonOptions,
       },
       defaultValue: 2,
-      fieldName: 'is_finally',
-      label: $t('system.crontab.isFinally'),
+      description: $t('system.crontab.singletonTip'),
+      fieldName: 'singleton',
+      label: $t('system.crontab.singleton'),
+    },
+    {
+      component: 'RadioGroup',
+      componentProps: {
+        options: crontabStatusOptions,
+      },
+      defaultValue: 1,
+      fieldName: 'status',
+      label: $t('common.status'),
     },
     {
       component: 'Textarea',
       componentProps: {
-        placeholder: $t('ui.placeholder.input'),
+        placeholder: $t('ui.placeholder.input', [$t('common.remark')]),
+        autosize: { minRows: 2, maxRows: 4 },
       },
       fieldName: 'remark',
-      formItemClass: 'md:col-span-2',
       label: $t('common.remark'),
     },
   ],
 });
 
 const [Modal, modalApi] = useVbenModal({
+  onCancel: () => {
+    modalApi.close();
+  },
   onConfirm: async () => {
     let isEdit = false;
     try {
@@ -113,11 +157,7 @@ const [Modal, modalApi] = useVbenModal({
 
       modalApi.setState({ confirmLoading: true });
 
-      if (payload.id) {
-        await updateCrontab(Number(payload.id), payload);
-      } else {
-        await saveCrontab(payload);
-      }
+      await (payload.id ? updateCrontab(Number(payload.id), payload) : saveCrontab(payload));
 
       MessagePlugin.success(isEdit ? $t('common.updateSuccess') : $t('common.createSuccess'));
       emit('success');
@@ -129,14 +169,20 @@ const [Modal, modalApi] = useVbenModal({
       modalApi.setState({ confirmLoading: false });
     }
   },
-  class: 'w-[940px] max-w-[94vw]',
+  cancelText: $t('common.cancel'),
+  confirmText: $t('common.save'),
+  class: 'w-[800px] max-w-[94vw]',
 });
 
 async function open(data?: Partial<CrontabApi.SubmitPayload>) {
   const defaultValues = createCrontabFormDefaultValues();
+  const mergedData = { ...data };
+  if (mergedData.parameter && typeof mergedData.parameter === 'object') {
+    mergedData.parameter = JSON.stringify(mergedData.parameter, null, 2);
+  }
   baseValues.value = {
     ...defaultValues,
-    ...data,
+    ...mergedData,
   };
 
   modalApi.setState({
@@ -147,6 +193,20 @@ async function open(data?: Partial<CrontabApi.SubmitPayload>) {
   await formApi.resetForm();
   formApi.setValues(baseValues.value);
   await nextTick();
+
+  const currentType = baseValues.value.type || 1;
+  formApi.updateSchema([
+    {
+      fieldName: 'target',
+      componentProps: {
+        api: getCrontabTarget,
+        params: { type: currentType },
+        resultField: 'data',
+        placeholder: $t('ui.placeholder.select', [$t('system.crontab.target')]),
+      },
+    },
+  ]);
+
   await formApi.resetValidate();
 }
 

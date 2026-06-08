@@ -8,6 +8,7 @@ import { Page } from '@vben/common-ui';
 
 import { message } from '#/adapter/tdesign';
 import {
+  changeCrontabStatus,
   deleteCrontab,
   realDeleteCrontab,
   recoveryCrontab,
@@ -35,6 +36,7 @@ import {
   Popconfirm,
   Select,
   Space,
+  Switch,
   Table,
   Tag,
   Tooltip,
@@ -47,7 +49,7 @@ import {
   createCrontabColumnOptions,
   createCrontabSearchForm,
   createCrontabTableColumns,
-  crontabFinallyOptions,
+  crontabStatusOptions,
   crontabTypeOptions,
 } from './schemas';
 import { useCrontabCrud } from './use-crontab-crud';
@@ -178,6 +180,18 @@ async function handleRun(row: CrontabListItem) {
   }
 }
 
+async function handleChangeStatus(row: CrontabListItem) {
+  try {
+    const newStatus = row.status === 1 ? 2 : 1;
+    await changeCrontabStatus({ id: row.id, status: newStatus });
+    message.success($t('common.operationSuccess'));
+    await fetchTableData();
+  } catch (error) {
+    logger.error(error);
+    message.error($t('common.operationFailed'));
+  }
+}
+
 function handleOpenLog(row: CrontabListItem) {
   crontabLogPanelRef.value?.open(row.id);
 }
@@ -230,10 +244,10 @@ onUnmounted(() => {
                   clearable
                 />
               </FormItem>
-              <FormItem :label="$t('system.crontab.isFinally')" name="is_finally">
+              <FormItem :label="$t('common.status')" name="status">
                 <Select
-                  v-model="searchForm.is_finally"
-                  :options="crontabFinallyOptions"
+                  v-model="searchForm.status"
+                  :options="crontabStatusOptions"
                   :placeholder="$t('ui.placeholder.select')"
                   clearable
                 />
@@ -310,14 +324,19 @@ onUnmounted(() => {
         >
           <template #type="{ row }">
             <Tag theme="primary">
-              {{ row?.type === 1 ? $t('system.crontab.typeInterval') : $t('system.crontab.typeCron') }}
+              <template v-if="row?.type === 1">{{ $t('system.crontab.typeCommand') }}</template>
+              <template v-else-if="row?.type === 2">{{ $t('system.crontab.typeClass') }}</template>
+              <template v-else-if="row?.type === 3">{{ $t('system.crontab.typeUrl') }}</template>
+              <template v-else-if="row?.type === 4">{{ $t('system.crontab.typeEval') }}</template>
+              <template v-else>{{ row?.type }}</template>
             </Tag>
           </template>
 
-          <template #is_finally="{ row }">
-            <Tag :theme="row?.is_finally === 1 ? 'success' : 'default'">
-              {{ row?.is_finally === 1 ? $t('common.yes') : $t('common.no') }}
-            </Tag>
+          <template #status="{ row }">
+            <Switch
+              :value="row?.status === 1"
+              @change="() => handleChangeStatus(row)"
+            />
           </template>
 
           <template #action="{ row }">
@@ -325,8 +344,17 @@ onUnmounted(() => {
               <template v-if="!isRecycleBin">
                 <Button
                   size="small"
+                  theme="primary"
+                  variant="text"
+                  @click="handleRun(row)"
+                >
+                  <template #icon><PlayIcon /></template>
+                  {{ $t('system.crontab.runOnce') }}
+                </Button>
+                <Button
+                  size="small"
                   theme="default"
-                  variant="outline"
+                  variant="text"
                   @click="handleOpenLog(row)"
                 >
                   <template #icon><HistoryIcon /></template>
@@ -334,17 +362,8 @@ onUnmounted(() => {
                 </Button>
                 <Button
                   size="small"
-                  theme="warning"
-                  variant="outline"
-                  @click="handleRun(row)"
-                >
-                  <template #icon><PlayIcon /></template>
-                  {{ $t('common.execute') }}
-                </Button>
-                <Button
-                  size="small"
                   theme="primary"
-                  variant="outline"
+                  variant="text"
                   @click="handleEdit(row)"
                 >
                   <template #icon><EditIcon /></template>
@@ -354,7 +373,7 @@ onUnmounted(() => {
                   :content="$t('system.crontab.confirmDelete')"
                   @confirm="handleDelete(row)"
                 >
-                  <Button size="small" theme="danger" variant="outline">
+                  <Button size="small" theme="danger" variant="text">
                     <template #icon><DeleteIcon /></template>
                     {{ $t('common.delete') }}
                   </Button>

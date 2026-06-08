@@ -23,7 +23,7 @@ export function useCrontabCrud() {
       const params: CrontabApi.ListQuery = {};
       if (form.name) params.name = form.name;
       if (form.type !== undefined) params.type = form.type;
-      if (form.is_finally !== undefined) params.is_finally = form.is_finally;
+      if (form.status !== undefined) params.status = form.status;
       if (form.created_at?.length === 2 && form.created_at[0]) {
         params.created_at = form.created_at;
       }

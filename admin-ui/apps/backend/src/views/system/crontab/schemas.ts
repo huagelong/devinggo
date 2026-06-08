@@ -8,11 +8,18 @@ import type {
 import { $t } from '@vben/locales';
 
 export const crontabTypeOptions = [
-  { label: $t('system.crontab.typeInterval'), value: 1 },
-  { label: $t('system.crontab.typeCron'), value: 2 },
+  { label: $t('system.crontab.typeCommand'), value: 1 },
+  { label: $t('system.crontab.typeClass'), value: 2 },
+  { label: $t('system.crontab.typeUrl'), value: 3 },
+  { label: $t('system.crontab.typeEval'), value: 4 },
 ];
 
-export const crontabFinallyOptions = [
+export const crontabStatusOptions = [
+  { label: $t('common.enable'), value: 1 },
+  { label: $t('common.disable'), value: 2 },
+];
+
+export const crontabSingletonOptions = [
   { label: $t('common.yes'), value: 1 },
   { label: $t('common.no'), value: 2 },
 ];
@@ -20,18 +27,20 @@ export const crontabFinallyOptions = [
 export function createCrontabSearchForm(): CrontabSearchFormModel {
   return {
     created_at: [],
-    is_finally: undefined,
     name: '',
+    status: undefined,
     type: undefined,
   };
 }
 
 export function createCrontabFormDefaultValues(): CrontabFormModel {
   return {
-    is_finally: 2,
     name: '',
+    parameter: '',
     remark: '',
     rule: '',
+    singleton: 2,
+    status: 1,
     target: '',
     type: 1,
   };
@@ -45,18 +54,18 @@ export function createCrontabTableColumns(): CrontabTableColumn[] {
       type: 'multiple',
       width: 52,
     },
-    { colKey: 'id', title: 'ID', width: 80 },
     { colKey: 'name', title: $t('system.crontab.name'), minWidth: 160 },
     { colKey: 'type', title: $t('system.crontab.taskType'), width: 120 },
-    { colKey: 'rule', title: $t('system.crontab.rule'), minWidth: 180 },
-    { colKey: 'is_finally', title: $t('system.crontab.isFinally'), width: 100 },
+    { colKey: 'rule', title: $t('system.crontab.rule'), width: 160 },
+    { colKey: 'target', title: $t('system.crontab.target'), minWidth: 160 },
+    { colKey: 'status', title: $t('common.status'), width: 100 },
     { colKey: 'created_at', title: $t('common.createTime'), width: 180 },
     {
       align: 'center',
       colKey: 'action',
       fixed: 'right',
       title: $t('common.action'),
-      width: 360,
+      width: 320,
     },
   ];
 }

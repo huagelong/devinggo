@@ -1,15 +1,17 @@
 import { requestClient } from '#/api/request';
-import type { BatchIdsPayload } from '#/types/common';
 import type { PageQuery, PageResponse } from '#/types/paging';
+import type { BatchIdsPayload } from '#/types/common';
 
 export namespace CrontabApi {
   export interface ListItem {
     created_at?: string;
     id: number;
-    is_finally: number;
     name: string;
+    parameter?: null | Record<string, any> | string;
     remark?: string;
     rule: string;
+    singleton?: number;
+    status: number;
     target: string;
     type: number;
     updated_at?: string;
@@ -17,17 +19,19 @@ export namespace CrontabApi {
 
   export interface ListQuery extends Partial<PageQuery> {
     created_at?: string[];
-    is_finally?: number;
     name?: string;
+    status?: number;
     type?: number;
   }
 
   export interface SubmitPayload {
     id?: number;
-    is_finally?: number;
     name: string;
+    parameter?: string;
     remark?: string;
     rule: string;
+    singleton?: number;
+    status?: number;
     target: string;
     type: number;
   }
@@ -107,6 +111,13 @@ export function changeCrontabStatus(data: CrontabApi.ChangeStatusPayload) {
 
 export function runCrontab(data: CrontabApi.RunPayload) {
   return requestClient.post<void>('/system/setting/crontab/run', data);
+}
+
+export function getCrontabTarget(params: { type: number }) {
+  return requestClient.get<Array<{ label: string; value: string }>>(
+    '/system/setting/crontab/getTarget',
+    { params },
+  );
 }
 
 export function getCrontabLogPageList(params: CrontabApi.LogQuery) {

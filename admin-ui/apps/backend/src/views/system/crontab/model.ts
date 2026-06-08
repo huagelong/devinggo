@@ -7,8 +7,8 @@ export type CrontabFormModel = CrontabApi.SubmitPayload;
 
 export interface CrontabSearchFormModel {
   created_at: string[];
-  is_finally?: number;
   name: string;
+  status?: number;
   type?: number;
 }
 
