@@ -2,17 +2,18 @@
 import { logger } from '#/utils/logger';
 import type { AppApi } from '#/api/system/app';
 
-import { nextTick, ref } from 'vue';
+import { markRaw, nextTick, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
-import { MessagePlugin } from 'tdesign-vue-next';
+import { Button, Input, MessagePlugin } from 'tdesign-vue-next';
 
 import { useVbenForm } from '#/adapter/form';
 import { getAppGroupPageList } from '#/api/system/app-group';
 import { getAppId, getAppSecret, saveApp, updateApp } from '#/api/system/app';
 
+import ConfigRichTextEditor from '#/views/system/config/components/config-rich-text-editor.vue';
 import { createAppFormDefaultValues } from '../schemas';
 
 const emit = defineEmits(['success']);
@@ -22,86 +23,84 @@ const groupOptions = ref<{ label: string; value: number }[]>([]);
 
 const [Form, formApi] = useVbenForm({
   showDefaultActions: false,
+  layout: 'vertical',
   commonConfig: {
     labelWidth: 90,
   },
-  wrapperClass: 'grid-cols-1 md:grid-cols-2',
+  wrapperClass: 'grid-cols-1 gap-y-6 md:grid-cols-2 md:gap-x-6 md:gap-y-8',
   schema: [
     {
       component: 'Input',
-      dependencies: {
-        show: false,
-        triggerFields: [''],
-      },
+      dependencies: { show: false, triggerFields: [''] },
       fieldName: 'id',
       label: 'ID',
-    },
-    {
-      component: 'Input',
-      componentProps: {
-        placeholder: $t('ui.placeholder.input'),
-      },
-      fieldName: 'app_name',
-      label: $t('system.app.name'),
-      rules: 'required',
-    },
-    {
-      component: 'Input',
-      componentProps: {
-        placeholder: $t('ui.placeholder.input'),
-      },
-      fieldName: 'app_id',
-      label: $t('system.app.code'),
-      rules: 'required',
-    },
-    {
-      component: 'Input',
-      componentProps: {
-        placeholder: $t('ui.placeholder.input'),
-      },
-      fieldName: 'app_secret',
-      label: $t('system.app.secret'),
-      rules: 'required',
     },
     {
       component: 'Select',
       componentProps: {
         options: groupOptions.value,
-        placeholder: $t('ui.placeholder.select'),
+        placeholder: '请选择所属组',
       },
       fieldName: 'group_id',
-      label: $t('system.app.group'),
+      label: '所属组',
       rules: 'required',
     },
     {
       component: 'Input',
       componentProps: {
-        placeholder: $t('ui.placeholder.input'),
+        placeholder: '请输入应用名称',
       },
-      fieldName: 'description',
-      label: $t('system.app.description'),
+      fieldName: 'app_name',
+      label: '应用名称',
+      rules: 'required',
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        placeholder: 'e26264a666',
+      },
+      fieldName: 'app_id',
+      label: 'APP ID',
+      rules: 'required',
+      formItemClass: 'md:col-span-2',
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入APP SECRET',
+      },
+      fieldName: 'app_secret',
+      label: 'APP SECRET',
+      rules: 'required',
+      formItemClass: 'md:col-span-2',
     },
     {
       component: 'RadioGroup',
       componentProps: {
         options: [
-          { label: $t('common.statusEnabled'), value: 1 },
-          { label: $t('common.statusDisabled'), value: 2 },
+          { label: '正常', value: 1 },
+          { label: '停用', value: 2 },
         ],
       },
       defaultValue: 1,
       fieldName: 'status',
-      label: $t('common.status'),
-      rules: 'required',
+      label: '状态',
+      formItemClass: 'md:col-span-2',
+    },
+    {
+      component: markRaw(ConfigRichTextEditor),
+      fieldName: 'description',
+      label: '应用介绍',
+      formItemClass: 'md:col-span-2',
     },
     {
       component: 'Textarea',
       componentProps: {
-        placeholder: $t('ui.placeholder.input'),
+        placeholder: '请输入备注',
       },
       fieldName: 'remark',
+      label: '备注',
       formItemClass: 'md:col-span-2',
-      label: $t('common.remark'),
     },
   ],
 });
@@ -138,7 +137,9 @@ const [Modal, modalApi] = useVbenModal({
       modalApi.setState({ confirmLoading: false });
     }
   },
-  class: 'w-[900px] max-w-[94vw]',
+  cancelText: '关闭',
+  confirmText: '保存',
+  class: 'w-[900px] max-w-[94vw] !p-8',
 });
 
 async function fetchGroupOptions() {
@@ -149,6 +150,35 @@ async function fetchGroupOptions() {
       label: item.name,
       value: item.id,
     }));
+    formApi.updateSchema([
+      {
+        fieldName: 'group_id',
+        componentProps: {
+          options: groupOptions.value,
+          placeholder: '请选择所属组',
+        },
+      },
+    ]);
+  } catch (error) {
+    logger.error(error);
+  }
+}
+
+async function handleRefreshAppId() {
+  try {
+    const res = await getAppId();
+    const newId = (res as any)?.app_id || '';
+    formApi.setFieldValue('app_id', newId);
+  } catch (error) {
+    logger.error(error);
+  }
+}
+
+async function handleRefreshAppSecret() {
+  try {
+    const res = await getAppSecret();
+    const newSecret = (res as any)?.app_secret || '';
+    formApi.setFieldValue('app_secret', newSecret);
   } catch (error) {
     logger.error(error);
   }
@@ -176,7 +206,7 @@ async function open(data?: Partial<AppApi.SubmitPayload>) {
   }
 
   modalApi.setState({
-    title: data?.id ? $t('system.app.editTitle') : $t('system.app.createTitle'),
+    title: data?.id ? '编辑' : '新增',
   });
   modalApi.open();
 
@@ -193,6 +223,19 @@ defineExpose({
 
 <template>
   <Modal>
-    <Form />
+    <Form>
+      <template #app_id="slotProps">
+        <div class="flex w-full items-center gap-2">
+          <Input v-bind="slotProps" style="width: 100%" />
+          <Button theme="primary" @click="handleRefreshAppId">刷新APP ID</Button>
+        </div>
+      </template>
+      <template #app_secret="slotProps">
+        <div class="flex w-full items-center gap-2">
+          <Input v-bind="slotProps" style="width: 100%" />
+          <Button theme="primary" @click="handleRefreshAppSecret">刷新APP SECRET</Button>
+        </div>
+      </template>
+    </Form>
   </Modal>
 </template>
