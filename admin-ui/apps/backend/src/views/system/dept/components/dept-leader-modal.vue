@@ -8,7 +8,7 @@ import { reactive, ref } from 'vue';
 import { useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
-import { Button, Dialog, MessagePlugin, Space } from 'tdesign-vue-next';
+import { Button, Dialog, MessagePlugin, Popconfirm, Space } from 'tdesign-vue-next';
 
 import {
   addDeptLeader,
@@ -360,9 +360,14 @@ defineExpose({
           <Button theme="primary" @click="openAddLeaderDialog">
             {{ $t('system.dept.addLeader') }}
           </Button>
-          <Button theme="danger" variant="outline" @click="handleBatchDeleteLeaders">
-            {{ $t('system.dept.deleteSelected') }}
-          </Button>
+          <Popconfirm
+            :content="$t('common.batchDeleteDataConfirm')"
+            @confirm="handleBatchDeleteLeaders"
+          >
+            <Button theme="danger" variant="outline">
+              {{ $t('system.dept.deleteSelected') }}
+            </Button>
+          </Popconfirm>
         </Space>
         <Space>
           <Button theme="default" variant="outline" @click="fetchLeaderList">

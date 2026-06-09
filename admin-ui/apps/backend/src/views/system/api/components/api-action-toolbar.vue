@@ -7,7 +7,7 @@ import {
   FullscreenExitIcon,
   FullscreenIcon,
 } from 'tdesign-icons-vue-next';
-import { Button, Space, Tooltip } from 'tdesign-vue-next';
+import { Button, Popconfirm, Space, Tooltip } from 'tdesign-vue-next';
 
 import CrudToolbar from '#/components/crud/crud-toolbar.vue';
 
@@ -73,14 +73,29 @@ function handleUpdateVisibleColumns(value: string[]) {
           <template #icon><AddIcon /></template>
           {{ $t('common.create') }}
         </Button>
-        <Button theme="danger" variant="outline" @click="handleBatchDelete">
-          <template #icon><DeleteIcon /></template>
-          {{ $t('common.delete') }}
-        </Button>
+        <Popconfirm
+          :content="$t('common.batchDeleteDataConfirm')"
+          @confirm="handleBatchDelete"
+        >
+          <Button theme="danger" variant="outline">
+            <template #icon><DeleteIcon /></template>
+            {{ $t('common.delete') }}
+          </Button>
+        </Popconfirm>
       </template>
       <template v-else>
-        <Button theme="success" @click="handleBatchRecovery">{{ $t('common.recovery') }}</Button>
-        <Button theme="danger" @click="handleBatchDelete">{{ $t('common.permanentDelete') }}</Button>
+        <Popconfirm
+          :content="$t('common.batchRecoveryDataConfirm')"
+          @confirm="handleBatchRecovery"
+        >
+          <Button theme="success">{{ $t('common.recovery') }}</Button>
+        </Popconfirm>
+        <Popconfirm
+          :content="$t('common.batchPermanentDeleteDataConfirm')"
+          @confirm="handleBatchDelete"
+        >
+          <Button theme="danger">{{ $t('common.permanentDelete') }}</Button>
+        </Popconfirm>
       </template>
     </Space>
 

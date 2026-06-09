@@ -261,14 +261,29 @@ onMounted(() => {
                 <template #icon><AddIcon /></template>
                 新增
               </Button>
-              <Button theme="danger" variant="outline" @click="handleBatchDelete">
-                <template #icon><DeleteIcon /></template>
-                删除
-              </Button>
+              <Popconfirm
+                content="确认批量删除所选数据吗？"
+                @confirm="handleBatchDelete"
+              >
+                <Button theme="danger" variant="outline">
+                  <template #icon><DeleteIcon /></template>
+                  删除
+                </Button>
+              </Popconfirm>
             </template>
             <template v-else>
-              <Button theme="success" @click="handleBatchRecovery">恢复</Button>
-              <Button theme="danger" @click="handleBatchDelete">彻底删除</Button>
+              <Popconfirm
+                content="确认批量恢复所选数据吗？"
+                @confirm="handleBatchRecovery"
+              >
+                <Button theme="success">恢复</Button>
+              </Popconfirm>
+              <Popconfirm
+                content="确认批量彻底删除所选数据吗？"
+                @confirm="handleBatchDelete"
+              >
+                <Button theme="danger">彻底删除</Button>
+              </Popconfirm>
             </template>
           </Space>
 

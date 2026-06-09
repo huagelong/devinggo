@@ -24,6 +24,7 @@ import {
   FormItem,
   Input,
   MessagePlugin,
+  Popconfirm,
   Radio,
   RadioGroup,
   Space,
@@ -222,10 +223,15 @@ onUnmounted(() => {
         <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
           <div class="mb-3 flex items-center justify-between">
             <Space>
-                <Button theme="danger" variant="outline" @click="handleBatchDelete">
-                <template #icon><DeleteIcon /></template>
-                {{ $t('common.delete') }}
-              </Button>
+                <Popconfirm
+                  :content="$t('common.batchDeleteDataConfirm')"
+                  @confirm="handleBatchDelete"
+                >
+                  <Button theme="danger" variant="outline">
+                    <template #icon><DeleteIcon /></template>
+                    {{ $t('common.delete') }}
+                  </Button>
+                </Popconfirm>
             </Space>
 
             <div class="flex items-center gap-2">

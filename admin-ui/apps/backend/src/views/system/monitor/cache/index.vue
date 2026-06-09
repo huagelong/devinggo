@@ -21,6 +21,7 @@ import {
   Card,
   Col,
   Input,
+  Popconfirm,
   Row,
   Space,
   Table,
@@ -177,13 +178,15 @@ onMounted(() => {
             <template #icon><DeleteIcon /></template>
             {{ $t('system.monitor.cache.clearAll') }}
           </Button>
-          <Button
+          <Popconfirm
             v-if="selectedKeys.length > 0"
-            theme="danger"
-            @click="handleBatchDelete"
+            :content="$t('common.batchDeleteDataConfirm')"
+            @confirm="handleBatchDelete"
           >
-            {{ $t('common.batchDelete') }} ({{ selectedKeys.length }})
-          </Button>
+            <Button theme="danger">
+              {{ $t('common.batchDelete') }} ({{ selectedKeys.length }})
+            </Button>
+          </Popconfirm>
         </Space>
       </Card>
 

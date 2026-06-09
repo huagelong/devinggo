@@ -15,6 +15,7 @@ import {
   Input,
   Link,
   MessagePlugin,
+  Popconfirm,
   RadioButton,
   RadioGroup,
   Table,
@@ -304,10 +305,15 @@ watch(latestNotification, (notification) => {
       <!-- Actions -->
       <div class="flex justify-between items-center mb-4">
         <div class="flex gap-3 items-center">
-          <Button theme="danger" @click="handleBatchDelete">
-            <template #icon><DeleteIcon /></template>
-            {{ $t('common.delete') }}
-          </Button>
+          <Popconfirm
+            :content="$t('common.batchDeleteDataConfirm')"
+            @confirm="handleBatchDelete"
+          >
+            <Button theme="danger">
+              <template #icon><DeleteIcon /></template>
+              {{ $t('common.delete') }}
+            </Button>
+          </Popconfirm>
           <RadioGroup
             v-model="searchForm.read_status"
             variant="outline"
