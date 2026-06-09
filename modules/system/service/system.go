@@ -102,6 +102,8 @@ type (
 		GetValidateCron(ctx context.Context) (rs []*res.SettingCrontabOne, err error)
 		// GetPageList retrieves a paginated list of scheduled tasks.
 		GetPageList(ctx context.Context, req *model.PageListReq, in *req.SettingCrontabSearch) (rs []*res.SettingCrontab, total int, err error)
+		// GetPageListForSearch retrieves a paginated list of scheduled tasks with search criteria.
+		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SettingCrontabSearch) (rs []*res.SettingCrontab, total int, err error)
 		// Save creates a new scheduled task.
 		Save(ctx context.Context, in *req.SettingCrontabSave) (id int64, err error)
 		// GetById retrieves a scheduled task by ID.
@@ -110,8 +112,12 @@ type (
 		Run(ctx context.Context, id int64) (err error)
 		// Update modifies an existing scheduled task.
 		Update(ctx context.Context, in *req.SettingCrontabUpdate) (err error)
-		// Delete removes scheduled tasks by IDs.
+		// Delete removes scheduled tasks by IDs (soft delete).
 		Delete(ctx context.Context, ids []int64) (err error)
+		// RealDelete permanently removes scheduled tasks by IDs.
+		RealDelete(ctx context.Context, ids []int64) (err error)
+		// Recovery restores soft-deleted scheduled tasks.
+		Recovery(ctx context.Context, ids []int64) (err error)
 		// ChangeStatus changes the status of a scheduled task.
 		ChangeStatus(ctx context.Context, id int64, status int) (err error)
 	}

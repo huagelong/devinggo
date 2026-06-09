@@ -142,6 +142,12 @@ const [Modal, modalApi] = useVbenModal({
   onCancel: () => {
     modalApi.close();
   },
+  onOpened: () => {
+    // 弹窗完全展开后通知表单重新布局
+    nextTick(() => {
+      formApi.validate();
+    });
+  },
   onConfirm: async () => {
     let isEdit = false;
     try {

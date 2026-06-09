@@ -23,5 +23,6 @@ type SettingCrontab struct {
 	UpdatedBy int64       `json:"updatedBy" orm:"updated_by" description:""` //
 	CreatedAt *gtime.Time `json:"createdAt" orm:"created_at" description:""` //
 	UpdatedAt *gtime.Time `json:"updatedAt" orm:"updated_at" description:""` //
+	DeletedAt *gtime.Time `json:"deletedAt" orm:"deleted_at" description:""` //
 	Remark    string      `json:"remark"    orm:"remark"     description:""` //
 }

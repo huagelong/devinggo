@@ -33,6 +33,7 @@ type SettingCrontabColumns struct {
 	UpdatedBy string //
 	CreatedAt string //
 	UpdatedAt string //
+	DeletedAt string //
 	Remark    string //
 }
 
@@ -50,6 +51,7 @@ var settingCrontabColumns = SettingCrontabColumns{
 	UpdatedBy: "updated_by",
 	CreatedAt: "created_at",
 	UpdatedAt: "updated_at",
+	DeletedAt: "deleted_at",
 	Remark:    "remark",
 }
 

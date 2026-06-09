@@ -71,7 +71,7 @@ func (b *TaskBuilder) WithProcessAt(t time.Time) *TaskBuilder {
 
 // WithRetention 设置任务保留时间
 func (b *TaskBuilder) WithRetention(retention time.Duration) *TaskBuilder {
-	b.payload.Time = asynq.Retention(retention)
+	b.payload.Retention = asynq.Retention(retention)
 	return b
 }
 

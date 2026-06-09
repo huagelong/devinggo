@@ -92,6 +92,43 @@ func (c *crontabController) Delete(ctx context.Context, in *system.DeleteCrontab
 	return
 }
 
+func (c *crontabController) Recycle(ctx context.Context, in *system.RecycleCrontabReq) (out *system.RecycleCrontabRes, err error) {
+	out = &system.RecycleCrontabRes{}
+	in.Recycle = true
+	items, totalCount, err := service.SettingCrontab().GetPageListForSearch(ctx, &in.PageListReq, &in.SettingCrontabSearch)
+	if err != nil {
+		return
+	}
+
+	if !g.IsEmpty(items) {
+		for _, item := range items {
+			out.Items = append(out.Items, *item)
+		}
+	} else {
+		out.Items = make([]res.SettingCrontab, 0)
+	}
+	out.PageRes.Pack(in, totalCount)
+	return
+}
+
+func (c *crontabController) RealDelete(ctx context.Context, in *system.RealDeleteCrontabReq) (out *system.RealDeleteCrontabRes, err error) {
+	out = &system.RealDeleteCrontabRes{}
+	err = service.SettingCrontab().RealDelete(ctx, in.Ids)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (c *crontabController) Recovery(ctx context.Context, in *system.RecoveryCrontabReq) (out *system.RecoveryCrontabRes, err error) {
+	out = &system.RecoveryCrontabRes{}
+	err = service.SettingCrontab().Recovery(ctx, in.Ids)
+	if err != nil {
+		return
+	}
+	return
+}
+
 func (c *crontabController) DeleteLog(ctx context.Context, in *system.DeleteCrontabLogReq) (out *system.DeleteCrontabLogRes, err error) {
 	out = &system.DeleteCrontabLogRes{}
 	err = service.SettingCrontabLog().Delete(ctx, in.Ids)

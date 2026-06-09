@@ -1,5 +1,11 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+
+import { defaultKeymap, indentWithTab } from '@codemirror/commands';
+import { json } from '@codemirror/lang-json';
+import { EditorState } from '@codemirror/state';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { EditorView, keymap, lineNumbers } from '@codemirror/view';
 
 const props = defineProps<{
   modelValue?: string;
@@ -10,49 +16,94 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void;
 }>();
 
-const value = computed({
-  get: () => props.modelValue || '',
-  set: (val) => emit('update:modelValue', val),
+const editorRef = ref<HTMLDivElement>();
+let view: EditorView | null = null;
+
+function createEditor() {
+  if (!editorRef.value) return;
+
+  const startState = EditorState.create({
+    doc: props.modelValue || '',
+    extensions: [
+      lineNumbers(),
+      json(),
+      oneDark,
+      keymap.of([...defaultKeymap, indentWithTab]),
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) {
+          emit('update:modelValue', update.state.doc.toString());
+        }
+      }),
+      EditorView.theme({
+        '&': {
+          fontSize: '14px',
+          height: '180px',
+        },
+        '.cm-content': {
+          fontFamily: "'Consolas', 'Monaco', 'Courier New', monospace",
+        },
+      }),
+    ],
+  });
+
+  view = new EditorView({
+    state: startState,
+    parent: editorRef.value,
+  });
+}
+
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (view && newValue !== view.state.doc.toString()) {
+      view.dispatch({
+        changes: { from: 0, to: view.state.doc.length, insert: newValue || '' },
+      });
+    }
+  },
+);
+
+onMounted(() => {
+  nextTick(() => {
+    setTimeout(() => {
+      createEditor();
+    }, 300);
+  });
+});
+
+onUnmounted(() => {
+  view?.destroy();
+  view = null;
 });
 </script>
 
 <template>
-  <div class="code-editor-wrapper">
-    <textarea
-      v-model="value"
-      :placeholder="placeholder"
-      class="code-editor"
-      spellcheck="false"
-    />
-  </div>
+  <div ref="editorRef" class="code-editor-wrapper"></div>
 </template>
 
 <style scoped>
 .code-editor-wrapper {
+  display: flex;
+  flex-direction: column;
   border: 1px solid #d9d9d9;
   border-radius: 4px;
   overflow: hidden;
-}
-
-.code-editor {
   width: 100%;
   min-height: 180px;
-  padding: 12px;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.6;
-  color: #333;
-  background-color: #fafafa;
-  border: none;
+  height: 180px;
+}
+
+.code-editor-wrapper :deep(.cm-editor) {
+  border-radius: 4px;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.code-editor-wrapper :deep(.cm-focused) {
   outline: none;
-  resize: vertical;
 }
 
-.code-editor:focus {
-  background-color: #fff;
-}
-
-.code-editor::placeholder {
-  color: #bfbfbf;
+.code-editor-wrapper :deep(.cm-scroller) {
+  min-height: 180px;
 }
 </style>

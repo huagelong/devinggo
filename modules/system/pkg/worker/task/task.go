@@ -55,7 +55,11 @@ func GetTask(taskItem TaskSimpleInterface) *asynq.Task {
 		j := gjson.New(payload)
 		bodyBytes = gconv.Bytes(j.String())
 	}
-	task = asynq.NewTask(taskItem.GetType(), bodyBytes, payload.Time, asynq.Queue(payload.QueueName), asynq.TaskID(payload.TaskID))
+	opts := []asynq.Option{payload.Time, asynq.Queue(payload.QueueName), asynq.TaskID(payload.TaskID)}
+	if payload.Retention != nil {
+		opts = append(opts, payload.Retention)
+	}
+	task = asynq.NewTask(taskItem.GetType(), bodyBytes, opts...)
 
 	return task
 }

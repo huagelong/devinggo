@@ -180,13 +180,14 @@ async function handleRun(row: CrontabListItem) {
   }
 }
 
-async function handleChangeStatus(row: CrontabListItem) {
+async function handleChangeStatus(row: CrontabListItem, newStatus: number) {
+  const originalStatus = newStatus === 1 ? 2 : 1;
   try {
-    const newStatus = row.status === 1 ? 2 : 1;
     await changeCrontabStatus({ id: row.id, status: newStatus });
     message.success($t('common.operationSuccess'));
     await fetchTableData();
   } catch (error) {
+    row.status = originalStatus;
     logger.error(error);
     message.error($t('common.operationFailed'));
   }
@@ -334,8 +335,9 @@ onUnmounted(() => {
 
           <template #status="{ row }">
             <Switch
-              :value="row?.status === 1"
-              @change="() => handleChangeStatus(row)"
+              v-model="row.status"
+              :custom-value="[1, 2]"
+              @change="(val) => handleChangeStatus(row, val as number)"
             />
           </template>
 

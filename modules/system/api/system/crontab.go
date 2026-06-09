@@ -29,6 +29,19 @@ type IndexCrontabRes struct {
 	Items []res.SettingCrontab `json:"items"  dc:"list" `
 }
 
+type RecycleCrontabReq struct {
+	g.Meta `path:"/setting/crontab/recycle" method:"get" tags:"定时任务" summary:"回收站定时任务列表." x-permission:"system:crontab:recycle" `
+	model.AuthorHeader
+	model.PageListReq
+	req.SettingCrontabSearch
+}
+
+type RecycleCrontabRes struct {
+	g.Meta `mime:"application/json"`
+	page.PageRes
+	Items []res.SettingCrontab `json:"items"  dc:"list" `
+}
+
 type LogPageListReq struct {
 	g.Meta `path:"/setting/crontab/logPageList" method:"get" tags:"定时任务" summary:"获取日志列表分页数据." x-permission:"system:crontab:logPageList" `
 	model.AuthorHeader
@@ -91,6 +104,26 @@ type DeleteCrontabReq struct {
 }
 
 type DeleteCrontabRes struct {
+	g.Meta `mime:"application/json"`
+}
+
+type RealDeleteCrontabReq struct {
+	g.Meta `path:"setting/crontab/realDelete" method:"delete" tags:"定时任务" summary:"单个或批量真实删除定时任务." x-permission:"system:crontab:realDelete"`
+	model.AuthorHeader
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
+}
+
+type RealDeleteCrontabRes struct {
+	g.Meta `mime:"application/json"`
+}
+
+type RecoveryCrontabReq struct {
+	g.Meta `path:"setting/crontab/recovery" method:"put" tags:"定时任务" summary:"单个或批量恢复在回收站的定时任务." x-permission:"system:crontab:recovery"`
+	model.AuthorHeader
+	Ids []int64 `json:"ids" dc:"ids" v:"min-length:1#Id不能为空"`
+}
+
+type RecoveryCrontabRes struct {
 	g.Meta `mime:"application/json"`
 }
 
