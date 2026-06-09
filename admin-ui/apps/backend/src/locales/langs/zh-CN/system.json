@@ -326,6 +326,9 @@
   },
   "systemModules": {
     "name": "模块名称",
+    "label": "模块标记",
+    "installed": "是否安装",
+    "description": "描述",
     "editTitle": "编辑模块",
     "createTitle": "新增模块",
     "confirmDelete": "确认删除该模块吗？",

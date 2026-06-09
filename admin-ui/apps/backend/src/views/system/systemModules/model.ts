@@ -7,6 +7,9 @@ export type SystemModulesFormModel = SystemModulesApi.SubmitPayload;
 
 export interface SystemModulesSearchFormModel {
   created_at: string[];
+  id?: number;
+  installed?: number;
+  label: string;
   name: string;
   status?: number;
 }
@@ -16,8 +19,10 @@ export type SystemModulesColumnOptionItem = OptionItem<string>;
 export interface SystemModulesTableColumn {
   align?: 'left' | 'center' | 'right';
   colKey: string;
+  disabled?: (options: { row: any; rowIndex: number }) => boolean;
   fixed?: 'left' | 'right';
   minWidth?: number;
+  sorter?: boolean;
   title?: string;
   type?: 'multiple' | 'single';
   width?: number;

@@ -49,14 +49,25 @@ const [Form, formApi] = useVbenForm({
       rules: 'required',
     },
     {
-      component: 'InputNumber',
+      component: 'Input',
       componentProps: {
-        max: 1000,
-        min: 0,
+        placeholder: $t('ui.placeholder.input'),
+      },
+      fieldName: 'label',
+      label: $t('system.systemModules.label'),
+      rules: 'required',
+    },
+    {
+      component: 'RadioGroup',
+      componentProps: {
+        options: [
+          { label: $t('common.statusEnabled'), value: 1 },
+          { label: $t('common.statusDisabled'), value: 2 },
+        ],
       },
       defaultValue: 1,
-      fieldName: 'sort',
-      label: $t('common.sort'),
+      fieldName: 'installed',
+      label: $t('system.systemModules.installed'),
       rules: 'required',
     },
     {
@@ -77,9 +88,10 @@ const [Form, formApi] = useVbenForm({
       componentProps: {
         placeholder: $t('ui.placeholder.input'),
       },
-      fieldName: 'remark',
+      fieldName: 'description',
       formItemClass: 'md:col-span-2',
-      label: $t('common.remark'),
+      label: $t('system.systemModules.description'),
+      rules: 'required',
     },
   ],
 });

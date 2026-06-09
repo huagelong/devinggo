@@ -5,7 +5,10 @@ import type { PageQuery, PageResponse } from '#/types/paging';
 export namespace SystemModulesApi {
   export interface ListItem {
     created_at?: string;
+    description?: string;
     id: number;
+    installed?: StatusValue;
+    label?: string;
     name: string;
     remark?: string;
     sort?: number;
@@ -15,12 +18,18 @@ export namespace SystemModulesApi {
 
   export interface ListQuery extends Partial<PageQuery> {
     created_at?: string[];
+    id?: number;
+    installed?: StatusValue;
+    label?: string;
     name?: string;
     status?: StatusValue;
   }
 
   export interface SubmitPayload {
     id?: number;
+    description?: string;
+    installed?: StatusValue;
+    label?: string;
     name: string;
     remark?: string;
     sort?: number;

@@ -13,6 +13,7 @@ import {
   EditIcon,
   FullscreenExitIcon,
   FullscreenIcon,
+  RefreshIcon,
   SearchIcon,
 } from 'tdesign-icons-vue-next';
 import {
@@ -65,6 +66,11 @@ const fallbackStatusOptions: DictOption[] = [
   { label: $t('common.statusDisabled'), value: 2 },
 ];
 
+const installedOptions: DictOption[] = [
+  { label: $t('common.statusEnabled'), value: 1 },
+  { label: $t('common.statusDisabled'), value: 2 },
+];
+
 const statusOptions = ref<DictOption[]>([]);
 
 const columns: SystemModulesTableColumn[] = createSystemModulesTableColumns();
@@ -113,6 +119,7 @@ function handleAdd() {
 function handleEdit(row: SystemModulesListItem) {
   systemModulesModalRef.value?.open({
     ...row,
+    installed: Number(row.installed ?? 1),
     status: Number(row.status ?? 1),
   });
 }
@@ -203,6 +210,10 @@ function handleStatusSwitchChange(row: SystemModulesListItem, value: unknown) {
   void handleStatusChange(row, Boolean(value));
 }
 
+function isDefaultModule(row: SystemModulesListItem) {
+  return row.name === 'system';
+}
+
 function handleSuccess() {
   void fetchTableData();
 }
@@ -241,11 +252,35 @@ onUnmounted(() => {
         <Form :data="searchForm" label-width="80px" layout="inline" colon>
           <div class="w-full">
             <div class="grid grid-cols-4 gap-x-4 gap-y-3 w-full">
+              <FormItem label="ID" name="id">
+                <Input
+                  v-model="searchForm.id"
+                  :placeholder="$t('ui.placeholder.input')"
+                  clearable
+                  type="number"
+                />
+              </FormItem>
               <FormItem :label="$t('system.systemModules.name')" name="name">
                 <Input
                   v-model="searchForm.name"
                   :placeholder="$t('ui.placeholder.input')"
                   clearable
+                />
+              </FormItem>
+              <FormItem :label="$t('system.systemModules.label')" name="label">
+                <Input
+                  v-model="searchForm.label"
+                  :placeholder="$t('ui.placeholder.input')"
+                  clearable
+                />
+              </FormItem>
+              <FormItem :label="$t('system.systemModules.installed')" name="installed">
+                <Select
+                  v-model="searchForm.installed"
+                  :options="installedOptions"
+                  :placeholder="$t('ui.placeholder.select')"
+                  clearable
+                  class="w-full"
                 />
               </FormItem>
               <FormItem :label="$t('common.status')" name="status">
@@ -266,11 +301,14 @@ onUnmounted(() => {
                 />
               </FormItem>
             </div>
-            <div class="flex justify-start gap-2 pt-4">
-              <Button theme="default" @click="handleReset">{{ $t('common.reset') }}</Button>
+            <div class="flex justify-center gap-2 pt-4">
               <Button theme="primary" @click="handleSearch">
                 <template #icon><SearchIcon /></template>
                 {{ $t('common.query') }}
+              </Button>
+              <Button theme="default" @click="handleReset">
+                <template #icon><RefreshIcon /></template>
+                {{ $t('common.reset') }}
               </Button>
             </div>
           </div>
@@ -349,32 +387,36 @@ onUnmounted(() => {
         >
           <template #status="{ row }">
             <Switch
-              :disabled="isRecycleBin"
+              :disabled="isRecycleBin || isDefaultModule(row)"
               :value="Number(row.status) === 1"
               @change="(value: unknown) => handleStatusSwitchChange(row, value)"
             />
           </template>
 
+          <template #installed="{ row }">
+            <span :class="Number(row.installed) === 1 ? 'text-primary' : 'text-danger'"
+              >{{ Number(row.installed) === 1 ? $t('common.statusEnabled') : $t('common.statusDisabled') }}</span
+            >
+          </template>
+
           <template #action="{ row }">
-            <div class="flex items-center justify-center gap-1">
-              <template v-if="!isRecycleBin">
-                <Button
-                  size="small"
-                  theme="primary"
-                  variant="outline"
-                  @click="handleEdit(row)"
-                >
-                  <template #icon><EditIcon /></template>
+            <div class="flex items-center justify-center gap-3">
+              <template v-if="isDefaultModule(row)">
+                <span class="text-gray-400">-</span>
+              </template>
+              <template v-else-if="!isRecycleBin">
+                <a class="inline-flex items-center gap-1 text-primary hover:underline cursor-pointer" @click="handleEdit(row)">
+                  <EditIcon />
                   {{ $t('common.edit') }}
-                </Button>
+                </a>
                 <Popconfirm
                   :content="$t('system.systemModules.confirmDelete')"
                   @confirm="handleDelete(row)"
                 >
-                  <Button size="small" theme="danger" variant="outline">
-                    <template #icon><DeleteIcon /></template>
+                  <a class="inline-flex items-center gap-1 text-danger hover:underline cursor-pointer">
+                    <DeleteIcon />
                     {{ $t('common.delete') }}
-                  </Button>
+                  </a>
                 </Popconfirm>
               </template>
               <template v-else>
@@ -382,17 +424,17 @@ onUnmounted(() => {
                   :content="$t('system.systemModules.confirmRecovery')"
                   @confirm="handleRecovery(row)"
                 >
-                  <Button size="small" theme="primary" variant="outline">
+                  <a class="inline-flex items-center gap-1 text-primary hover:underline cursor-pointer">
                     {{ $t('common.recovery') }}
-                  </Button>
+                  </a>
                 </Popconfirm>
                 <Popconfirm
                   :content="$t('system.systemModules.confirmPermanentDelete')"
                   @confirm="handleDelete(row)"
                 >
-                  <Button size="small" theme="danger" variant="outline">
+                  <a class="inline-flex items-center gap-1 text-danger hover:underline cursor-pointer">
                     {{ $t('common.permanentDelete') }}
-                  </Button>
+                  </a>
                 </Popconfirm>
               </template>
             </div>

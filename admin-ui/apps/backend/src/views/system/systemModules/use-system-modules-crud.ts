@@ -15,13 +15,17 @@ export function useSystemModulesCrud() {
     ReturnType<typeof createSystemModulesSearchForm>
   >({
     defaultSearchForm: createSystemModulesSearchForm,
+    pageSize: 10,
     fetchList: (params, context) =>
       context.isRecycleBin
         ? getRecycleSystemModulesList(params)
         : getSystemModulesPageList(params),
     buildParams: (form) => {
       const params: SystemModulesApi.ListQuery = {};
+      if (form.id !== undefined) params.id = form.id;
       if (form.name) params.name = form.name;
+      if (form.label) params.label = form.label;
+      if (form.installed !== undefined) params.installed = form.installed;
       if (form.status !== undefined) params.status = form.status;
       if (form.created_at?.length === 2 && form.created_at[0]) {
         params.created_at = form.created_at;

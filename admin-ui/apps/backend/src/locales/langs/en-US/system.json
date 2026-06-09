@@ -326,6 +326,9 @@
   },
   "systemModules": {
     "name": "Module Name",
+    "label": "Module Label",
+    "installed": "Installed",
+    "description": "Description",
     "editTitle": "Edit Module",
     "createTitle": "New Module",
     "confirmDelete": "Are you sure to delete this module?",
