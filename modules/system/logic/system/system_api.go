@@ -150,10 +150,9 @@ func (s *sSystemApi) Delete(ctx context.Context, ids []int64) (err error) {
 }
 
 func (s *sSystemApi) RealDelete(ctx context.Context, ids []int64) (err error) {
-	var res []*res.SystemApi
-	err = s.Model(ctx).Unscoped().WhereIn("id", ids).Scan(&res)
+	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
-		return
+		return err
 	}
 	return
 }
