@@ -370,6 +370,7 @@ onUnmounted(() => {
           v-show="isTreeExpanded"
           v-model="selectedTreeKey"
           :data="filteredTreeData"
+          :keys="{ value: 'key', label: 'title', children: 'children' }"
           hover
           expand-all
           @change="handleTreeChange"
