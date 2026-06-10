@@ -11,11 +11,36 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"devinggo/hack/generator/internal/utils"
 
 	"github.com/gogf/gf/v2/text/gstr"
 )
+
+// FrontendField 前端字段信息
+type FrontendField struct {
+	Name         string // 字段名（JSON名）
+	Type         string // TypeScript类型
+	TSParamType  string // 参数类型（用于可选字段）
+	DefaultValue string // 默认值
+	IsSearchable bool   // 是否可搜索
+	IsList       bool   // 是否在列表中显示
+	IsEditable   bool   // 是否可编辑
+	IsRequired   bool   // 是否必填
+	Optional     bool   // 是否可选（对应TypeScript ?）
+	Comment      string // 字段注释
+	// 表格列相关
+	Align    string // 对齐方式
+	ColKey   string // 列key
+	MinWidth string // 最小宽度
+	Width    string // 宽度
+	Title    string // 列标题（i18n键）
+	// 搜索表单相关
+	Component   string // 组件类型（Input, Select, DateRangePicker）
+	LabelKey    string // 标签i18n键
+	Placeholder string // 占位符
+}
 
 // CRUDGenerator CRUD代码生成器
 type CRUDGenerator struct {
@@ -29,6 +54,10 @@ type CRUDGenerator struct {
 	WorkDir     string  // 工作目录
 	Force       bool    // 是否覆盖已存在的文件
 	DryRun      bool    // 仅预览，不实际写入
+
+	// 前端生成配置
+	GenerateFrontend bool   // 是否生成前端代码
+	FrontendDir      string // 前端代码目录
 
 	GeneratedFiles []string
 	SkippedFiles   []string
@@ -86,6 +115,221 @@ func (g *CRUDGenerator) SetForce(force bool) { g.Force = force }
 
 // SetDryRun 设置是否仅预览
 func (g *CRUDGenerator) SetDryRun(dryRun bool) { g.DryRun = dryRun }
+
+// SetGenerateFrontend 设置是否生成前端代码
+func (g *CRUDGenerator) SetGenerateFrontend(generate bool) { g.GenerateFrontend = generate }
+
+// getFrontendDir 获取前端代码目录
+func (g *CRUDGenerator) getFrontendDir() string {
+	if g.FrontendDir != "" {
+		return g.FrontendDir
+	}
+	return filepath.Join(g.WorkDir, "admin-ui", "apps", "backend", "src")
+}
+
+// mapGoTypeToTSType 将Go类型映射为TypeScript类型
+func mapGoTypeToTSType(goType string) string {
+	goType = strings.TrimPrefix(goType, "*")
+	switch {
+	case strings.Contains(goType, "string"):
+		return "string"
+	case strings.Contains(goType, "int") || strings.Contains(goType, "uint") || strings.Contains(goType, "float"):
+		return "number"
+	case strings.Contains(goType, "bool"):
+		return "boolean"
+	case strings.Contains(goType, "Time"):
+		return "string"
+	default:
+		return "any"
+	}
+}
+
+// getDefaultValue 获取字段默认值
+func getDefaultValue(tsType string, isSearch bool) string {
+	if isSearch {
+		// 搜索表单字段默认使用 undefined
+		switch tsType {
+		case "string":
+			return "''"
+		case "number":
+			return "undefined"
+		case "boolean":
+			return "undefined"
+		default:
+			return "undefined"
+		}
+	}
+	// 表单字段默认值
+	switch tsType {
+	case "string":
+		return "''"
+	case "number":
+		return "0"
+	case "boolean":
+		return "false"
+	default:
+		return "undefined"
+	}
+}
+
+// getSearchComponent 根据字段类型获取搜索表单组件
+func getSearchComponent(tsType string, fieldName string) string {
+	if fieldName == "created_at" || fieldName == "updated_at" {
+		return "DateRangePicker"
+	}
+	if fieldName == "status" {
+		return "Select"
+	}
+	switch tsType {
+	case "string":
+		return "Input"
+	case "number":
+		return "InputNumber"
+	default:
+		return "Input"
+	}
+}
+
+// getColumnWidth 获取列宽度
+func getColumnWidth(fieldName string) string {
+	switch fieldName {
+	case "id":
+		return "80"
+	case "status":
+		return "120"
+	case "sort":
+		return "140"
+	case "created_at", "updated_at":
+		return "180"
+	case "email":
+		return "150"
+	case "phone":
+		return "120"
+	default:
+		return ""
+	}
+}
+
+// buildFrontendFields 构建前端字段列表
+func (g *CRUDGenerator) buildFrontendFields() []FrontendField {
+	fields := make([]FrontendField, 0)
+	
+	// 排除的系统字段
+	excludeSystemFields := map[string]bool{
+		"created_by": true,
+		"updated_by": true,
+		"deleted_at": true,
+	}
+	
+	for _, f := range g.Fields {
+		if excludeSystemFields[f.JSONName] {
+			continue
+		}
+		
+		tsType := mapGoTypeToTSType(f.Type)
+		isSearchable := f.IsSearchable && f.Name != "Id"
+		isEditable := f.Name != "Id"
+		isList := true
+		
+		// 搜索表单默认值
+		searchDefault := getDefaultValue(tsType, true)
+		if f.JSONName == "created_at" || f.JSONName == "updated_at" {
+			searchDefault = "[]"
+		}
+		
+		// 跳过Id字段的编辑
+		if f.Name == "Id" {
+			continue
+		}
+		
+		field := FrontendField{
+			Name:         f.JSONName,
+			Type:         tsType,
+			TSParamType:  tsType,
+			DefaultValue: searchDefault,
+			IsSearchable: isSearchable,
+			IsList:       isList,
+			IsEditable:   isEditable,
+			IsRequired:   f.IsRequired,
+			Optional:     !f.IsRequired,
+			Comment:      f.Comment,
+			Align:        "center",
+			ColKey:       f.JSONName,
+			Width:        getColumnWidth(f.JSONName),
+			Title:        fmt.Sprintf("$t('%s.%s.%s')", g.ModuleName, g.VarName, f.JSONName),
+			Component:    getSearchComponent(tsType, f.JSONName),
+			LabelKey:     fmt.Sprintf("%s.%s.%s", g.ModuleName, g.VarName, f.JSONName),
+			Placeholder:  fmt.Sprintf("$t('ui.placeholder.input')"),
+		}
+		
+		if field.Component == "Select" {
+			field.Placeholder = fmt.Sprintf("$t('ui.placeholder.select')")
+		}
+		
+		if field.Width == "" {
+			field.MinWidth = "140"
+		}
+		
+		fields = append(fields, field)
+	}
+	
+	return fields
+}
+
+// buildFrontendTemplateData 构建前端模板数据
+func (g *CRUDGenerator) buildFrontendTemplateData() map[string]interface{} {
+	frontendFields := g.buildFrontendFields()
+	
+	// 分类字段
+	searchFields := make([]FrontendField, 0)
+	listFields := make([]FrontendField, 0)
+	editableFields := make([]FrontendField, 0)
+	tableColumns := make([]FrontendField, 0)
+	searchFormItems := make([]FrontendField, 0)
+	
+	for _, f := range frontendFields {
+		if f.IsSearchable {
+			searchFields = append(searchFields, f)
+			searchFormItems = append(searchFormItems, f)
+		}
+		if f.IsList {
+			listFields = append(listFields, f)
+			tableColumns = append(tableColumns, f)
+		}
+		if f.IsEditable {
+			editField := f
+			editField.DefaultValue = getDefaultValue(f.Type, false)
+			editableFields = append(editableFields, editField)
+		}
+	}
+	
+	componentName := g.ModuleName + g.EntityName
+	if g.ModuleName == "system" {
+		componentName = "System" + g.EntityName
+	}
+	
+	return map[string]interface{}{
+		"ModuleName":      g.ModuleName,
+		"TableName":       g.TableName,
+		"EntityName":      g.EntityName,
+		"VarName":         g.VarName,
+		"PackageName":     g.PackageName,
+		"ChineseName":     g.ChineseName,
+		"ApiPrefix":       fmt.Sprintf("/%s/%s", g.ModuleName, g.VarName),
+		"ComponentName":   componentName,
+		"SearchFields":    searchFields,
+		"ListFields":      listFields,
+		"EditableFields":  editableFields,
+		"TableColumns":    tableColumns,
+		"SearchFormItems": searchFormItems,
+		"FrontendFields":  frontendFields,
+		"Date":            time.Now().Format("2006-01-02 15:04:05"),
+		"ParentId":        0,
+		"MenuId":          9999,
+		"Level":           ",0,",
+		"ParentMenuId":    0,
+	}
+}
 
 func (g *CRUDGenerator) getTemplateDir() string {
 	root, err := utils.GetProjectRoot()
@@ -237,7 +481,125 @@ func (g *CRUDGenerator) Generate() error {
 		}
 	}
 
+	// 生成前端代码
+	if g.GenerateFrontend {
+		fmt.Printf("\n正在生成前端代码...\n")
+		if err := g.GenerateFrontendCode(); err != nil {
+			return fmt.Errorf("生成前端代码失败：%v", err)
+		}
+	}
+
 	fmt.Printf("\n✓ CRUD代码生成完成！\n")
+	return nil
+}
+
+// GenerateFrontendCode 生成前端代码
+func (g *CRUDGenerator) GenerateFrontendCode() error {
+	generators := []struct {
+		name string
+		fn   func() error
+	}{
+		{"前端API", g.GenerateFrontendAPI},
+		{"前端模型", g.GenerateFrontendModel},
+		{"前端列配置", g.GenerateFrontendSchemas},
+		{"前端CRUD逻辑", g.GenerateFrontendUseCrud},
+		{"前端页面", g.GenerateFrontendIndexVue},
+		{"前端菜单SQL", g.GenerateFrontendMenuSQL},
+	}
+
+	for _, gen := range generators {
+		fmt.Printf("正在生成%s...\n", gen.name)
+		if err := gen.fn(); err != nil {
+			return fmt.Errorf("生成%s失败：%v", gen.name, err)
+		}
+	}
+
+	return nil
+}
+
+// GenerateFrontendAPI 生成前端API文件
+func (g *CRUDGenerator) GenerateFrontendAPI() error {
+	data := g.buildFrontendTemplateData()
+	frontendDir := g.getFrontendDir()
+	outputPath := filepath.Join(frontendDir, "api", g.ModuleName, g.VarName+".ts")
+	templatePath := filepath.Join(g.getTemplateDir(), "frontend", "api.ts.tpl")
+	return g.renderAndSaveTemplateFrontend(templatePath, outputPath, data)
+}
+
+// GenerateFrontendModel 生成前端模型文件
+func (g *CRUDGenerator) GenerateFrontendModel() error {
+	data := g.buildFrontendTemplateData()
+	frontendDir := g.getFrontendDir()
+	outputPath := filepath.Join(frontendDir, "views", g.ModuleName, g.VarName, "model.ts")
+	templatePath := filepath.Join(g.getTemplateDir(), "frontend", "model.ts.tpl")
+	return g.renderAndSaveTemplateFrontend(templatePath, outputPath, data)
+}
+
+// GenerateFrontendSchemas 生成前端列配置文件
+func (g *CRUDGenerator) GenerateFrontendSchemas() error {
+	data := g.buildFrontendTemplateData()
+	frontendDir := g.getFrontendDir()
+	outputPath := filepath.Join(frontendDir, "views", g.ModuleName, g.VarName, "schemas.ts")
+	templatePath := filepath.Join(g.getTemplateDir(), "frontend", "schemas.ts.tpl")
+	return g.renderAndSaveTemplateFrontend(templatePath, outputPath, data)
+}
+
+// GenerateFrontendUseCrud 生成前端CRUD逻辑文件
+func (g *CRUDGenerator) GenerateFrontendUseCrud() error {
+	data := g.buildFrontendTemplateData()
+	frontendDir := g.getFrontendDir()
+	outputPath := filepath.Join(frontendDir, "views", g.ModuleName, g.VarName, "use-"+g.VarName+"-crud.ts")
+	templatePath := filepath.Join(g.getTemplateDir(), "frontend", "use-crud.ts.tpl")
+	return g.renderAndSaveTemplateFrontend(templatePath, outputPath, data)
+}
+
+// GenerateFrontendIndexVue 生成前端页面文件
+func (g *CRUDGenerator) GenerateFrontendIndexVue() error {
+	data := g.buildFrontendTemplateData()
+	frontendDir := g.getFrontendDir()
+	outputPath := filepath.Join(frontendDir, "views", g.ModuleName, g.VarName, "index.vue")
+	templatePath := filepath.Join(g.getTemplateDir(), "frontend", "index.vue.tpl")
+	return g.renderAndSaveTemplateFrontend(templatePath, outputPath, data)
+}
+
+// GenerateFrontendMenuSQL 生成前端菜单SQL文件
+func (g *CRUDGenerator) GenerateFrontendMenuSQL() error {
+	data := g.buildFrontendTemplateData()
+	outputPath := filepath.Join(g.WorkDir, "resource", "migrations", fmt.Sprintf("menu_%s_%s.sql", g.ModuleName, g.VarName))
+	templatePath := filepath.Join(g.getTemplateDir(), "frontend", "menu.sql.tpl")
+	return g.renderAndSaveTemplateFrontend(templatePath, outputPath, data)
+}
+
+// renderAndSaveTemplateFrontend 渲染并保存前端模板
+func (g *CRUDGenerator) renderAndSaveTemplateFrontend(templatePath string, outputPath string, data interface{}) error {
+	if utils.PathExists(outputPath) && !g.Force {
+		fmt.Printf("  ⚠️  跳过已存在的前端文件: %s (使用 --force 覆盖)\n", outputPath)
+		g.SkippedFiles = append(g.SkippedFiles, outputPath)
+		return nil
+	}
+
+	if g.DryRun {
+		fmt.Printf("  [dry-run] 将生成前端文件: %s\n", outputPath)
+		g.GeneratedFiles = append(g.GeneratedFiles, outputPath)
+		return nil
+	}
+
+	result, err := RenderFrontendTemplate(templatePath, data)
+	if err != nil {
+		return fmt.Errorf("渲染前端模板失败: %w", err)
+	}
+
+	dir := filepath.Dir(outputPath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("创建前端目录失败：%v", err)
+	}
+
+	if err := os.WriteFile(outputPath, []byte(result), 0644); err != nil {
+		return fmt.Errorf("写入前端文件失败：%v", err)
+	}
+
+	fmt.Printf("  ✓ 已生成前端文件：%s\n", outputPath)
+	g.GeneratedFiles = append(g.GeneratedFiles, outputPath)
 	return nil
 }
 

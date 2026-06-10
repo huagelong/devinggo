@@ -8,6 +8,7 @@ package generator
 
 import (
 	"bytes"
+	"strings"
 	"text/template"
 
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -63,4 +64,46 @@ func RenderTemplateString(templateStr string, data interface{}) (string, error) 
 	}
 
 	return buf.String(), nil
+}
+
+// RenderFrontendTemplate 渲染前端模板（处理Vue的{{ }}与Go模板冲突）
+// templatePath: 模板文件路径
+// data: 模板数据
+// 返回值: 渲染后的内容
+func RenderFrontendTemplate(templatePath string, data interface{}) (string, error) {
+	// 检查模板文件是否存在
+	if !gfile.Exists(templatePath) {
+		return "", gerror.Newf("模板文件不存在: %s", templatePath)
+	}
+
+	// 读取模板内容
+	templateContent := gfile.GetContents(templatePath)
+	if templateContent == "" {
+		return "", gerror.Newf("模板文件为空: %s", templatePath)
+	}
+
+	// 将Vue的{{ }}替换为临时占位符，避免与Go模板冲突
+	vueLBrace := "__VUE_LBRACE__"
+	vueRBrace := "__VUE_RBRACE__"
+	templateContent = strings.ReplaceAll(templateContent, "{{", vueLBrace)
+	templateContent = strings.ReplaceAll(templateContent, "}}", vueRBrace)
+
+	// 创建模板，使用自定义分隔符 <%, %>
+	tmpl, err := template.New(gfile.Basename(templatePath)).Delims("<%", "%>").Parse(templateContent)
+	if err != nil {
+		return "", gerror.Wrapf(err, "解析前端模板失败: %s", templatePath)
+	}
+
+	// 渲染模板
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, data); err != nil {
+		return "", gerror.Wrapf(err, "渲染前端模板失败: %s", templatePath)
+	}
+
+	// 将占位符恢复为Vue的{{ }}
+	result := buf.String()
+	result = strings.ReplaceAll(result, vueLBrace, "{{")
+	result = strings.ReplaceAll(result, vueRBrace, "}}")
+
+	return result, nil
 }

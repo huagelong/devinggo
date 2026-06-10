@@ -63,16 +63,26 @@ var (
 				Orphan: true,
 			},
 			{
-				Name:  "config",
-				Short: "c",
-				Brief: "批量生成配置文件(generator.yaml)",
-				IsArg: false,
+				Name:   "config",
+				Short:  "c",
+				Brief:  "批量生成配置文件(generator.yaml)",
+				IsArg:  false,
+			},
+			{
+				Name:   "frontend",
+				Short:  "F",
+				Brief:  "同时生成前端代码（admin-ui）",
+				IsArg:  false,
+				Orphan: true,
 			},
 		},
 		Func: runCrudGenerate,
 		Examples: `
 生成system模块的system_user表的CRUD代码：
   go run main.go crud:generate -m=system -t=system_user -n=用户
+
+同时生成前端代码：
+  go run main.go crud:generate -m=system -t=system_user -n=用户 --frontend
 
 预览生成（不实际写入文件）：
   go run main.go crud:generate -m=system -t=system_user -n=用户 --dry-run
@@ -91,18 +101,43 @@ JSON格式输出：
 
 func runCrudGenerate(ctx context.Context, parser *gcmd.Parser) (err error) {
 	outputFormat := utils.ParseOutputFormat(parser.GetOpt("output").String())
-	force := parser.GetOpt("force").Bool()
-	dryRun := parser.GetOpt("dry-run").Bool()
-	configPath := parser.GetOpt("config").String()
-
-	if configPath != "" {
-		return runBatchGenerate(ctx, configPath, force, dryRun, outputFormat)
+	
+	// orphan 参数在 GetOptAll 中存在但值为空，需要检查键是否存在
+	allOpts := parser.GetOptAll()
+	force := false
+	if _, ok := allOpts["force"]; ok {
+		force = true
+	}
+	if _, ok := allOpts["f"]; ok {
+		force = true
 	}
 
-	return runSingleGenerate(ctx, parser, force, dryRun, outputFormat)
+	dryRun := false
+	if _, ok := allOpts["dry-run"]; ok {
+		dryRun = true
+	}
+	if _, ok := allOpts["d"]; ok {
+		dryRun = true
+	}
+
+	configPath := parser.GetOpt("config").String()
+
+	frontend := false
+	if _, ok := allOpts["frontend"]; ok {
+		frontend = true
+	}
+	if _, ok := allOpts["F"]; ok {
+		frontend = true
+	}
+
+	if configPath != "" {
+		return runBatchGenerate(ctx, configPath, force, dryRun, frontend, outputFormat)
+	}
+
+	return runSingleGenerate(ctx, parser, force, dryRun, frontend, outputFormat)
 }
 
-func runSingleGenerate(ctx context.Context, parser *gcmd.Parser, force bool, dryRun bool, outputFormat utils.OutputFormat) error {
+func runSingleGenerate(ctx context.Context, parser *gcmd.Parser, force bool, dryRun bool, frontend bool, outputFormat utils.OutputFormat) error {
 	moduleName := parser.GetOpt("module", "").String()
 	tableName := parser.GetOpt("table", "").String()
 	chineseName := parser.GetOpt("name", "").String()
@@ -120,6 +155,9 @@ func runSingleGenerate(ctx context.Context, parser *gcmd.Parser, force bool, dry
 	g.Log().Infof(ctx, "  模块名: %s", moduleName)
 	g.Log().Infof(ctx, "  表名: %s", tableName)
 	g.Log().Infof(ctx, "  中文名: %s", chineseName)
+	if frontend {
+		g.Log().Infof(ctx, "  模式: 同时生成前端代码")
+	}
 	if dryRun {
 		g.Log().Infof(ctx, "  模式: dry-run (仅预览)")
 	}
@@ -138,6 +176,7 @@ func runSingleGenerate(ctx context.Context, parser *gcmd.Parser, force bool, dry
 
 	gen.SetForce(force)
 	gen.SetDryRun(dryRun)
+	gen.SetGenerateFrontend(frontend)
 
 	if err := gen.Generate(); err != nil {
 		result.Success = false
@@ -157,7 +196,7 @@ func runSingleGenerate(ctx context.Context, parser *gcmd.Parser, force bool, dry
 	return nil
 }
 
-func runBatchGenerate(ctx context.Context, configPath string, force bool, dryRun bool, outputFormat utils.OutputFormat) error {
+func runBatchGenerate(ctx context.Context, configPath string, force bool, dryRun bool, frontend bool, outputFormat utils.OutputFormat) error {
 	result := utils.NewCommandResult(true, "批量CRUD代码生成")
 
 	cfg, err := config.LoadGeneratorConfig(configPath)
@@ -169,6 +208,9 @@ func runBatchGenerate(ctx context.Context, configPath string, force bool, dryRun
 	}
 
 	g.Log().Infof(ctx, "批量生成CRUD代码，模块: %s，共 %d 张表", cfg.Module, len(cfg.Tables))
+	if frontend {
+		g.Log().Infof(ctx, "  模式: 同时生成前端代码")
+	}
 	if dryRun {
 		g.Log().Infof(ctx, "  模式: dry-run (仅预览)")
 	}
@@ -201,6 +243,7 @@ func runBatchGenerate(ctx context.Context, configPath string, force bool, dryRun
 
 		gen.SetForce(force)
 		gen.SetDryRun(dryRun)
+		gen.SetGenerateFrontend(frontend)
 
 		if err := gen.Generate(); err != nil {
 			errMsg := fmt.Sprintf("表 %s 生成失败：%v", table.Table, err)

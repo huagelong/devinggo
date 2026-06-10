@@ -105,7 +105,7 @@ gen-help:
 	@echo "  make gen-worker module=<模块名> worker=<worker名>  创建worker"
 	@echo ""
 	@echo "CRUD生成："
-	@echo "  make gen-crud table=<表名> [module=<模块名>]  生成CRUD代码"
+	@echo "  make gen-crud table=<表名> [module=<模块名>] [frontend=1]  生成CRUD代码"
 	@echo ""
 
 # Create a new module.
@@ -199,15 +199,31 @@ gen-crud:
 	fi
 	@if [ -z "$(module)" ]; then \
 		if [ -z "$(name)" ]; then \
-			go run ./hack/generator/main.go crud:generate -t=$(table) -n=$(table); \
+			if [ -n "$(frontend)" ]; then \
+				go run ./hack/generator/main.go crud:generate -t=$(table) -n=$(table) --frontend; \
+			else \
+				go run ./hack/generator/main.go crud:generate -t=$(table) -n=$(table); \
+			fi; \
 		else \
-			go run ./hack/generator/main.go crud:generate -t=$(table) -n=$(name); \
+			if [ -n "$(frontend)" ]; then \
+				go run ./hack/generator/main.go crud:generate -t=$(table) -n=$(name) --frontend; \
+			else \
+				go run ./hack/generator/main.go crud:generate -t=$(table) -n=$(name); \
+			fi; \
 		fi; \
 	else \
 		if [ -z "$(name)" ]; then \
-			go run ./hack/generator/main.go crud:generate -m=$(module) -t=$(table) -n=$(table); \
+			if [ -n "$(frontend)" ]; then \
+				go run ./hack/generator/main.go crud:generate -m=$(module) -t=$(table) -n=$(table) --frontend; \
+			else \
+				go run ./hack/generator/main.go crud:generate -m=$(module) -t=$(table) -n=$(table); \
+			fi; \
 		else \
-			go run ./hack/generator/main.go crud:generate -m=$(module) -t=$(table) -n=$(name); \
+			if [ -n "$(frontend)" ]; then \
+				go run ./hack/generator/main.go crud:generate -m=$(module) -t=$(table) -n=$(name) --frontend; \
+			else \
+				go run ./hack/generator/main.go crud:generate -m=$(module) -t=$(table) -n=$(name); \
+			fi; \
 		fi; \
 	fi
 	@echo "CRUD代码生成成功！"
