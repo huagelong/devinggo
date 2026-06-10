@@ -493,6 +493,7 @@
     "title": "Log Management",
     "loginLog": "Login Log",
     "operLog": "Operation Log",
+    "operLogDetail": "Operation Log Detail",
     "apiLog": "API Log",
     "confirmDeleteOperLog": "Operation log ID cannot be empty",
     "confirmDeleteApiLog": "Log ID cannot be empty",

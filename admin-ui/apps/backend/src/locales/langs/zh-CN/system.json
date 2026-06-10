@@ -498,6 +498,7 @@
     "title": "日志管理",
     "loginLog": "登录日志",
     "operLog": "操作日志",
+    "operLogDetail": "操作日志详情",
     "apiLog": "接口日志",
     "confirmDeleteOperLog": "操作日志Id不能为空",
     "confirmDeleteApiLog": "日志Id不能为空",

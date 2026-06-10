@@ -14,6 +14,7 @@ import { SearchIcon } from 'tdesign-icons-vue-next';
 import {
   Button,
   DateRangePicker,
+  Dialog,
   Form,
   FormItem,
   Input,
@@ -48,6 +49,9 @@ const statusOptions = [
   { label: $t('system.logs.loginFailed'), value: 2 },
 ];
 
+const detailVisible = ref(false);
+const detailRow = ref<LogApi.OperLogItem | null>(null);
+
 const columns = [
   { colKey: 'username', title: $t('system.logs.username'), width: 120 },
   { colKey: 'service_name', title: $t('system.logs.serviceName'), width: 160 },
@@ -57,7 +61,13 @@ const columns = [
   { colKey: 'ip_location', title: $t('system.logs.ipLocation'), width: 120 },
   { colKey: 'response_code', title: $t('system.logs.responseCode'), width: 100 },
   { colKey: 'created_at', title: $t('system.logs.createdAt'), width: 180 },
+  { colKey: 'operation', title: $t('common.operation'), width: 100 },
 ];
+
+function handleViewDetail(row: LogApi.OperLogItem) {
+  detailRow.value = row;
+  detailVisible.value = true;
+}
 
 async function fetchTableData() {
   loading.value = true;
@@ -179,8 +189,67 @@ onMounted(() => {
             {{ row.response_code }}
           </Tag>
         </template>
+        <template #operation="{ row }">
+          <Button theme="primary" variant="text" size="small" @click="handleViewDetail(row)">
+            {{ $t('common.detail') }}
+          </Button>
+        </template>
         </Table>
       </div>
     </div>
+
+    <Dialog
+      v-model:visible="detailVisible"
+      :header="$t('system.logs.operLogDetail')"
+      width="700px"
+      :footer="false"
+    >
+      <div v-if="detailRow" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex">
+            <span class="w-24 text-gray-500">{{ $t('system.logs.router') }}:</span>
+            <span class="flex-1 break-all">{{ detailRow.router }}</span>
+          </div>
+          <div class="flex">
+            <span class="w-24 text-gray-500">{{ $t('system.logs.username') }}:</span>
+            <span>{{ detailRow.username }}</span>
+          </div>
+          <div class="flex">
+            <span class="w-24 text-gray-500">{{ $t('system.logs.method') }}:</span>
+            <span>{{ detailRow.method }}</span>
+          </div>
+          <div class="flex">
+            <span class="w-24 text-gray-500">{{ $t('system.logs.responseCode') }}:</span>
+            <Tag :theme="String(detailRow.response_code) === '200' ? 'success' : 'danger'" variant="light">
+              {{ detailRow.response_code }}
+            </Tag>
+          </div>
+          <div class="flex">
+            <span class="w-24 text-gray-500">{{ $t('system.logs.serviceName') }}:</span>
+            <span>{{ detailRow.service_name }}</span>
+          </div>
+          <div class="flex">
+            <span class="w-24 text-gray-500">{{ $t('system.logs.createdAt') }}:</span>
+            <span>{{ detailRow.created_at }}</span>
+          </div>
+          <div class="flex">
+            <span class="w-24 text-gray-500">{{ $t('system.logs.ip') }}:</span>
+            <span>{{ detailRow.ip }}</span>
+          </div>
+          <div class="flex">
+            <span class="w-24 text-gray-500">{{ $t('system.logs.ipLocation') }}:</span>
+            <span>{{ detailRow.ip_location }}</span>
+          </div>
+        </div>
+        <div class="border-t pt-4">
+          <div class="mb-2 font-medium">{{ $t('system.logs.requestData') }}</div>
+          <pre class="max-h-40 overflow-auto rounded bg-gray-50 p-3 text-sm">{{ detailRow.request_data || '-' }}</pre>
+        </div>
+        <div class="border-t pt-4">
+          <div class="mb-2 font-medium">{{ $t('system.logs.responseData') }}</div>
+          <pre class="max-h-40 overflow-auto rounded bg-gray-50 p-3 text-sm">{{ detailRow.response_data || '-' }}</pre>
+        </div>
+      </div>
+    </Dialog>
   </Page>
 </template>
