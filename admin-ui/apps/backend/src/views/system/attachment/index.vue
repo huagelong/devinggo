@@ -89,8 +89,7 @@ function getResourceTypeIcon(key: string): string {
   return iconMap[key] || 'file';
 }
 
-// Tree expand/collapse and search
-const isTreeExpanded = ref(true);
+// Tree search
 const treeSearchKeyword = ref('');
 const filteredTreeData = computed(() => {
   if (!treeSearchKeyword.value) return treeData.value;
@@ -99,10 +98,6 @@ const filteredTreeData = computed(() => {
     item.title.toLowerCase().includes(keyword),
   );
 });
-
-function toggleTreeExpand() {
-  isTreeExpanded.value = !isTreeExpanded.value;
-}
 
 const columns: AttachmentTableColumn[] = createAttachmentTableColumns();
 const columnOptions = createAttachmentColumnOptions(columns);
@@ -352,18 +347,8 @@ onUnmounted(() => {
     <div class="flex h-full gap-3">
       <!-- Left Tree Slider -->
       <div class="w-48 flex-shrink-0 rounded-md bg-white p-2">
-        <div class="mb-2 flex items-center justify-between px-2">
-          <span class="text-sm font-medium text-gray-500">{{ $t('system.attachment.resourceType') }}</span>
-          <Button
-            size="small"
-            theme="default"
-            variant="text"
-            @click="toggleTreeExpand"
-          >
-            {{ isTreeExpanded ? $t('common.collapse') : $t('common.expand') }}
-          </Button>
-        </div>
-        <div v-show="isTreeExpanded" class="mb-2">
+        <div class="mb-2 px-2 text-sm font-medium text-gray-500">{{ $t('system.attachment.resourceType') }}</div>
+        <div class="mb-2">
           <Input
             v-model="treeSearchKeyword"
             :placeholder="$t('ui.placeholder.search')"
@@ -376,7 +361,6 @@ onUnmounted(() => {
           </Input>
         </div>
         <Tree
-          v-show="isTreeExpanded"
           v-model:value="selectedTreeKey"
           :data="filteredTreeData"
           :keys="{ value: 'key', label: 'title', children: 'children' }"
