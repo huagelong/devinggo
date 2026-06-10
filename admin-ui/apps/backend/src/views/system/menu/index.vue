@@ -51,7 +51,7 @@ import {
   createMenuTableColumns,
   menuTypeTagMap,
 } from './schemas';
-import { useMenuPage } from './use-menu-page';
+import { useMenuCrud } from './use-menu-crud';
 
 defineOptions({ name: 'SystemMenu' });
 
@@ -88,7 +88,7 @@ const {
   selectedRowKeys,
   tableData,
   toggleRecycleBin,
-} = useMenuPage();
+} = useMenuCrud();
 
 const { getDictOptions } = useDictOptions();
 

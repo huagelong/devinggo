@@ -10,7 +10,7 @@ import { logger } from '#/utils/logger';
 
 import { createDeptSearchForm } from './schemas';
 
-export function useDeptPage() {
+export function useDeptCrud() {
   const searchForm = reactive(createDeptSearchForm());
   const tableData = ref<DeptApi.ListTreeItem[]>([]);
   const expandedTreeNodes = ref<Array<number | string>>([]);

@@ -41,7 +41,7 @@ import {
   createDeptColumnOptions,
   createDeptTableColumns,
 } from './schemas';
-import { useDeptPage } from './use-dept-page';
+import { useDeptCrud } from './use-dept-crud';
 
 defineOptions({ name: 'SystemDept' });
 
@@ -85,7 +85,7 @@ const {
   selectedRowKeys,
   tableData,
   toggleRecycleBin,
-} = useDeptPage();
+} = useDeptCrud();
 
 const { getDictOptions } = useDictOptions();
 

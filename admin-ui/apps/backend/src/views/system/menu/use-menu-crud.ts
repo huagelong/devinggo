@@ -10,7 +10,7 @@ import { logger } from '#/utils/logger';
 
 import { createMenuSearchForm } from './schemas';
 
-export function useMenuPage() {
+export function useMenuCrud() {
   const searchForm = reactive(createMenuSearchForm());
   const tableData = ref<MenuApi.TreeItem[]>([]);
   const loading = ref(false);
