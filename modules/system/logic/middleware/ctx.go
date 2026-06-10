@@ -36,6 +36,7 @@ func (s *sMiddleware) Ctx(r *ghttp.Request) {
 	contexts.Init(r, context)
 	ctx := r.GetCtx()
 	appId := r.GetHeader("X-App-Id")
+	g.Log().Debug(ctx, "收到 X-App-Id header:", appId)
 	if g.IsEmpty(appId) {
 		appIdRs := r.URL.Query().Get("app_id")
 		if appIdRs != "" {
