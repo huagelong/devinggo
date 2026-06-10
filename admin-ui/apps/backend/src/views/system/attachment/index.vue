@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { AttachmentListItem, AttachmentTreeItem } from './model';
 
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { $t } from '@vben/locales';
 import { Page } from '@vben/common-ui';
@@ -134,21 +134,19 @@ const {
   toggleRecycleBin,
 } = useAttachmentCrud();
 
-function toIds(keys: Array<number | string>) {
-  return keys.map((key) => Number(key));
-}
-
-function handleTreeClick(context: { node?: { data?: Record<string, unknown> } }) {
-  const nodeData = context?.node?.data;
-  if (!nodeData) return;
-  const key = String(nodeData.key);
-  selectedTreeKey.value = [key];
+// Watch tree selection changes
+watch(selectedTreeKey, (newValue) => {
+  const key = newValue[0];
   if (key === 'all') {
     searchForm.mime_type = undefined;
   } else {
     searchForm.mime_type = key;
   }
   handleSearch();
+});
+
+function toIds(keys: Array<number | string>) {
+  return keys.map((key) => Number(key));
 }
 
 function renderTreeIcon(node: AttachmentTreeItem) {
@@ -374,7 +372,6 @@ onUnmounted(() => {
           activable
           hover
           expand-all
-          @click="handleTreeClick"
         >
           <template #icon="{ node }">
             <component :is="renderTreeIcon(node.data)" />
