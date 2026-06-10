@@ -81,7 +81,6 @@ async function fetchOnlineUsers() {
     const response = await getOnlineUserPageList(params);
     tableData.value = response.items || [];
     pagination.value.total = Number(response.pageInfo?.total || response.total || 0);
-    console.log('在线用户数据:', response.items);
   } catch (error) {
     logger.error(error);
     message.error($t('common.onlineUserFetchFailed'));
@@ -204,7 +203,7 @@ onUnmounted(() => {
             @page-change="handlePageChange"
           >
           <template #app_id="{ row }">
-            {{ appMap[row.app_id] || row.app_id || '-' }}
+            {{ row.app_id ? (appMap[row.app_id] || row.app_id) : '-' }}
           </template>
           <template #action="{ row }">
             <Button
