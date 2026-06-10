@@ -149,6 +149,17 @@ function toIds(keys: Array<number | string>) {
   return keys.map((key) => Number(key));
 }
 
+function handleTreeClick(context: { node?: { value?: string | number } }) {
+  const key = String(context?.node?.value ?? 'all');
+  selectedTreeKey.value = [key];
+  if (key === 'all') {
+    searchForm.mime_type = undefined;
+  } else {
+    searchForm.mime_type = key;
+  }
+  handleSearch();
+}
+
 function renderTreeIcon(node: AttachmentTreeItem) {
   switch (node.icon) {
     case 'image':
@@ -372,6 +383,7 @@ onUnmounted(() => {
           activable
           hover
           expand-all
+          @click="handleTreeClick"
         >
           <template #icon="{ node }">
             <component :is="renderTreeIcon(node.data)" />
