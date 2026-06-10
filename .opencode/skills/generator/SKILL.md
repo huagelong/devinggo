@@ -326,7 +326,36 @@ CREATE TABLE test_cms (
 ## 常见问题
 
 ### Q: 生成代码时报错 "读取 entity 文件失败"
-**A**: 需要先通过 `make dao` 或 `gf gen dao` 生成 Entity 文件
+
+**错误示例**：
+```
+❌ 生成CRUD代码失败：读取entity文件失败：open ...\internal\model\entity\xxx.go: The system cannot find the file specified.
+```
+
+**原因**：CRUD 生成器依赖 `internal/model/entity/` 目录下的 Entity 文件来解析表结构，如果表刚创建或 entity 文件未生成，就会出现此错误。
+
+**解决步骤**：
+
+1. **确认数据库表已存在**
+
+2. **生成 Entity 文件**（以下方式任选其一）：
+   ```bash
+   # 方式1：使用 make
+   make dao
+   
+   # 方式2：直接使用 gf 命令
+   gf gen dao
+   ```
+
+3. **确认 entity 文件已生成**：
+   ```bash
+   ls internal/model/entity/xxx.go
+   ```
+
+4. **重新运行 CRUD 生成命令**：
+   ```bash
+   go run ./hack/generator/main.go crud:generate -m=<模块> -t=<表名> -n=<中文名> --frontend
+   ```
 
 ### Q: 前端页面不显示菜单
 **A**: 需要执行生成的菜单 SQL 文件（`resource/migrations/menu_*.sql`）
