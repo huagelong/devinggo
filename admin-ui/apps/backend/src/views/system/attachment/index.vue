@@ -138,10 +138,11 @@ function toIds(keys: Array<number | string>) {
   return keys.map((key) => Number(key));
 }
 
-function handleTreeChange(value: Array<string | number>) {
-  const keys = value.map((item) => String(item));
-  selectedTreeKey.value = keys.length > 0 ? keys : ['all'];
-  const key = selectedTreeKey.value[0];
+function handleTreeClick(context: { node?: { data?: Record<string, unknown> } }) {
+  const nodeData = context?.node?.data;
+  if (!nodeData) return;
+  const key = String(nodeData.key);
+  selectedTreeKey.value = [key];
   if (key === 'all') {
     searchForm.mime_type = undefined;
   } else {
@@ -370,9 +371,10 @@ onUnmounted(() => {
           v-model="selectedTreeKey"
           :data="filteredTreeData"
           :keys="{ value: 'key', label: 'title', children: 'children' }"
+          activable
           hover
           expand-all
-          @change="handleTreeChange"
+          @click="handleTreeClick"
         >
           <template #icon="{ node }">
             <component :is="renderTreeIcon(node.data)" />
