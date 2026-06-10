@@ -25,5 +25,6 @@ export interface AttachmentTableColumn {
 export interface AttachmentTreeItem {
   title: string;
   key: string;
+  icon?: string;
   children?: AttachmentTreeItem[];
 }

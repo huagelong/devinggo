@@ -291,7 +291,8 @@
     "confirmPermanentDelete": "确认彻底删除该文件吗？",
     "downloadFile": "下载文件: {0}",
     "windowMode": "窗口模式",
-    "listMode": "列表模式"
+    "listMode": "列表模式",
+    "resourceType": "搜索资源类型"
   },
   "upload": {
     "fileType": "文件类型",

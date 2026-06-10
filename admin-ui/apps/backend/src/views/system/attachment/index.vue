@@ -18,9 +18,15 @@ import CrudToolbar from '#/components/crud/crud-toolbar.vue';
 import {
   AppIcon,
   DeleteIcon,
+  FolderIcon,
+  FolderZipIcon,
   FullscreenExitIcon,
   FullscreenIcon,
+  ImageIcon,
+  FileIcon,
+  MusicIcon,
   SearchIcon,
+  VideoIcon,
 } from 'tdesign-icons-vue-next';
 import {
   Button,
@@ -54,6 +60,21 @@ const isFullscreen = ref(false);
 const viewMode = ref<'list' | 'window'>('list');
 const selectedTreeKey = ref<string[]>(['all']);
 const treeData = ref<AttachmentTreeItem[]>(defaultAttachmentTreeData);
+
+// Tree expand/collapse and search
+const isTreeExpanded = ref(true);
+const treeSearchKeyword = ref('');
+const filteredTreeData = computed(() => {
+  if (!treeSearchKeyword.value) return treeData.value;
+  const keyword = treeSearchKeyword.value.toLowerCase();
+  return treeData.value.filter((item) =>
+    item.title.toLowerCase().includes(keyword),
+  );
+});
+
+function toggleTreeExpand() {
+  isTreeExpanded.value = !isTreeExpanded.value;
+}
 
 const searchForm = ref(createAttachmentSearchForm());
 
@@ -98,6 +119,24 @@ function handleTreeChange(value: Array<string | number>) {
     searchForm.value.mime_type = undefined;
   } else {
     searchForm.value.mime_type = key;
+  }
+}
+
+function renderTreeIcon(node: AttachmentTreeItem) {
+  switch (node.icon) {
+    case 'image':
+      return ImageIcon;
+    case 'video':
+      return VideoIcon;
+    case 'music':
+      return MusicIcon;
+    case 'folder-zip':
+      return FolderZipIcon;
+    case 'file':
+      return FileIcon;
+    case 'folder':
+    default:
+      return FolderIcon;
   }
 }
 
@@ -254,14 +293,41 @@ onUnmounted(() => {
     <div class="flex h-full gap-3">
       <!-- Left Tree Slider -->
       <div class="w-48 flex-shrink-0 rounded-md bg-white p-2">
-        <div class="mb-2 px-2 text-sm font-medium text-gray-500">{{ $t('system.upload.fileType') }}</div>
+        <div class="mb-2 flex items-center justify-between px-2">
+          <span class="text-sm font-medium text-gray-500">{{ $t('system.attachment.resourceType') }}</span>
+          <Button
+            size="small"
+            theme="default"
+            variant="text"
+            @click="toggleTreeExpand"
+          >
+            {{ isTreeExpanded ? $t('common.collapse') : $t('common.expand') }}
+          </Button>
+        </div>
+        <div v-show="isTreeExpanded" class="mb-2">
+          <Input
+            v-model="treeSearchKeyword"
+            :placeholder="$t('ui.placeholder.search')"
+            clearable
+            size="small"
+          >
+            <template #prefix-icon>
+              <SearchIcon />
+            </template>
+          </Input>
+        </div>
         <Tree
+          v-show="isTreeExpanded"
           v-model="selectedTreeKey"
-          :data="treeData"
+          :data="filteredTreeData"
           hover
           expand-all
           @change="handleTreeChange"
-        />
+        >
+          <template #icon="{ node }">
+            <component :is="renderTreeIcon(node.data)" />
+          </template>
+        </Tree>
       </div>
 
       <!-- Main Content -->

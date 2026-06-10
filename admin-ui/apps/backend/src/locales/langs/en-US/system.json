@@ -291,7 +291,8 @@
     "confirmPermanentDelete": "Are you sure to permanently delete this file?",
     "downloadFile": "Download file: {0}",
     "windowMode": "Window Mode",
-    "listMode": "List Mode"
+    "listMode": "List Mode",
+    "resourceType": "Search Resource Type"
   },
   "upload": {
     "fileType": "File Type",

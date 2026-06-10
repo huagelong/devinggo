@@ -16,13 +16,13 @@ export const storageModeOptions = [
 ];
 
 export const defaultAttachmentTreeData: AttachmentTreeItem[] = [
-  { title: $t('system.attachment.filterAll'), key: 'all' },
-  { title: $t('system.attachment.filterImage'), key: 'image' },
-  { title: $t('system.attachment.filterVideo'), key: 'video' },
-  { title: $t('system.attachment.filterAudio'), key: 'audio' },
-  { title: $t('system.attachment.filterDocument'), key: 'document' },
-  { title: $t('system.attachment.filterArchive'), key: 'archive' },
-  { title: $t('system.attachment.filterOther'), key: 'other' },
+  { title: $t('system.attachment.filterAll'), key: 'all', icon: 'folder' },
+  { title: $t('system.attachment.filterImage'), key: 'image', icon: 'image' },
+  { title: $t('system.attachment.filterDocument'), key: 'document', icon: 'file' },
+  { title: $t('system.attachment.filterAudio'), key: 'audio', icon: 'music' },
+  { title: $t('system.attachment.filterVideo'), key: 'video', icon: 'video' },
+  { title: $t('system.attachment.filterArchive'), key: 'archive', icon: 'folder-zip' },
+  { title: $t('system.attachment.filterOther'), key: 'other', icon: 'file' },
 ];
 
 export function createAttachmentSearchForm(): AttachmentSearchFormModel {
