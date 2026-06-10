@@ -102,7 +102,13 @@ function handleTreeChange(value: Array<string | number>) {
 }
 
 function handleDownload(row: AttachmentListItem) {
-  // In a real implementation, this would trigger file download
+  const link = document.createElement('a');
+  link.href = row.url;
+  link.download = row.origin_name;
+  link.target = '_blank';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
   message.success($t('system.attachment.downloadFile', [row.origin_name]));
 }
 
@@ -184,8 +190,16 @@ function toggleFullscreen() {
   tableContainerRef.value?.requestFullscreen();
 }
 
-function isImageType(mimeType: string): boolean {
-  return /^image\//.test(mimeType);
+function isImageType(mimeType: string, originName?: string): boolean {
+  if (mimeType && /^image\//.test(mimeType)) {
+    return true;
+  }
+  // Fallback: check file extension from origin_name
+  if (originName) {
+    const ext = originName.split('.').pop()?.toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico'].includes(ext || '');
+  }
+  return false;
 }
 
 // Image preview
@@ -197,7 +211,15 @@ function handlePreviewImage(url: string) {
   previewVisible.value = true;
 }
 
-function getFileExtension(mimeType: string): string {
+function handlePreview(row: AttachmentListItem) {
+  if (isImageType(row.mime_type, row.origin_name)) {
+    handlePreviewImage(row.url);
+  } else {
+    window.open(row.url, '_blank');
+  }
+}
+
+function getFileExtension(mimeType: string, originName?: string): string {
   const map: Record<string, string> = {
     'application/pdf': 'PDF',
     'application/zip': 'ZIP',
@@ -206,7 +228,15 @@ function getFileExtension(mimeType: string): string {
     'application/vnd.ms-excel': 'XLS',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX',
   };
-  return map[mimeType] || mimeType.split('/')[1]?.toUpperCase() || 'FILE';
+  if (mimeType) {
+    return map[mimeType] || mimeType.split('/')[1]?.toUpperCase() || 'FILE';
+  }
+  // Fallback: extract extension from origin_name
+  if (originName) {
+    const ext = originName.split('.').pop()?.toUpperCase();
+    return ext || 'FILE';
+  }
+  return 'FILE';
 }
 
 onMounted(() => {
@@ -351,14 +381,14 @@ onUnmounted(() => {
             <template #url="{ row }">
               <div class="flex items-center justify-center">
                 <img
-                  v-if="isImageType(row?.mime_type)"
+                  v-if="isImageType(row?.mime_type, row?.origin_name)"
                   :src="row?.url"
                   :alt="row?.origin_name"
                   class="h-10 w-10 cursor-zoom-in rounded object-cover transition hover:opacity-80"
                   @click="handlePreviewImage(row?.url)"
                 />
                 <Tag v-else theme="default">
-                  {{ getFileExtension(row?.mime_type) }}
+                  {{ getFileExtension(row?.mime_type, row?.origin_name) }}
                 </Tag>
               </div>
             </template>
@@ -421,14 +451,14 @@ onUnmounted(() => {
             >
               <div class="flex h-32 items-center justify-center overflow-hidden rounded bg-gray-50">
                 <img
-                  v-if="isImageType(row.mime_type)"
+                  v-if="isImageType(row.mime_type, row.origin_name)"
                   :src="row.url"
                   :alt="row.origin_name"
                   class="max-h-full max-w-full cursor-zoom-in object-contain"
                   @click="handlePreviewImage(row.url)"
                 />
                 <Tag v-else theme="default" size="large">
-                  {{ getFileExtension(row.mime_type) }}
+                  {{ getFileExtension(row.mime_type, row.origin_name) }}
                 </Tag>
               </div>
               <div class="mt-2 text-sm">
@@ -440,6 +470,14 @@ onUnmounted(() => {
               <div
                 class="absolute left-0 top-0 flex h-full w-full items-center justify-center gap-2 rounded bg-black/50 opacity-0 transition group-hover:opacity-100"
               >
+                <Button
+                  size="small"
+                  theme="default"
+                  variant="outline"
+                  @click="handlePreview(row)"
+                >
+                  {{ $t('common.preview') }}
+                </Button>
                 <Button
                   size="small"
                   theme="primary"
