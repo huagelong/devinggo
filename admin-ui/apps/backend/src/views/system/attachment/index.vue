@@ -366,7 +366,7 @@ onUnmounted(() => {
         </div>
         <Tree
           v-show="isTreeExpanded"
-          v-model="selectedTreeKey"
+          v-model:value="selectedTreeKey"
           :data="filteredTreeData"
           :keys="{ value: 'key', label: 'title', children: 'children' }"
           activable
