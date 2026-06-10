@@ -1,41 +1,69 @@
 <script lang="ts" setup>
 import type { MonitorApi } from '#/api/system/monitor';
 
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 
 import { $t } from '@vben/locales';
 import { Page } from '@vben/common-ui';
 
 import { message } from '#/adapter/tdesign';
 import { getOnlineUserPageList, kickUser } from '#/api/system/monitor';
+import { getAppPageList } from '#/api/system/app';
+import type { AppApi } from '#/api/system/app';
 import { logger } from '#/utils/logger';
 
-import { SearchIcon } from 'tdesign-icons-vue-next';
-import { Button, Input, Space, Table } from 'tdesign-vue-next';
+import { SearchIcon, DeleteIcon, FullscreenIcon, FullscreenExitIcon, RefreshIcon } from 'tdesign-icons-vue-next';
+import { Button, Form, FormItem, Input, Select, Table, Tooltip } from 'tdesign-vue-next';
 
 defineOptions({ name: 'SystemOnlineUser' });
 
 const loading = ref(false);
 const tableData = ref<MonitorApi.OnlineUserItem[]>([]);
-const searchUsername = ref('');
+const searchForm = ref({
+  username: '',
+  app_id: undefined as number | undefined,
+});
+
+const appOptions = ref<{ label: string; value: number }[]>([]);
+const appMap = ref<Record<string | number, string>>({});
+
+const tableContainerRef = ref<HTMLElement>();
+const isFullscreen = ref(false);
 
 const pagination = ref({
   current: 1,
   pageSize: 20,
-  pageSizeOptions: [10, 20, 50, 100],
-  showJumper: true,
-  showPageSize: true,
   total: 0,
+  pageSizeOptions: [],
+  showJumper: false,
+  showPageSize: false,
 });
 
 const columns = [
-  { colKey: 'username', title: $t('system.monitor.onlineUser.username'), width: 180 },
-  { colKey: 'nickname', title: $t('system.monitor.onlineUser.nickname'), width: 180 },
-  { colKey: 'app_id', title: 'App ID', width: 120 },
+  { colKey: 'username', title: '用户账户', width: 180 },
+  { colKey: 'nickname', title: '用户昵称', width: 180 },
+  { colKey: 'app_id', title: 'App', width: 120 },
   { colKey: 'login_ip', title: $t('system.monitor.onlineUser.loginIp'), width: 180 },
   { colKey: 'login_time', title: $t('system.monitor.onlineUser.loginTime'), width: 180 },
   { colKey: 'action', title: $t('common.action'), width: 120 },
 ];
+
+async function fetchAppList() {
+  try {
+    const response = await getAppPageList({ page: 1, pageSize: 1000 });
+    const apps = response.items || [];
+    appOptions.value = apps.map((app: AppApi.ListItem) => ({
+      label: app.app_name || app.app_id || String(app.id),
+      value: app.id,
+    }));
+    appMap.value = apps.reduce((map: Record<string | number, string>, app: AppApi.ListItem) => {
+      map[app.id] = app.app_name || app.app_id || String(app.id);
+      return map;
+    }, {});
+  } catch (error) {
+    logger.error(error);
+  }
+}
 
 async function fetchOnlineUsers() {
   loading.value = true;
@@ -44,8 +72,11 @@ async function fetchOnlineUsers() {
       page: pagination.value.current,
       page_size: pagination.value.pageSize,
     };
-    if (searchUsername.value) {
-      params.username = searchUsername.value;
+    if (searchForm.value.username) {
+      params.username = searchForm.value.username;
+    }
+    if (searchForm.value.app_id !== undefined) {
+      params.app_id = searchForm.value.app_id;
     }
     const response = await getOnlineUserPageList(params);
     tableData.value = response.items || [];
@@ -75,7 +106,7 @@ function handleSearch() {
 }
 
 function handleReset() {
-  searchUsername.value = '';
+  searchForm.value = { username: '', app_id: undefined };
   pagination.value.current = 1;
   void fetchOnlineUsers();
 }
@@ -86,8 +117,26 @@ function handlePageChange(pageInfo: { current: number; pageSize: number }) {
   void fetchOnlineUsers();
 }
 
+function handleFullscreenChange() {
+  isFullscreen.value = !!document.fullscreenElement;
+}
+
+function toggleFullscreen() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+    return;
+  }
+  tableContainerRef.value?.requestFullscreen();
+}
+
 onMounted(() => {
+  void fetchAppList();
   void fetchOnlineUsers();
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('fullscreenchange', handleFullscreenChange);
 });
 </script>
 
@@ -95,25 +144,53 @@ onMounted(() => {
   <Page auto-content-height>
     <div class="flex h-full flex-col gap-3">
       <div class="rounded-md bg-white p-4">
-        <div class="flex items-center gap-4">
-          <Input
-            v-model="searchUsername"
-            :placeholder="$t('system.monitor.onlineUser.searchPlaceholder')"
-            clearable
-            class="w-64"
-            @enter="handleSearch"
-          />
-          <Space>
+        <Form :data="searchForm" label-width="100px" layout="inline" colon>
+          <div class="grid grid-cols-2 gap-x-4 gap-y-3 w-full">
+            <FormItem label="用户账户" name="username">
+              <Input
+                v-model="searchForm.username"
+                placeholder="请输入用户账户"
+                clearable
+                @enter="handleSearch"
+              />
+            </FormItem>
+            <FormItem label="App" name="app_id">
+              <Select
+                v-model="searchForm.app_id"
+                :options="appOptions"
+                placeholder="请选择App"
+                clearable
+                class="w-full"
+              />
+            </FormItem>
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <Button theme="default" @click="handleReset">
+              <template #icon><DeleteIcon /></template>
+              重置
+            </Button>
             <Button theme="primary" @click="handleSearch">
               <template #icon><SearchIcon /></template>
-              {{ $t('common.query') }}
+              搜索
             </Button>
-            <Button theme="default" @click="handleReset">{{ $t('common.reset') }}</Button>
-          </Space>
-        </div>
+          </div>
+        </Form>
       </div>
 
-      <div class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+        <div class="mb-3 flex items-center justify-end gap-2">
+          <Tooltip :content="isFullscreen ? $t('common.exitFullscreen') : $t('common.fullscreen')">
+            <Button shape="square" variant="outline" @click="toggleFullscreen">
+              <template #icon>
+                <FullscreenExitIcon v-if="isFullscreen" />
+                <FullscreenIcon v-else />
+              </template>
+            </Button>
+          </Tooltip>
+          <Button shape="square" variant="outline" @click="fetchOnlineUsers">
+            <template #icon><RefreshIcon /></template>
+          </Button>
+        </div>
         <div class="min-h-0 flex-1 overflow-hidden">
           <Table
             :columns="columns"
@@ -125,14 +202,17 @@ onMounted(() => {
             stripe
             @page-change="handlePageChange"
           >
+          <template #app_id="{ row }">
+            {{ appMap[row.app_id] || row.app_id }}
+          </template>
           <template #action="{ row }">
             <Button
               size="small"
-              theme="danger"
-              variant="outline"
+              theme="primary"
+              variant="text"
               @click="handleKick(row)"
             >
-              {{ $t('system.monitor.onlineUser.forceLogout') }}
+              强制退出
             </Button>
           </template>
         </Table>
