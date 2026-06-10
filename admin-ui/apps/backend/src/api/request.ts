@@ -68,6 +68,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
 
       config.headers.Authorization = formatToken(accessStore.accessToken);
       config.headers['Accept-Language'] = preferences.app.locale;
+      config.headers['X-App-Id'] = import.meta.env.VITE_APP_ID || 'system';
 
       // Prevent FormData from being transformed into JSON by Axios when a
       // default JSON content-type header is present on the client.
