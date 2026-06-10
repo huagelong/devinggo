@@ -12,6 +12,8 @@ import {
   realDeleteAttachment,
   recoveryAttachment,
 } from '#/api/system/attachment';
+import { getDictList } from '#/api/system/dict';
+import type { DictApi } from '#/api/system/dict';
 import { logger } from '#/utils/logger';
 import CrudToolbar from '#/components/crud/crud-toolbar.vue';
 
@@ -36,6 +38,7 @@ import {
   ImageViewer,
   Input,
   Popconfirm,
+  Select,
   Space,
   Table,
   Tag,
@@ -48,7 +51,6 @@ import {
   createAttachmentColumnOptions,
   createAttachmentSearchForm,
   createAttachmentTableColumns,
-  defaultAttachmentTreeData,
 } from './schemas';
 import { useAttachmentCrud } from './use-attachment-crud';
 
@@ -59,7 +61,34 @@ const isFullscreen = ref(false);
 
 const viewMode = ref<'list' | 'window'>('list');
 const selectedTreeKey = ref<string[]>(['all']);
-const treeData = ref<AttachmentTreeItem[]>(defaultAttachmentTreeData);
+
+// Dict data
+const storageModeDictOptions = ref<DictApi.Item[]>([]);
+const resourceTypeDictOptions = ref<DictApi.Item[]>([]);
+
+// Tree data from dict
+const treeData = computed<AttachmentTreeItem[]>(() => {
+  const items = resourceTypeDictOptions.value.map((item) => ({
+    title: item.title,
+    key: String(item.key),
+    icon: getResourceTypeIcon(String(item.key)),
+  }));
+  return [
+    { title: $t('system.attachment.filterAll'), key: 'all', icon: 'folder' },
+    ...items,
+  ];
+});
+
+function getResourceTypeIcon(key: string): string {
+  const iconMap: Record<string, string> = {
+    image: 'image',
+    document: 'file',
+    audio: 'music',
+    video: 'video',
+    archive: 'folder-zip',
+  };
+  return iconMap[key] || 'file';
+}
 
 // Tree expand/collapse and search
 const isTreeExpanded = ref(true);
@@ -278,8 +307,29 @@ function getFileExtension(mimeType: string, originName?: string): string {
   return 'FILE';
 }
 
+async function loadDictData() {
+  try {
+    const [storageModes, resourceTypes] = await Promise.all([
+      getDictList('upload_mode'),
+      getDictList('attachment_type'),
+    ]);
+    storageModeDictOptions.value = storageModes;
+    resourceTypeDictOptions.value = resourceTypes;
+  } catch (error) {
+    logger.error(error);
+  }
+}
+
+function getStorageModeLabel(mode: number): string {
+  const item = storageModeDictOptions.value.find(
+    (opt) => Number(opt.key) === mode,
+  );
+  return item?.title || String(mode);
+}
+
 onMounted(() => {
   document.addEventListener('fullscreenchange', handleFullscreenChange);
+  void loadDictData();
   void fetchTableData();
 });
 
@@ -343,10 +393,12 @@ onUnmounted(() => {
                 />
               </FormItem>
               <FormItem :label="$t('system.attachment.storageMode')" name="storage_mode">
-                <Input
+                <Select
                   v-model="searchForm.storage_mode"
+                  :options="storageModeDictOptions.map((item) => ({ label: item.title, value: Number(item.key) }))"
                   :placeholder="$t('ui.placeholder.select')"
                   clearable
+                  class="w-full"
                 />
               </FormItem>
               <FormItem :label="$t('common.createTime')" name="created_at" class="col-span-2">
@@ -460,8 +512,8 @@ onUnmounted(() => {
             </template>
 
             <template #storage_mode="{ row }">
-              <Tag :theme="row?.storage_mode === 1 ? 'primary' : 'warning'">
-                {{ row?.storage_mode === 1 ? $t('common.local') : $t('common.cloudStorage') }}
+              <Tag theme="primary">
+                {{ getStorageModeLabel(row?.storage_mode) }}
               </Tag>
             </template>
 
