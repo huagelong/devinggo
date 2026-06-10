@@ -126,6 +126,10 @@ make ctrl
 
 # 3. 执行菜单SQL（如果使用 --frontend）
 # 将 resource/migrations/menu_*.sql 导入数据库
+
+# 4. 检查 i18n 翻译（前端页面显示需要）
+# 翻译会自动生成到 admin-ui/apps/backend/src/locales/langs/{zh-CN,en-US}/system.json
+# 如需调整，请手动修改对应语言文件
 ```
 
 ### 场景3：克隆现有模块
@@ -232,6 +236,92 @@ go run main.go
 6. **模板分隔符**：
    - 后端模板使用 `{{.Variable}}`
    - 前端模板使用 `<%.Variable%>`（避免与 Vue 语法冲突）
+
+## 生成后检查与修复
+
+CRUD 生成完成后，建议按以下步骤检查验证：
+
+### 1. 后端编译检查
+```bash
+# 确保后端代码能正常编译
+go build ./...
+```
+
+### 2. Service 接口检查
+```bash
+# 运行 gf gen service 重新生成 service 层
+make service
+```
+
+### 3. 路由注册检查
+```bash
+# 确认控制器已注册到 router.go
+grep -n "{Resource}Controller" modules/{module}/router/{module}/router.go
+```
+
+### 4. 前端组件检查
+
+**常见问题**：浏览器控制台报错组件未注册
+- `Failed to resolve component: Textarea`
+- `Failed to resolve component: RadioGroup`
+- `Failed to resolve component: InputNumber`
+
+**修复方法**：检查 `views/{module}/{resource}/index.vue` 的 import 部分是否包含这些组件：
+```typescript
+import {
+  Button, Input, InputNumber, RadioGroup, Textarea, ...
+} from 'tdesign-vue-next';
+```
+
+### 5. i18n 翻译检查
+
+**常见问题**：控制台警告 `Not found 'system.xxx.title' key in 'zh' locale messages`
+
+**翻译数据来源**：
+- generator 会自动读取数据库表字段的 `description`（注释）作为翻译值
+- 如果字段没有注释，则回退到根据字段名生成的合理中文翻译（如 `title`→"标题"、`content`→"内容"、`status`→"状态"）
+- 支持常见字段名智能翻译，也支持驼峰命名拆分（如 `userName`→"用户名称"）
+- 因此，**建表时建议为字段添加中文注释**，这样前端显示最准确；即使无注释，也能获得合理的中文翻译
+
+**示例**：
+```sql
+CREATE TABLE test_cms (
+    id          bigserial PRIMARY KEY,
+    title       varchar(255) NOT NULL DEFAULT '' COMMENT '标题',
+    content     text COMMENT '内容',
+    status      int NOT NULL DEFAULT 0 COMMENT '状态',
+    remark      varchar(500) DEFAULT '' COMMENT '备注',
+    sort        int NOT NULL DEFAULT 0 COMMENT '排序',
+    created_at  timestamp DEFAULT CURRENT_TIMESTAMP,
+    updated_at  timestamp DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**检查位置**：
+- `admin-ui/apps/backend/src/locales/langs/zh-CN/system.json`
+- `admin-ui/apps/backend/src/locales/langs/en-US/system.json`
+
+**自动生成的翻译示例**：
+```json
+{
+  "testCms": {
+    "title": "标题",
+    "content": "内容",
+    "status": "状态",
+    "remark": "备注",
+    "sort": "排序",
+    "editTitle": "编辑内容管理",
+    "createTitle": "新增内容管理"
+  }
+}
+```
+
+**如需要手动修复或调整翻译**：
+1. 修改对应的数据库表字段注释
+2. 重新运行 `make dao` 更新 entity 文件
+3. 重新运行 generator 生成代码
+
+> **最佳实践**：在建表阶段就为所有业务字段添加清晰的中文注释，这样生成的前端页面可以直接使用，无需二次修改翻译文件。
 
 ## 常见问题
 
