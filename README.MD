@@ -36,7 +36,7 @@
 
 ## 演示地址
 
-- **API文档**: https://devinggo-dev.devinghub.com/swagger
+- **访问地址**: http://122.152.211.127:4000/admin/#/
 - **测试账号**: superAdmin / admin123
 
 ## 视频教程
@@ -46,13 +46,6 @@
 
 - [文档](https://devinggo.devinghub.com/)
 - [zread](https://zread.ai/huagelong/devinggo)
-
-## 截图
-
-![0.png](docs/screen/0.png)
-![1.png](docs/screen/1.png)
-![2.png](docs/screen/3.png)
-![4.png](docs/screen/4.png)
 
 ## 项目结构
 
