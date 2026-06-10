@@ -49,7 +49,6 @@ import {
 import type { AttachmentTableColumn } from './model';
 import {
   createAttachmentColumnOptions,
-  createAttachmentSearchForm,
   createAttachmentTableColumns,
 } from './schemas';
 import { useAttachmentCrud } from './use-attachment-crud';
@@ -105,8 +104,6 @@ function toggleTreeExpand() {
   isTreeExpanded.value = !isTreeExpanded.value;
 }
 
-const searchForm = ref(createAttachmentSearchForm());
-
 const columns: AttachmentTableColumn[] = createAttachmentTableColumns();
 const columnOptions = createAttachmentColumnOptions(columns);
 const allColumnKeys = columnOptions.map((item) => item.value);
@@ -131,6 +128,7 @@ const {
   isRecycleBin,
   loading,
   pagination,
+  searchForm,
   selectedRowKeys,
   tableData,
   toggleRecycleBin,
@@ -145,10 +143,11 @@ function handleTreeChange(value: Array<string | number>) {
   selectedTreeKey.value = keys.length > 0 ? keys : ['all'];
   const key = selectedTreeKey.value[0];
   if (key === 'all') {
-    searchForm.value.mime_type = undefined;
+    searchForm.mime_type = undefined;
   } else {
-    searchForm.value.mime_type = key;
+    searchForm.mime_type = key;
   }
+  handleSearch();
 }
 
 function renderTreeIcon(node: AttachmentTreeItem) {
