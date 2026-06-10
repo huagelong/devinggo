@@ -283,11 +283,8 @@ func (g *CRUDGenerator) buildFrontendFields() []FrontendField {
 		if f.IsRequired {
 			field.Rules = "required"
 		}
-		if f.JSONName == "remark" || f.JSONName == "content" {
+		if f.Name == "remark" || f.Name == "content" {
 			field.FormItemClass = "md:col-span-2"
-		}
-		if f.JSONName == "status" {
-			field.DefaultValue = "1"
 		}
 		
 		if field.Component == "Select" {
@@ -326,8 +323,10 @@ func (g *CRUDGenerator) buildFrontendTemplateData() map[string]interface{} {
 		}
 		if f.IsEditable {
 			editField := f
-			// 如果之前已经设置了默认值（如 status=1），保留它
-			if editField.DefaultValue == "" || editField.DefaultValue == "undefined" {
+			// status 字段默认值为 1
+			if f.Name == "status" {
+				editField.DefaultValue = "1"
+			} else if editField.DefaultValue == "" || editField.DefaultValue == "undefined" {
 				editField.DefaultValue = getDefaultValue(f.Type, false)
 			}
 			editableFields = append(editableFields, editField)
@@ -1163,6 +1162,8 @@ func (g *CRUDGenerator) RegisterServiceInterface() error {
 	}
 
 	// 1. 插入接口定义（在 ISystemUser 之前）
+	en := g.EntityName
+	vn := g.VarName
 	interfaceDef := fmt.Sprintf(`	// I%s defines the interface for %s operations.
 	I%s interface {
 		// Model returns the database Model for %s operations.
@@ -1186,9 +1187,7 @@ func (g *CRUDGenerator) RegisterServiceInterface() error {
 		// ChangeStatus changes the status of a %s.
 		ChangeStatus(ctx context.Context, id int64, status int) (err error)
 	}
-`, g.EntityName, g.VarName, g.EntityName, g.VarName, g.VarName, g.EntityName, g.EntityName,
-		g.VarName, g.EntityName, g.EntityName, g.VarName, g.EntityName, g.VarName, g.EntityName,
-		g.VarName, g.EntityName, g.VarName, g.EntityName, g.VarName, g.VarName, g.VarName)
+`, en, vn, en, vn, vn, en, en, vn, en, en, vn, en, vn, en, vn, en, vn, en, vn, vn, vn)
 
 	contentStr = strings.Replace(contentStr, "\t// ISystemUser defines the interface for user management operations.",
 		interfaceDef+"\t// ISystemUser defines the interface for user management operations.", 1)

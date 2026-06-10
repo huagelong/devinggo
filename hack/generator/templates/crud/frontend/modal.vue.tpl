@@ -40,8 +40,8 @@ const [Form, formApi] = useVbenForm({
 <%if eq .Component "RadioGroup"%>
       componentProps: {
         options: [
-          { label: $t('common.statusEnabled'), value: 1 },
-          { label: $t('common.statusDisabled'), value: 2 },
+          { label: '已上架', value: 1 },
+          { label: '未上架', value: 2 },
         ],
       },
 <%else if eq .Component "InputNumber"%>

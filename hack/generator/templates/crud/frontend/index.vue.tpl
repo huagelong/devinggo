@@ -22,7 +22,6 @@ import {
   Input,
   InputNumber,
   Popconfirm,
-  RadioGroup,
   Select,
   Space,
   Switch,
@@ -97,8 +96,8 @@ async function fetchStatusOptions() {
     options.length > 0
       ? options
       : [
-          { label: $t('common.statusEnabled'), value: 1 },
-          { label: $t('common.statusDisabled'), value: 2 },
+          { label: '已上架', value: 1 },
+          { label: '未上架', value: 2 },
         ];
 }
 
