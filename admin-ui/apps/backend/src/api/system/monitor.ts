@@ -47,9 +47,7 @@ export namespace MonitorApi {
   }
 
   export interface ViewCacheResponse {
-    data: {
-      content: string;
-    };
+    content: string;
   }
 
   export interface DeleteCachePayload {

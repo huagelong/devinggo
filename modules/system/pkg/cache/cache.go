@@ -43,7 +43,7 @@ func getTagCacheInstance() (*tagCache, error) {
 	return _tagCache, nil
 }
 
-func getRedisClient() *gredis.Redis {
+func GetRedisClient() *gredis.Redis {
 	return g.Redis(groupKey)
 }
 
@@ -117,7 +117,7 @@ func setIfNotExist(ctx context.Context, key interface{}, value interface{}, dura
 		return false, tci.delete(ctx, gconv.String(key))
 	}
 	defaultKey := gconv.String(key)
-	ok, err = getRedisClient().SetNX(ctx, defaultKey, value)
+	ok, err = GetRedisClient().SetNX(ctx, defaultKey, value)
 	if err != nil || !ok {
 		return ok, err
 	}
@@ -177,7 +177,7 @@ func getOrSetFunc(ctx context.Context, key interface{}, f gcache.Func, duration 
 
 // contains 用 EXISTS 命令判断，避免将 redis.Nil 误当错误传播。
 func contains(ctx context.Context, key interface{}) (bool, error) {
-	n, err := getRedisClient().Exists(ctx, gconv.String(key))
+	n, err := GetRedisClient().Exists(ctx, gconv.String(key))
 	if err != nil {
 		return false, err
 	}
@@ -186,7 +186,7 @@ func contains(ctx context.Context, key interface{}) (bool, error) {
 
 func update(ctx context.Context, key interface{}, value interface{}, tag ...interface{}) (oldValue *gvar.Var, exist bool, err error) {
 	defaultKey := gconv.String(key)
-	oldPTTL, err := getRedisClient().PTTL(ctx, defaultKey)
+	oldPTTL, err := GetRedisClient().PTTL(ctx, defaultKey)
 	if err != nil || oldPTTL == -2 || oldPTTL == 0 {
 		return
 	}
@@ -206,7 +206,7 @@ func update(ctx context.Context, key interface{}, value interface{}, tag ...inte
 }
 
 func updateExpire(ctx context.Context, key interface{}, duration time.Duration, tag ...interface{}) (oldDuration time.Duration, err error) {
-	oldPTTL, err := getRedisClient().PTTL(ctx, gconv.String(key))
+	oldPTTL, err := GetRedisClient().PTTL(ctx, gconv.String(key))
 	if err != nil || oldPTTL == -2 || oldPTTL == 0 {
 		return
 	}
@@ -216,7 +216,7 @@ func updateExpire(ctx context.Context, key interface{}, duration time.Duration, 
 		return
 	}
 	if duration > 0 {
-		_, err = getRedisClient().PExpire(ctx, gconv.String(key), duration.Milliseconds())
+		_, err = GetRedisClient().PExpire(ctx, gconv.String(key), duration.Milliseconds())
 		return
 	}
 	// duration == 0：持久化，重新写入不带 EX 的 tagCache 条目
@@ -397,7 +397,7 @@ func GetKeys(ctx context.Context) (keys []string, err error) {
 	iterator := uint64(0)
 	for {
 		var listKeys []string
-		iterator, listKeys, err = getRedisClient().Scan(ctx, iterator, gredis.ScanOption{
+		iterator, listKeys, err = GetRedisClient().Scan(ctx, iterator, gredis.ScanOption{
 			Match: "*",
 			Count: scanCount,
 		})
@@ -405,7 +405,11 @@ func GetKeys(ctx context.Context) (keys []string, err error) {
 			g.Log().Error(ctx, "Scan error:", err)
 			break
 		}
-		keys = append(keys, listKeys...)
+		for _, k := range listKeys {
+			if !strings.HasPrefix(k, "tags:") && !strings.HasPrefix(k, "item_tags:") {
+				keys = append(keys, k)
+			}
+		}
 		if iterator == 0 {
 			break
 		}
@@ -415,7 +419,7 @@ func GetKeys(ctx context.Context) (keys []string, err error) {
 
 // GetInfo 返回 Redis INFO 信息，按节分组。
 func GetInfo(ctx context.Context) (map[string]map[string]interface{}, error) {
-	info, err := getRedisClient().Do(ctx, "INFO")
+	info, err := GetRedisClient().Do(ctx, "INFO")
 	if err != nil {
 		return nil, err
 	}

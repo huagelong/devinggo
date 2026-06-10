@@ -69,11 +69,55 @@ func (c *cacheController) GetCacheInfo(ctx context.Context, in *system.GetCacheI
 
 func (c *cacheController) ViewCache(ctx context.Context, in *system.ViewCacheReq) (out *system.ViewCacheRes, err error) {
 	out = &system.ViewCacheRes{}
-	rs, err := cache.Get(ctx, in.Key)
+
+	keyTypeResult, err := cache.GetRedisClient().Do(ctx, "TYPE", in.Key)
 	if err != nil {
 		return
 	}
-	content := rs.String()
+	keyType := keyTypeResult.String()
+
+	var content string
+	switch keyType {
+	case "string":
+		rs, err := cache.Get(ctx, in.Key)
+		if err != nil {
+			return nil, err
+		}
+		content = rs.String()
+	case "hash":
+		rs, err := cache.GetRedisClient().Do(ctx, "HGETALL", in.Key)
+		if err != nil {
+			return nil, err
+		}
+		content = rs.String()
+	case "list":
+		rs, err := cache.GetRedisClient().Do(ctx, "LRANGE", in.Key, 0, -1)
+		if err != nil {
+			return nil, err
+		}
+		content = rs.String()
+	case "set":
+		rs, err := cache.GetRedisClient().Do(ctx, "SMEMBERS", in.Key)
+		if err != nil {
+			return nil, err
+		}
+		content = rs.String()
+	case "zset":
+		rs, err := cache.GetRedisClient().Do(ctx, "ZRANGE", in.Key, 0, -1, "WITHSCORES")
+		if err != nil {
+			return nil, err
+		}
+		content = rs.String()
+	case "none":
+		content = ""
+	default:
+		rs, err := cache.Get(ctx, in.Key)
+		if err != nil {
+			return nil, err
+		}
+		content = rs.String()
+	}
+
 	out.Content = content
 	return
 }
