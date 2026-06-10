@@ -7,6 +7,7 @@
 package generator
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -40,6 +41,9 @@ type FrontendField struct {
 	Component   string // 组件类型（Input, Select, DateRangePicker）
 	LabelKey    string // 标签i18n键
 	Placeholder string // 占位符
+	// 表单相关
+	Rules         string // 验证规则
+	FormItemClass string // 表单项类名
 }
 
 // CRUDGenerator CRUD代码生成器
@@ -242,6 +246,18 @@ func (g *CRUDGenerator) buildFrontendFields() []FrontendField {
 			continue
 		}
 		
+		// 确定表单组件类型
+		formComponent := "Input"
+		if f.JSONName == "status" {
+			formComponent = "RadioGroup"
+		} else if f.JSONName == "sort" {
+			formComponent = "InputNumber"
+		} else if f.JSONName == "remark" || f.JSONName == "content" {
+			formComponent = "Textarea"
+		} else if tsType == "number" {
+			formComponent = "InputNumber"
+		}
+		
 		field := FrontendField{
 			Name:         f.JSONName,
 			Type:         tsType,
@@ -260,6 +276,18 @@ func (g *CRUDGenerator) buildFrontendFields() []FrontendField {
 			Component:    getSearchComponent(tsType, f.JSONName),
 			LabelKey:     fmt.Sprintf("%s.%s.%s", g.ModuleName, g.VarName, f.JSONName),
 			Placeholder:  fmt.Sprintf("$t('ui.placeholder.input')"),
+		}
+		
+		// 设置表单组件相关属性
+		field.Component = formComponent
+		if f.IsRequired {
+			field.Rules = "required"
+		}
+		if f.JSONName == "remark" || f.JSONName == "content" {
+			field.FormItemClass = "md:col-span-2"
+		}
+		if f.JSONName == "status" {
+			field.DefaultValue = "1"
 		}
 		
 		if field.Component == "Select" {
@@ -298,7 +326,10 @@ func (g *CRUDGenerator) buildFrontendTemplateData() map[string]interface{} {
 		}
 		if f.IsEditable {
 			editField := f
-			editField.DefaultValue = getDefaultValue(f.Type, false)
+			// 如果之前已经设置了默认值（如 status=1），保留它
+			if editField.DefaultValue == "" || editField.DefaultValue == "undefined" {
+				editField.DefaultValue = getDefaultValue(f.Type, false)
+			}
 			editableFields = append(editableFields, editField)
 		}
 	}
@@ -518,8 +549,10 @@ func (g *CRUDGenerator) GenerateFrontendCode() error {
 		{"前端模型", g.GenerateFrontendModel},
 		{"前端列配置", g.GenerateFrontendSchemas},
 		{"前端CRUD逻辑", g.GenerateFrontendUseCrud},
+		{"前端Modal", g.GenerateFrontendModal},
 		{"前端页面", g.GenerateFrontendIndexVue},
 		{"前端菜单SQL", g.GenerateFrontendMenuSQL},
+		{"i18n翻译", g.GenerateI18nTranslations},
 	}
 
 	for _, gen := range generators {
@@ -568,6 +601,15 @@ func (g *CRUDGenerator) GenerateFrontendUseCrud() error {
 	return g.renderAndSaveTemplateFrontend(templatePath, outputPath, data)
 }
 
+// GenerateFrontendModal 生成前端Modal文件
+func (g *CRUDGenerator) GenerateFrontendModal() error {
+	data := g.buildFrontendTemplateData()
+	frontendDir := g.getFrontendDir()
+	outputPath := filepath.Join(frontendDir, "views", g.ModuleName, g.VarName, "components", g.VarName+"-modal.vue")
+	templatePath := filepath.Join(g.getTemplateDir(), "frontend", "modal.vue.tpl")
+	return g.renderAndSaveTemplateFrontend(templatePath, outputPath, data)
+}
+
 // GenerateFrontendIndexVue 生成前端页面文件
 func (g *CRUDGenerator) GenerateFrontendIndexVue() error {
 	data := g.buildFrontendTemplateData()
@@ -583,6 +625,302 @@ func (g *CRUDGenerator) GenerateFrontendMenuSQL() error {
 	outputPath := filepath.Join(g.WorkDir, "resource", "migrations", fmt.Sprintf("menu_%s_%s.sql", g.ModuleName, g.VarName))
 	templatePath := filepath.Join(g.getTemplateDir(), "frontend", "menu.sql.tpl")
 	return g.renderAndSaveTemplateFrontend(templatePath, outputPath, data)
+}
+
+// GenerateI18nTranslations 生成 i18n 翻译文件
+func (g *CRUDGenerator) GenerateI18nTranslations() error {
+	locales := []string{"zh-CN", "en-US"}
+	for _, locale := range locales {
+		if err := g.updateI18nFile(locale); err != nil {
+			fmt.Printf("  ⚠️ 更新 %s 翻译失败: %v\n", locale, err)
+		}
+	}
+	return nil
+}
+
+// fieldNameToChinese 常见字段名到中文的映射
+var fieldNameToChinese = map[string]string{
+	"title":       "标题",
+	"name":        "名称",
+	"code":        "编码",
+	"content":     "内容",
+	"status":      "状态",
+	"remark":      "备注",
+	"sort":        "排序",
+	"type":        "类型",
+	"category":    "分类",
+	"tag":         "标签",
+	"author":      "作者",
+	"source":      "来源",
+	"url":         "链接",
+	"link":        "链接",
+	"cover":       "封面",
+	"image":       "图片",
+	"icon":        "图标",
+	"file":        "文件",
+	"path":        "路径",
+	"size":        "大小",
+	"width":       "宽度",
+	"height":      "高度",
+	"weight":      "权重",
+	"price":       "价格",
+	"amount":      "金额",
+	"quantity":    "数量",
+	"count":       "数量",
+	"total":       "总计",
+	"score":       "评分",
+	"level":       "等级",
+	"priority":    "优先级",
+	"version":     "版本",
+	"description": "描述",
+	"summary":     "摘要",
+	"intro":       "简介",
+	"detail":      "详情",
+	"address":     "地址",
+	"phone":       "电话",
+	"mobile":      "手机",
+	"email":       "邮箱",
+	"qq":          "QQ",
+	"wechat":      "微信",
+	"birthday":    "生日",
+	"gender":      "性别",
+	"age":         "年龄",
+	"company":     "公司",
+	"department":  "部门",
+	"position":    "职位",
+	"role":        "角色",
+	"permission":  "权限",
+	"menu":        "菜单",
+	"config":      "配置",
+	"setting":     "设置",
+	"template":    "模板",
+	"theme":       "主题",
+	"language":    "语言",
+	"currency":    "货币",
+	"unit":        "单位",
+	"format":      "格式",
+	"style":       "样式",
+	"color":       "颜色",
+	"font":        "字体",
+	"start":       "开始",
+	"end":         "结束",
+	"begin":       "开始",
+	"finish":      "结束",
+	"deadline":    "截止日期",
+	"publish":     "发布",
+	"create":      "创建",
+	"update":      "更新",
+	"delete":      "删除",
+	"enable":      "启用",
+	"disable":     "禁用",
+	"visible":     "可见",
+	"hidden":      "隐藏",
+	"required":    "必填",
+	"readonly":    "只读",
+	"unique":      "唯一",
+	"default":     "默认",
+	"parent":      "父级",
+	"children":    "子级",
+	"child":       "子级",
+	"root":        "根节点",
+	"leaf":        "叶子节点",
+	"prev":        "上一个",
+	"next":        "下一个",
+	"first":       "第一个",
+	"last":        "最后一个",
+	"index":       "索引",
+	"order":       "顺序",
+	"group":       "分组",
+	"batch":       "批量",
+	"page":        "页码",
+	"limit":       "每页数量",
+	"offset":      "偏移量",
+	"keyword":     "关键词",
+	"search":      "搜索",
+	"filter":      "筛选",
+	"sortBy":      "排序字段",
+	"sortOrder":   "排序方式",
+	"asc":         "升序",
+	"desc":        "降序",
+	"user":        "用户",
+	"admin":       "管理员",
+	"member":      "成员",
+	"customer":    "客户",
+	"client":      "客户",
+	"supplier":    "供应商",
+	"partner":     "合作伙伴",
+	"login":       "登录",
+	"logout":      "登出",
+	"register":    "注册",
+	"password":    "密码",
+	"token":       "令牌",
+	"session":     "会话",
+	"ip":          "IP地址",
+	"browser":     "浏览器",
+	"os":          "操作系统",
+	"device":      "设备",
+	"platform":    "平台",
+	"channel":     "渠道",
+	"referer":     "来源页面",
+	"userAgent":   "用户代理",
+	"request":     "请求",
+	"response":    "响应",
+	"header":      "请求头",
+	"body":        "请求体",
+	"params":      "参数",
+	"query":       "查询参数",
+	"data":        "数据",
+	"result":      "结果",
+	"message":     "消息",
+	"error":       "错误",
+	"warning":     "警告",
+	"info":        "信息",
+	"success":     "成功",
+	"fail":        "失败",
+	"statusCode":  "状态码",
+	"errorCode":   "错误码",
+	"errorMsg":    "错误信息",
+}
+
+// translateFieldName 根据字段名智能翻译为中文
+func translateFieldName(fieldName string) string {
+	// 1. 直接匹配
+	if cn, ok := fieldNameToChinese[fieldName]; ok {
+		return cn
+	}
+
+	// 2. 去除常见前缀/后缀后匹配
+	// 去除后缀：_id, _name, _code, _time, _at, _by, _date, _type, _status, _count, _num, _no, _sn
+	cleanName := fieldName
+	suffixes := []string{"_id", "_name", "_code", "_time", "_at", "_by", "_date", "_type", "_status", "_count", "_num", "_no", "_sn", "_url", "_path", "_key", "_value", "_text", "_desc", "_memo", "_note", "_remark", "_comment", "_tag", "_flag", "_level", "_sort", "_order", "_index", "_size", "_width", "_height", "_length", "_weight", "_price", "_amount", "_total", "_score", "_rate", "_ratio", "_percent", "_qty", "_quantity", "_num"}
+	for _, suffix := range suffixes {
+		if strings.HasSuffix(cleanName, suffix) {
+			base := strings.TrimSuffix(cleanName, suffix)
+			if cn, ok := fieldNameToChinese[base]; ok {
+				return cn
+			}
+			break
+		}
+	}
+
+	// 3. 去除前缀：is_, has_, can_, need_, enable_, allow_
+	prefixes := []string{"is_", "has_", "can_", "need_", "enable_", "allow_", "support_", "require_", "must_"}
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(cleanName, prefix) {
+			base := strings.TrimPrefix(cleanName, prefix)
+			if cn, ok := fieldNameToChinese[base]; ok {
+				return "是否" + cn
+			}
+			break
+		}
+	}
+
+	// 4. 驼峰命名拆分（如 userName → user + name）
+	words := splitCamelCase(fieldName)
+	if len(words) >= 2 {
+		// 尝试最后一个单词
+		lastWord := strings.ToLower(words[len(words)-1])
+		if cn, ok := fieldNameToChinese[lastWord]; ok {
+			return cn
+		}
+		// 尝试第一个单词
+		firstWord := strings.ToLower(words[0])
+		if cn, ok := fieldNameToChinese[firstWord]; ok {
+			return cn
+		}
+	}
+
+	// 5. 无法翻译，返回原字段名
+	return fieldName
+}
+
+// splitCamelCase 将驼峰命名拆分为单词列表
+func splitCamelCase(s string) []string {
+	var words []string
+	var current strings.Builder
+
+	for i, r := range s {
+		if i > 0 && r >= 'A' && r <= 'Z' {
+			words = append(words, current.String())
+			current.Reset()
+		}
+		current.WriteRune(r)
+	}
+	if current.Len() > 0 {
+		words = append(words, current.String())
+	}
+
+	return words
+}
+
+func (g *CRUDGenerator) updateI18nFile(locale string) error {
+	i18nPath := filepath.Join(g.WorkDir, "admin-ui", "apps", "backend", "src", "locales", "langs", locale, "system.json")
+	if !utils.PathExists(i18nPath) {
+		return fmt.Errorf("i18n 文件不存在: %s", i18nPath)
+	}
+
+	content, err := os.ReadFile(i18nPath)
+	if err != nil {
+		return fmt.Errorf("读取 i18n 文件失败: %v", err)
+	}
+
+	var data map[string]interface{}
+	if err := json.Unmarshal(content, &data); err != nil {
+		return fmt.Errorf("解析 i18n 文件失败: %v", err)
+	}
+
+	// 检查是否已存在
+	if _, exists := data[g.VarName]; exists {
+		fmt.Printf("  ℹ️ %s 翻译已存在，跳过\n", locale)
+		return nil
+	}
+
+	// 构建翻译
+	translations := make(map[string]string)
+	for _, field := range g.Fields {
+		if field.Name == "Id" || field.Name == "CreatedBy" || field.Name == "UpdatedBy" ||
+			field.Name == "CreatedAt" || field.Name == "UpdatedAt" || field.Name == "DeletedAt" {
+			continue
+		}
+		if locale == "zh-CN" {
+			translations[field.JSONName] = field.Comment
+			if translations[field.JSONName] == "" {
+				// 无注释时，根据字段名智能翻译
+				translations[field.JSONName] = translateFieldName(field.JSONName)
+			}
+		} else {
+			translations[field.JSONName] = field.Name
+		}
+	}
+	translations["editTitle"] = "编辑" + g.ChineseName
+	translations["createTitle"] = "新增" + g.ChineseName
+	if locale == "en-US" {
+		translations["editTitle"] = "Edit " + g.EntityName
+		translations["createTitle"] = "Create " + g.EntityName
+	}
+	translations["confirmDelete"] = "确认删除吗？"
+	translations["confirmRecovery"] = "确认恢复吗？"
+	translations["confirmPermanentDelete"] = "确认彻底删除吗？"
+	if locale == "en-US" {
+		translations["confirmDelete"] = "Are you sure to delete?"
+		translations["confirmRecovery"] = "Are you sure to recover?"
+		translations["confirmPermanentDelete"] = "Are you sure to permanently delete?"
+	}
+
+	data[g.VarName] = translations
+
+	// 写回文件
+	newContent, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return fmt.Errorf("序列化 i18n 文件失败: %v", err)
+	}
+
+	if err := os.WriteFile(i18nPath, newContent, 0644); err != nil {
+		return fmt.Errorf("写入 i18n 文件失败: %v", err)
+	}
+
+	fmt.Printf("  ✓ 已更新 %s 翻译\n", locale)
+	return nil
 }
 
 // renderAndSaveTemplateFrontend 渲染并保存前端模板
