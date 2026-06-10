@@ -2,7 +2,7 @@
   <img src="docs/logo.svg" width="120" />
 </p>
 <p align="center">
- <img src="https://svg.hamm.cn/badge.svg?key=License&value=Apache-2.0" />
+ <img src="https://svg.hamm.cn/badge.svg?key=License&value=Apache-2.0%20%2F%20MIT" />
   <img src="https://svg.hamm.cn/badge.svg?key=Version&value=1.0.0%20LTS" />
 	<img src="https://img.shields.io/badge/goframe-2.9-green" alt="goframe">
 	<img src="https://img.shields.io/badge/golang-1.23.4-blue" alt="golang">
@@ -14,13 +14,14 @@
 
 ## 简介
 
-`DevingGo` 是基于 **GoFrame v2.9** 的企业级后端API服务框架，采用模块化架构，内置权限管理、代码生成、任务调度等企业级功能。
+`DevingGo` 是基于 **GoFrame v2.9** 的企业级前后端一体化开发框架，采用模块化架构，内置权限管理、代码生成、任务调度等企业级功能，支持 **Vibe Coding**（AI辅助编程）一键生成前后端代码。
 
 ### 特点
 
 - 🚀 **高性能**: 基于GoFrame，发挥Go高并发优势
+- 🤖 **Vibe Coding**: AI辅助编程，通过 `skills/generator/` 一键生成前后端代码
 - 📦 **模块化**: 插件化模块系统，支持独立开发和热插拔
-- 🛠️ **代码生成**: 一键生成CRUD/Worker/Module代码
+- 🛠️ **代码生成**: 一键生成CRUD/Worker/Module前后端代码
 - 🔐 **安全可靠**: RBAC权限模型，JWT认证
 - 🌍 **国际化**: 内置多语言支持
 - 🐳 **容器化**: 支持Docker一键部署
@@ -78,8 +79,14 @@ devinggo/
 │   │   ├── cmd/            # 命令
 │   │   └── pkg/            # 工具包
 │   └── api/                # API模块（示例）
+├── admin-ui/               # 前端管理界面（Vue3 + Vite）
+│   ├── apps/               # 应用目录
+│   ├── packages/           # 共享包
+│   └── scripts/            # 构建脚本
 ├── hack/                   # 开发工具
 │   └── generator/          # 代码生成器
+├── skills/                 # Vibe Coding Skill配置
+│   └── generator/          # AI代码生成Skill
 ├── manifest/               # 配置清单
 │   ├── config/             # 配置文件
 │   ├── docker/             # Docker配置
@@ -102,6 +109,7 @@ devinggo/
 
 ## 技术栈
 
+### 后端
 | 类别 | 技术 |
 |------|------|
 | 核心框架 | GoFrame v2.9.0 |
@@ -116,6 +124,16 @@ devinggo/
 | ID生成 | Yitter IdGenerator (雪花算法) |
 | API文档 | OpenAPI/Swagger 自动生成 |
 
+### 前端 (admin-ui)
+| 类别 | 技术 |
+|------|------|
+| 框架 | Vue 3 + TypeScript |
+| 构建工具 | Vite |
+| UI库 | 基于 Vue Vben Admin |
+| 状态管理 | Pinia |
+| 路由 | Vue Router |
+| HTTP请求 | Axios |
+
 ## 功能特性
 
 ### 系统管理
@@ -128,8 +146,14 @@ devinggo/
 - [x] **参数管理**: 系统参数动态配置
 - [x] **应用管理**: 多应用管理，支持应用分组和API授权
 
+### Vibe Coding (AI辅助编程)
+- [x] **智能代码生成**: 基于 `skills/generator/` 配置，通过自然语言描述一键生成前后端代码
+- [x] **前后端一体化**: `--frontend` 参数同时生成后端API和前端Vue3页面
+- [x] **模块快速搭建**: 自动创建模块结构、数据库迁移、菜单配置
+- [x] **代码模板定制**: 支持自定义 `hack/generator/templates/` 下的代码模板
+
 ### 开发工具
-- [x] **代码生成器**: 基于数据表一键生成CRUD/Worker/Module代码，详见 [代码生成工具](hack/generator/README.md)
+- [x] **代码生成器**: 基于数据表一键生成CRUD/Worker/Module代码，详见 [代码生成工具](hack/generator/README.md) 和 [Skill配置](skills/generator/SKILL.md)
 - [x] **API管理**: API接口与分组管理，应用授权
 - [x] **接口文档**: 自动生成OpenAPI/Swagger文档
 
@@ -166,7 +190,36 @@ devinggo/
 - **Go**: >= 1.23.4
 - **PostgreSQL**: >= 13.0
 - **Redis**: >= 5.0
-- **Make**: 推荐安装（Windows可用Chocolatey: `choco install make`）
+- **Make**: 推荐安装
+
+### Windows 安装 Make
+
+项目使用 `Makefile` 管理构建命令，Windows 系统需要手动安装 make 工具：
+
+**方式1: 通过 Chocolatey 安装（推荐）**
+
+```powershell
+# 以管理员身份运行 PowerShell，安装 Chocolatey（如未安装）
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+# 安装 make
+choco install make
+```
+
+**方式2: 通过 Scoop 安装**
+
+```powershell
+# 安装 Scoop（如未安装）
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+
+# 安装 make
+scoop install make
+```
+
+**方式3: 直接下载**
+
+下载 [MinGW](https://www.mingw-w64.org/) 或 [GnuWin32 make](https://gnuwin32.sourceforge.net/packages/make.htm)，将 `make.exe` 所在目录添加到系统 PATH。
 
 ### 1. 克隆项目
 
@@ -399,6 +452,11 @@ asynq:
 ## 🎉 关注项目
 
 - 如果项目对您有帮助，请点右上角 "Star" 收藏项目，您的支持是我创作的动力！
+
+## 开源协议
+
+- **后端代码**: [Apache License 2.0](LICENSE)
+- **前端 admin-ui**: [MIT License](admin-ui/LICENSE)（基于 Vue Vben Admin）
 
 ## 鸣谢
 

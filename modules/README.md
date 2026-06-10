@@ -25,8 +25,7 @@ modules/
 │   │   ├── system.go             # 加载system模块
 │   │   └── api.go                # 加载api模块
 │   └── worker/                   # Worker层自动加载
-│       ├── system.go             # 加载system模块worker
-│       └── api.go                # 加载api模块worker
+│       └── system.go             # 加载system模块worker
 │
 ├── system/                       # 系统核心模块
 │   ├── module.go                 # 模块元信息
@@ -47,22 +46,26 @@ modules/
 │   │   ├── system_user.go
 │   │   └── system_role.go
 │   ├── model/                    # 数据模型层
-│   │   ├── do/                   # 数据对象（自动生成）
-│   │   ├── entity/               # 实体模型（自动生成）
 │   │   ├── req/                  # 请求模型
-│   │   └── res/                  # 响应模型
+│   │   ├── res/                  # 响应模型
+│   │   └── page/                 # 分页模型
 │   ├── router/                   # 路由注册
 │   │   └── router.go
 │   ├── worker/                   # 后台任务
 │   │   ├── worker.go             # Worker管理器
-│   │   ├── server/               # 异步任务
-│   │   └── cron/                 # 定时任务
+│   │   ├── server/               # 异步任务处理器
+│   │   ├── cron/                 # 定时任务
+│   │   ├── task/                 # 异步任务定义
+│   │   └── consts/               # Worker常量定义
 │   ├── cmd/                      # 命令行工具
 │   │   ├── http.go               # HTTP服务启动
-│   │   └── worker.go             # Worker服务启动
+│   │   ├── worker.go             # Worker服务启动
+│   │   ├── migrate.go            # 数据库迁移命令
+│   │   └── ...                   # 其他命令
 │   ├── consts/                   # 常量定义
 │   │   └── worker.go             # Worker常量
 │   ├── codes/                    # 错误码定义
+│   ├── myerror/                  # 自定义错误
 │   └── pkg/                      # 内部工具包
 │
 └── api/                          # API模块（示例）
@@ -153,7 +156,7 @@ make import-module file=blog.v1.0.0.zip
 name: blog                      # 模块名称
 version: 1.0.0                  # 版本号
 author: DevingGo Team           # 作者
-license: MIT                    # 许可证
+license: Apache-2.0             # 许可证
 description: 博客管理模块       # 描述
 homepage: https://example.com   # 主页
 goVersion: 1.23+                # Go版本要求
@@ -363,4 +366,4 @@ make service
 
 ## 许可证
 
-MIT License
+Apache License 2.0
