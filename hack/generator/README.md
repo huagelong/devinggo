@@ -45,22 +45,44 @@ hack/generator/
 │   └── crud.go                  # CRUD生成命令
 ├── internal/                    # 核心逻辑层
 │   ├── generator/               # 生成器引擎
-│   │   ├── module.go            # 模块生成器
-│   │   ├── worker.go            # Worker生成器
 │   │   ├── crud.go              # CRUD生成器
-│   │   └── template.go          # 模板渲染引擎
+│   │   ├── module.go            # 模块导入导出
+│   │   ├── module_create.go     # 模块创建器
+│   │   ├── module_test.go       # 模块测试
+│   │   ├── template.go          # 模板渲染引擎
+│   │   └── worker.go            # Worker生成器
 │   ├── scanner/                 # 扫描器
 │   │   └── module.go            # 模块扫描器
 │   ├── utils/                   # 工具函数
-│   │   ├── zip.go               # 压缩/解压
 │   │   ├── file.go              # 文件操作
-│   │   └── naming.go            # 命名转换
+│   │   ├── hooks.go             # 钩子执行器
+│   │   ├── interactive.go       # 交互式提示
+│   │   ├── naming.go            # 命名转换
+│   │   ├── naming_test.go       # 命名转换测试
+│   │   ├── output.go            # 命令结果输出
+│   │   ├── sensitive.go         # 敏感信息清理
+│   │   ├── zip.go               # 压缩/解压
+│   │   └── zip_test.go          # 压缩测试
 │   └── config/                  # 配置管理
 │       └── config.go            # 配置解析
-└── templates/                   # 模板文件
-    ├── module/                  # 模块模板
-    ├── worker/                  # Worker模板
-    └── crud/                    # CRUD模板
+├── templates/                   # 模板文件
+│   ├── crud/                    # CRUD模板
+│   │   ├── api.go.tpl           # 后端API定义
+│   │   ├── controller.go.tpl    # 后端控制器
+│   │   ├── logic.go.tpl         # 后端逻辑层
+│   │   ├── req.go.tpl           # 后端请求模型
+│   │   ├── res.go.tpl           # 后端响应模型
+│   │   └── frontend/            # 前端模板
+│   │       ├── api.ts.tpl       # 前端API
+│   │       ├── index.vue.tpl    # 前端页面
+│   │       ├── menu.sql.tpl     # 菜单SQL
+│   │       ├── model.ts.tpl     # 前端类型
+│   │       ├── schemas.ts.tpl   # 前端列配置
+│   │       └── use-crud.ts.tpl  # 前端CRUD逻辑
+│   ├── module/                  # 模块模板
+│   └── worker/                  # Worker模板
+└── docs/                        # 文档
+    └── MODULE_YAML_SPEC.md      # .module.yaml配置规范
 ```
 
 ## 使用方法
@@ -80,104 +102,99 @@ make list-modules                             # 列出所有模块
 make validate-module name=blog                # 验证模块
 
 # Worker任务生成
-# 1. 创建新模块
-make gen-module name=blog
-# 或完整命令
-go run ./hack/generator/main.go module:create -name blog
+make gen-worker module=system worker=SendEmail
 
-# 2. 克隆现有模块（快速创建）
-make clone-module name=news source=blog
-# 或完整命令
-go run ./hack/generator/main.go module:clone -source blog -target news
+# CRUD生成（仅后端）
+make gen-crud table=system_user module=system name=用户
 
-# 3. 导出模块为zip包
-make export-module name=blog
-# 生成文件: blog.v1.0.0.zip
-
-# 4. 导入模块包
-make import-module file=blog.v1.0.0.zip
-# 自动部署文件、执行迁移、合并配置
-
-# 5. 列出已安装模块
-make list-modules
-# 显示所有模块的名称、版本、作者信息
-
-# 6. 验证模块完整性
-make validate-module name=blog
-# 检查配置文件、文件路径、依赖关系
+# CRUD生成（前后端）
+make gen-crud table=system_user module=system name=用户 frontend=1
 ```
 
-### Worker任务示例
+### 完整命令示例
+
+#### 模块管理
 
 ```bash
-# 1. 创建异步任务（Task）
-make gen-worker module=system worker=SendEmail
-# 或完整命令
+# 创建新模块
+go run ./hack/generator/main.go module:create -name blog
+
+# 克隆模块
+go run ./hack/generator/main.go module:clone -source blog -target news
+
+# 导出模块
+go run ./hack/generator/main.go module:export -name blog
+
+# 导入模块
+go run ./hack/generator/main.go module:import -file blog.v1.0.0.zip
+
+# 列出模块
+go run ./hack/generator/main.go module:list
+
+# 验证模块
+go run ./hack/generator/main.go module:validate -name blog
+```
+
+#### Worker任务
+
+```bash
+# 创建异步任务
 go run ./hack/generator/main.go worker:create -module system -name SendEmail -type task
 
-# 生成文件:
-# - modules/system/worker/server/send_email_worker.go
-# - modules/system/consts/worker.go (更新常量)
-
-# 2. 创建定时任务（Cron）
-make gen-worker module=system worker=CleanCache
+# 创建定时任务
 go run ./hack/generator/main.go worker:create -module system -name CleanCache -type cron
 
-# 生成文件:
-# - modules/system/worker/cron/clean_cache_cron.go
-# - modules/system/consts/worker.go (更新常量)
-
-# 3. 创建混合任务（Both）
-make gen-worker module=system worker=DataSync
+# 创建混合任务
 go run ./hack/generator/main.go worker:create -module system -name DataSync -type both
+```
 
-# 生成文件:
-# - modules/system/worker/server/data_sync_worker.go
-# - modules/system/worker/cron/data_sync_cron.go (复用task数据结构)
-# - modules/system/consts/worker.go (更新常量)
+#### CRUD生成
 
-# 4. 生成后需要运行
-# 1. 使用默认模块（system）生成CRUD
-make gen-crud table=system_user
-# 或完整命令
+```bash
+# 仅生成后端代码
 go run ./hack/generator/main.go crud:generate -m=system -t=system_user -n=用户
 
-# 生成文件（后端）:
-# - modules/system/api/system/system_user.go        # API定义
-# - modules/system/model/req/system_user.go         # 请求模型
-# - modules/system/model/res/system_user.go         # 响应模型
-# - modules/system/logic/system/system_user.go      # 业务逻辑
-# - modules/system/controller/system/system_user.go # 控制器
+# 同时生成前后端代码
+go run ./hack/generator/main.go crud:generate -m=system -t=system_user -n=用户 --frontend
 
-# 2. 同时生成前端代码
-make gen-crud table=setting_config module=setting frontend=1
-# 或完整命令
-go run ./hack/generator/main.go crud:generate -m=setting -t=setting_config -n=配置 --frontend
+# 预览模式（不写入文件）
+go run ./hack/generator/main.go crud:generate -m=system -t=system_user -n=用户 --dry-run
 
-# 生成文件（前端）:
-# - admin-ui/apps/backend/src/api/setting/config.ts                  # 前端API
-# - admin-ui/apps/backend/src/views/setting/config/index.vue         # 页面
-# - admin-ui/apps/backend/src/views/setting/config/model.ts          # 类型定义
-# - admin-ui/apps/backend/src/views/setting/config/schemas.ts        # 列配置
-# - admin-ui/apps/backend/src/views/setting/config/use-config-crud.ts # CRUD逻辑
-# - resource/migrations/menu_setting_config.sql                      # 菜单SQL
+# 强制覆盖
+go run ./hack/generator/main.go crud:generate -m=system -t=system_user -n=用户 --force
 
-# 3. 指定模块生成CRUD
-make gen-crud table=system_post module=system
-go run ./hack/generator/main.go crud:generate -m=system -t=system_post -n=帖子
+# 批量生成（配置文件）
+go run ./hack/generator/main.go crud:generate -c=generator.yaml
 
-# 4. 自定义业务名称
-go run ./hack/generator/main.go crud:generate -m=system -t=system_user -n=用户
+# JSON格式输出
+go run ./hack/generator/main.go crud:generate -m=system -t=system_user -n=用户 -o=json
+```
 
-# 5. 生成后需要运行
-make service  # 更新service接口
-make ctrl     # 生成controller方法
+### 生成文件说明
 
-# 6. 完整工作流
-make gen-crud table=system_dept
-make service
-make ctrl
-# 现在可以启动服务测试API了
+#### 后端文件
+```
+modules/{module}/
+├── api/{module}/{resource}.go        # API定义
+├── model/req/{table}.go              # 请求模型
+├── model/res/{table}.go              # 响应模型
+├── logic/{module}/{table}.go         # 业务逻辑
+└── controller/{module}/{resource}.go # 控制器
+```
+
+#### 前端文件（使用 --frontend 时生成）
+```
+admin-ui/apps/backend/src/
+├── api/{module}/{resource}.ts                           # 前端API
+├── views/{module}/{resource}/
+│   ├── index.vue                                        # 页面组件
+│   ├── model.ts                                         # 类型定义
+│   ├── schemas.ts                                       # 列配置
+│   └── use-{resource}-crud.ts                          # CRUD逻辑
+└── router/routes/modules/{module}.ts                    # 路由配置（数据库驱动，需执行SQL）
+
+resource/migrations/
+└── menu_{module}_{resource}.sql                         # 菜单SQL
 ```
 
 ## 完整工作流示例
@@ -189,7 +206,7 @@ make ctrl
 make gen-module name=blog
 
 # Step 2: 生成CRUD代码（假设已有blog_post表）
-make gen-crud table=blog_post module=blog
+make gen-crud table=blog_post module=blog name=帖子 frontend=1
 
 # Step 3: 创建Worker任务
 make gen-worker module=blog worker=PublishPost
@@ -199,7 +216,10 @@ make dao      # 更新数据访问层
 make service  # 更新服务层
 make ctrl     # 更新控制器
 
-# Step 5: 启动服务
+# Step 5: 执行菜单SQL
+# 将生成的 resource/migrations/menu_blog_post.sql 导入数据库
+
+# Step 6: 启动服务
 go run main.go
 ```
 
@@ -210,8 +230,8 @@ go run main.go
 make clone-module name=product source=blog
 
 # Step 2: 生成CRUD
-make gen-crud table=product_item module=product
-make gen-crud table=product_category module=product
+make gen-crud table=product_item module=product name=商品 frontend=1
+make gen-crud table=product_category module=product name=分类 frontend=1
 
 # Step 3: 更新代码并启动
 make service && make ctrl
@@ -229,14 +249,10 @@ make export-module name=blog
 # 在生产机器上：
 # 2. 导入模块
 make import-module file=blog.v1.0.0.zip
-# 自动执行迁移、部署文件
 
 # 3. 更新代码并启动
 make service && make dao
 go run main.go
-
-# 批量生成（使用配置文件）
-go run hack/generator/main.go crud:generate -config=generator.yaml
 ```
 
 ## 配置文件
@@ -263,26 +279,99 @@ tables:
     business: Permission
     description: 权限管理
 ```
-6) - 首个完整版本
+
+## 工具函数
+
+### naming.go - 命名转换
+
+```go
+// snake_case
+ToSnakeCase("CategoryName") // "category_name"
+
+// camelCase
+ToCamelCase("category_name") // "categoryName"
+
+// PascalCase
+ToPascalCase("category_name") // "CategoryName"
+
+// CONST_CASE
+ToConstCase("CategoryName") // "CATEGORY_NAME"
+
+// kebab-case
+ToKebabCase("CategoryName") // "category-name"
+```
+
+### output.go - 命令结果输出
+
+```go
+// 创建结果
+result := utils.NewCommandResult(true, "操作成功")
+
+// 添加文件
+result.AddFile("path/to/file.go")
+
+// 添加警告
+result.AddWarning("提示信息")
+
+// 添加错误
+result.AddError("错误信息")
+
+// 输出结果
+result.Print(utils.OutputFormatText)  // 文本格式
+result.Print(utils.OutputFormatJSON)  // JSON格式
+```
+
+### file.go - 文件操作
+
+```go
+// 检查路径
+PathExists(path) bool
+IsDir(path) bool
+IsFile(path) bool
+
+// 目录操作
+EnsureDir(dir) error
+GetProjectRoot() (string, error)
+
+// 文件操作
+CopyFile(src, dst) error
+```
+
+### zip.go - 压缩/解压
+
+```go
+// 压缩目录
+ZipDirectory(ctx, srcDir, dstZip) error
+
+// 解压文件
+UnzipFile(srcZip, dstDir) error
+```
+
+## 注意事项
+
+1. **独立性**: 工具不依赖项目业务代码，可独立编译和分发
+2. **安全性**: 解压文件时会检查路径穿越攻击
+3. **代码格式化**: 生成的Go代码会自动格式化（gofmt/goimports）
+4. **模板变量**: 
+   - 后端模板使用 `{{.Variable}}` 格式（Go template语法）
+   - 前端模板使用 `<%.Variable%>` 格式（避免与Vue语法冲突）
+5. **菜单SQL**: 生成后需要手动执行SQL或放入migration文件
+
+## 版本历史
+
+- **v1.0.0** (2026-06-10)
   - ✅ 完成基础架构搭建
   - ✅ 完成模块管理功能（创建/克隆/导入/导出/列表/验证）
   - ✅ 实现.module.yaml配置系统
   - ✅ 实现变量替换引擎
-  - ✅ 创建17个模块模板文件
   - ✅ 完成Worker任务生成器（task/cron/both三种类型）
-  - ✅ 完成CRUD代码生成器
+  - ✅ 完成CRUD代码生成器（后端）
+  - ✅ 完成CRUD前端代码生成（Vue3 + TypeScript）
   - ✅ 集成到Makefile工作流
-  - ✅ 清理旧代码，重命名模块加载器
+  - ✅ 添加菜单SQL生成功能
 
 ## 相关文档
 
-- [技术方案](../../docs/PLAN-CodeGeneratorUnification.md)
-- [任务清单](../../docs/TODO-CodeGeneratorUnification.md)
-- [阶段一完成报告](../../docs/STAGE1_COMPLETION_REPORT.md)
-- [阶段二完成报告](../../docs/STAGE2_COMPLETION_REPORT.md)
-- [阶段三完成报告](../../docs/STAGE3_COMPLETION_REPORT.md)
-- [阶段四完成报告](../../docs/STAGE4_COMPLETION_REPORT.md)
-- [阶段五完成报告](../../docs/STAGE5_COMPLETION_REPORT.md)
 - [.module.yaml 配置规范](docs/MODULE_YAML_SPEC.md)
 
 ## 贡献指南
@@ -307,85 +396,6 @@ go run main.go -h
 # 运行测试
 go test ./...
 ```
-
-## 工具函数
-
-### naming.go - 命名转换
-
-```go
-// snake_case
-ToSnakeCase("CategoryName") // "category_name"
-
-// camelCase
-ToCamelCase("category_name") // "categoryName"
-
-// PascalCase
-ToPascalCase("category_name") // "CategoryName"
-
-// CONST_CASE
-ToConstCase("CategoryName") // "CATEGORY_NAME"
-
-// kebab-case
-ToKebabCase("CategoryName") // "category-name"
-```
-
-### file.go - 文件操作
-
-```go
-// 检查路径
-PathExists(path) bool
-IsDir(path) bool
-IsFile(path) bool
-
-// 目录操作
-EnsureDir(dir) error
-GetProjectRoot() (string, error)
-GetModuleName() (string, error)
-
-// 文件操作
-CopyFile(src, dst) error
-WriteFile(path, content, overwrite) error
-
-// 代码格式化
-FormatGoCode(filePath) error
-FormatGoCodeInDir(dir) error
-```
-
-### zip.go - 压缩/解压
-
-```go
-// 压缩目录
-ZipDirectory(ctx, srcDir, dstZip) error
-
-// 解压文件
-UnzipFile(srcZip, dstDir) error
-```
-
-## 注意事项
-
-1. **独立性**: 工具不依赖项目业务代码，可独立编译和分发
-2. **安全性**: 解压文件时会检查路径穿越攻击
-3. **代码格式化**: 生成的Go代码会自动格式化（gofmt/goimports）
-4. **模板变量**: 使用 `{{.Variable}}` 格式，遵循Go template语法
-
-## 版本历史
-
-- **v1.0.0** (2026-03-04)
-  - ✅ 完成基础架构搭建
-  - ✅ 完成模块管理功能（创建/克隆/导入/导出/列表/验证）
-  - ✅ 实现.module.yaml配置系统
-  - ✅ 实现变量替换引擎
-  - ✅ 创建17个模块模板文件
-  - ⏳ Worker任务生成（待开发）
-  -.module.yaml 配置规范](docs/MODULE_YAML_SPEC.md) ✅
-- [ ⏳ CRUD代码生成（待开发）
-
-## 相关文档
-
-- [技术方案](../../docs/PLAN-CodeGeneratorUnification.md)
-- [任务清单](../../docs/TODO-CodeGeneratorUnification.md)
-- [模块开发指南](../../docs/MODULE.md) - 待创建
-- [Worker开发指南](../../docs/WORKER.md) - 待创建
 
 ## 许可证
 
