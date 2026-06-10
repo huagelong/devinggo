@@ -44,7 +44,6 @@
 
 ## 文档
 
-- [文档](https://devinggo.devinghub.com/)
 - [zread](https://zread.ai/huagelong/devinggo)
 
 ## 项目结构
