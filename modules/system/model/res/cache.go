@@ -12,13 +12,20 @@ type CacheInfo struct {
 }
 
 type ServerInfo struct {
-	Version      string `json:"version"`
-	RedisMode    string `json:"redis_mode"`
-	RunDays      string `json:"run_days"`
-	AofEnabled   string `json:"aof_enabled"`
-	UseMemory    string `json:"use_memory"`
-	Port         string `json:"port"`
-	Clients      string `json:"clients"`
-	ExpiredKeys  string `json:"expired_keys"`
-	SysTotalKeys int    `json:"sys_total_keys"`
+	Version           string  `json:"version"`
+	RedisMode         string  `json:"redis_mode"`
+	RunDays           string  `json:"run_days"`
+	AofEnabled        string  `json:"aof_enabled"`
+	UseMemory         string  `json:"use_memory"`
+	Port              string  `json:"port"`
+	Clients           string  `json:"clients"`
+	ExpiredKeys       string  `json:"expired_keys"`
+	SysTotalKeys      int     `json:"sys_total_keys"`
+	Qps               string  `json:"qps"`
+	HitRate           float64 `json:"hit_rate"`
+	BlockedClients    string  `json:"blocked_clients"`
+	RejectedConn      string  `json:"rejected_conn"`
+	MemoryPeak        string  `json:"memory_peak"`
+	MemFragmentRatio  string  `json:"mem_fragment_ratio"`
+	TotalCommands     string  `json:"total_commands"`
 }

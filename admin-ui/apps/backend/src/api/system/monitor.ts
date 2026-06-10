@@ -33,8 +33,15 @@ export namespace MonitorApi {
     port?: string;
     aof_enabled?: string;
     expired_keys?: string;
-    sys_total_keys?: string;
+    sys_total_keys?: number;
     use_memory?: string;
+    qps?: string;
+    hit_rate?: number;
+    blocked_clients?: string;
+    rejected_conn?: string;
+    memory_peak?: string;
+    mem_fragment_ratio?: string;
+    total_commands?: string;
   }
 
   export interface CacheInfo {

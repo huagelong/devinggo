@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import type { MonitorApi } from '#/api/system/monitor';
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 import { $t } from '@vben/locales';
 import { Page } from '@vben/common-ui';
+import { EchartsUI, useEcharts } from '@vben/plugins/echarts';
+import type { EchartsUIType } from '@vben/plugins/echarts';
 
 import { message } from '#/adapter/tdesign';
 import {
@@ -34,6 +36,154 @@ const cacheKeys = ref<string[]>([]);
 const selectedKeys = ref<string[]>([]);
 const searchKey = ref('');
 const cacheContent = ref('');
+
+const memoryChartRef = ref<EchartsUIType>();
+const { renderEcharts: renderMemoryChart } = useEcharts(memoryChartRef);
+
+interface StatCardItem {
+  label: string;
+  value: string | number;
+  unit?: string;
+  color?: string;
+}
+
+const statCards = computed<StatCardItem[]>(() => {
+  const s = serverInfo.value;
+  return [
+    { label: $t('system.monitor.cache.redisVersion'), value: s.version || '-', color: 'text-blue-600' },
+    { label: $t('system.monitor.cache.runMode'), value: s.redis_mode || '-', color: 'text-purple-600' },
+    { label: $t('system.monitor.cache.port'), value: s.port || '-', color: 'text-gray-600' },
+    { label: $t('system.monitor.cache.runDays'), value: s.run_days || '-', unit: '天', color: 'text-orange-600' },
+    { label: $t('system.monitor.cache.clientConnections'), value: s.clients || '-', color: 'text-green-600' },
+    { label: $t('system.monitor.cache.aofStatus'), value: s.aof_enabled || '-', color: 'text-red-600' },
+    { label: $t('system.monitor.cache.systemUsedKeys'), value: s.sys_total_keys ?? '-', color: 'text-indigo-600' },
+    { label: $t('system.monitor.cache.expiredKeys'), value: s.expired_keys || '-', color: 'text-yellow-600' },
+    { label: $t('system.monitor.cache.qps'), value: s.qps || '-', unit: 'ops/s', color: 'text-cyan-600' },
+    { label: $t('system.monitor.cache.hitRate'), value: s.hit_rate != null ? `${s.hit_rate.toFixed(2)}%` : '-', color: 'text-emerald-600' },
+    { label: $t('system.monitor.cache.totalCommands'), value: s.total_commands || '-', color: 'text-pink-600' },
+    { label: $t('system.monitor.cache.blockedClients'), value: s.blocked_clients || '-', color: 'text-rose-600' },
+    { label: $t('system.monitor.cache.rejectedConn'), value: s.rejected_conn || '-', color: 'text-amber-600' },
+    { label: $t('system.monitor.cache.memoryPeak'), value: s.memory_peak || '-', color: 'text-violet-600' },
+    { label: $t('system.monitor.cache.memFragmentRatio'), value: s.mem_fragment_ratio || '-', color: 'text-teal-600' },
+  ];
+});
+
+const memoryValue = computed(() => {
+  const val = serverInfo.value.use_memory;
+  if (!val) return 0;
+  const num = parseFloat(val);
+  if (Number.isNaN(num)) return 0;
+  return num;
+});
+
+const memoryUnit = computed(() => {
+  const val = serverInfo.value.use_memory;
+  if (!val) return 'MB';
+  const match = val.match(/[a-zA-Z]+$/);
+  return match ? match[0].toUpperCase() : 'MB';
+});
+
+function renderMemoryGauge() {
+  const value = memoryValue.value;
+  const unit = memoryUnit.value;
+  let displayValue = value;
+  let displayUnit = unit;
+
+  if (unit === 'B' || (!unit && value > 1024 * 1024 * 1024)) {
+    displayValue = value / 1024 / 1024 / 1024;
+    displayUnit = 'GB';
+  } else if (unit === 'K' || unit === 'KB' || (!unit && value > 1024 * 1024)) {
+    displayValue = value / 1024 / 1024;
+    displayUnit = 'MB';
+  }
+
+  const maxValue = displayValue > 0 ? Math.ceil(displayValue * 2.5) : 10;
+
+  renderMemoryChart({
+    series: [
+      {
+        type: 'gauge',
+        startAngle: 200,
+        endAngle: -20,
+        min: 0,
+        max: maxValue,
+        splitNumber: 10,
+        itemStyle: {
+          color: '#5ab1ef',
+        },
+        progress: {
+          show: true,
+          width: 12,
+        },
+        pointer: {
+          show: true,
+          width: 4,
+          length: '60%',
+        },
+        axisLine: {
+          lineStyle: {
+            width: 12,
+          },
+        },
+        axisTick: {
+          distance: -18,
+          splitNumber: 5,
+          lineStyle: {
+            width: 1,
+            color: '#999',
+          },
+        },
+        splitLine: {
+          distance: -22,
+          length: 8,
+          lineStyle: {
+            width: 2,
+            color: '#999',
+          },
+        },
+        axisLabel: {
+          distance: -12,
+          color: '#999',
+          fontSize: 10,
+        },
+        anchor: {
+          show: true,
+          size: 15,
+          itemStyle: {
+            borderColor: '#5ab1ef',
+            borderWidth: 2,
+          },
+        },
+        title: {
+          show: true,
+          offsetCenter: [0, '70%'],
+          fontSize: 12,
+          color: '#666',
+        },
+        detail: {
+          valueAnimation: true,
+          fontSize: 24,
+          fontWeight: 'bold',
+          offsetCenter: [0, '40%'],
+          formatter: `{value}`,
+          color: '#333',
+        },
+        data: [
+          {
+            value: Number(displayValue.toFixed(2)),
+            name: `Redis${$t('system.monitor.cache.memoryUsage') || '占用内存'} (${displayUnit})`,
+          },
+        ],
+      },
+    ],
+  });
+}
+
+watch(() => serverInfo.value.use_memory, () => {
+  if (serverInfo.value.use_memory) {
+    renderMemoryGauge();
+  }
+}, { immediate: true });
 
 const columns = [
   { colKey: 'name', title: $t('system.monitor.cache.keyName'), width: 'auto' },
@@ -160,42 +310,26 @@ onMounted(() => {
   <Page auto-content-height>
     <div class="flex h-full flex-col gap-3">
       <!-- Redis Info Panel -->
-      <Card :title="$t('system.monitor.cache.redisInfo')" class="w-full" size="small">
-        <div class="grid grid-cols-2 gap-x-8 gap-y-2 sm:grid-cols-4">
-          <div class="flex items-center gap-2 overflow-hidden">
-            <span class="text-xs text-gray-400 whitespace-nowrap">{{ $t('system.monitor.cache.redisVersion') }}</span>
-            <span class="truncate text-sm font-medium">{{ serverInfo.version || '-' }}</span>
+      <div class="flex gap-3">
+        <Card :title="$t('system.monitor.cache.redisInfo')" class="flex-1" size="small">
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <div
+              v-for="(card, index) in statCards"
+              :key="index"
+              class="flex flex-col justify-center rounded-lg border border-gray-100 bg-gray-50/50 px-3 py-2 transition-colors hover:bg-gray-100/50"
+            >
+              <span class="text-xs text-gray-400">{{ card.label }}</span>
+              <div class="mt-0.5 flex items-baseline gap-1">
+                <span class="text-base font-bold" :class="card.color || 'text-gray-700'">{{ card.value }}</span>
+                <span v-if="card.unit" class="text-xs text-gray-400">{{ card.unit }}</span>
+              </div>
+            </div>
           </div>
-          <div class="flex items-center gap-2 overflow-hidden">
-            <span class="text-xs text-gray-400 whitespace-nowrap">{{ $t('system.monitor.cache.clientConnections') }}</span>
-            <span class="truncate text-sm font-medium">{{ serverInfo.clients || '-' }}</span>
-          </div>
-          <div class="flex items-center gap-2 overflow-hidden">
-            <span class="text-xs text-gray-400 whitespace-nowrap">{{ $t('system.monitor.cache.runMode') }}</span>
-            <span class="truncate text-sm font-medium">{{ serverInfo.redis_mode || '-' }}</span>
-          </div>
-          <div class="flex items-center gap-2 overflow-hidden">
-            <span class="text-xs text-gray-400 whitespace-nowrap">{{ $t('system.monitor.cache.runDays') }}</span>
-            <span class="truncate text-sm font-medium">{{ serverInfo.run_days || '-' }}</span>
-          </div>
-          <div class="flex items-center gap-2 overflow-hidden">
-            <span class="text-xs text-gray-400 whitespace-nowrap">{{ $t('system.monitor.cache.port') }}</span>
-            <span class="truncate text-sm font-medium">{{ serverInfo.port || '-' }}</span>
-          </div>
-          <div class="flex items-center gap-2 overflow-hidden">
-            <span class="text-xs text-gray-400 whitespace-nowrap">{{ $t('system.monitor.cache.aofStatus') }}</span>
-            <span class="truncate text-sm font-medium">{{ serverInfo.aof_enabled || '-' }}</span>
-          </div>
-          <div class="flex items-center gap-2 overflow-hidden">
-            <span class="text-xs text-gray-400 whitespace-nowrap">{{ $t('system.monitor.cache.expiredKeys') }}</span>
-            <span class="truncate text-sm font-medium">{{ serverInfo.expired_keys || '-' }}</span>
-          </div>
-          <div class="flex items-center gap-2 overflow-hidden">
-            <span class="text-xs text-gray-400 whitespace-nowrap">{{ $t('system.monitor.cache.systemUsedKeys') }}</span>
-            <span class="truncate text-sm font-medium">{{ serverInfo.sys_total_keys || '-' }}</span>
-          </div>
-        </div>
-      </Card>
+        </Card>
+        <Card :title="$t('system.monitor.cache.memoryUsage') || 'Redis占用内存'" class="w-64 shrink-0" size="small">
+          <EchartsUI ref="memoryChartRef" class="h-48" />
+        </Card>
+      </div>
 
       <!-- Cache Data Management -->
       <Card :title="$t('system.monitor.cache.dataManagement')" class="flex min-h-0 flex-1 flex-col">

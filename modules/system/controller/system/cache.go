@@ -49,18 +49,33 @@ func (c *cacheController) GetCacheInfo(ctx context.Context, in *system.GetCacheI
 		aofEnabled = "开启"
 	}
 
+	// 计算命中率
+	hits := gconv.Float64(infoStats["keyspace_hits"])
+	misses := gconv.Float64(infoStats["keyspace_misses"])
+	hitRate := float64(0)
+	if hits+misses > 0 {
+		hitRate = hits / (hits + misses) * 100
+	}
+
 	rs := res.CacheInfo{
 		Keys: keys,
 		Server: res.ServerInfo{
-			Version:      gconv.String(infoServer["redis_version"]),
-			RedisMode:    redisMode,
-			RunDays:      gconv.String(infoServer["uptime_in_days"]),
-			AofEnabled:   aofEnabled,
-			UseMemory:    gconv.String(infoMemory["used_memory_human"]),
-			Port:         gconv.String(infoServer["tcp_port"]),
-			Clients:      gconv.String(infoClients["connected_clients"]),
-			ExpiredKeys:  gconv.String(infoStats["expired_keys"]),
-			SysTotalKeys: len(keys),
+			Version:          gconv.String(infoServer["redis_version"]),
+			RedisMode:        redisMode,
+			RunDays:          gconv.String(infoServer["uptime_in_days"]),
+			AofEnabled:       aofEnabled,
+			UseMemory:        gconv.String(infoMemory["used_memory_human"]),
+			Port:             gconv.String(infoServer["tcp_port"]),
+			Clients:          gconv.String(infoClients["connected_clients"]),
+			ExpiredKeys:      gconv.String(infoStats["expired_keys"]),
+			SysTotalKeys:     len(keys),
+			Qps:              gconv.String(infoStats["instantaneous_ops_per_sec"]),
+			HitRate:          hitRate,
+			BlockedClients:   gconv.String(infoClients["blocked_clients"]),
+			RejectedConn:     gconv.String(infoStats["rejected_connections"]),
+			MemoryPeak:       gconv.String(infoMemory["used_memory_peak_human"]),
+			MemFragmentRatio: gconv.String(infoMemory["mem_fragmentation_ratio"]),
+			TotalCommands:    gconv.String(infoStats["total_commands_processed"]),
 		},
 	}
 	out.Data = rs
