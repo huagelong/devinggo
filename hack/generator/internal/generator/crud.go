@@ -308,6 +308,9 @@ func (g *CRUDGenerator) buildFrontendTemplateData() map[string]interface{} {
 		componentName = "System" + g.EntityName
 	}
 	
+	// 生成基于时间戳的菜单ID，避免冲突
+	menuId := int(time.Now().Unix())
+
 	return map[string]interface{}{
 		"ModuleName":      g.ModuleName,
 		"TableName":       g.TableName,
@@ -325,7 +328,7 @@ func (g *CRUDGenerator) buildFrontendTemplateData() map[string]interface{} {
 		"FrontendFields":  frontendFields,
 		"Date":            time.Now().Format("2006-01-02 15:04:05"),
 		"ParentId":        0,
-		"MenuId":          9999,
+		"MenuId":          menuId,
 		"Level":           ",0,",
 		"ParentMenuId":    0,
 	}
@@ -487,6 +490,18 @@ func (g *CRUDGenerator) Generate() error {
 		if err := g.GenerateFrontendCode(); err != nil {
 			return fmt.Errorf("生成前端代码失败：%v", err)
 		}
+	}
+
+	// 自动注册 service 接口
+	fmt.Printf("\n正在注册 service 接口...\n")
+	if err := g.RegisterServiceInterface(); err != nil {
+		fmt.Printf("  ⚠️ 注册 service 接口失败（可手动添加）：%v\n", err)
+	}
+
+	// 自动注册路由
+	fmt.Printf("正在注册路由...\n")
+	if err := g.RegisterRouter(); err != nil {
+		fmt.Printf("  ⚠️ 注册路由失败（可手动添加）：%v\n", err)
 	}
 
 	fmt.Printf("\n✓ CRUD代码生成完成！\n")
@@ -786,5 +801,120 @@ func (g *CRUDGenerator) renderAndSaveTemplate(templatePath string, outputPath st
 
 	fmt.Printf("  ✓ 已生成：%s\n", outputPath)
 	g.GeneratedFiles = append(g.GeneratedFiles, outputPath)
+	return nil
+}
+
+// RegisterServiceInterface 自动在 service/system.go 中注册接口
+func (g *CRUDGenerator) RegisterServiceInterface() error {
+	serviceFile := filepath.Join(g.WorkDir, "modules", g.ModuleName, "service", "system.go")
+	if !utils.PathExists(serviceFile) {
+		return fmt.Errorf("service 文件不存在: %s", serviceFile)
+	}
+
+	content, err := os.ReadFile(serviceFile)
+	if err != nil {
+		return fmt.Errorf("读取 service 文件失败: %v", err)
+	}
+
+	contentStr := string(content)
+
+	// 检查是否已注册
+	if strings.Contains(contentStr, fmt.Sprintf("I%s interface", g.EntityName)) {
+		fmt.Printf("  ℹ️ service 接口已存在，跳过\n")
+		return nil
+	}
+
+	// 1. 插入接口定义（在 ISystemUser 之前）
+	interfaceDef := fmt.Sprintf(`	// I%s defines the interface for %s operations.
+	I%s interface {
+		// Model returns the database Model for %s operations.
+		Model(ctx context.Context) *gdb.Model
+		// GetPageListForSearch retrieves a paginated list of %s with search criteria.
+		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.%sSearch) (rs []*res.%s, total int, err error)
+		// GetList retrieves a list of %s with search criteria.
+		GetList(ctx context.Context, in *req.%sSearch) (out []*res.%s, err error)
+		// Save creates a new %s.
+		Save(ctx context.Context, in *req.%sSave) (id int64, err error)
+		// GetById retrieves a %s by ID.
+		GetById(ctx context.Context, id int64) (res *res.%s, err error)
+		// Update modifies an existing %s.
+		Update(ctx context.Context, in *req.%sUpdate) (err error)
+		// Delete soft deletes %s by IDs.
+		Delete(ctx context.Context, ids []int64) (err error)
+		// RealDelete permanently removes %s by IDs.
+		RealDelete(ctx context.Context, ids []int64) (err error)
+		// Recovery restores soft-deleted %s.
+		Recovery(ctx context.Context, ids []int64) (err error)
+		// ChangeStatus changes the status of a %s.
+		ChangeStatus(ctx context.Context, id int64, status int) (err error)
+	}
+`, g.EntityName, g.VarName, g.EntityName, g.VarName, g.VarName, g.EntityName, g.EntityName,
+		g.VarName, g.EntityName, g.EntityName, g.VarName, g.EntityName, g.VarName, g.EntityName,
+		g.VarName, g.EntityName, g.VarName, g.EntityName, g.VarName, g.VarName, g.VarName)
+
+	contentStr = strings.Replace(contentStr, "\t// ISystemUser defines the interface for user management operations.",
+		interfaceDef+"\t// ISystemUser defines the interface for user management operations.", 1)
+
+	// 2. 插入局部变量（在 localSystemUser 之前）
+	localVar := fmt.Sprintf("\tlocal%s\t\t\t\t   I%s\n", g.EntityName, g.EntityName)
+	contentStr = strings.Replace(contentStr, "\tlocalSystemUser                ISystemUser",
+		localVar+"\tlocalSystemUser                ISystemUser", 1)
+
+	// 3. 插入 getter 和 register 函数（在 SystemUser() 之前）
+	getterFunc := fmt.Sprintf(`func %s() I%s {
+	if local%s == nil {
+		panic("implement not found for interface I%s, forgot register?")
+	}
+	return local%s
+}
+
+func Register%s(i I%s) {
+	local%s = i
+}
+
+`, g.EntityName, g.EntityName, g.EntityName, g.EntityName, g.EntityName, g.EntityName, g.EntityName, g.EntityName)
+
+	contentStr = strings.Replace(contentStr, "func SystemUser() ISystemUser {",
+		getterFunc+"func SystemUser() ISystemUser {", 1)
+
+	if err := os.WriteFile(serviceFile, []byte(contentStr), 0644); err != nil {
+		return fmt.Errorf("写入 service 文件失败: %v", err)
+	}
+
+	fmt.Printf("  ✓ 已注册 service 接口：%s\n", g.EntityName)
+	return nil
+}
+
+// RegisterRouter 自动在 router/system/router.go 中注册路由
+func (g *CRUDGenerator) RegisterRouter() error {
+	routerFile := filepath.Join(g.WorkDir, "modules", g.ModuleName, "router", "system", "router.go")
+	if !utils.PathExists(routerFile) {
+		return fmt.Errorf("router 文件不存在: %s", routerFile)
+	}
+
+	content, err := os.ReadFile(routerFile)
+	if err != nil {
+		return fmt.Errorf("读取 router 文件失败: %v", err)
+	}
+
+	contentStr := string(content)
+
+	// 检查是否已注册
+	controllerName := fmt.Sprintf("system.%sController", g.EntityName)
+	if strings.Contains(contentStr, controllerName) {
+		fmt.Printf("  ℹ️ 路由已存在，跳过\n")
+		return nil
+	}
+
+	// 在 DashboardController 之前插入新的 controller
+	newController := fmt.Sprintf("\t\t\tsystem.%sController,\n", g.EntityName)
+	contentStr = strings.Replace(contentStr, "\t\t\tsystem.DashboardController,",
+		newController+"\t\t\tsystem.DashboardController,", 1)
+
+	if err := os.WriteFile(routerFile, []byte(contentStr), 0644); err != nil {
+		return fmt.Errorf("写入 router 文件失败: %v", err)
+	}
+
+	fmt.Printf("  ✓ 已注册路由：%s\n", g.EntityName)
 	return nil
 }

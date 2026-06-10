@@ -80,10 +80,15 @@ func (s *s{{.EntityName}}) handleSearch(ctx context.Context, in *req.{{.EntityNa
 func (s *s{{.EntityName}}) Save(ctx context.Context, in *req.{{.EntityName}}Save) (id int64, err error) {
 	saveData := do.{{.EntityName}}{
 {{.SaveDoFields}}	}
-	id, err = orm.NewQuery(s.Model(ctx)).Data(&saveData).InsertAndGetId()
+	rs, err := s.Model(ctx).Data(saveData).Insert()
 	if utils.IsError(err) {
-		return 0, err
+		return
 	}
+	tmpId, err := rs.LastInsertId()
+	if utils.IsError(err) {
+		return
+	}
+	id = gconv.Int64(tmpId)
 	return
 }
 
@@ -103,7 +108,7 @@ func (s *s{{.EntityName}}) GetById(ctx context.Context, id int64) (out *res.{{.E
 func (s *s{{.EntityName}}) Update(ctx context.Context, in *req.{{.EntityName}}Update) (err error) {
 	updateData := do.{{.EntityName}}{
 {{.UpdateDoFields}}	}
-	_, err = orm.NewQuery(s.Model(ctx)).Data(&updateData).Where("id", in.Id).Update()
+	_, err = s.Model(ctx).Data(updateData).Where("id", in.Id).Update()
 	if utils.IsError(err) {
 		return err
 	}

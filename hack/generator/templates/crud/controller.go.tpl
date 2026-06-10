@@ -11,6 +11,7 @@ import (
 	"devinggo/internal/dao"
 	"devinggo/modules/{{.ModuleName}}/api/{{.PackageName}}"
 	"devinggo/modules/{{.ModuleName}}/controller/base"
+	"devinggo/modules/{{.ModuleName}}/model/req"
 	"devinggo/modules/{{.ModuleName}}/model/res"
 	"devinggo/modules/{{.ModuleName}}/service"
 
@@ -46,7 +47,7 @@ func (c *{{.VarName}}Controller) Index(ctx context.Context, in *{{.PackageName}}
 
 func (c *{{.VarName}}Controller) List(ctx context.Context, in *{{.PackageName}}.List{{.EntityName}}Req) (out *{{.PackageName}}.List{{.EntityName}}Res, err error) {
 	out = &{{.PackageName}}.List{{.EntityName}}Res{}
-	items, err := service.{{.EntityName}}().GetList(ctx, &{{.PackageName}}.{{.EntityName}}Search{})
+	items, err := service.{{.EntityName}}().GetList(ctx, &req.{{.EntityName}}Search{})
 	if err != nil {
 		return
 	}
