@@ -289,7 +289,9 @@
     "confirmDelete": "Are you sure to delete this file?",
     "confirmRecovery": "Are you sure to recover this file?",
     "confirmPermanentDelete": "Are you sure to permanently delete this file?",
-    "downloadFile": "Download file: {0}"
+    "downloadFile": "Download file: {0}",
+    "windowMode": "Window Mode",
+    "listMode": "List Mode"
   },
   "upload": {
     "fileType": "File Type",
