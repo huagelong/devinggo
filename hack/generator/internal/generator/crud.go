@@ -231,7 +231,11 @@ func (g *CRUDGenerator) buildFrontendFields() []FrontendField {
 		}
 		
 		tsType := mapGoTypeToTSType(f.Type)
+		// 一般文本、时间、选择(status)类型可搜索
 		isSearchable := f.IsSearchable && f.Name != "Id"
+		if f.JSONName == "status" {
+			isSearchable = true
+		}
 		isEditable := f.Name != "Id"
 		isList := true
 		
@@ -481,7 +485,8 @@ func (g *CRUDGenerator) shouldIncludeField(fieldName string) bool {
 }
 
 func isSearchableType(fieldType string) bool {
-	searchableTypes := []string{"string", "int", "int64", "int32"}
+	// 一般文本、时间类型可搜索
+	searchableTypes := []string{"string", "Time"}
 	for _, t := range searchableTypes {
 		if strings.Contains(fieldType, t) {
 			return true

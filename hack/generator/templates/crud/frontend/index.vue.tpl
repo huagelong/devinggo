@@ -225,7 +225,7 @@ onUnmounted(() => {
                 v-model="searchForm.<%.Name%>"
                 :placeholder="<%.Placeholder%>"
                 clearable
-                <%if eq .Component "Select"%>class="w-full"<%end%>
+                <%if eq .Component "Select"%>class="w-full" :options="statusOptions"<%end%>
               />
             </FormItem>
 <%end%>          </div>
