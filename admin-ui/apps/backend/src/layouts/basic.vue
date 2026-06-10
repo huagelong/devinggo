@@ -300,7 +300,6 @@ watch(
         :menus
         :text="userStore.userInfo?.realName"
         :description="userStore.userInfo?.email ?? ''"
-        tag-text="Pro"
         @logout="handleLogout"
         @clearAllCache="handleClearAllCache"
       />
