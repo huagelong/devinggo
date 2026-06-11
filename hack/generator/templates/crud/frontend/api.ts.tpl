@@ -22,6 +22,12 @@ export namespace <%.EntityName%>Api {
     status: number;
   }
 
+  export interface UpdateNumberPayload {
+    id: number;
+    numberName: string;
+    numberValue: number;
+  }
+
   export type BatchPayload = BatchIdsPayload<number>;
   export type ListResponse = PageResponse<ListItem>;
   export type OptionListResponse = ListItem[] | ListResponse;
@@ -61,4 +67,8 @@ export function recovery<%.EntityName%>(ids: number[]) {
 
 export function change<%.EntityName%>Status(data: <%.EntityName%>Api.ChangeStatusPayload) {
   return requestClient.put<void>('<%.ApiPrefix%>/changeStatus', data);
+}
+
+export function update<%.EntityName%>Number(data: <%.EntityName%>Api.UpdateNumberPayload) {
+  return requestClient.put<void>('<%.ApiPrefix%>/updateNumber', data);
 }

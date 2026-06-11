@@ -36,6 +36,7 @@ import {
   delete<%.EntityName%>,
   realDelete<%.EntityName%>,
   recovery<%.EntityName%>,
+  update<%.EntityName%>Number,
 } from '#/api/<%.ModuleName%>/<%.VarName%>';
 import type { DictOption } from '#/composables/crud/use-dict-options';
 import { useDictOptions } from '#/composables/crud/use-dict-options';
@@ -191,6 +192,24 @@ function handleStatusSwitchChange(row: <%.EntityName%>ListItem, value: unknown) 
   void handleStatusChange(row, Boolean(value));
 }
 
+async function handleSortChange(value: number | string, row: <%.EntityName%>ListItem) {
+  const numberValue = Number(value);
+  if (Number.isNaN(numberValue)) return;
+
+  try {
+    await update<%.EntityName%>Number({
+      id: Number(row.id),
+      numberName: 'sort',
+      numberValue,
+    });
+    message.success($t('common.sortUpdateSuccess'));
+    await fetchTableData();
+  } catch (error) {
+    logger.error(error);
+    message.error($t('common.sortUpdateFailed'));
+  }
+}
+
 function handleFullscreenChange() {
   isFullscreen.value = !!document.fullscreenElement;
 }
@@ -221,11 +240,11 @@ onUnmounted(() => {
         <Form :data="searchForm" label-width="80px" layout="inline" colon>
           <div class="grid grid-cols-4 gap-x-4 gap-y-3">
 <%range .SearchFormItems%>            <FormItem :label="$t('<%.LabelKey%>')" name="<%.Name%>">
-              <<%.Component%>
+              <<%.SearchComponent%>
                 v-model="searchForm.<%.Name%>"
                 :placeholder="<%.Placeholder%>"
                 clearable
-                <%if eq .Component "Select"%>class="w-full" :options="statusOptions"<%end%>
+                <%if eq .SearchComponent "Select"%>class="w-full" :options="statusOptions"<%end%>
               />
             </FormItem>
 <%end%>          </div>
@@ -311,6 +330,17 @@ onUnmounted(() => {
               :disabled="isRecycleBin"
               :value="row?.status === 1"
               @change="(value: unknown) => handleStatusSwitchChange(row, value)"
+            />
+          </template>
+
+          <template #sort="{ row }">
+            <InputNumber
+              :value="row?.sort"
+              :min="0"
+              :max="9999"
+              size="small"
+              :disabled="isRecycleBin"
+              @change="(value: number | string) => handleSortChange(value, row)"
             />
           </template>
 

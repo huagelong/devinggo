@@ -150,3 +150,13 @@ func (s *s{{.EntityName}}) ChangeStatus(ctx context.Context, id int64, status in
 	}
 	return
 }
+
+func (s *s{{.EntityName}}) UpdateNumber(ctx context.Context, id int64, numberName string, numberValue int) (err error) {
+	_, err = s.Model(ctx).Where("id", id).Update(g.Map{
+		numberName: numberValue,
+	})
+	if utils.IsError(err) {
+		return err
+	}
+	return
+}

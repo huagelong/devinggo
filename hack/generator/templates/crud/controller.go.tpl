@@ -163,3 +163,12 @@ func (c *{{.VarName}}Controller) ChangeStatus(ctx context.Context, in *{{.Packag
 	}
 	return
 }
+
+func (c *{{.VarName}}Controller) UpdateNumber(ctx context.Context, in *{{.PackageName}}.UpdateNumber{{.EntityName}}Req) (out *{{.PackageName}}.UpdateNumber{{.EntityName}}Res, err error) {
+	out = &{{.PackageName}}.UpdateNumber{{.EntityName}}Res{}
+	err = service.{{.EntityName}}().UpdateNumber(ctx, in.Id, in.NumberName, in.NumberValue)
+	if err != nil {
+		return
+	}
+	return
+}

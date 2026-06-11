@@ -123,3 +123,15 @@ type ChangeStatus{{.EntityName}}Req struct {
 type ChangeStatus{{.EntityName}}Res struct {
 	g.Meta `mime:"application/json"`
 }
+
+type UpdateNumber{{.EntityName}}Req struct {
+	g.Meta `path:"/{{.VarName}}/updateNumber" method:"put" tags:"{{.ChineseName}}" summary:"更新数字字段" x-permission:"{{.ModuleName}}:{{.VarName}}:update"`
+	model.AuthorHeader
+	Id          int64  `json:"id" dc:"ids" v:"min:1#Id不能为空"`
+	NumberName  string `json:"numberName" dc:"数字字段名" v:"required#字段名不能为空"`
+	NumberValue int    `json:"numberValue" dc:"数字字段值"`
+}
+
+type UpdateNumber{{.EntityName}}Res struct {
+	g.Meta `mime:"application/json"`
+}

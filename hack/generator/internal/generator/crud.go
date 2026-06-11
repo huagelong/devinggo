@@ -38,9 +38,10 @@ type FrontendField struct {
 	Width    string // 宽度
 	Title    string // 列标题（i18n键）
 	// 搜索表单相关
-	Component   string // 组件类型（Input, Select, DateRangePicker）
-	LabelKey    string // 标签i18n键
-	Placeholder string // 占位符
+	Component      string // 组件类型（Input, Select, DateRangePicker）- 用于编辑表单
+	SearchComponent string // 搜索表单组件类型
+	LabelKey       string // 标签i18n键
+	Placeholder    string // 占位符
 	// 表单相关
 	Rules         string // 验证规则
 	FormItemClass string // 表单项类名
@@ -250,7 +251,10 @@ func (g *CRUDGenerator) buildFrontendFields() []FrontendField {
 			continue
 		}
 		
-		// 确定表单组件类型
+		// 确定搜索表单组件类型
+		searchComponent := getSearchComponent(tsType, f.JSONName)
+		
+		// 确定编辑表单组件类型
 		formComponent := "Input"
 		if f.JSONName == "status" {
 			formComponent = "RadioGroup"
@@ -263,27 +267,26 @@ func (g *CRUDGenerator) buildFrontendFields() []FrontendField {
 		}
 		
 		field := FrontendField{
-			Name:         f.JSONName,
-			Type:         tsType,
-			TSParamType:  tsType,
-			DefaultValue: searchDefault,
-			IsSearchable: isSearchable,
-			IsList:       isList,
-			IsEditable:   isEditable,
-			IsRequired:   f.IsRequired,
-			Optional:     !f.IsRequired,
-			Comment:      f.Comment,
-			Align:        "center",
-			ColKey:       f.JSONName,
-			Width:        getColumnWidth(f.JSONName),
-			Title:        fmt.Sprintf("$t('%s.%s.%s')", g.ModuleName, g.VarName, f.JSONName),
-			Component:    getSearchComponent(tsType, f.JSONName),
-			LabelKey:     fmt.Sprintf("%s.%s.%s", g.ModuleName, g.VarName, f.JSONName),
-			Placeholder:  fmt.Sprintf("$t('ui.placeholder.input')"),
+			Name:            f.JSONName,
+			Type:            tsType,
+			TSParamType:     tsType,
+			DefaultValue:    searchDefault,
+			IsSearchable:    isSearchable,
+			IsList:          isList,
+			IsEditable:      isEditable,
+			IsRequired:      f.IsRequired,
+			Optional:        !f.IsRequired,
+			Comment:         f.Comment,
+			Align:           "center",
+			ColKey:          f.JSONName,
+			MinWidth:        "140",
+			Width:           getColumnWidth(f.JSONName),
+			Title:           fmt.Sprintf("$t('%s.%s.%s')", g.ModuleName, g.VarName, f.JSONName),
+			Component:       formComponent,
+			SearchComponent: searchComponent,
+			LabelKey:        fmt.Sprintf("%s.%s.%s", g.ModuleName, g.VarName, f.JSONName),
+			Placeholder:     fmt.Sprintf("$t('ui.placeholder.input')"),
 		}
-		
-		// 设置表单组件相关属性
-		field.Component = formComponent
 		if f.IsRequired {
 			field.Rules = "required"
 		}
@@ -1191,6 +1194,8 @@ func (g *CRUDGenerator) RegisterServiceInterface() error {
 		Recovery(ctx context.Context, ids []int64) (err error)
 		// ChangeStatus changes the status of a %s.
 		ChangeStatus(ctx context.Context, id int64, status int) (err error)
+		// UpdateNumber updates a number field of a %s.
+		UpdateNumber(ctx context.Context, id int64, numberName string, numberValue int) (err error)
 	}
 `, en, vn, en, vn, vn, en, en, vn, en, en, vn, en, vn, en, vn, en, vn, vn, vn, vn)
 
