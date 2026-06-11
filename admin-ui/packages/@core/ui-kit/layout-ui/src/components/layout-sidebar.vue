@@ -348,7 +348,7 @@ onUnmounted(() => {
         },
       ]"
       :style="extraStyle"
-      class="fixed top-0 h-full overflow-hidden border-r border-border bg-sidebar transition-all duration-200"
+      class="fixed top-0 h-full overflow-hidden bg-sidebar transition-all duration-200"
     >
       <SidebarCollapseButton
         v-if="isSidebarMixed && expandOnHover"
