@@ -115,6 +115,8 @@ const quickNavItems = computed(() => {
       if (menu) {
         return {
           ...candidate,
+          title: menu.name,
+          description: menu.name,
           path: menu.path,
           icon: menu.icon || candidate.icon,
         };
