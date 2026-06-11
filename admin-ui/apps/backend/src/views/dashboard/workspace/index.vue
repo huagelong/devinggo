@@ -13,7 +13,7 @@ import {
   getQueueMessageReceiveListApi,
   updateQueueMessageReadStatusApi,
 } from '#/api/core/message';
-import { getNoticePageList } from '#/api/system/notice';
+import { getNoticeList } from '#/api/system/common';
 import { logger } from '#/utils/logger';
 
 const userStore = useUserStore();
@@ -146,7 +146,7 @@ async function fetchUnreadMessages() {
 async function fetchNoticeList() {
   loading.value.notices = true;
   try {
-    const res = await getNoticePageList({
+    const res = await getNoticeList({
       page: 1,
       pageSize: 5,
     });
