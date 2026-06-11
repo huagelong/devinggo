@@ -49,6 +49,202 @@ DevingGo Generator 是一个统一的代码生成 CLI 工具，支持：
 |------|------|------|
 | `crud:generate` | 生成 CRUD 代码 | `-m <模块> -t <表名> -n <中文名> [--frontend]` |
 
+## 完整 CLI 参考
+
+### 1. 主程序 CLI (`go run main.go`)
+
+入口：`main.go`，基于 GoFrame `gcmd` 框架。
+
+| 命令 | 用法 | 说明 |
+|------|------|------|
+| 默认无参 | `go run main.go` | 启动所有服务（等同于 `all`） |
+| `all` | `go run main.go all` | 启动 HTTP + Worker 服务 |
+| `http` | `go run main.go http` | 仅启动 HTTP 服务 |
+| `worker` | `go run main.go worker` | 仅启动 Worker 服务 |
+| `version` | `go run main.go version` | 查看版本 |
+| `unpack` | `go run main.go unpack` | 释放打包的资源文件（如配置文件） |
+| `install` | `go run main.go install` | 系统初始化安装 |
+| `migrate:up` | `go run main.go migrate:up [-n N]` | 应用 N 个 up 迁移，N 为空则应用全部 |
+| `migrate:down` | `go run main.go migrate:down [-n N]` | 应用 N 个 down 迁移 |
+| `migrate:goto` | `go run main.go migrate:goto -v 版本` | 迁移到指定版本 |
+| `migrate:create` | `go run main.go migrate:create -name NAME` | 创建带时间戳的 up/down 迁移文件 |
+| `migrate:force` | `go run main.go migrate:force -v 版本` | 强制设置版本（忽略脏状态） |
+| `help` | `go run main.go help` | 查看帮助 |
+
+**全局参数**：
+- `-c, --config`：指定配置文件，默认 `config.yaml`
+  ```bash
+  go run main.go -c hack/config.yaml
+  ```
+
+### 2. GoFrame CLI (`gf`)
+
+项目依赖 GoFrame CLI 进行代码生成，常用命令：
+
+| 命令 | 说明 |
+|------|------|
+| `gf run main.go` | 热编译运行 |
+| `gf gen dao` | 根据数据库表生成 Entity/DAO/DO |
+| `gf gen service` | 根据 logic 生成 service 接口 |
+| `gf gen ctrl` | 根据 api 生成 controller/sdk |
+| `gf gen enums` | 扫描枚举生成 enums.go |
+| `gf gen pb` | 解析 protobuf 并生成 go 文件 |
+| `gf gen pbentity` | 根据数据库表生成 protobuf entity |
+| `gf docker` | 构建 Docker 镜像 |
+| `gf up -a` | 升级 GoFrame 到最新版 |
+
+安装/更新 gf CLI：
+```bash
+make cli
+```
+
+### 3. Makefile 命令总览
+
+文件：`Makefile`、`hack/hack.mk`、`hack/hack-cli.mk`、`hack/hack-cus.mk`
+
+#### 开发与构建
+
+| 命令 | 说明 |
+|------|------|
+| `make run` | 开发模式运行，先执行 `make dao service` 再 `go run main.go` |
+| `make build` | 生产构建，自动构建前端并打包到 `resource/public/admin` |
+| `make install` | 执行 `go run main.go install` |
+| `make ui.install` | 安装前端依赖（`yarn install`） |
+| `make ui.build` | 构建前端（`yarn build`） |
+
+#### GoFrame 代码生成
+
+| 命令 | 说明 |
+|------|------|
+| `make dao` | 生成 DAO/DO/Entity |
+| `make service` | 生成 Service 接口 |
+| `make ctrl` | 生成 Controller/SDK |
+| `make enums` | 生成枚举文件 |
+| `make pb` | 生成 protobuf 代码 |
+| `make pbentity` | 生成 protobuf entity |
+
+#### 代码质量
+
+| 命令 | 说明 |
+|------|------|
+| `make lint` | 执行 golangci-lint |
+| `make fmt` | 执行 goimports 和 gofmt 格式化 |
+
+#### Docker / 部署
+
+| 命令 | 说明 |
+|------|------|
+| `make image` | 构建 Docker 镜像 |
+| `make image.push` | 构建并推送镜像 |
+| `make deploy` | 使用 kustomize + kubectl 部署 |
+
+#### 代码生成器封装（`make gen-help` 可查看）
+
+| 命令 | 用法示例 | 说明 |
+|------|----------|------|
+| `make gen-module` | `make gen-module name=blog` | 创建新模块 |
+| `make clone-module` | `make clone-module name=news source=blog` | 克隆模块 |
+| `make export-module` | `make export-module name=blog` | 导出模块 zip |
+| `make import-module` | `make import-module file=./blog.zip` | 导入模块 zip |
+| `make list-modules` | `make list-modules` | 列出所有模块 |
+| `make validate-module` | `make validate-module name=blog` | 验证模块结构 |
+| `make gen-worker` | `make gen-worker module=system worker=SendEmail type=task` | 创建 Worker |
+| `make gen-crud` | `make gen-crud table=system_user module=system name=用户 frontend=1` | 生成 CRUD |
+
+### 4. 代码生成器 CLI (`go run ./hack/generator/main.go`)
+
+| 命令 | 用法 | 说明 |
+|------|------|------|
+| `module:create` | `-name <模块名>` | 创建新模块 |
+| `module:clone` | `-source <源> -target <目标>` | 克隆现有模块 |
+| `module:export` | `-name <模块名>` | 导出模块为 zip |
+| `module:import` | `-file <zip路径>` | 导入模块 |
+| `module:list` | 无参数 | 列出所有模块 |
+| `module:validate` | `-name <模块名>` | 验证模块完整性 |
+| `worker:create` | `-module <模块> -name <名称> [-type task/cron/both]` | 创建 Worker 任务 |
+| `crud:generate` | `-m <模块> -t <表名> -n <中文名> [--frontend]` | 生成 CRUD 代码 |
+
+### 5. 前端 admin-ui CLI
+
+进入 `admin-ui/` 目录执行：
+
+| 命令 | 说明 |
+|------|------|
+| `pnpm install` | 安装依赖 |
+| `pnpm dev` | 启动所有前端应用开发服务器 |
+| `pnpm dev:backend` | 仅启动 backend 应用 |
+| `pnpm dev:docs` | 仅启动 docs 应用 |
+| `pnpm build` | 构建所有应用 |
+| `pnpm build:backend` | 仅构建 backend 应用 |
+| `pnpm build:docs` | 仅构建 docs 应用 |
+| `pnpm build:analyze` | 构建并分析包体积 |
+| `pnpm lint` | 执行 ESLint 检查 |
+| `pnpm format` | 自动格式化代码 |
+| `pnpm check` | 执行所有检查（循环依赖、拼写、类型、依赖） |
+| `pnpm check:type` | 执行 TypeScript 类型检查 |
+| `pnpm check:circular` | 检查循环依赖 |
+| `pnpm check:dep` | 检查依赖问题 |
+| `pnpm check:cspell` | 拼写检查 |
+| `pnpm test:unit` | 运行单元测试 |
+| `pnpm test:e2e` | 运行 E2E 测试 |
+| `pnpm clean` | 清理构建产物 |
+| `pnpm reinstall` | 完全重新安装依赖 |
+| `pnpm commit` | 使用 czg 提交（交互式） |
+
+### 6. 数据库迁移
+
+项目使用 GoFrame 的迁移组件，命令通过主程序 CLI 调用：
+
+```bash
+# 创建迁移
+go run main.go migrate:create -name create_users_table
+
+# 应用迁移
+go run main.go migrate:up
+go run main.go migrate:up -n 1
+
+# 回滚迁移
+go run main.go migrate:down
+go run main.go migrate:down -n 1
+
+# 跳到指定版本
+go run main.go migrate:goto -v 20240101120000
+
+# 强制设置版本
+go run main.go migrate:force -v 20240101120000
+```
+
+### 7. 常用组合工作流
+
+```bash
+# 开发启动（生成 dao/service 后运行）
+make run
+
+# 新建表后更新实体
+gf gen dao
+# 或
+make dao
+
+# 修改 logic 后更新 service 接口
+make service
+
+# 修改 api 后生成 controller
+make ctrl
+
+# 为表生成前后端 CRUD
+make gen-crud table=shop_product module=shop name=商品 frontend=1
+
+# 生成后更新 service/controller
+make service
+make ctrl
+
+# 构建生产包
+make build
+
+# 运行生产二进制
+./main
+```
+
 ## 使用指南
 
 ### 场景1：创建新模块
