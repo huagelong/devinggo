@@ -19,10 +19,6 @@ import 'tinymce/plugins/lists';
 import 'tinymce/plugins/preview';
 import 'tinymce/plugins/table';
 import 'tinymce/plugins/wordcount';
-import 'tinymce/skins/content/default/content.min.css';
-import 'tinymce/skins/content/dark/content.min.css';
-import 'tinymce/skins/ui/oxide/skin.min.css';
-import 'tinymce/skins/ui/oxide-dark/skin.min.css';
 import 'tinymce/themes/silver';
 
 void tinymce;
@@ -84,6 +80,10 @@ const initOptions = computed(() => ({
   toolbar:
     'undo redo | blocks | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table | removeformat code fullscreen',
   skin: isDark.value ? 'oxide-dark' : 'oxide',
+  skin_url: isDark.value ? '/tinymce/skins/ui/oxide-dark' : '/tinymce/skins/ui/oxide',
+  content_css: isDark.value
+    ? '/tinymce/skins/content/dark/content.min.css'
+    : '/tinymce/skins/content/default/content.min.css',
   content_style: isDark.value
     ? 'body.mce-content-body { background-color: #1e1e1e !important; color: #e0e0e0 !important; }'
     : '',
