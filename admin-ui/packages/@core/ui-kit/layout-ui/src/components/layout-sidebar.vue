@@ -329,7 +329,7 @@ onUnmounted(() => {
       <div v-if="slots.logo" :style="headerStyle">
         <slot name="logo"></slot>
       </div>
-      <VbenScrollbar :style="contentStyle" shadow>
+      <VbenScrollbar :style="contentStyle" shadow shadow-border>
         <slot></slot>
       </VbenScrollbar>
 
@@ -343,6 +343,9 @@ onUnmounted(() => {
       v-if="isSidebarMixed"
       :class="[
         themeSub,
+        {
+          'border-l': extraVisible,
+        },
       ]"
       :style="extraStyle"
       class="fixed top-0 h-full overflow-hidden border-r border-border bg-sidebar transition-all duration-200"
@@ -361,8 +364,9 @@ onUnmounted(() => {
       </div>
       <VbenScrollbar
         :style="extraContentStyle"
-        class="py-2"
+        class="border-border py-2"
         shadow
+        shadow-border
       >
         <slot name="extra"></slot>
       </VbenScrollbar>
