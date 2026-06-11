@@ -40,7 +40,6 @@ export const overridesPreferences = defineOverridesPreferences({
     source: '/logo.png',
   },
   theme: {
-    mode: 'light',
     semiDarkHeader: false,
     semiDarkSidebar: true,
     semiDarkSidebarSub: false,

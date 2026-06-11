@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { computed } from 'vue';
 
 import { $t } from '@vben/locales';
@@ -124,7 +124,7 @@ function handleUpdateDisplayColumns(value: string[]) {
         class="mx-auto h-8 w-8 rounded-full object-cover"
         alt="avatar"
       />
-      <span v-else class="text-gray-400">-</span>
+      <span v-else class="text-muted-foreground/80">-</span>
     </template>
 
     <template #status="{ row }">

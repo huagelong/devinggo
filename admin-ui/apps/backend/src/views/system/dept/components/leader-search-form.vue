@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { $t } from '@vben/locales';
 
 import { Button, Form, FormItem, Input, Select } from 'tdesign-vue-next';
@@ -35,7 +35,7 @@ function updateField(field: keyof Props['formData'], value: string | number | un
 </script>
 
 <template>
-  <div class="rounded-md border border-gray-100 bg-white p-4">
+  <div class="rounded-md border border-border bg-card p-4">
     <Form :data="formData" label-width="90px" colon>
       <div class="grid grid-cols-4 gap-x-4 gap-y-3 items-end">
         <FormItem :label="$t('system.dept.username')" name="username">

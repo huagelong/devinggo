@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { LogApi } from '#/api/system/log';
 
 import { onMounted, ref } from 'vue';
@@ -121,7 +121,7 @@ onMounted(() => {
 <template>
   <Page auto-content-height>
     <div class="flex h-full flex-col gap-3">
-      <div class="rounded-md bg-white p-4">
+      <div class="rounded-md bg-card p-4">
         <Form :data="searchForm" label-width="80px" layout="inline" colon>
           <div class="grid grid-cols-4 gap-x-4 gap-y-3">
             <FormItem :label="$t('system.logs.username')" name="username">
@@ -173,7 +173,7 @@ onMounted(() => {
         </Form>
       </div>
 
-      <div class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+      <div class="flex min-h-0 flex-1 flex-col rounded-md bg-card p-4">
         <Table
           :columns="columns"
           :data="tableData"
@@ -207,47 +207,47 @@ onMounted(() => {
       <div v-if="detailRow" class="space-y-4">
         <div class="grid grid-cols-2 gap-4">
           <div class="flex">
-            <span class="w-24 text-gray-500">{{ $t('system.logs.router') }}:</span>
+            <span class="w-24 text-muted-foreground">{{ $t('system.logs.router') }}:</span>
             <span class="flex-1 break-all">{{ detailRow.router }}</span>
           </div>
           <div class="flex">
-            <span class="w-24 text-gray-500">{{ $t('system.logs.username') }}:</span>
+            <span class="w-24 text-muted-foreground">{{ $t('system.logs.username') }}:</span>
             <span>{{ detailRow.username }}</span>
           </div>
           <div class="flex">
-            <span class="w-24 text-gray-500">{{ $t('system.logs.method') }}:</span>
+            <span class="w-24 text-muted-foreground">{{ $t('system.logs.method') }}:</span>
             <span>{{ detailRow.method }}</span>
           </div>
           <div class="flex">
-            <span class="w-24 text-gray-500">{{ $t('system.logs.responseCode') }}:</span>
+            <span class="w-24 text-muted-foreground">{{ $t('system.logs.responseCode') }}:</span>
             <Tag :theme="String(detailRow.response_code) === '200' ? 'success' : 'danger'" variant="light">
               {{ detailRow.response_code }}
             </Tag>
           </div>
           <div class="flex">
-            <span class="w-24 text-gray-500">{{ $t('system.logs.serviceName') }}:</span>
+            <span class="w-24 text-muted-foreground">{{ $t('system.logs.serviceName') }}:</span>
             <span>{{ detailRow.service_name }}</span>
           </div>
           <div class="flex">
-            <span class="w-24 text-gray-500">{{ $t('system.logs.createdAt') }}:</span>
+            <span class="w-24 text-muted-foreground">{{ $t('system.logs.createdAt') }}:</span>
             <span>{{ detailRow.created_at }}</span>
           </div>
           <div class="flex">
-            <span class="w-24 text-gray-500">{{ $t('system.logs.ip') }}:</span>
+            <span class="w-24 text-muted-foreground">{{ $t('system.logs.ip') }}:</span>
             <span>{{ detailRow.ip }}</span>
           </div>
           <div class="flex">
-            <span class="w-24 text-gray-500">{{ $t('system.logs.ipLocation') }}:</span>
+            <span class="w-24 text-muted-foreground">{{ $t('system.logs.ipLocation') }}:</span>
             <span>{{ detailRow.ip_location }}</span>
           </div>
         </div>
         <div class="border-t pt-4">
           <div class="mb-2 font-medium">{{ $t('system.logs.requestData') }}</div>
-          <pre class="max-h-40 overflow-auto rounded bg-gray-50 p-3 text-sm">{{ detailRow.request_data || '-' }}</pre>
+          <pre class="max-h-40 overflow-auto rounded bg-muted/50 p-3 text-sm">{{ detailRow.request_data || '-' }}</pre>
         </div>
         <div class="border-t pt-4">
           <div class="mb-2 font-medium">{{ $t('system.logs.responseData') }}</div>
-          <pre class="max-h-40 overflow-auto rounded bg-gray-50 p-3 text-sm">{{ detailRow.response_data || '-' }}</pre>
+          <pre class="max-h-40 overflow-auto rounded bg-muted/50 p-3 text-sm">{{ detailRow.response_data || '-' }}</pre>
         </div>
       </div>
     </Dialog>

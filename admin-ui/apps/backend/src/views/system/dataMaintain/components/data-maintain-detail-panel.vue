@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { DataMaintainApi } from '#/api/system/data-maintain';
 
 import { ref } from 'vue';
@@ -65,22 +65,22 @@ defineExpose({
 <template>
   <div
     v-if="visible"
-    class="mt-3 rounded-md border border-gray-100 bg-gray-50 p-4"
+    class="mt-3 rounded-md border border-border bg-muted/50 p-4"
   >
     <div class="mb-2 flex items-center justify-between">
-      <div class="text-sm font-medium text-gray-700">
+      <div class="text-sm font-medium text-foreground">
         {{ $t('system.dataMaintain.tableDetail', [currentTable?.name || '-']) }}
       </div>
       <Button size="small" variant="text" @click="close">{{ $t('common.collapse') }}</Button>
     </div>
 
-    <div class="mb-3 grid grid-cols-3 gap-3 text-sm text-gray-600">
+    <div class="mb-3 grid grid-cols-3 gap-3 text-sm text-muted-foreground">
       <div>{{ $t('system.dataMaintain.engine') }}：{{ currentTable?.engine || '-' }}</div>
       <div>{{ $t('system.dataMaintain.collation') }}：{{ currentTable?.collation || '-' }}</div>
       <div>{{ $t('system.dataMaintain.rows') }}：{{ currentTable?.rows ?? '-' }}</div>
     </div>
 
-    <div v-if="!hasDetailedApi" class="text-sm text-gray-500">
+    <div v-if="!hasDetailedApi" class="text-sm text-muted-foreground">
       {{ $t('system.dataMaintain.detailApiNotAvailable') }}
     </div>
 
@@ -97,7 +97,7 @@ defineExpose({
       ]"
     />
 
-    <div class="mt-3 flex items-center gap-2 text-xs text-gray-500">
+    <div class="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
       <Tag theme="warning" variant="light">{{ $t('system.dataMaintain.capabilityReserved') }}</Tag>
       <span>{{ $t('system.dataMaintain.capabilityReservedDesc') }}</span>
     </div>

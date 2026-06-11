@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { $t } from '@vben/locales';
 
 import { Table } from 'tdesign-vue-next';
@@ -58,7 +58,7 @@ function handleSelectChange(keys: Array<number | string>) {
 </script>
 
 <template>
-  <div class="rounded-md border border-gray-100 bg-white p-3">
+  <div class="rounded-md border border-border bg-card p-3">
     <Table
       :columns="columns"
       :data="data"

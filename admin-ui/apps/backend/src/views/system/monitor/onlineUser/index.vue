@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { MonitorApi } from '#/api/system/monitor';
 
 import { onMounted, onUnmounted, ref } from 'vue';
@@ -143,7 +143,7 @@ onUnmounted(() => {
 <template>
   <Page auto-content-height>
     <div class="flex h-full flex-col gap-3">
-      <div class="rounded-md bg-white p-4">
+      <div class="rounded-md bg-card p-4">
         <Form :data="searchForm" label-width="100px" layout="inline" colon>
           <div class="grid grid-cols-2 gap-x-4 gap-y-3 w-full">
             <FormItem label="用户账户" name="username">
@@ -177,7 +177,7 @@ onUnmounted(() => {
         </Form>
       </div>
 
-      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-card p-4">
         <div class="mb-3 flex items-center justify-end gap-2">
           <Tooltip :content="isFullscreen ? $t('common.exitFullscreen') : $t('common.fullscreen')">
             <Button shape="square" variant="outline" @click="toggleFullscreen">

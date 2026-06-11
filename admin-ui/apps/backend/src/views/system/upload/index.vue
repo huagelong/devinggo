@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { UploadTreeItem } from './model';
 
 import { computed, onMounted, onUnmounted, ref } from 'vue';
@@ -140,8 +140,8 @@ onUnmounted(() => {
   <Page auto-content-height>
     <div class="flex h-full gap-3">
       <!-- Left Tree Slider -->
-      <div class="w-48 flex-shrink-0 rounded-md bg-white p-2">
-        <div class="mb-2 px-2 text-sm font-medium text-gray-500">{{ $t('system.upload.fileType') }}</div>
+      <div class="w-48 flex-shrink-0 rounded-md bg-card p-2">
+        <div class="mb-2 px-2 text-sm font-medium text-muted-foreground">{{ $t('system.upload.fileType') }}</div>
         <Tree
           v-model="selectedTreeKey"
           :data="treeData"
@@ -154,7 +154,7 @@ onUnmounted(() => {
       <!-- Main Content -->
       <div class="flex min-h-0 flex-1 flex-col gap-3">
         <!-- Upload Area -->
-        <div class="rounded-md bg-white p-4">
+        <div class="rounded-md bg-card p-4">
           <div class="flex items-center gap-4">
             <Upload
               :auto="false"
@@ -177,14 +177,14 @@ onUnmounted(() => {
                 </Button>
               </template>
             </Upload>
-            <div v-if="uploadingFiles > 0" class="text-sm text-gray-500">
+            <div v-if="uploadingFiles > 0" class="text-sm text-muted-foreground">
               {{ $t('common.uploadingCount', [uploadingFiles]) }}
             </div>
           </div>
         </div>
 
         <!-- Search Form -->
-        <div class="rounded-md bg-white p-4">
+        <div class="rounded-md bg-card p-4">
           <Form :data="searchForm" label-width="80px" layout="inline" colon>
             <div class="grid grid-cols-4 gap-x-4 gap-y-3">
               <FormItem :label="$t('system.upload.fileName')" name="origin_name">
@@ -220,7 +220,7 @@ onUnmounted(() => {
         </div>
 
         <!-- Table Area -->
-        <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+        <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-card p-4">
           <div class="mb-3 flex items-center justify-between">
             <Space>
                 <Popconfirm
@@ -293,7 +293,7 @@ onUnmounted(() => {
 
 <style scoped>
 .upload-area {
-  border: 2px dashed #d1d5db;
+  border: 2px dashed hsl(var(--border));
   border-radius: 0.5rem;
   padding: 2rem;
   text-align: center;
@@ -301,7 +301,7 @@ onUnmounted(() => {
 }
 
 .upload-area:hover {
-  border-color: #3b82f6;
-  background-color: #f9fafb;
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--muted) / 0.3);
 }
 </style>

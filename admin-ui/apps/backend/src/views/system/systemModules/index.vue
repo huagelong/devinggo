@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { SystemModulesApi } from '#/api/system/system-modules';
 import type { DictOption } from '#/composables/crud/use-dict-options';
 
@@ -248,7 +248,7 @@ onUnmounted(() => {
 <template>
   <Page auto-content-height>
     <div class="flex h-full flex-col gap-3">
-      <div class="rounded-md bg-white p-4">
+      <div class="rounded-md bg-card p-4">
         <Form :data="searchForm" label-width="80px" layout="inline" colon>
           <div class="w-full">
             <div class="grid grid-cols-4 gap-x-4 gap-y-3 w-full">
@@ -315,7 +315,7 @@ onUnmounted(() => {
         </Form>
       </div>
 
-      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-card p-4">
         <div class="mb-3 flex items-center justify-between">
           <Space>
             <template v-if="!isRecycleBin">
@@ -402,7 +402,7 @@ onUnmounted(() => {
           <template #action="{ row }">
             <div class="flex items-center justify-center gap-3">
               <template v-if="isDefaultModule(row)">
-                <span class="text-gray-400">-</span>
+                <span class="text-muted-foreground/80">-</span>
               </template>
               <template v-else-if="!isRecycleBin">
                 <a class="inline-flex items-center gap-1 text-primary hover:underline cursor-pointer" @click="handleEdit(row)">

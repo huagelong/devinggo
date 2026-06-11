@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 
 import { $t } from '@vben/locales';
+import { usePreferences } from '@vben/preferences';
 
 import Editor from '@tinymce/tinymce-vue';
 import tinymce from 'tinymce';
@@ -19,10 +20,14 @@ import 'tinymce/plugins/preview';
 import 'tinymce/plugins/table';
 import 'tinymce/plugins/wordcount';
 import 'tinymce/skins/content/default/content.min.css';
+import 'tinymce/skins/content/dark/content.min.css';
 import 'tinymce/skins/ui/oxide/skin.min.css';
+import 'tinymce/skins/ui/oxide-dark/skin.min.css';
 import 'tinymce/themes/silver';
 
 void tinymce;
+
+const { isDark } = usePreferences();
 
 const props = defineProps<{
   modelValue?: string;
@@ -42,7 +47,34 @@ const innerValue = computed({
   },
 });
 
-const initOptions = {
+const editorKey = computed(() => `tinymce-${isDark.value ? 'dark' : 'light'}`);
+
+function applyEditorTheme(editor: any) {
+  setTimeout(() => {
+    const iframe = editor.getContainer()?.querySelector('iframe');
+    if (!iframe) return;
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) return;
+
+    const body = doc.body;
+    const html = doc.documentElement;
+    if (!body || !html) return;
+
+    if (isDark.value) {
+      html.style.backgroundColor = '#1e1e1e';
+      body.style.backgroundColor = '#1e1e1e';
+      body.style.color = '#e0e0e0';
+      body.setAttribute('data-mce-theme', 'dark');
+    } else {
+      html.style.backgroundColor = '#ffffff';
+      body.style.backgroundColor = '#ffffff';
+      body.style.color = '#333333';
+      body.removeAttribute('data-mce-theme');
+    }
+  }, 100);
+}
+
+const initOptions = computed(() => ({
   height: 260,
   menubar: false,
   branding: false,
@@ -51,13 +83,25 @@ const initOptions = {
   plugins: 'advlist autolink lists link charmap preview code fullscreen table wordcount',
   toolbar:
     'undo redo | blocks | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table | removeformat code fullscreen',
-  content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Microsoft YaHei, sans-serif; font-size: 14px; }',
-};
+  skin: isDark.value ? 'oxide-dark' : 'oxide',
+  content_style: isDark.value
+    ? 'body.mce-content-body { background-color: #1e1e1e !important; color: #e0e0e0 !important; }'
+    : '',
+  setup: (editor: any) => {
+    editor.on('init', () => {
+      applyEditorTheme(editor);
+    });
+  },
+  init_instance_callback: (editor: any) => {
+    applyEditorTheme(editor);
+  },
+}));
 </script>
 
 <template>
   <div class="config-rich-text-editor">
     <Editor
+      :key="editorKey"
       v-model="innerValue"
       :init="initOptions"
       output-format="html"

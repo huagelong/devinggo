@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { logger } from '#/utils/logger';
 import { ref } from 'vue';
 
@@ -66,7 +66,7 @@ async function handleFileChange(event: Event) {
         {{ $t('common.uploadFile') }}
       </Button>
     </Space>
-    <div v-if="modelValue" class="rounded-md border border-gray-100 p-2">
+    <div v-if="modelValue" class="rounded-md border border-border p-2">
       <img
         :src="modelValue"
         alt="config upload preview"

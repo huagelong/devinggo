@@ -199,7 +199,7 @@ onMounted(() => {
       <div class="relative z-10 z-20 mt-4 group">
         <div
           @click="triggerUpload"
-          class="flex items-center justify-center w-24 h-24 overflow-hidden border-4 border-white rounded-full shadow-lg bg-gray-100 hover:bg-gray-200 cursor-pointer"
+          class="flex items-center justify-center w-24 h-24 overflow-hidden border-4 border-border rounded-full shadow-lg bg-muted hover:bg-muted/80 cursor-pointer"
         >
           <img
             v-if="userInfoForm.avatar"
@@ -209,7 +209,7 @@ onMounted(() => {
           <svg
             v-else
             xmlns="http://www.w3.org/2000/svg"
-            class="w-10 h-10 text-gray-400"
+            class="w-10 h-10 text-muted-foreground/80"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -248,7 +248,7 @@ onMounted(() => {
     <div class="flex flex-col gap-4 mt-4 md:flex-row">
       <!-- 左栏：个人资料、安全设置 -->
       <div
-        class="flex-1 p-4 bg-white rounded shadow-sm dark:bg-[var(--vben-color-background-elevated)] min-h-[500px]"
+        class="flex-1 p-4 bg-card rounded shadow-sm min-h-[500px]"
       >
         <Tabs v-model="leftTab" class="h-full">
           <TabPanel value="info" :label="$t('page.profile.personalInfo')">
@@ -292,7 +292,7 @@ onMounted(() => {
                   <Button
                     theme="default"
                     type="submit"
-                    class="bg-gray-800 text-white hover:bg-gray-700"
+                    class="bg-primary text-primary-foreground hover:bg-primary-hover"
                   >
                     {{ $t('page.profile.save') }}
                   </Button>
@@ -338,7 +338,7 @@ onMounted(() => {
                   <Button
                     theme="default"
                     type="submit"
-                    class="bg-gray-800 text-white hover:bg-gray-700"
+                    class="bg-primary text-primary-foreground hover:bg-primary-hover"
                   >
                     {{ $t('page.profile.save') }}
                   </Button>
@@ -351,7 +351,7 @@ onMounted(() => {
 
       <!-- 右栏：日志 -->
       <div
-        class="flex-1 p-4 bg-white rounded shadow-sm dark:bg-[var(--vben-color-background-elevated)] min-h-[500px]"
+        class="flex-1 p-4 bg-card rounded shadow-sm min-h-[500px]"
       >
         <Tabs v-model="rightTab" class="h-full">
           <TabPanel value="loginLog" :label="$t('page.profile.loginLog')">
@@ -363,17 +363,17 @@ onMounted(() => {
                   theme="primary"
                 >
                   <div
-                    class="text-sm font-medium text-gray-800 dark:text-gray-200"
+                    class="text-sm font-medium text-foreground"
                   >
                     {{ $t('page.profile.loginLogTemplate', [log.login_time || log.created_at, log.status === 1 ? $t('page.profile.loginSuccess') : $t('page.profile.loginFailed')]) }}
                   </div>
-                  <div class="mt-1 text-xs text-gray-500">
+                  <div class="mt-1 text-xs text-muted-foreground">
                     {{ $t('page.profile.ipLocation') }}: {{ log.ip_location || $t('page.profile.unknown') }}，{{ $t('page.profile.os') }}: {{ log.os || $t('page.profile.unknown') }}
                   </div>
                 </TimelineItem>
                 <div
                   v-if="loginLogs.length === 0"
-                  class="text-center text-gray-400 py-10"
+                  class="text-center text-muted-foreground/80 py-10"
                 >
                   {{ $t('page.profile.noLogs') }}
                 </div>
@@ -390,17 +390,17 @@ onMounted(() => {
                   theme="primary"
                 >
                   <div
-                    class="text-sm font-medium text-gray-800 dark:text-gray-200"
+                    class="text-sm font-medium text-foreground"
                   >
                     {{ $t('page.profile.operLogTemplate', [log.created_at, log.service_name || $t('page.profile.operated')]) }}
                   </div>
-                  <div class="mt-1 text-xs text-gray-500">
+                  <div class="mt-1 text-xs text-muted-foreground">
                     {{ $t('page.profile.ipLocation') }}: {{ log.ip_location || $t('page.profile.unknown') }}，{{ $t('page.profile.method') }}: {{ log.method }}，{{ $t('page.profile.path') }}: {{ log.router }}
                   </div>
                 </TimelineItem>
                 <div
                   v-if="operationLogs.length === 0"
-                  class="text-center text-gray-400 py-10"
+                  class="text-center text-muted-foreground/80 py-10"
                 >
                   {{ $t('page.profile.noLogs') }}
                 </div>

@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { computed } from 'vue';
 
 import { $t } from '@vben/locales';
@@ -80,7 +80,7 @@ function handleDelete(id: number) {
 </script>
 
 <template>
-  <div class="rounded-md border border-gray-100 bg-white p-4">
+  <div class="rounded-md border border-border bg-card p-4">
     <Table
       :columns="columns"
       :data="data"

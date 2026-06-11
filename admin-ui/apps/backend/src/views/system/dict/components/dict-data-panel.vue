@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { logger } from '#/utils/logger';
 import type { DictApi } from '#/api/system/dict';
 
@@ -281,13 +281,13 @@ defineExpose({
 <template>
   <PanelModal>
     <div class="flex flex-col gap-4">
-      <div class="rounded-md bg-gray-50 p-3 text-sm text-gray-700">
+      <div class="rounded-md bg-muted/50 p-3 text-sm text-foreground">
         {{ $t('system.dict.currentDict') }}：{{ currentDict ? currentDict.name : '-' }}（{{
           currentDict ? currentDict.code : '-'
         }}）
       </div>
 
-      <div class="rounded-md bg-white p-4">
+      <div class="rounded-md bg-card p-4">
         <Form :data="searchForm" label-width="90px" layout="inline" colon>
           <div class="grid grid-cols-4 gap-x-4 gap-y-3">
             <FormItem :label="$t('system.dict.label')" name="label">
@@ -335,7 +335,7 @@ defineExpose({
         </Form>
       </div>
 
-      <div class="rounded-md bg-white p-4">
+      <div class="rounded-md bg-card p-4">
         <div class="mb-3 flex items-center justify-between">
           <Space>
             <template v-if="!isRecycleBin">

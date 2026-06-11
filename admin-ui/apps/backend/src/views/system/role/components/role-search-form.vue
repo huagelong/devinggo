@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { $t } from '@vben/locales';
 
 import { SearchIcon } from 'tdesign-icons-vue-next';
@@ -46,7 +46,7 @@ function updateField(field: keyof Props['formData'], value: unknown) {
 </script>
 
 <template>
-  <div class="rounded-md bg-white p-4">
+  <div class="rounded-md bg-card p-4">
     <Form :data="formData" label-width="80px" layout="inline" colon>
       <div class="grid grid-cols-4 gap-x-4 gap-y-3">
         <FormItem :label="$t('system.role.name')" name="name">

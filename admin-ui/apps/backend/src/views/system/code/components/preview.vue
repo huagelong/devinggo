@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { PreviewCodeRow } from '../model';
 
 import { ref } from 'vue';
@@ -64,7 +64,7 @@ defineExpose({ open });
         {{ $t('common.loading') }}
       </div>
 
-      <div v-else-if="previewList.length === 0" class="py-8 text-center text-gray-500">
+      <div v-else-if="previewList.length === 0" class="py-8 text-center text-muted-foreground">
         {{ $t('common.noPreviewData') }}
       </div>
 

@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -234,7 +234,7 @@ onUnmounted(() => {
 <template>
   <Page auto-content-height>
     <div class="flex h-full flex-col gap-3">
-      <div class="rounded-md bg-white p-4">
+      <div class="rounded-md bg-card p-4">
         <Form :data="searchForm" label-width="80px" layout="inline" colon>
           <div class="grid grid-cols-4 gap-x-4 gap-y-3">
             <FormItem :label="$t('system.notice.title')" name="title">
@@ -272,7 +272,7 @@ onUnmounted(() => {
         </Form>
       </div>
 
-      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-card p-4">
         <div class="mb-3 flex items-center justify-between">
           <Space>
             <template v-if="!isRecycleBin">
@@ -351,7 +351,7 @@ onUnmounted(() => {
 
           <template #content="{ row }">
             <span
-              class="block max-w-[320px] truncate text-gray-600 text-sm"
+              class="block max-w-[320px] truncate text-muted-foreground text-sm"
               v-html="sanitizeHtml(row?.content)"
             />
           </template>

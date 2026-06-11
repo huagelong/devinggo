@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { RoleApi } from '#/api/system/role';
 import type { DictOption } from '#/composables/crud/use-dict-options';
 
@@ -267,7 +267,7 @@ onUnmounted(() => {
         @update:form-data="(val) => Object.assign(searchForm, val)"
       />
 
-      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-card p-4">
         <RoleActionToolbar
           :is-recycle-bin="isRecycleBin"
           :is-fullscreen="isFullscreen"

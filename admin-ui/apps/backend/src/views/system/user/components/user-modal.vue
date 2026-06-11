@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { logger } from '#/utils/logger';
 import type { DeptApi } from '#/api/system/dept';
 import type { PostApi } from '#/api/system/post';
@@ -77,7 +77,7 @@ const AvatarUpload = defineComponent({
           {
             onClick: handleClick,
             class:
-              'relative flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-gray-300 bg-gray-50 hover:border-blue-400',
+              'relative flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-border bg-muted/50 hover:border-blue-400',
           },
           [
             getAvatarValue()
@@ -88,16 +88,16 @@ const AvatarUpload = defineComponent({
                 })
               : h(
                   'span',
-                  { class: 'text-3xl leading-none text-gray-400' },
+                  { class: 'text-3xl leading-none text-muted-foreground/80' },
                   '+',
                 ),
           ],
         ),
         h('div', { class: 'flex flex-col gap-1' }, [
-          h('span', { class: 'text-sm text-gray-500' }, $t('system.user.clickUploadAvatar')),
+          h('span', { class: 'text-sm text-muted-foreground' }, $t('system.user.clickUploadAvatar')),
           h(
             'span',
-            { class: 'text-xs text-gray-400' },
+            { class: 'text-xs text-muted-foreground/80' },
             $t('system.user.supportImageFormat'),
           ),
         ]),

@@ -226,7 +226,7 @@ defineExpose({
   border: 1px solid var(--td-component-border, #e7e7e7);
   border-radius: 10px;
   padding: 14px 14px 10px;
-  background: #fafcff;
+  background: hsl(var(--muted) / 0.2);
 }
 
 .config-search-form :deep(.t-form__item) {
@@ -250,7 +250,7 @@ defineExpose({
 .manage-table-card {
   border: 1px solid var(--td-component-border, #e7e7e7);
   border-radius: 10px;
-  background: #fff;
+  background: hsl(var(--card));
   padding: 14px;
 }
 

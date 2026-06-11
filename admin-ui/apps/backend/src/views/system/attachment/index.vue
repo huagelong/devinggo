@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { AttachmentListItem, AttachmentTreeItem } from './model';
 
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
@@ -346,8 +346,8 @@ onUnmounted(() => {
   <Page auto-content-height>
     <div class="flex h-full gap-3">
       <!-- Left Tree Slider -->
-      <div class="w-48 flex-shrink-0 rounded-md bg-white p-2">
-        <div class="mb-2 px-2 text-sm font-medium text-gray-500">{{ $t('system.attachment.resourceType') }}</div>
+      <div class="w-48 flex-shrink-0 rounded-md bg-card p-2">
+        <div class="mb-2 px-2 text-sm font-medium text-muted-foreground">{{ $t('system.attachment.resourceType') }}</div>
         <div class="mb-2">
           <Input
             v-model="treeSearchKeyword"
@@ -377,7 +377,7 @@ onUnmounted(() => {
 
       <!-- Main Content -->
       <div class="flex min-h-0 flex-1 flex-col gap-3">
-        <div class="rounded-md bg-white p-4">
+        <div class="rounded-md bg-card p-4">
           <Form :data="searchForm" label-width="80px" layout="inline" colon>
             <div class="grid grid-cols-4 gap-x-4 gap-y-3">
               <FormItem :label="$t('system.attachment.originName')" name="origin_name">
@@ -415,7 +415,7 @@ onUnmounted(() => {
           </Form>
         </div>
 
-        <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+        <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-card p-4">
           <div class="mb-3 flex items-center justify-between">
             <Space>
               <template v-if="!isRecycleBin">
@@ -562,7 +562,7 @@ onUnmounted(() => {
               :key="row.id"
               class="group relative rounded-md border border-gray-200 p-2 transition hover:border-blue-400"
             >
-              <div class="flex h-32 items-center justify-center overflow-hidden rounded bg-gray-50">
+              <div class="flex h-32 items-center justify-center overflow-hidden rounded bg-muted/50">
                 <img
                   v-if="isImageType(row.mime_type, row.origin_name)"
                   :src="row.url"
@@ -575,10 +575,10 @@ onUnmounted(() => {
                 </Tag>
               </div>
               <div class="mt-2 text-sm">
-                <div class="truncate text-gray-700" :title="row.origin_name">
+                <div class="truncate text-foreground" :title="row.origin_name">
                   {{ row.origin_name }}
                 </div>
-                <div class="text-xs text-gray-400">{{ row.size_info }}</div>
+                <div class="text-xs text-muted-foreground/80">{{ row.size_info }}</div>
               </div>
               <div
                 class="absolute left-0 top-0 flex h-full w-full items-center justify-center gap-2 rounded bg-black/50 opacity-0 transition group-hover:opacity-100"

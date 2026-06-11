@@ -88,7 +88,7 @@ function handleRefresh() {
 .config-toolbar {
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #f0f2f5;
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .config-toolbar :deep(.t-space) {

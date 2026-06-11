@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { computed, ref } from 'vue';
 
 import { $t } from '@vben/locales';
@@ -127,14 +127,14 @@ function handleInput(val: string) {
           <div
             v-for="name in filteredIcons"
             :key="name"
-            class="flex h-9 cursor-pointer flex-col items-center justify-center rounded hover:bg-blue-50"
+            class="flex h-9 cursor-pointer flex-col items-center justify-center rounded hover:bg-primary/10"
             :title="name"
             @click="handleSelect(name)"
           >
             <i :class="`i-lucide:${name}`" class="text-lg" />
           </div>
         </div>
-        <div v-if="filteredIcons.length === 0" class="py-4 text-center text-xs text-gray-400">
+        <div v-if="filteredIcons.length === 0" class="py-4 text-center text-xs text-muted-foreground/80">
           {{ $t('common.noMatch') }}
         </div>
       </div>

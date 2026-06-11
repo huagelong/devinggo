@@ -76,7 +76,7 @@ const columns: PrimaryTableCol[] = [
         isUnread
           ? h('span', {
               class:
-                'inline-block w-2 h-2 rounded-full bg-red-500 shrink-0',
+                'inline-block w-2 h-2 rounded-full bg-destructive shrink-0',
             })
           : h('span', { class: 'w-2 h-2 shrink-0' }),
         h(
@@ -238,10 +238,10 @@ watch(latestNotification, (notification) => {
 </script>
 
 <template>
-  <div class="flex h-full w-full p-4 gap-4 bg-gray-50">
+  <div class="flex h-full w-full p-4 gap-4 bg-muted/50">
     <!-- Left Menu -->
     <div
-      class="w-48 bg-white h-full shrink-0 flex flex-col pt-4 drop-shadow-sm rounded"
+      class="w-48 bg-card h-full shrink-0 flex flex-col pt-4 drop-shadow-sm rounded"
     >
       <div
         class="menu-item"
@@ -270,12 +270,12 @@ watch(latestNotification, (notification) => {
 
     <!-- Right Content -->
     <div
-      class="flex-1 bg-white h-full flex flex-col min-w-0 p-4 rounded drop-shadow-sm relative"
+      class="flex-1 bg-card h-full flex flex-col min-w-0 p-4 rounded drop-shadow-sm relative"
     >
       <!-- Search Form -->
       <div class="flex gap-4 items-center mb-4 flex-wrap text-sm">
         <div class="flex items-center gap-2">
-          <span class="text-gray-600 whitespace-nowrap shrink-0">{{ $t('dashboard.message.msgTitle') }}</span>
+          <span class="text-muted-foreground whitespace-nowrap shrink-0">{{ $t('dashboard.message.msgTitle') }}</span>
           <Input
             v-model="searchForm.title"
             :placeholder="$t('page.profile.placeholder.messageTitle')"
@@ -284,7 +284,7 @@ watch(latestNotification, (notification) => {
           />
         </div>
         <div class="flex items-center gap-2">
-          <span class="text-gray-600 whitespace-nowrap shrink-0">{{ $t('dashboard.message.sendTime') }}</span>
+          <span class="text-muted-foreground whitespace-nowrap shrink-0">{{ $t('dashboard.message.sendTime') }}</span>
           <DateRangePicker
             v-model="searchForm.created_at"
             allow-input
@@ -382,12 +382,12 @@ watch(latestNotification, (notification) => {
     >
       <div class="flex flex-col gap-4 py-4 px-2">
         <h2 class="text-2xl font-bold">{{ detailData.title }}</h2>
-        <div class="flex justify-between text-gray-500 text-sm border-b pb-2">
+        <div class="flex justify-between text-muted-foreground text-sm border-b pb-2">
           <span>{{ getTypeName(detailData.content_type) }}</span>
           <span>{{ $t('dashboard.message.createdAt') }}: {{ detailData.created_at }}</span>
         </div>
         <div
-          class="bg-gray-50 p-4 rounded min-h-[200px]"
+          class="bg-muted/50 p-4 rounded min-h-[200px]"
           v-html="sanitizeHtml(detailData.content)"
         ></div>
       </div>
@@ -402,25 +402,25 @@ watch(latestNotification, (notification) => {
   align-items: center;
   padding: 12px 24px;
   margin: 4px 8px;
-  color: #4b5563;
+  color: hsl(var(--muted-foreground));
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.3s;
 }
 
 .menu-item:hover {
-  background-color: #f3f4f6;
+  background-color: hsl(var(--muted) / 0.5);
 }
 
 .menu-item.active {
   font-weight: 500;
-  color: #165dff;
-  background-color: #f3f4f6;
+  color: hsl(var(--primary));
+  background-color: hsl(var(--muted) / 0.5);
 }
 
 :deep(.unread-row) {
-  background-color: #f0f7ff !important;
-  border-left: 3px solid #165dff;
+  background-color: hsl(var(--primary) / 0.1) !important;
+  border-left: 3px solid hsl(var(--primary));
 }
 
 :deep(.unread-row:hover) {

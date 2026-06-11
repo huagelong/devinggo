@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { GenerateApi } from '#/api/system/generate';
 
 import { ref } from 'vue';
@@ -88,7 +88,7 @@ defineExpose({ open });
 <template>
   <Modal :title="$t('system.code.loadTable')">
     <div class="flex flex-col gap-4">
-      <div class="text-sm text-gray-500">
+      <div class="text-sm text-muted-foreground">
         {{ $t('system.code.loadTableTip') }}
       </div>
 
@@ -106,7 +106,7 @@ defineExpose({ open });
         stripe
       />
 
-      <div class="text-sm text-gray-500">
+      <div class="text-sm text-muted-foreground">
         {{ $t('system.code.selectedTableCount', { count: selectedNames.length }) }}
       </div>
     </div>

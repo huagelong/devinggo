@@ -42,7 +42,7 @@ function handleCreate() {
 .config-right-head {
   margin-bottom: 12px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #f0f2f5;
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .config-right-head h3 {
@@ -56,33 +56,33 @@ function handleCreate() {
   line-height: 1.7;
   font-size: 13px;
   padding: 10px 14px;
-  background: #f8fafc;
+  background: hsl(var(--muted) / 0.3);
   border-radius: 8px;
-  border-left: 3px solid #3b82f6;
+  border-left: 3px solid hsl(var(--primary));
 }
 
 .config-empty-state {
   min-height: 360px;
-  border: 1px dashed #dbeafe;
+  border: 1px dashed hsl(var(--primary) / 0.2);
   border-radius: 12px;
-  background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%);
+  background: linear-gradient(180deg, hsl(var(--primary) / 0.05) 0%, hsl(var(--card)) 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 14px;
-  color: #4b5563;
+  color: hsl(var(--muted-foreground));
   transition: all 0.3s ease;
 }
 
 .config-empty-state:hover {
-  border-color: #93c5fd;
-  background: linear-gradient(180deg, #e8f2ff 0%, #ffffff 100%);
+  border-color: hsl(var(--primary) / 0.4);
+  background: linear-gradient(180deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--card)) 100%);
 }
 
 .config-empty-icon {
   font-size: 36px;
-  color: #3b82f6;
+  color: hsl(var(--primary));
 }
 
 @media (max-width: 1023px) {

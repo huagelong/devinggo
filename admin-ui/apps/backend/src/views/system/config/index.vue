@@ -296,7 +296,7 @@ onMounted(() => {
 .config-card {
   border: 1px solid var(--td-component-border, #e7e7e7);
   border-radius: 10px;
-  background: #fff;
+  background: hsl(var(--card));
   padding: 20px 24px;
   box-shadow: 0 6px 18px rgb(15 23 42 / 4%);
   transition: box-shadow 0.3s ease;

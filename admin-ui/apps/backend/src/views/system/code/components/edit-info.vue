@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { FieldConfigRow } from '../model';
 
 import { ref } from 'vue';
@@ -172,7 +172,7 @@ defineExpose({ open });
             </div>
             <template v-if="type === 'tree'">
               <div class="mt-4 border-t pt-4">
-                <div class="mb-2 text-sm font-medium text-gray-500">{{ $t('system.code.treeConfig') }}</div>
+                <div class="mb-2 text-sm font-medium text-muted-foreground">{{ $t('system.code.treeConfig') }}</div>
                 <div class="grid grid-cols-3 gap-x-4 gap-y-3">
                   <FormItem :label="$t('system.code.treeId')" name="tree_id">
                     <Input v-model="treeId" :placeholder="$t('ui.placeholder.input')" />
@@ -188,7 +188,7 @@ defineExpose({ open });
             </template>
             <template v-if="componentType === 3">
               <div class="mt-4 border-t pt-4">
-                <div class="mb-2 text-sm font-medium text-gray-500">{{ $t('system.code.tagConfig') }}</div>
+                <div class="mb-2 text-sm font-medium text-muted-foreground">{{ $t('system.code.tagConfig') }}</div>
                 <div class="grid grid-cols-3 gap-x-4 gap-y-3">
                   <FormItem :label="$t('system.code.tagId')" name="tag_id">
                     <Input v-model="tagId" :placeholder="$t('ui.placeholder.input')" />

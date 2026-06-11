@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { DataMaintainApi } from '#/api/system/data-maintain';
 
 import { computed, onMounted, onUnmounted, ref } from 'vue';
@@ -185,7 +185,7 @@ onUnmounted(() => {
 <template>
   <Page auto-content-height>
     <div class="flex h-full flex-col gap-3">
-      <div class="rounded-md bg-white p-4">
+      <div class="rounded-md bg-card p-4">
         <Form :data="searchForm" label-width="90px" layout="inline" colon>
           <div class="grid grid-cols-4 gap-x-4 gap-y-3">
             <FormItem :label="$t('system.dataMaintain.dbGroup')" name="group_name">
@@ -209,7 +209,7 @@ onUnmounted(() => {
         </Form>
       </div>
 
-      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+      <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-card p-4">
         <div class="mb-3 flex items-center justify-between">
           <Space>
             <Button variant="outline" @click="handleUnimplementedAction($t('system.dataMaintain.viewFields'))">
@@ -222,7 +222,7 @@ onUnmounted(() => {
               {{ $t('system.dataMaintain.cleanFragment') }}
             </Button>
             <Popup placement="bottom" trigger="hover" :content="$t('system.dataMaintain.firstVersionTooltip')">
-              <InfoCircleFilledIcon class="cursor-help text-gray-400" />
+              <InfoCircleFilledIcon class="cursor-help text-muted-foreground/80" />
             </Popup>
           </Space>
 
@@ -245,7 +245,7 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div v-if="!canView" class="rounded-md border border-dashed border-gray-300 p-6 text-center text-gray-500">
+        <div v-if="!canView" class="rounded-md border border-dashed border-border p-6 text-center text-muted-foreground">
           {{ $t('common.noPermission', ['system:dataMaintain:index']) }}
         </div>
 

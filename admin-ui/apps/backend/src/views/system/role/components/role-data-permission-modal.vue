@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { logger } from '#/utils/logger';
 import type { DeptApi } from '#/api/system/dept';
 import type { RoleApi } from '#/api/system/role';
@@ -194,7 +194,7 @@ defineExpose({
             <div class="tree-container">
               <div
                 v-if="loading"
-                class="flex h-[320px] items-center justify-center text-sm text-gray-500"
+                class="flex h-[320px] items-center justify-center text-sm text-muted-foreground"
               >
                 {{ $t('common.deptLoading') }}
               </div>

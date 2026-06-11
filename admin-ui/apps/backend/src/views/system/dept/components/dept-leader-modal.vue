@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { logger } from '#/utils/logger';
 import type { DeptApi } from '#/api/system/dept';
 import type { UserApi } from '#/api/system/user';
@@ -355,7 +355,7 @@ defineExpose({
       />
 
       <!-- Action Toolbar -->
-      <div class="flex items-center justify-between rounded-md border border-gray-100 bg-white px-4 py-3">
+      <div class="flex items-center justify-between rounded-md border border-border bg-card px-4 py-3">
         <Space>
           <Button theme="primary" @click="openAddLeaderDialog">
             {{ $t('system.dept.addLeader') }}

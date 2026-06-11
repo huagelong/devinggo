@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { $t } from '@vben/locales';
 
 import { InfoCircleIcon } from 'tdesign-icons-vue-next';
@@ -96,7 +96,7 @@ function updateFormValue(groupId: number, key: string, value: unknown) {
         </Form>
         <div
           v-else
-          class="flex min-h-[200px] items-center justify-center text-gray-500"
+          class="flex min-h-[200px] items-center justify-center text-muted-foreground"
         >
           <InfoCircleIcon class="mr-2" /> {{ $t('system.config.configLoading') }}
         </div>
@@ -105,7 +105,7 @@ function updateFormValue(groupId: number, key: string, value: unknown) {
   </div>
   <div
     v-else
-    class="flex min-h-[200px] items-center justify-center text-gray-500"
+    class="flex min-h-[200px] items-center justify-center text-muted-foreground"
   >
     {{ $t('system.config.noConfigGroup') }}
   </div>
@@ -128,19 +128,19 @@ function updateFormValue(groupId: number, key: string, value: unknown) {
 .config-field-item {
   margin-bottom: 0 !important;
   padding: 18px 16px;
-  border-bottom: 1px solid #f0f2f5;
+  border-bottom: 1px solid hsl(var(--border));
   transition: background-color 0.2s ease;
 }
 
 .config-field-item:hover {
-  background-color: #fafbfc;
+  background-color: hsl(var(--muted) / 0.3);
 }
 
 .config-field-remark {
   margin-top: 6px;
   margin-left: 0;
   font-size: 13px;
-  color: #9ca3af;
+  color: hsl(var(--muted-foreground) / 0.7);
   line-height: 1.5;
 }
 
@@ -202,8 +202,8 @@ function updateFormValue(groupId: number, key: string, value: unknown) {
   padding: 16px 20px;
   display: flex;
   justify-content: flex-end;
-  border-top: 1px solid #f0f2f5;
-  background: linear-gradient(to bottom, #fafbfc, #ffffff);
+  border-top: 1px solid hsl(var(--border));
+  background: linear-gradient(to bottom, hsl(var(--muted) / 0.2), hsl(var(--card)));
   border-radius: 0 0 10px 10px;
 }
 

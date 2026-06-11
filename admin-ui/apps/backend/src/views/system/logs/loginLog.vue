@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { LogApi } from '#/api/system/log';
 
 import { onMounted, ref } from 'vue';
@@ -109,7 +109,7 @@ onMounted(() => {
 <template>
   <Page auto-content-height>
     <div class="flex h-full flex-col gap-3">
-      <div class="rounded-md bg-white p-4">
+      <div class="rounded-md bg-card p-4">
         <Form :data="searchForm" label-width="80px" layout="inline" colon>
           <div class="grid grid-cols-4 gap-x-4 gap-y-3">
             <FormItem :label="$t('system.logs.username')" name="username">
@@ -154,7 +154,7 @@ onMounted(() => {
         </Form>
       </div>
 
-      <div class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+      <div class="flex min-h-0 flex-1 flex-col rounded-md bg-card p-4">
         <Table
           :columns="columns"
           :data="tableData"

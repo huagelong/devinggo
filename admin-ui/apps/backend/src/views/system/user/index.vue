@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
@@ -226,7 +226,7 @@ onUnmounted(() => {
           @update:form-data="(val) => Object.assign(searchForm, val)"
         />
 
-        <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+        <div ref="tableContainerRef" class="flex min-h-0 flex-1 flex-col rounded-md bg-card p-4">
           <UserActionToolbar
             :is-recycle-bin="isRecycleBin"
             :import-loading="importLoading"

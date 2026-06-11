@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { logger } from '#/utils/logger';
 import type { NoticeApi } from '#/api/system/notice';
 import type { DictOption } from '#/composables/crud/use-dict-options';
@@ -197,10 +197,10 @@ defineExpose({
             <Button theme="primary" @click="openUserSelect">
               {{ $t('system.notice.selectUser') }}
             </Button>
-            <span v-if="selectedUserCount > 0" class="text-blue-600">
+            <span v-if="selectedUserCount > 0" class="text-primary">
               已选择 {{ selectedUserCount }} 位
             </span>
-            <span v-else class="text-gray-400">
+            <span v-else class="text-muted-foreground/80">
               {{ $t('system.notice.receiveUserPlaceholder') }}
             </span>
             <Button

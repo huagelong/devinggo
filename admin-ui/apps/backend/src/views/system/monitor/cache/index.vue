@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { MonitorApi } from '#/api/system/monitor';
 
 import { computed, onMounted, ref, watch } from 'vue';
@@ -50,12 +50,12 @@ interface StatCardItem {
 const statCards = computed<StatCardItem[]>(() => {
   const s = serverInfo.value;
   return [
-    { label: $t('system.monitor.cache.redisVersion'), value: s.version || '-', color: 'text-blue-600' },
+    { label: $t('system.monitor.cache.redisVersion'), value: s.version || '-', color: 'text-primary' },
     { label: $t('system.monitor.cache.runMode'), value: s.redis_mode || '-', color: 'text-purple-600' },
-    { label: $t('system.monitor.cache.port'), value: s.port || '-', color: 'text-gray-600' },
+    { label: $t('system.monitor.cache.port'), value: s.port || '-', color: 'text-muted-foreground' },
     { label: $t('system.monitor.cache.runDays'), value: s.run_days || '-', unit: '天', color: 'text-orange-600' },
     { label: $t('system.monitor.cache.clientConnections'), value: s.clients || '-', color: 'text-green-600' },
-    { label: $t('system.monitor.cache.aofStatus'), value: s.aof_enabled || '-', color: 'text-red-600' },
+    { label: $t('system.monitor.cache.aofStatus'), value: s.aof_enabled || '-', color: 'text-destructive' },
     { label: $t('system.monitor.cache.systemUsedKeys'), value: s.sys_total_keys ?? '-', color: 'text-indigo-600' },
     { label: $t('system.monitor.cache.expiredKeys'), value: s.expired_keys || '-', color: 'text-yellow-600' },
     { label: $t('system.monitor.cache.qps'), value: s.qps || '-', unit: 'ops/s', color: 'text-cyan-600' },
@@ -316,12 +316,12 @@ onMounted(() => {
             <div
               v-for="(card, index) in statCards"
               :key="index"
-              class="flex flex-col justify-center rounded-lg border border-gray-100 bg-gray-50/50 px-3 py-2 transition-colors hover:bg-gray-100/50"
+              class="flex flex-col justify-center rounded-lg border border-border bg-muted/50/50 px-3 py-2 transition-colors hover:bg-muted/50"
             >
-              <span class="text-xs text-gray-400">{{ card.label }}</span>
+              <span class="text-xs text-muted-foreground/80">{{ card.label }}</span>
               <div class="mt-0.5 flex items-baseline gap-1">
-                <span class="text-base font-bold" :class="card.color || 'text-gray-700'">{{ card.value }}</span>
-                <span v-if="card.unit" class="text-xs text-gray-400">{{ card.unit }}</span>
+                <span class="text-base font-bold" :class="card.color || 'text-foreground'">{{ card.value }}</span>
+                <span v-if="card.unit" class="text-xs text-muted-foreground/80">{{ card.unit }}</span>
               </div>
             </div>
           </div>
@@ -406,7 +406,7 @@ onMounted(() => {
           <!-- Right: Cache Content -->
           <div class="flex min-h-0 w-1/3 flex-col gap-2">
             <div class="flex items-center justify-between">
-              <span class="text-sm font-medium text-gray-600">
+              <span class="text-sm font-medium text-muted-foreground">
                 缓存内容
                 <span v-if="isJsonContent" class="ml-1 text-xs text-green-500">(JSON)</span>
               </span>
@@ -420,12 +420,12 @@ onMounted(() => {
                 复制
               </Button>
             </div>
-            <div class="min-h-0 flex-1 overflow-auto rounded border border-gray-200 bg-gray-50 p-3">
+            <div class="min-h-0 flex-1 overflow-auto rounded border border-gray-200 bg-muted/50 p-3">
               <pre
                 v-if="formattedContent"
-                class="m-0 font-mono text-xs leading-relaxed text-gray-700"
+                class="m-0 font-mono text-xs leading-relaxed text-foreground"
               >{{ formattedContent }}</pre>
-              <div v-else class="flex h-full items-center justify-center text-sm text-gray-400">
+              <div v-else class="flex h-full items-center justify-center text-sm text-muted-foreground/80">
                 {{ $t('system.monitor.cache.contentPlaceholder') }}
               </div>
             </div>

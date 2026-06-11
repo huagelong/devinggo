@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { logger } from '#/utils/logger';
 import type { DeptApi } from '#/api/system/dept';
 import type { IdType } from '#/types/common';
@@ -98,9 +98,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex h-full w-56 flex-col bg-white">
+  <div class="flex h-full w-56 flex-col bg-card">
     <div
-      class="flex items-center justify-between gap-2 border-b border-gray-100 p-3"
+      class="flex items-center justify-between gap-2 border-b border-border p-3"
     >
       <Input v-model="searchText" :placeholder="$t('system.user.searchDept')" class="flex-1 min-w-0">
         <template #prefixIcon>
@@ -108,7 +108,7 @@ onMounted(() => {
         </template>
       </Input>
       <div
-        class="cursor-pointer whitespace-nowrap text-[14px] text-blue-500 hover:text-blue-600"
+        class="cursor-pointer whitespace-nowrap text-[14px] text-primary hover:text-primary-hover"
         @click="toggleExpand"
       >
         {{ expandButtonText }}
@@ -138,7 +138,7 @@ onMounted(() => {
 <style scoped>
 .custom-tree-wrap {
   :deep(.t-tree) {
-    --td-tree-hover-color: #f3f4f6;
+    --td-tree-hover-color: hsl(var(--muted) / 0.5);
   }
 }
 </style>

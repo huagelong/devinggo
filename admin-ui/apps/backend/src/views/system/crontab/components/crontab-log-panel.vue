@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { CrontabApi } from '#/api/system/crontab';
 
 import { ref } from 'vue';
@@ -39,6 +39,12 @@ const searchForm = ref<CrontabLogQuery>({
 });
 
 const logColumns = [
+  {
+    align: 'center',
+    colKey: 'row-select',
+    type: 'multiple',
+    width: 52,
+  },
   { colKey: 'id', title: 'ID', width: 80 },
   { colKey: 'name', title: $t('system.crontab.name'), width: 120 },
   { colKey: 'start_time', title: $t('common.startTime'), width: 180 },
@@ -144,7 +150,7 @@ defineExpose({
 <template>
   <Modal>
     <div class="flex flex-col gap-3">
-      <div class="rounded-md bg-white p-4">
+      <div class="rounded-md bg-card p-4">
         <Form label-width="80px" layout="inline" colon>
           <div class="grid grid-cols-4 gap-x-4 gap-y-3">
             <FormItem :label="$t('common.createTime')" name="created_at" class="col-span-2">
@@ -166,7 +172,7 @@ defineExpose({
         </Form>
       </div>
 
-      <div class="flex min-h-0 flex-1 flex-col rounded-md bg-white p-4">
+      <div class="flex min-h-0 flex-1 flex-col rounded-md bg-card p-4">
         <div class="mb-3 flex items-center justify-between">
           <Space>
             <Button theme="danger" variant="outline" @click="handleDeleteLog">
@@ -188,7 +194,7 @@ defineExpose({
         >
           <template #status="{ row }">
             <span
-              :class="Number(row.status) === 1 ? 'text-green-600' : 'text-red-600'"
+              :class="Number(row.status) === 1 ? 'text-green-600' : 'text-destructive'"
             >
               {{ Number(row.status) === 1 ? $t('common.success') : $t('common.fail') }}
             </span>

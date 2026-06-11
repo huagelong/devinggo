@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import type { MonitorApi } from '#/api/system/monitor';
 
 import { onMounted, onUnmounted, ref } from 'vue';
@@ -98,7 +98,7 @@ onUnmounted(() => {
     <div class="flex flex-col gap-3">
       <!-- API Not Available Notice -->
       <Card v-if="!hasServerApi">
-        <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+        <div class="flex flex-col items-center justify-center py-12 text-muted-foreground/80">
           <ServerIcon class="mb-4 text-6xl" />
           <div class="text-lg">{{ $t('system.monitor.server.apiNotAvailable') }}</div>
           <div class="text-sm">{{ $t('system.monitor.server.apiNotAvailableDesc') }}</div>
@@ -119,25 +119,25 @@ onUnmounted(() => {
           </template>
           <Row :gutter="24">
             <Col :span="6">
-              <div class="mb-2 flex items-center gap-2 text-sm text-gray-500">
+              <div class="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <DesktopIcon />
                 {{ $t('system.monitor.server.os') }}
               </div>
               <div class="text-base">{{ serverInfo?.os || '-' }}</div>
             </Col>
             <Col :span="6">
-              <div class="mb-2 flex items-center gap-2 text-sm text-gray-500">
+              <div class="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <ServerIcon />
                 {{ $t('system.monitor.server.arch') }}
               </div>
               <div class="text-base">{{ serverInfo?.arch || '-' }}</div>
             </Col>
             <Col :span="6">
-              <div class="mb-2 text-sm text-gray-500">{{ $t('system.monitor.server.hostname') }}</div>
+              <div class="mb-2 text-sm text-muted-foreground">{{ $t('system.monitor.server.hostname') }}</div>
               <div class="text-base">{{ serverInfo?.hostname || '-' }}</div>
             </Col>
             <Col :span="6">
-              <div class="mb-2 text-sm text-gray-500">{{ $t('system.monitor.server.uptime') }}</div>
+              <div class="mb-2 text-sm text-muted-foreground">{{ $t('system.monitor.server.uptime') }}</div>
               <div class="text-base">
                 {{ serverInfo?.uptime ? formatUptime(serverInfo.uptime) : '-' }}
               </div>
@@ -145,19 +145,19 @@ onUnmounted(() => {
           </Row>
           <Row :gutter="24" class="mt-4">
             <Col :span="6">
-              <div class="mb-2 text-sm text-gray-500">{{ $t('system.monitor.server.serverTime') }}</div>
+              <div class="mb-2 text-sm text-muted-foreground">{{ $t('system.monitor.server.serverTime') }}</div>
               <div class="text-base">{{ serverInfo?.server_time || '-' }}</div>
             </Col>
             <Col :span="6">
-              <div class="mb-2 text-sm text-gray-500">{{ $t('system.monitor.server.goVersion') }}</div>
+              <div class="mb-2 text-sm text-muted-foreground">{{ $t('system.monitor.server.goVersion') }}</div>
               <div class="text-base">{{ serverInfo?.go_runtime?.go_version || '-' }}</div>
             </Col>
             <Col :span="6">
-              <div class="mb-2 text-sm text-gray-500">Goroutines</div>
+              <div class="mb-2 text-sm text-muted-foreground">Goroutines</div>
               <div class="text-base">{{ serverInfo?.go_runtime?.goroutines || '-' }}</div>
             </Col>
             <Col :span="6">
-              <div class="mb-2 text-sm text-gray-500">{{ $t('system.monitor.server.gcStats') }}</div>
+              <div class="mb-2 text-sm text-muted-foreground">{{ $t('system.monitor.server.gcStats') }}</div>
               <div class="text-base">{{ serverInfo?.go_runtime?.gc_stats || '-' }}</div>
             </Col>
           </Row>
@@ -180,7 +180,7 @@ onUnmounted(() => {
                       : 'primary') as any"
                   :label="`${(serverInfo?.cpu?.usage ?? 0).toFixed(1)}%`"
                 />
-                <div class="mt-4 text-sm text-gray-500">
+                <div class="mt-4 text-sm text-muted-foreground">
                   <Space>
                     <span>
                       <CpuIcon />
@@ -207,7 +207,7 @@ onUnmounted(() => {
                       : 'primary') as any"
                   :label="`${(serverInfo?.memory?.usage ?? 0).toFixed(1)}%`"
                 />
-                <div class="mt-4 text-sm text-gray-500">
+                <div class="mt-4 text-sm text-muted-foreground">
                   <Space>
                     <span>
                       {{ $t('system.monitor.server.used') }}: {{ formatBytes(serverInfo?.memory?.used ?? 0) }}
@@ -233,8 +233,8 @@ onUnmounted(() => {
               :key="index"
               :span="8"
             >
-              <Card :bordered="false" class="bg-gray-50">
-                <div class="mb-2 text-sm font-medium text-gray-600">
+              <Card :bordered="false" class="bg-muted/50">
+                <div class="mb-2 text-sm font-medium text-muted-foreground">
                   {{ disk.mount_point }}
                 </div>
                 <Progress
@@ -246,7 +246,7 @@ onUnmounted(() => {
                         : 'primary') as any"
                   :label="`${disk.usage.toFixed(1)}%`"
                 />
-                <div class="mt-2 text-xs text-gray-500">
+                <div class="mt-2 text-xs text-muted-foreground">
                   <Space>
                     <span>{{ $t('system.monitor.server.fileSystem') }}: {{ disk.file_system }}</span>
                     <span>
@@ -262,7 +262,7 @@ onUnmounted(() => {
           </Row>
           <div
             v-if="!serverInfo?.disks?.length"
-            class="py-8 text-center text-gray-400"
+            class="py-8 text-center text-muted-foreground/80"
           >
             {{ $t('system.monitor.server.noDiskInfo') }}
           </div>
@@ -272,19 +272,19 @@ onUnmounted(() => {
         <Card :title="$t('system.monitor.server.goRuntime')">
           <Row :gutter="24">
             <Col :span="6">
-              <div class="mb-2 text-sm text-gray-500">{{ $t('system.monitor.server.heapAlloc') }}</div>
+              <div class="mb-2 text-sm text-muted-foreground">{{ $t('system.monitor.server.heapAlloc') }}</div>
               <div class="text-base">
                 {{ formatBytes(serverInfo?.go_runtime?.heap_alloc ?? 0) }}
               </div>
             </Col>
             <Col :span="6">
-              <div class="mb-2 text-sm text-gray-500">{{ $t('system.monitor.server.heapSysMemory') }}</div>
+              <div class="mb-2 text-sm text-muted-foreground">{{ $t('system.monitor.server.heapSysMemory') }}</div>
               <div class="text-base">
                 {{ formatBytes(serverInfo?.go_runtime?.heap_sys ?? 0) }}
               </div>
             </Col>
             <Col :span="6">
-              <div class="mb-2 text-sm text-gray-500">{{ $t('system.monitor.server.stackInUse') }}</div>
+              <div class="mb-2 text-sm text-muted-foreground">{{ $t('system.monitor.server.stackInUse') }}</div>
               <div class="text-base">
                 {{ formatBytes(serverInfo?.go_runtime?.stack_in_use ?? 0) }}
               </div>
