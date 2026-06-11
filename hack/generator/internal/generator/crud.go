@@ -1192,7 +1192,7 @@ func (g *CRUDGenerator) RegisterServiceInterface() error {
 		// ChangeStatus changes the status of a %s.
 		ChangeStatus(ctx context.Context, id int64, status int) (err error)
 	}
-`, en, vn, en, vn, vn, en, en, vn, en, en, vn, en, vn, en, vn, en, vn, en, vn, vn, vn)
+`, en, vn, en, vn, vn, en, en, vn, en, en, vn, en, vn, en, vn, en, vn, vn, vn, vn)
 
 	contentStr = strings.Replace(contentStr, "\t// ISystemUser defines the interface for user management operations.",
 		interfaceDef+"\t// ISystemUser defines the interface for user management operations.", 1)
