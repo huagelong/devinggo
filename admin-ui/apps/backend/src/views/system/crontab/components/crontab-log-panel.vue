@@ -40,9 +40,9 @@ const searchForm = ref<CrontabLogQuery>({
 
 const logColumns = [
   {
-    align: 'center',
+    align: 'center' as const,
     colKey: 'row-select',
-    type: 'multiple',
+    type: 'multiple' as const,
     width: 52,
   },
   { colKey: 'id', title: 'ID', width: 80 },

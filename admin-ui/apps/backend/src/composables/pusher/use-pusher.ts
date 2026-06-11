@@ -35,6 +35,8 @@ const connectionState = ref<string>('disconnected');
  */
 export function usePusher(config?: Partial<PusherConfig>) {
   const merged = { ...defaultConfig, ...config };
+  // Cache store instance to avoid recreating on every auth request
+  const accessStore = useAccessStore();
 
   function getInstance(): Pusher {
     if (pusherInstance) return pusherInstance;
@@ -51,7 +53,6 @@ export function usePusher(config?: Partial<PusherConfig>) {
         headers: {
           // Read token dynamically so expired tokens are refreshed
           get Authorization() {
-            const accessStore = useAccessStore();
             return accessStore.accessToken ?? '';
           },
         },

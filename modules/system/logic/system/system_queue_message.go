@@ -143,6 +143,13 @@ func (s *sSystemQueueMessage) DeletesRelated(ctx context.Context, ids []int64, u
 	return
 }
 
+const (
+	wsChannelAdminUser   = "private-adminuser-%d"
+	wsEventNotification  = "notification:new"
+	wsBatchSize          = 100
+	wsMaxConcurrentSends = 20
+)
+
 func (s *sSystemQueueMessage) SendMessage(ctx context.Context, sendReq *req.SystemQueueMessagesSend, sendUserId int64, contentType string) (err error, messageId int64) {
 	data := do.SystemQueueMessage{
 		ContentType: contentType,
@@ -165,17 +172,27 @@ func (s *sSystemQueueMessage) SendMessage(ctx context.Context, sendReq *req.Syst
 	//异步处理
 	utils.SafeGo(ctx, func(ctx context.Context) {
 		if !g.IsEmpty(sendReq.Users) {
+			// 限制并发发送数量，防止对 WebSocket 服务造成瞬时压力
+			sem := make(chan struct{}, wsMaxConcurrentSends)
 			for _, v := range sendReq.Users {
-				receiveData := do.SystemQueueMessageReceive{
-					MessageId: messageId,
-					UserId:    v,
-				}
-				_, _ = service.SystemQueueMessageReceive().Model(ctx).Data(receiveData).Insert()
-				s.sendWs(ctx, v, messageId)
+				sem <- struct{}{}
+				go func(userId int64) {
+					defer func() { <-sem }()
+					receiveData := do.SystemQueueMessageReceive{
+						MessageId: messageId,
+						UserId:    userId,
+					}
+					_, _ = service.SystemQueueMessageReceive().Model(ctx).Data(receiveData).Insert()
+					s.sendWs(ctx, userId, messageId)
+				}(v)
+			}
+			// 等待所有 goroutine 完成
+			for i := 0; i < cap(sem); i++ {
+				sem <- struct{}{}
 			}
 		} else {
 			//获取所有有效用户，循环插入
-			s.saveAllUserMessageReceive(ctx, messageId, 1)
+			s.saveAllUserMessageReceive(ctx, messageId)
 		}
 	})
 	return
@@ -195,7 +212,6 @@ func (s *sSystemQueueMessage) sendWs(ctx context.Context, userId int64, messageI
 		"content":      message.Content,
 		"content_type": message.ContentType,
 		"send_by":      message.SendBy,
-		"created_at":   "",
 	}
 	if message.CreatedAt != nil {
 		notificationData["created_at"] = message.CreatedAt.Format("Y-m-d H:i:s")
@@ -216,9 +232,9 @@ func (s *sSystemQueueMessage) sendWs(ctx context.Context, userId int64, messageI
 		return
 	}
 
-	channel := fmt.Sprintf("private-adminuser-%d", userId)
+	channel := fmt.Sprintf(wsChannelAdminUser, userId)
 	pusherResponse := &websocket.PusherResponse{
-		Event:   "notification:new",
+		Event:   wsEventNotification,
 		Channel: channel,
 		Data:    string(dataJson),
 	}
@@ -230,29 +246,45 @@ func (s *sSystemQueueMessage) sendWs(ctx context.Context, userId int64, messageI
 		PusherResponse: pusherResponse,
 	}
 	if err := websocket.PublishChannelMessage(ctx, channel, topicMsg); err != nil {
-		g.Log().Warning(ctx, "sendWs: cross-server publish failed:", err)
+		g.Log().Error(ctx, "sendWs: cross-server publish failed:", err)
 	}
 }
 
-func (s *sSystemQueueMessage) saveAllUserMessageReceive(ctx context.Context, messageId int64, page int) (err error) {
-	var userList []*res.SystemUserSimple
-	pageSize := 100
-	m := service.SystemUser().Model(ctx).Where(dao.SystemUser.Columns().Status, 1).OrderDesc("id")
-	err = m.Page(page, pageSize).Scan(&userList)
-	if utils.IsError(err) {
-		return
-	}
-	if g.IsEmpty(userList) {
-		return
-	}
-	for _, v := range userList {
-		receiveData := do.SystemQueueMessageReceive{
-			MessageId: messageId,
-			UserId:    v.Id,
+func (s *sSystemQueueMessage) saveAllUserMessageReceive(ctx context.Context, messageId int64) (err error) {
+	page := 1
+	sem := make(chan struct{}, wsMaxConcurrentSends)
+
+	for {
+		var userList []*res.SystemUserSimple
+		m := service.SystemUser().Model(ctx).Where(dao.SystemUser.Columns().Status, 1).OrderDesc("id")
+		err = m.Page(page, wsBatchSize).Scan(&userList)
+		if utils.IsError(err) {
+			g.Log().Error(ctx, "saveAllUserMessageReceive: query users failed:", err)
+			return
 		}
-		_, _ = service.SystemQueueMessageReceive().Model(ctx).Data(receiveData).Insert()
-		s.sendWs(ctx, v.Id, messageId)
+		if g.IsEmpty(userList) {
+			break
+		}
+
+		for _, v := range userList {
+			sem <- struct{}{}
+			go func(userId int64) {
+				defer func() { <-sem }()
+				receiveData := do.SystemQueueMessageReceive{
+					MessageId: messageId,
+					UserId:    userId,
+				}
+				_, _ = service.SystemQueueMessageReceive().Model(ctx).Data(receiveData).Insert()
+				s.sendWs(ctx, userId, messageId)
+			}(v.Id)
+		}
+
+		page++
 	}
-	_ = s.saveAllUserMessageReceive(ctx, messageId, page+1)
+
+	// 等待所有 goroutine 完成
+	for i := 0; i < cap(sem); i++ {
+		sem <- struct{}{}
+	}
 	return
 }

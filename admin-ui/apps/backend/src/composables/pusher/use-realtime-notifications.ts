@@ -3,7 +3,7 @@ import { onUnmounted, ref } from 'vue';
 import { useUserStore } from '@vben/stores';
 
 import type { NotificationNewData, PresenceMemberData } from './pusher-types';
-import { Events } from './pusher-types';
+import { Channels, Events } from './pusher-types';
 import { usePusher } from './use-pusher';
 import { logger } from '#/utils/logger';
 
@@ -35,7 +35,7 @@ export function useRealtimeNotifications() {
     }
 
     // 1. Private user channel — personal notifications
-    const userChannel = subscribePrivate(`adminuser-${userId}`);
+    const userChannel = subscribePrivate(Channels.user(userId));
 
     cleanups.push(
       bind(
@@ -55,7 +55,7 @@ export function useRealtimeNotifications() {
     );
 
     // 2. Presence channel — online admin users
-    const presenceChannel = subscribePresence('admin');
+    const presenceChannel = subscribePresence(Channels.adminPresence);
 
     cleanups.push(
       bind(
