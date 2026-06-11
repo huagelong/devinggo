@@ -227,8 +227,8 @@ onMounted(() => {
 <template>
   <div class="p-5">
     <!-- 欢迎区 -->
-    <div class="mb-6 flex items-center gap-4 rounded-lg bg-white p-6 shadow-sm">
-      <div class="h-16 w-16 overflow-hidden rounded-full bg-gray-100">
+    <div class="mb-6 flex items-center gap-4 rounded-lg bg-card p-6 shadow-sm">
+      <div class="h-16 w-16 overflow-hidden rounded-full bg-muted">
         <img
           v-if="userStore.userInfo?.avatar"
           :src="userStore.userInfo.avatar"
@@ -237,22 +237,22 @@ onMounted(() => {
         />
         <div
           v-else
-          class="flex h-full w-full items-center justify-center text-2xl text-gray-400"
+          class="flex h-full w-full items-center justify-center text-2xl text-muted-foreground/80"
         >
           {{ userStore.userInfo?.realName?.charAt(0) || 'U' }}
         </div>
       </div>
       <div>
-        <h1 class="text-xl font-semibold text-gray-900">
+        <h1 class="text-xl font-semibold text-foreground">
           {{ getGreeting() }}，{{ userStore.userInfo?.realName || userStore.userInfo?.username }}
         </h1>
-        <p class="mt-1 text-sm text-gray-500">
+        <p class="mt-1 text-sm text-muted-foreground">
           {{ $t('dashboard.workspace.welcomeDesc') }}
         </p>
       </div>
       <div class="ml-auto text-right">
-        <div class="text-sm text-gray-500">{{ $t('dashboard.workspace.today') }}</div>
-        <div class="text-lg font-semibold text-gray-900">
+        <div class="text-sm text-muted-foreground">{{ $t('dashboard.workspace.today') }}</div>
+        <div class="text-lg font-semibold text-foreground">
           {{ new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }) }}
         </div>
       </div>
@@ -262,18 +262,18 @@ onMounted(() => {
       <!-- 左侧区域 -->
       <div class="flex-1">
         <!-- 快捷入口 -->
-        <div class="mb-6 rounded-lg bg-white p-6 shadow-sm">
-          <h2 class="mb-4 text-lg font-semibold text-gray-900">
+        <div class="mb-6 rounded-lg bg-card p-6 shadow-sm">
+          <h2 class="mb-4 text-lg font-semibold text-foreground">
             {{ $t('dashboard.workspace.quickNav') }}
           </h2>
-          <div v-if="quickNavItems.length === 0" class="py-8 text-center text-gray-500">
+          <div v-if="quickNavItems.length === 0" class="py-8 text-center text-muted-foreground">
             {{ $t('dashboard.workspace.noQuickNav') }}
           </div>
           <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             <div
               v-for="item in quickNavItems"
               :key="item.path"
-              class="group cursor-pointer rounded-lg border border-gray-100 p-4 transition-all hover:shadow-md"
+              class="group cursor-pointer rounded-lg border border-border p-4 transition-all hover:shadow-md"
               @click="navigateTo(item.path)"
             >
               <div
@@ -287,27 +287,27 @@ onMounted(() => {
                   fallback
                 />
               </div>
-              <div class="text-sm font-medium text-gray-900">{{ item.title }}</div>
-              <div class="mt-1 text-xs text-gray-500">{{ item.description }}</div>
+              <div class="text-sm font-medium text-foreground">{{ item.title }}</div>
+              <div class="mt-1 text-xs text-muted-foreground">{{ item.description }}</div>
             </div>
           </div>
         </div>
 
         <!-- 未读消息 -->
-        <div class="rounded-lg bg-white p-6 shadow-sm">
+        <div class="rounded-lg bg-card p-6 shadow-sm">
           <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900">
+            <h2 class="text-lg font-semibold text-foreground">
               {{ $t('dashboard.workspace.myMessages') }}
             </h2>
             <div class="flex items-center gap-2">
               <span
                 v-if="unreadCount > 0"
-                class="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600"
+                class="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive"
               >
                 {{ unreadCount }}{{ $t('dashboard.workspace.unreadCount') }}
               </span>
               <button
-                class="text-sm text-blue-600 hover:text-blue-700"
+                class="text-sm text-primary hover:text-primary-hover"
                 @click="goToMessageCenter"
               >
                 {{ $t('dashboard.workspace.viewAll') }}
@@ -315,11 +315,11 @@ onMounted(() => {
             </div>
           </div>
 
-          <div v-if="loading.messages" class="py-8 text-center text-gray-500">
+          <div v-if="loading.messages" class="py-8 text-center text-muted-foreground">
             {{ $t('common.loading') }}
           </div>
 
-          <div v-else-if="unreadMessages.length === 0" class="py-8 text-center text-gray-500">
+          <div v-else-if="unreadMessages.length === 0" class="py-8 text-center text-muted-foreground">
             {{ $t('dashboard.workspace.noUnreadMessages') }}
           </div>
 
@@ -327,24 +327,24 @@ onMounted(() => {
             <div
               v-for="message in unreadMessages"
               :key="message.id"
-              class="group flex items-start gap-3 rounded-lg border border-gray-100 p-3 transition-all hover:bg-gray-50"
+              class="group flex items-start gap-3 rounded-lg border border-border p-3 transition-all hover:bg-muted/50"
             >
-              <div class="mt-0.5 h-2 w-2 flex-shrink-0 rounded-full bg-red-500"></div>
+              <div class="mt-0.5 h-2 w-2 flex-shrink-0 rounded-full bg-destructive"></div>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center justify-between">
-                  <h3 class="truncate text-sm font-medium text-gray-900">
+                  <h3 class="truncate text-sm font-medium text-foreground">
                     {{ message.title }}
                   </h3>
-                  <span class="ml-2 flex-shrink-0 text-xs text-gray-400">
+                  <span class="ml-2 flex-shrink-0 text-xs text-muted-foreground/80">
                     {{ formatTime(message.created_at) }}
                   </span>
                 </div>
-                <p class="mt-1 line-clamp-2 text-xs text-gray-500">
+                <p class="mt-1 line-clamp-2 text-xs text-muted-foreground">
                   {{ message.content }}
                 </p>
               </div>
               <button
-                class="ml-2 flex-shrink-0 rounded px-2 py-1 text-xs text-blue-600 opacity-0 transition-opacity hover:bg-blue-50 group-hover:opacity-100"
+                class="ml-2 flex-shrink-0 rounded px-2 py-1 text-xs text-primary opacity-0 transition-opacity hover:bg-primary/10 group-hover:opacity-100"
                 @click.stop="markAsRead(message)"
               >
                 {{ $t('dashboard.workspace.markAsRead') }}
@@ -357,30 +357,30 @@ onMounted(() => {
       <!-- 右侧区域 -->
       <div class="w-full lg:w-80">
         <!-- 个人信息卡片 -->
-        <div class="mb-6 rounded-lg bg-white p-6 shadow-sm">
-          <h2 class="mb-4 text-lg font-semibold text-gray-900">
+        <div class="mb-6 rounded-lg bg-card p-6 shadow-sm">
+          <h2 class="mb-4 text-lg font-semibold text-foreground">
             {{ $t('dashboard.workspace.myInfo') }}
           </h2>
           <div class="space-y-3">
             <div class="flex justify-between text-sm">
-              <span class="text-gray-500">{{ $t('system.user.username') }}</span>
-              <span class="font-medium text-gray-900">{{ userStore.userInfo?.username }}</span>
+              <span class="text-muted-foreground">{{ $t('system.user.username') }}</span>
+              <span class="font-medium text-foreground">{{ userStore.userInfo?.username }}</span>
             </div>
             <div class="flex justify-between text-sm">
-              <span class="text-gray-500">{{ $t('system.user.nickname') }}</span>
-              <span class="font-medium text-gray-900">{{ userStore.userInfo?.realName || '-' }}</span>
+              <span class="text-muted-foreground">{{ $t('system.user.nickname') }}</span>
+              <span class="font-medium text-foreground">{{ userStore.userInfo?.realName || '-' }}</span>
             </div>
             <div class="flex justify-between text-sm">
-              <span class="text-gray-500">{{ $t('system.user.role') }}</span>
-              <span class="font-medium text-gray-900">{{ userStore.userInfo?.roles?.join(', ') || '-' }}</span>
+              <span class="text-muted-foreground">{{ $t('system.user.role') }}</span>
+              <span class="font-medium text-foreground">{{ userStore.userInfo?.roles?.join(', ') || '-' }}</span>
             </div>
             <div class="flex justify-between text-sm">
-              <span class="text-gray-500">{{ $t('system.user.lastLogin') }}</span>
-              <span class="font-medium text-gray-900">{{ $t('dashboard.workspace.justNow') }}</span>
+              <span class="text-muted-foreground">{{ $t('system.user.lastLogin') }}</span>
+              <span class="font-medium text-foreground">{{ $t('dashboard.workspace.justNow') }}</span>
             </div>
           </div>
           <button
-            class="mt-4 w-full rounded-lg bg-blue-600 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+            class="mt-4 w-full rounded-lg bg-primary py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
             @click="navigateTo('/dashboard/profile')"
           >
             {{ $t('dashboard.workspace.editProfile') }}
@@ -388,24 +388,24 @@ onMounted(() => {
         </div>
 
         <!-- 系统公告 -->
-        <div class="rounded-lg bg-white p-6 shadow-sm">
+        <div class="rounded-lg bg-card p-6 shadow-sm">
           <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900">
+            <h2 class="text-lg font-semibold text-foreground">
               {{ $t('dashboard.workspace.systemNotice') }}
             </h2>
             <button
               v-if="noticePath"
-              class="text-sm text-blue-600 hover:text-blue-700"
+              class="text-sm text-primary hover:text-primary-hover"
               @click="navigateTo(noticePath)"
             >
               {{ $t('dashboard.workspace.more') }}
             </button>
           </div>
-          <div v-if="loading.notices" class="py-8 text-center text-gray-500">
+          <div v-if="loading.notices" class="py-8 text-center text-muted-foreground">
             {{ $t('common.loading') }}
           </div>
 
-          <div v-else-if="noticeList.length === 0" class="py-8 text-center text-gray-500">
+          <div v-else-if="noticeList.length === 0" class="py-8 text-center text-muted-foreground">
             {{ $t('dashboard.workspace.noNotice') }}
           </div>
 
@@ -414,18 +414,18 @@ onMounted(() => {
               v-for="notice in noticeList"
               :key="notice.id"
               :class="[
-                'rounded-lg border border-gray-100 p-3 transition-all',
-                noticePath ? 'cursor-pointer hover:bg-gray-50' : '',
+                'rounded-lg border border-border p-3 transition-all',
+                noticePath ? 'cursor-pointer hover:bg-muted/50' : '',
               ]"
               @click="noticePath && navigateTo(noticePath)"
             >
               <div class="flex items-center gap-2">
-                <span class="rounded bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-600">
+                <span class="rounded bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">
                   {{ $t('dashboard.workspace.announcement') }}
                 </span>
-                <span class="truncate text-sm text-gray-900">{{ notice.title }}</span>
+                <span class="truncate text-sm text-foreground">{{ notice.title }}</span>
               </div>
-              <p class="mt-1 text-xs text-gray-500">{{ notice.created_at ? new Date(notice.created_at).toLocaleDateString() : '' }}</p>
+              <p class="mt-1 text-xs text-muted-foreground">{{ notice.created_at ? new Date(notice.created_at).toLocaleDateString() : '' }}</p>
             </div>
           </div>
         </div>

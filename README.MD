@@ -77,7 +77,7 @@ devinggo/
 │   └── scripts/            # 构建脚本
 ├── hack/                   # 开发工具
 │   └── generator/          # 代码生成器
-├── skills/                 # Vibe Coding Skill配置
+├── .opencode/skills/       # Vibe Coding Skill配置
 │   └── generator/          # AI代码生成Skill
 ├── manifest/               # 配置清单
 │   ├── config/             # 配置文件
@@ -139,13 +139,13 @@ devinggo/
 - [x] **应用管理**: 多应用管理，支持应用分组和API授权
 
 ### Vibe Coding (AI辅助编程)
-- [x] **智能代码生成**: 基于 `skills/generator/` 配置，通过自然语言描述一键生成前后端代码
+- [x] **智能代码生成**: 基于 `.opencode/skills/generator/` 配置，通过自然语言描述一键生成前后端代码
 - [x] **前后端一体化**: `--frontend` 参数同时生成后端API和前端Vue3页面
 - [x] **模块快速搭建**: 自动创建模块结构、数据库迁移、菜单配置
 - [x] **代码模板定制**: 支持自定义 `hack/generator/templates/` 下的代码模板
 
 ### 开发工具
-- [x] **代码生成器**: 基于数据表一键生成CRUD/Worker/Module代码，详见 [代码生成工具](hack/generator/README.md) 和 [Skill配置](skills/generator/SKILL.md)
+- [x] **代码生成器**: 基于数据表一键生成CRUD/Worker/Module代码，详见 [代码生成工具](hack/generator/README.md) 和 [Skill配置](.opencode/skills/generator/SKILL.md)
 - [x] **API管理**: API接口与分组管理，应用授权
 - [x] **接口文档**: 自动生成OpenAPI/Swagger文档
 
