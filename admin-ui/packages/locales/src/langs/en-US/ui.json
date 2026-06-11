@@ -92,7 +92,7 @@
     "viewAll": "View All Messages",
     "notifications": "Notifications",
     "markAllAsRead": "Make All as Read",
-    "clearNotifications": "Clear",
+    "clearNotifications": "Mark All as Read",
     "checkUpdatesTitle": "New Version Available",
     "checkUpdatesDescription": "Click to refresh and get the latest version",
     "search": {

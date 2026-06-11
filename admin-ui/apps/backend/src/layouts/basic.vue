@@ -154,16 +154,16 @@ async function handleMakeAll() {
   }
 }
 
-// 清空
+// 全部标记已读
 async function handleNoticeClear() {
   const ids = notifications.value.map((item) => item.id as number);
   if (ids.length === 0) return;
   try {
-    await deleteQueueMessageApi({ ids });
-    message.success($t('common.deleteSuccess'));
+    await updateQueueMessageReadStatusApi({ ids });
+    message.success($t('common.operationSuccess'));
     await fetchMessages();
   } catch (error) {
-    logger.error('Failed to clear notifications', error);
+    logger.error('Failed to mark all as read', error);
   }
 }
 
