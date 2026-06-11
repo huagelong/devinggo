@@ -317,7 +317,7 @@ onUnmounted(() => {
       :class="[
         {
           'bg-sidebar-deep': isSidebarMixed,
-          'bg-sidebar': !isSidebarMixed,
+          'border-r border-border bg-sidebar': !isSidebarMixed,
         },
       ]"
       :style="{ width: `${width}px` }"
