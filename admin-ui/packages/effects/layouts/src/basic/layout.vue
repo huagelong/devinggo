@@ -56,18 +56,15 @@ const timezoneStore = useTimezoneStore();
 const { refresh } = useRefresh();
 
 const sidebarTheme = computed(() => {
-  const dark = isDark.value || preferences.theme.semiDarkSidebar;
-  return dark ? 'dark' : 'light';
+  return isDark.value ? 'dark' : 'light';
 });
 
 const sidebarThemeSub = computed(() => {
-  const dark = isDark.value || preferences.theme.semiDarkSidebarSub;
-  return dark ? 'dark' : 'light';
+  return isDark.value ? 'dark' : 'light';
 });
 
 const headerTheme = computed(() => {
-  const dark = isDark.value || preferences.theme.semiDarkHeader;
-  return dark ? 'dark' : 'light';
+  return isDark.value ? 'dark' : 'light';
 });
 
 const logoClass = computed(() => {
