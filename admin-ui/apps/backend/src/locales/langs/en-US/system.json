@@ -133,6 +133,7 @@
     "editTitle": "Edit Config",
     "createTitle": "New Config",
     "confirmDelete": "Are you sure to delete this config?",
+    "confirmDeleteGroup": "Are you sure to delete this group?",
     "deleteGroup": "Delete Group",
     "addGroup": "Add Group",
     "saveConfig": "Save Config",

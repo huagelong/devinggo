@@ -10,7 +10,7 @@ import { $t } from '@vben/locales';
 import { message } from '#/adapter/tdesign';
 import { logger } from '#/utils/logger';
 
-import { MessagePlugin } from 'tdesign-vue-next';
+import { DialogPlugin, MessagePlugin } from 'tdesign-vue-next';
 
 import {
   deleteConfigGroup,
@@ -224,14 +224,21 @@ async function handleDeleteGroup(groupId: number) {
     MessagePlugin.info($t('common.defaultGroupCannotDelete'));
     return;
   }
-  try {
-    await deleteConfigGroup({ id: groupId });
-    MessagePlugin.success($t('common.groupDeleteSuccess'));
-    await fetchGroups();
-  } catch (error) {
-    logger.error(error);
-    MessagePlugin.error($t('common.groupDeleteFailed'));
-  }
+  const dialog = DialogPlugin.confirm({
+    header: $t('common.prompt'),
+    body: $t('system.config.confirmDeleteGroup'),
+    onConfirm: async () => {
+      try {
+        await deleteConfigGroup({ id: groupId });
+        MessagePlugin.success($t('common.groupDeleteSuccess'));
+        await fetchGroups();
+        dialog.hide();
+      } catch (error) {
+        logger.error(error);
+        MessagePlugin.error($t('common.groupDeleteFailed'));
+      }
+    },
+  });
 }
 
 function handleManage() {

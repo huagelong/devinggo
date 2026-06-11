@@ -133,6 +133,7 @@
     "editTitle": "编辑配置",
     "createTitle": "新增配置",
     "confirmDelete": "确认删除该配置吗？",
+    "confirmDeleteGroup": "确认删除该分组吗？",
     "deleteGroup": "删除分组",
     "addGroup": "新增分组",
     "saveConfig": "保存配置",
