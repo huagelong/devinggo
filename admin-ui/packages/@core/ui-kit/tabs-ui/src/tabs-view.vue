@@ -57,7 +57,7 @@ useTabsDrag(props, emit);
         'cursor-pointer text-muted-foreground hover:bg-muted': !scrollIsAtLeft,
         'pointer-events-none opacity-30': scrollIsAtLeft,
       }"
-      class="border-r px-2"
+      class="px-2"
       @click="scrollDirection('left')"
     >
       <ChevronsLeft class="size-4 h-full" />
@@ -98,7 +98,7 @@ useTabsDrag(props, emit);
         'cursor-pointer text-muted-foreground hover:bg-muted': !scrollIsAtRight,
         'pointer-events-none opacity-30': scrollIsAtRight,
       }"
-      class="cursor-pointer border-l px-2 text-muted-foreground hover:bg-muted"
+      class="cursor-pointer px-2 text-muted-foreground hover:bg-muted"
       @click="scrollDirection('right')"
     >
       <ChevronsRight class="size-4 h-full" />
