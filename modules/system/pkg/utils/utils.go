@@ -331,8 +331,14 @@ func UnzipFile(zipPath string, destPath string) error {
 
 	// 遍历ZIP文件中的所有文件和目录
 	for _, file := range reader.File {
+		// 使用 filepath.Clean 规范路径并阻止绝对路径
+		cleanName := filepath.Clean(file.Name)
+		if filepath.IsAbs(cleanName) || strings.HasPrefix(cleanName, "..") || strings.Contains(cleanName, ".."+string(os.PathSeparator)) {
+			return gerror.Newf("非法的文件路径: %s", file.Name)
+		}
+
 		// 构建目标路径
-		path := filepath.Join(destPath, file.Name)
+		path := filepath.Join(destPath, cleanName)
 
 		// 检查路径穿越漏洞
 		if !strings.HasPrefix(path, filepath.Clean(destPath)+string(os.PathSeparator)) {

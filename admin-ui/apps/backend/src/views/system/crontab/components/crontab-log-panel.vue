@@ -1,5 +1,6 @@
 ﻿<script lang="ts" setup>
 import type { CrontabApi } from '#/api/system/crontab';
+import type { PrimaryTableCol, TableRowData } from 'tdesign-vue-next';
 
 import { ref } from 'vue';
 
@@ -38,11 +39,11 @@ const searchForm = ref<CrontabLogQuery>({
   created_at: [],
 });
 
-const logColumns = [
+const logColumns = ref<PrimaryTableCol<TableRowData>[]>([
   {
     align: 'center',
     colKey: 'row-select',
-    type: 'multiple',
+    type: 'multiple' as const,
     width: 52,
   },
   { colKey: 'id', title: 'ID', width: 80 },
@@ -53,7 +54,7 @@ const logColumns = [
   { colKey: 'output', title: $t('system.crontab.executeOutput'), width: 180 },
   { colKey: 'error', title: $t('system.crontab.errorInfo'), width: 180 },
   { colKey: 'created_at', title: $t('common.createTime'), width: 180 },
-];
+]);
 
 const [Modal, modalApi] = useVbenModal({
   onConfirm: () => {

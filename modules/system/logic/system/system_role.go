@@ -135,7 +135,7 @@ func (s *sSystemRole) handleRoleSearch(ctx context.Context, in *req.SystemRoleSe
 			m = m.WhereGTE("created_at", in.CreatedAt[0]+" 00:00:00")
 		}
 		if len(in.CreatedAt) > 1 {
-			m = m.WhereLTE("created_at", in.CreatedAt[1]+"23:59:59")
+			m = m.WhereLTE("created_at", in.CreatedAt[1]+" 23:59:59")
 		}
 	}
 	return
@@ -178,44 +178,52 @@ func (s *sSystemRole) Save(ctx context.Context, in *req.SystemRoleSave) (id int6
 	if s.checkRoleCode(ctx, in.Code) {
 		return 0, myerror.ValidationFailed(ctx, "角色标识已存在")
 	}
-	saveData := do.SystemRole{
-		Name:   in.Name,
-		Sort:   in.Sort,
-		Status: in.Status,
-		Code:   in.Code,
-		Remark: in.Remark,
-	}
-	rs, err := s.Model(ctx).Data(saveData).Insert()
-	if utils.IsError(err) {
-		return
-	}
-	tmpId, err := rs.LastInsertId()
-	if utils.IsError(err) {
-		return
-	}
-	id = gconv.Int64(tmpId)
-
-	superAdminId, _ := s.GetSuperAdminId(ctx)
-	if id == superAdminId {
-		return
-	}
-	if !g.IsEmpty(in.MenuIds) {
-		for _, menuId := range in.MenuIds {
-			_, err = service.SystemRoleMenu().Model(ctx).Data(do.SystemRoleMenu{
-				RoleId: id,
-				MenuId: menuId,
-			}).Save()
+	err = g.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		saveData := do.SystemRole{
+			Name:   in.Name,
+			Sort:   in.Sort,
+			Status: in.Status,
+			Code:   in.Code,
+			Remark: in.Remark,
 		}
-	}
-
-	if !g.IsEmpty(in.DeptIds) {
-		for _, deptId := range in.DeptIds {
-			_, err = service.SystemRoleDept().Model(ctx).Data(do.SystemRoleDept{
-				RoleId: id,
-				DeptId: deptId,
-			}).Save()
+		rs, err := s.Model(ctx).Data(saveData).Insert()
+		if err != nil {
+			return err
 		}
-	}
+		tmpId, err := rs.LastInsertId()
+		if err != nil {
+			return err
+		}
+		id = gconv.Int64(tmpId)
+
+		superAdminId, _ := s.GetSuperAdminId(ctx)
+		if id == superAdminId {
+			return nil
+		}
+		if !g.IsEmpty(in.MenuIds) {
+			for _, menuId := range in.MenuIds {
+				if _, err = service.SystemRoleMenu().Model(ctx).Data(do.SystemRoleMenu{
+					RoleId: id,
+					MenuId: menuId,
+				}).Save(); err != nil {
+					return err
+				}
+			}
+		}
+
+		if !g.IsEmpty(in.DeptIds) {
+			for _, deptId := range in.DeptIds {
+				if _, err = service.SystemRoleDept().Model(ctx).Data(do.SystemRoleDept{
+					RoleId: id,
+					DeptId: deptId,
+				}).Save(); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
+
 	return
 }
 
@@ -243,43 +251,54 @@ func (s *sSystemRole) GetSuperAdminId(ctx context.Context) (id int64, err error)
 
 // Update modifies an existing system role and its associated menus and departments.
 func (s *sSystemRole) Update(ctx context.Context, in *req.SystemRoleSave) (err error) {
-	updateData := do.SystemRole{
-		Name:      in.Name,
-		DataScope: in.DataScope,
-		Sort:      in.Sort,
-		Status:    in.Status,
-		Code:      in.Code,
-		Remark:    in.Remark,
-	}
-	_, err = s.Model(ctx).Data(updateData).OmitEmptyData().Where("id", in.Id).Update()
-	if utils.IsError(err) {
-		return
-	}
-	id := in.Id
-
-	superAdminId, _ := s.GetSuperAdminId(ctx)
-	if id == superAdminId {
-		return
-	}
-	if !g.IsEmpty(in.MenuIds) {
-		_, _ = service.SystemRoleMenu().Model(ctx).Where("role_id", id).Delete()
-		for _, menuId := range in.MenuIds {
-			_, err = service.SystemRoleMenu().Model(ctx).Data(do.SystemRoleMenu{
-				RoleId: id,
-				MenuId: menuId,
-			}).Save()
+	err = g.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		updateData := do.SystemRole{
+			Name:      in.Name,
+			DataScope: in.DataScope,
+			Sort:      in.Sort,
+			Status:    in.Status,
+			Code:      in.Code,
+			Remark:    in.Remark,
 		}
-	}
-
-	if !g.IsEmpty(in.DeptIds) {
-		_, _ = service.SystemRoleDept().Model(ctx).Where("role_id", id).Delete()
-		for _, deptId := range in.DeptIds {
-			_, err = service.SystemRoleDept().Model(ctx).Data(do.SystemRoleDept{
-				RoleId: id,
-				DeptId: deptId,
-			}).Save()
+		_, err = s.Model(ctx).Data(updateData).OmitEmptyData().Where("id", in.Id).Update()
+		if err != nil {
+			return err
 		}
-	}
+		id := in.Id
+
+		superAdminId, _ := s.GetSuperAdminId(ctx)
+		if id == superAdminId {
+			return nil
+		}
+		if !g.IsEmpty(in.MenuIds) {
+			if _, err = service.SystemRoleMenu().Model(ctx).Where("role_id", id).Delete(); err != nil {
+				return err
+			}
+			for _, menuId := range in.MenuIds {
+				if _, err = service.SystemRoleMenu().Model(ctx).Data(do.SystemRoleMenu{
+					RoleId: id,
+					MenuId: menuId,
+				}).Save(); err != nil {
+					return err
+				}
+			}
+		}
+
+		if !g.IsEmpty(in.DeptIds) {
+			if _, err = service.SystemRoleDept().Model(ctx).Where("role_id", id).Delete(); err != nil {
+				return err
+			}
+			for _, deptId := range in.DeptIds {
+				if _, err = service.SystemRoleDept().Model(ctx).Data(do.SystemRoleDept{
+					RoleId: id,
+					DeptId: deptId,
+				}).Save(); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
 
 	return
 }

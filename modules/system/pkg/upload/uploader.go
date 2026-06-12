@@ -8,6 +8,8 @@ package upload
 
 import (
 	"context"
+	"net"
+	"net/url"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -132,9 +134,28 @@ func (u *Uploader) UploadImage(file *ghttp.UploadFile) (*res.SystemUploadFileRes
 }
 
 // SaveFromURL 从URL保存文件
-func (u *Uploader) SaveFromURL(url string) (result *res.SystemUploadFileRes, err error) {
-	if g.IsEmpty(url) {
+func (u *Uploader) SaveFromURL(rawUrl string) (result *res.SystemUploadFileRes, err error) {
+	if g.IsEmpty(rawUrl) {
 		return nil, gerror.New("URL不能为空")
+	}
+
+	parsedURL, parseErr := url.Parse(rawUrl)
+	if parseErr != nil {
+		return nil, gerror.Wrap(parseErr, "URL解析失败")
+	}
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+		return nil, gerror.New("仅支持 http/https 协议")
+	}
+
+	host := parsedURL.Hostname()
+	if host == "" {
+		return nil, gerror.New("URL缺少有效主机名")
+	}
+	ip := net.ParseIP(host)
+	if ip != nil {
+		if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
+			return nil, gerror.New("禁止访问内网地址")
+		}
 	}
 
 	// 下载文件到临时目录
@@ -149,14 +170,14 @@ func (u *Uploader) SaveFromURL(url string) (result *res.SystemUploadFileRes, err
 	}
 
 	// 下载文件
-	r, getErr := g.Client().Get(u.ctx, url)
+	r, getErr := g.Client().Get(u.ctx, rawUrl)
 	if getErr != nil {
 		return nil, gerror.Wrap(getErr, "下载文件失败")
 	}
 	defer r.Close()
 
 	// 生成文件名
-	originalName := gfile.Basename(url)
+	originalName := gfile.Basename(rawUrl)
 	ext := gfile.Ext(originalName)
 	fileName := u.generateFileName(originalName, ext)
 
@@ -183,7 +204,7 @@ func (u *Uploader) SaveFromURL(url string) (result *res.SystemUploadFileRes, err
 
 	// 如果文件已存在，删除临时文件
 	if gfile.Exists(finalFilePath) {
-		gfile.RemoveFile(tmpFilePath)
+		_ = gfile.RemoveFile(tmpFilePath)
 	} else {
 		if mvErr := gfile.Rename(tmpFilePath, finalFilePath); mvErr != nil {
 			return nil, gerror.Wrap(mvErr, "移动文件失败")
