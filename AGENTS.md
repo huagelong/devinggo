@@ -63,3 +63,6 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+# 图片识别使用 vision
+## 核心规则1.  **所有需要识别图片内容的任务**，使用 `vision` 子代理2.  **支持格式**：PNG、JPG、JPEG、GIF、WEBP、BMP、SVG、PDF3.  **自动触发**：当用户询问图片内容、分析图片、识别图片中的文字或元素时
