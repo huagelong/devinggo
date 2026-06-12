@@ -41,74 +41,70 @@ function updateField(field: keyof Props['formData'], value: string | number | un
 </script>
 
 <template>
-  <Form :data="formData" label-width="90px" colon>
-    <div class="grid grid-cols-4 gap-x-4 gap-y-3 items-end">
-      <FormItem :label="$t('system.user.username')" name="username">
-        <Input
-          :value="formData.username"
-          :placeholder="$t('ui.placeholder.input', [$t('system.user.username')])"
-          clearable
-          @change="(val: any) => updateField('username', val)"
-        />
-      </FormItem>
-      <FormItem :label="$t('system.user.nickname')" name="nickname">
-        <Input
-          :value="formData.nickname"
-          :placeholder="$t('ui.placeholder.input', [$t('system.user.nickname')])"
-          clearable
-
-          @change="(val: any) => updateField('nickname', val)"
-        />
-      </FormItem>
-      <FormItem :label="$t('system.user.phone')" name="phone">
-        <Input
-          :value="formData.phone"
-          :placeholder="$t('ui.placeholder.input', [$t('system.user.phone')])"
-          clearable
-
-          @change="(val: any) => updateField('phone', val)"
-        />
-      </FormItem>
-      <FormItem :label="$t('system.user.email')" name="email">
-        <Input
-          :value="formData.email"
-          :placeholder="$t('ui.placeholder.input', [$t('system.user.email')])"
-          clearable
-
-          @change="(val: any) => updateField('email', val)"
-        />
-      </FormItem>
-      <FormItem :label="$t('system.user.dept')" name="dept_id">
-        <Select
-          :value="formData.dept_id"
-          :options="deptOptions"
-          clearable
-
-          :placeholder="$t('ui.placeholder.select', [$t('system.user.dept')])"
-          @change="(val: any) => updateField('dept_id', val)"
-        />
-      </FormItem>
-      <FormItem :label="$t('system.user.role')" name="role_id">
-        <Select
-          :value="formData.role_id"
-          :options="roleOptions"
-          clearable
-
-          :placeholder="$t('ui.placeholder.select', [$t('system.user.role')])"
-          @change="(val: any) => updateField('role_id', val)"
-        />
-      </FormItem>
-      <FormItem :label="$t('system.user.post')" name="post_id">
-        <Select
-          :value="formData.post_id"
-          :options="postOptions"
-          clearable
-
-          :placeholder="$t('ui.placeholder.select', [$t('system.user.post')])"
-          @change="(val: any) => updateField('post_id', val)"
-        />
-      </FormItem>
-      <div class="flex justify-end gap-2 pb-[7px]">
+  <div class="rounded-md bg-card p-4">
+    <Form :data="formData" label-width="80px" layout="inline" colon>
+      <div class="grid grid-cols-4 gap-x-4 gap-y-3">
+        <FormItem :label="$t('system.user.username')" name="username">
+          <Input
+            :value="formData.username"
+            :placeholder="$t('ui.placeholder.input', [$t('system.user.username')])"
+            clearable
+            @change="(val: any) => updateField('username', val)"
+          />
+        </FormItem>
+        <FormItem :label="$t('system.user.nickname')" name="nickname">
+          <Input
+            :value="formData.nickname"
+            :placeholder="$t('ui.placeholder.input', [$t('system.user.nickname')])"
+            clearable
+            @change="(val: any) => updateField('nickname', val)"
+          />
+        </FormItem>
+        <FormItem :label="$t('system.user.phone')" name="phone">
+          <Input
+            :value="formData.phone"
+            :placeholder="$t('ui.placeholder.input', [$t('system.user.phone')])"
+            clearable
+            @change="(val: any) => updateField('phone', val)"
+          />
+        </FormItem>
+        <FormItem :label="$t('system.user.email')" name="email">
+          <Input
+            :value="formData.email"
+            :placeholder="$t('ui.placeholder.input', [$t('system.user.email')])"
+            clearable
+            @change="(val: any) => updateField('email', val)"
+          />
+        </FormItem>
+        <FormItem :label="$t('system.user.dept')" name="dept_id">
+          <Select
+            :value="formData.dept_id"
+            :options="deptOptions"
+            clearable
+            :placeholder="$t('ui.placeholder.select', [$t('system.user.dept')])"
+            @change="(val: any) => updateField('dept_id', val)"
+          />
+        </FormItem>
+        <FormItem :label="$t('system.user.role')" name="role_id">
+          <Select
+            :value="formData.role_id"
+            :options="roleOptions"
+            clearable
+            :placeholder="$t('ui.placeholder.select', [$t('system.user.role')])"
+            @change="(val: any) => updateField('role_id', val)"
+          />
+        </FormItem>
+        <FormItem :label="$t('system.user.post')" name="post_id">
+          <Select
+            :value="formData.post_id"
+            :options="postOptions"
+            clearable
+            :placeholder="$t('ui.placeholder.select', [$t('system.user.post')])"
+            @change="(val: any) => updateField('post_id', val)"
+          />
+        </FormItem>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
         <Button theme="default" @click="handleReset">
           {{ $t('common.reset') }}
         </Button>
@@ -116,6 +112,6 @@ function updateField(field: keyof Props['formData'], value: string | number | un
           {{ $t('common.search') }}
         </Button>
       </div>
-    </div>
-  </Form>
+    </Form>
+  </div>
 </template>

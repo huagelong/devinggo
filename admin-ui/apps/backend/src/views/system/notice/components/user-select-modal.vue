@@ -256,14 +256,14 @@ watch(
                 @change="(val: any) => (searchForm.post_id = val)"
               />
             </FormItem>
-            <div class="flex justify-end gap-2 pb-[7px]">
-              <Button theme="default" @click="handleReset">
-                {{ $t('common.reset') }}
-              </Button>
-              <Button theme="primary" @click="handleSearch">
-                {{ $t('common.query') }}
-              </Button>
-            </div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <Button theme="default" @click="handleReset">
+              {{ $t('common.reset') }}
+            </Button>
+            <Button theme="primary" @click="handleSearch">
+              {{ $t('common.query') }}
+            </Button>
           </div>
         </Form>
       </div>

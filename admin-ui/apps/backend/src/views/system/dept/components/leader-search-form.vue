@@ -35,9 +35,9 @@ function updateField(field: keyof Props['formData'], value: string | number | un
 </script>
 
 <template>
-  <div class="rounded-md border border-border bg-card p-4">
-    <Form :data="formData" label-width="90px" colon>
-      <div class="grid grid-cols-4 gap-x-4 gap-y-3 items-end">
+  <div class="rounded-md bg-card p-4">
+    <Form :data="formData" label-width="80px" layout="inline" colon>
+      <div class="grid grid-cols-4 gap-x-4 gap-y-3">
         <FormItem :label="$t('system.dept.username')" name="username">
           <Input
             :value="formData.username"
@@ -63,12 +63,12 @@ function updateField(field: keyof Props['formData'], value: string | number | un
             @change="(val: any) => updateField('status', val)"
           />
         </FormItem>
-        <div class="flex justify-end gap-2 pb-[7px]">
-          <Button theme="default" @click="handleReset">{{ $t('common.reset') }}</Button>
-          <Button theme="primary" @click="handleSearch">
-            {{ $t('common.search') }}
-          </Button>
-        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <Button theme="default" @click="handleReset">{{ $t('common.reset') }}</Button>
+        <Button theme="primary" @click="handleSearch">
+          {{ $t('common.search') }}
+        </Button>
       </div>
     </Form>
   </div>
