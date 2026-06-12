@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
@@ -43,7 +43,17 @@ const innerValue = computed({
   },
 });
 
-const editorKey = computed(() => `tinymce-${isDark.value ? 'dark' : 'light'}`);
+const editorVisible = ref(true);
+
+watch(isDark, () => {
+  editorVisible.value = false;
+  try {
+    tinymce.remove();
+  } catch {}
+  setTimeout(() => {
+    editorVisible.value = true;
+  }, 300);
+});
 
 function applyEditorTheme(editor: any) {
   setTimeout(() => {
@@ -80,6 +90,8 @@ const initOptions = computed(() => ({
   toolbar:
     'undo redo | blocks | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table | removeformat code fullscreen',
   skin: isDark.value ? 'oxide-dark' : 'oxide',
+  skin_url: `/tinymce/skins/ui/${isDark.value ? 'oxide-dark' : 'oxide'}`,
+  content_css: `/tinymce/skins/content/${isDark.value ? 'dark' : 'default'}/content.min.css`,
   content_style: isDark.value
     ? 'body.mce-content-body { background-color: #1e1e1e !important; color: #e0e0e0 !important; }'
     : '',
@@ -97,7 +109,7 @@ const initOptions = computed(() => ({
 <template>
   <div class="config-rich-text-editor">
     <Editor
-      :key="editorKey"
+      v-if="editorVisible"
       v-model="innerValue"
       :init="initOptions"
       output-format="html"
