@@ -1197,7 +1197,7 @@ func (g *CRUDGenerator) RegisterServiceInterface() error {
 		// UpdateNumber updates a number field of a %s.
 		UpdateNumber(ctx context.Context, id int64, numberName string, numberValue int) (err error)
 	}
-`, en, vn, en, vn, vn, en, en, vn, en, en, vn, en, vn, en, vn, en, vn, vn, vn, vn)
+	`, en, vn, en, vn, vn, en, en, vn, en, en, vn, en, vn, en, vn, en, vn, en, vn, vn, vn)
 
 	contentStr = strings.Replace(contentStr, "\t// ISystemUser defines the interface for user management operations.",
 		interfaceDef+"\t// ISystemUser defines the interface for user management operations.", 1)

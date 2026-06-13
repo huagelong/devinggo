@@ -154,7 +154,7 @@ func (s *sSystemUser) handleUserSearch(ctx context.Context, in *req.SystemUserSe
 			m = m.WherePrefixGTE(dao.SystemUser.Table(), dao.SystemUser.Columns().CreatedAt, in.CreatedAt[0]+" 00:00:00")
 		}
 		if len(in.CreatedAt) > 1 {
-			m = m.WherePrefixLTE(dao.SystemUser.Table(), dao.SystemUser.Columns().CreatedAt, in.CreatedAt[1]+"23:59:59")
+			m = m.WherePrefixLTE(dao.SystemUser.Table(), dao.SystemUser.Columns().CreatedAt, in.CreatedAt[1]+" 23:59:59")
 		}
 	}
 
@@ -171,7 +171,7 @@ func (s *sSystemUser) handleUserSearch(ctx context.Context, in *req.SystemUserSe
 	}
 
 	if !g.IsEmpty(in.PostId) {
-		m = m.LeftJoinOnFields(dao.SystemUserPost.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserPost.Columns().UserId).WherePrefix(dao.SystemUserPost.Table(), dao.SystemUserPost.Columns().PostId, in.RoleId)
+		m = m.LeftJoinOnFields(dao.SystemUserPost.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserPost.Columns().UserId).WherePrefix(dao.SystemUserPost.Table(), dao.SystemUserPost.Columns().PostId, in.PostId)
 	}
 
 	if !g.IsEmpty(in.PostIds) {

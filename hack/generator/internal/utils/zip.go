@@ -109,13 +109,19 @@ func UnzipFile(srcZip, dstDir string) error {
 
 	// 遍历zip文件中的所有文件
 	for _, file := range reader.File {
-		// 安全检查：防止路径穿越攻击
-		if strings.Contains(file.Name, "..") {
+		// 使用 filepath.Clean 规范路径并阻止绝对路径与路径穿越
+		cleanName := filepath.Clean(file.Name)
+		if filepath.IsAbs(cleanName) || strings.HasPrefix(cleanName, "..") || strings.Contains(cleanName, ".."+string(os.PathSeparator)) {
 			return fmt.Errorf("检测到不安全的路径: %s", file.Name)
 		}
 
 		// 构建目标路径
-		dstPath := filepath.Join(dstDir, file.Name)
+		dstPath := filepath.Join(dstDir, cleanName)
+
+		// 二次校验：确保最终路径仍在目标目录内
+		if !strings.HasPrefix(filepath.Clean(dstPath)+string(os.PathSeparator), filepath.Clean(dstDir)+string(os.PathSeparator)) {
+			return fmt.Errorf("检测到不安全的路径: %s", file.Name)
+		}
 
 		// 如果是目录
 		if file.FileInfo().IsDir() {
