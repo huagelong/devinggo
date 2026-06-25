@@ -3,7 +3,7 @@
 </p>
 <p align="center">
  <img src="https://svg.hamm.cn/badge.svg?key=License&value=Apache-2.0%20%2F%20MIT" />
-  <img src="https://svg.hamm.cn/badge.svg?key=Version&value=1.0.0%20LTS" />
+  <img src="https://svg.hamm.cn/badge.svg?key=Version&value=2.0.0%20LTS" />
 	<img src="https://img.shields.io/badge/goframe-2.9-green" alt="goframe">
 	<img src="https://img.shields.io/badge/golang-1.23.4-blue" alt="golang">
 	<img src="https://img.shields.io/badge/postgresql-13%2B-blue" alt="postgresql">
@@ -48,7 +48,7 @@
 
 ## 演示地址
 
-- **访问地址**: http://122.152.211.127:4000/admin/#/
+- **访问地址**: http://122.152.211.127:8070
 - **测试账号**: superAdmin / admin123
 
 ## 文档

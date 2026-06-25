@@ -28,10 +28,10 @@ type SettingCrontabLogColumns struct {
 	Parameter     string //
 	ExceptionInfo string //
 	Status        string //
-	StartTime     string //
-	EndTime       string //
-	Output        string //
 	CreatedAt     string //
+	StartTime     string // 任务开始执行时间
+	EndTime       string // 任务执行结束时间
+	Output        string // 任务执行输出
 }
 
 // settingCrontabLogColumns holds the columns for the table setting_crontab_log.
@@ -43,10 +43,10 @@ var settingCrontabLogColumns = SettingCrontabLogColumns{
 	Parameter:     "parameter",
 	ExceptionInfo: "exception_info",
 	Status:        "status",
+	CreatedAt:     "created_at",
 	StartTime:     "start_time",
 	EndTime:       "end_time",
 	Output:        "output",
-	CreatedAt:     "created_at",
 }
 
 // NewSettingCrontabLogDao creates and returns a new DAO object for table data access.

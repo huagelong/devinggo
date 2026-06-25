@@ -25,6 +25,6 @@ type SettingCrontab struct {
 	UpdatedBy any         //
 	CreatedAt *gtime.Time //
 	UpdatedAt *gtime.Time //
-	DeletedAt *gtime.Time //
 	Remark    any         //
+	DeletedAt *gtime.Time // 删除时间
 }

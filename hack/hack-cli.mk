@@ -1,19 +1,10 @@
 
-# Install/Update to the latest CLI tool.
+# Install/Update to the latest CLI tool (cross-platform via go install).
 .PHONY: cli
 cli:
-	@set -e; \
-	wget -O gf https://github.com/gogf/gf/releases/latest/download/gf_$(shell go env GOOS)_$(shell go env GOARCH) && \
-	chmod +x gf && \
-	./gf install -y && \
-	rm ./gf
+	@go install github.com/gogf/gf/cmd/gf/v2@latest
 
 
-# Check and install CLI tool.
+# Ensure CLI tool is installed (idempotent, works on Windows/Linux/macOS).
 .PHONY: cli.install
-cli.install:
-	@set -e; \
-	gf -v > /dev/null 2>&1 || if [[ "$?" -ne "0" ]]; then \
-  		echo "GoFame CLI is not installed, start proceeding auto installation..."; \
-		make cli; \
-	fi;
+cli.install: cli

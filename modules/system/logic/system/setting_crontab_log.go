@@ -83,6 +83,9 @@ func (s *sSettingCrontabLog) AddLog(ctx context.Context, id int64, status int, e
 	if utils.IsError(err) {
 		return err
 	}
+	if entity == nil {
+		return nil
+	}
 	_, err = s.Model(ctx).Insert(do.SettingCrontabLog{
 		CrontabId:     entity.Id,
 		Name:          entity.Name,

@@ -19,7 +19,7 @@ run: dao service
 build: cli.install ui.build
 	@if [ -d $(PLATFORM_RESOURCE_PATH) ]; then rm -rf $(PLATFORM_RESOURCE_PATH); fi
 	@mkdir $(PLATFORM_RESOURCE_PATH)
-	@if [ -d $(UI_PATH)/dist ]; then cd $(UI_PATH) && \cp -rf ./dist/* ../../$(PLATFORM_RESOURCE_PATH); fi
+	@if [ -d $(UI_PATH)/apps/backend/dist ]; then cp -rf $(UI_PATH)/apps/backend/dist/* $(PLATFORM_RESOURCE_PATH)/; fi
 	@${SED} -i '/^      version:/s/version:.*/version: ${VERSION}/' hack/config.yaml
 	@if [ -f internal/packed/packed.go ]; then rm -rf internal/packed/packed.go; fi
 	@go mod tidy
@@ -35,12 +35,13 @@ install:
 ui.install: cli.install
 	@set -e;\
 	cd $(UI_PATH);\
-	yarn install;
+	corepack enable;\
+	pnpm install --frozen-lockfile;
 
 #ui build
 .PHONY: ui.build
 ui.build: ui.install
 	@set -e;\
 	cd $(UI_PATH);\
-	yarn build;
+	pnpm build:backend;
 
