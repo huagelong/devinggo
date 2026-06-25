@@ -138,7 +138,7 @@ token:
 settings:
   superAdminId: 1 # 超级管理员ID
   initPassword: "admin123" # 超级管理员初始密码
-  enableGlobalDbCache: true # 是否开启全局数据库缓存，默认false
+  enableGlobalDbCache: false # 是否开启全局数据库缓存，默认false
   logSaveResponseData: true # 是否记录响应数据到日志中，默认true
   aesKey: "1234567890123456" # AES加密密钥，跟admin-ui项目VITE_APP_AES_KEY保持一致
   cors:
