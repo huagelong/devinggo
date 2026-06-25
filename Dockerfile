@@ -15,9 +15,7 @@ RUN mv ./manifest/config/config.docker.yaml ./manifest/config/config.yaml
 RUN mv ./hack/config.docker.yaml ./hack/config.yaml
 RUN rm -rf ./admin-ui/.env.production
 RUN mv ./admin-ui/.env.docker ./admin-ui/.env.production
-# 预装 gf CLI（走 goproxy 国内代理，避免 wget 直连 GitHub 不稳定）
-# 注意：CLI 是独立 module，路径为 gf/cmd/gf/v2，与主框架 gf/v2 不同
-RUN go install github.com/gogf/gf/cmd/gf/v2@latest
+# make build 会自动安装 gf CLI 并构建前端+后端（GOPROXY 已设国内代理）
 RUN make build
 RUN chmod +x ./bin/v1.0.0/linux_amd64/devinggo
 RUN cd ./bin/v1.0.0/linux_amd64/ && ./devinggo unpack
