@@ -43,6 +43,7 @@ var (
 			}
 			s.SetSessionStorage(gsession.NewStorageRedisHashTable(redis.GetRedis()))
 			s.Use(
+				serveFrontend,
 				systemService.Middleware().I18n,
 				systemService.Middleware().Ctx,
 				systemService.Middleware().Cors,
@@ -61,6 +62,10 @@ var (
 				enhanceOpenAPIDoc(s)
 			}
 
+			s.BindHandler("GET:/", serveFrontend)
+			s.BindHandler("HEAD:/", serveFrontend)
+			s.BindHandler("GET:/index.html", serveFrontend)
+			s.BindHandler("HEAD:/index.html", serveFrontend)
 			modules.StartModules(ctx, s)
 			s.Group("/", func(group *ghttp.RouterGroup) {
 				router.BindController(group)
