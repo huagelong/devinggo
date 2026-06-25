@@ -14,6 +14,8 @@
 
 ## AI 大模型一键初始化
 
+> **推荐使用 Codex。** 本项目已内置 Codex Skill：`.codex/skills/devinggo-project-init/SKILL.md` 和 `.codex/skills/generator/SKILL.md`。在 Codex 中直接使用下面的提示词即可；如果使用其他 AI 编程工具，请把这两个 Skill 文件的内容配置到该工具的 Skill/Rules/Agent Instructions 中，并保留 Skill 名称 `devinggo-project-init`、`devinggo-generator`，再按相同提示词调用。
+
 本项目内置初始化 Skill：`.codex/skills/devinggo-project-init/SKILL.md`。在支持 Skill 的 AI 大模型工具中输入：
 
 ```text
@@ -29,7 +31,7 @@
 ### 特点
 
 - 🚀 **高性能**: 基于GoFrame，发挥Go高并发优势
-- 🤖 **Vibe Coding**: AI辅助编程，通过 `skills/generator/` 一键生成前后端代码
+- 🤖 **Vibe Coding**: AI辅助编程，通过 `.codex/skills/generator/` 一键生成前后端代码
 - 📦 **模块化**: 插件化模块系统，支持独立开发和热插拔
 - 🛠️ **代码生成**: 一键生成CRUD/Worker/Module前后端代码
 - 🔐 **安全可靠**: RBAC权限模型，JWT认证
@@ -84,7 +86,7 @@ devinggo/
 │   └── scripts/            # 构建脚本
 ├── hack/                   # 开发工具
 │   └── generator/          # 代码生成器
-├── .opencode/skills/       # Vibe Coding Skill配置
+├── .codex/skills/          # Codex Skill配置
 │   └── generator/          # AI代码生成Skill
 ├── manifest/               # 配置清单
 │   ├── config/             # 配置文件
@@ -146,13 +148,13 @@ devinggo/
 - [x] **应用管理**: 多应用管理，支持应用分组和API授权
 
 ### Vibe Coding (AI辅助编程)
-- [x] **智能代码生成**: 基于 `.opencode/skills/generator/` 配置，通过自然语言描述一键生成前后端代码
-- [x] **前后端一体化**: `--frontend` 参数同时生成后端API和前端Vue3页面
+- [x] **智能代码生成**: 基于 `.codex/skills/generator/` 配置，通过自然语言描述一键生成前后端代码
+- [x] **前后端一体化**: 在提示词中说明需要前端页面，Skill 会调用生成器同时生成后端API和前端Vue3页面
 - [x] **模块快速搭建**: 自动创建模块结构、数据库迁移、菜单配置
 - [x] **代码模板定制**: 支持自定义 `hack/generator/templates/` 下的代码模板
 
 ### 开发工具
-- [x] **代码生成器**: 基于数据表一键生成CRUD/Worker/Module代码，详见 [代码生成工具](hack/generator/README.md) 和 [Skill配置](.opencode/skills/generator/SKILL.md)
+- [x] **代码生成器**: 基于数据表一键生成CRUD/Worker/Module代码，详见 [代码生成工具](hack/generator/README.md) 和 [Skill配置](.codex/skills/generator/SKILL.md)
 - [x] **API管理**: API接口与分组管理，应用授权
 - [x] **接口文档**: 自动生成OpenAPI/Swagger文档
 
@@ -193,27 +195,18 @@ devinggo/
 
 ### Windows 安装 Make
 
-项目使用 `Makefile` 管理构建命令，Windows 系统需要手动安装 make 工具：
+项目使用 `Makefile` 管理构建命令，Windows 系统需要安装 make 工具。推荐让 Codex 先检查本机环境，再根据缺失项给出安装方案：
 
 **方式1: 通过 Chocolatey 安装（推荐）**
 
-```powershell
-# 以管理员身份运行 PowerShell，安装 Chocolatey（如未安装）
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-
-# 安装 make
-choco install make
+```text
+使用 $devinggo-project-init 检查 Windows 上是否已安装 make；如果缺失，请优先评估 Chocolatey 方案，并在执行安装前说明需要管理员权限、网络访问和会修改 PATH。
 ```
 
 **方式2: 通过 Scoop 安装**
 
-```powershell
-# 安装 Scoop（如未安装）
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
-
-# 安装 make
-scoop install make
+```text
+使用 $devinggo-project-init 检查 Windows 上是否已安装 make；如果我不想使用管理员权限，请评估 Scoop 方案，并在执行安装前说明会改动哪些用户级配置。
 ```
 
 **方式3: 直接下载**
@@ -222,36 +215,20 @@ scoop install make
 
 ### 1. 克隆项目
 
-```bash
-git clone https://github.com/huagelong/devinggo.git
-cd devinggo
+```text
+使用 $devinggo-project-init 帮我克隆 DevingGo 项目并进入项目目录；如果目录已存在，请先检查现有代码，不要覆盖。
 ```
 
 ### 2. 配置环境
 
-```bash
-# 复制配置文件
-cp manifest/config/config.example.yaml manifest/config/config.yaml
-cp hack/config.example.yaml hack/config.yaml
-
-# 编辑配置文件，配置PostgreSQL和Redis连接
-vim manifest/config/config.yaml
+```text
+使用 $devinggo-project-init 检查 `manifest/config/config.yaml` 和 `hack/config.yaml` 是否存在；缺失时从样例创建，并引导我配置 PostgreSQL 和 Redis 连接，不要覆盖已有配置。
 ```
 
 ### 3. 编译运行
 
-```bash
-# 安装GoFrame CLI
-make cli
-
-# 编译项目
-make build
-
-# 初始化数据库
-go run main.go migrate:up
-
-# 启动服务
-go run main.go
+```text
+使用 $devinggo-project-init 检查 GoFrame CLI 和项目依赖，确认数据库配置后执行迁移，构建项目，并启动后端、Worker 和前端服务。
 ```
 
 **访问地址**:
@@ -261,42 +238,40 @@ go run main.go
 
 ### Docker部署
 
-```bash
-docker build -t devinggo:latest .
-docker run -d -p 8070:8070 \
-  -e DATABASE_HOST=your_db_host \
-  -e DATABASE_PASSWORD=your_password \
-  -e REDIS_HOST=your_redis_host \
-  --name devinggo devinggo:latest
+```text
+请使用 Codex 帮我基于当前项目构建 DevingGo Docker 镜像，并根据我的数据库和 Redis 地址生成部署步骤；执行前先检查 Docker 是否可用、端口是否占用、环境变量是否完整。
 ```
 
 ### 常用命令
 
-```bash
-# 代码生成相关
-go run hack/generator/main.go crud:generate -m=system -t=system_user -n=用户                    # 生成CRUD代码
-go run hack/generator/main.go worker:create -module=system -name=SendEmail -type=task            # 创建Worker任务
-go run hack/generator/main.go module:create -name=blog                                            # 创建新模块
-go run hack/generator/main.go module:export -name=blog                                            # 导出模块
-go run hack/generator/main.go module:import -file=blog.v1.0.0.zip                                 # 导入模块
-go run hack/generator/main.go -h                                                                # 查看所有生成器命令
+代码生成相关操作推荐交给 Codex Skill 执行：
 
-# 数据库迁移相关
-go run main.go migrate:up        # 执行迁移（更新数据库）
-go run main.go migrate:down      # 回滚迁移
-go run main.go migrate:status    # 查看迁移状态
-go run main.go migrate:version   # 查看当前版本
+```text
+使用 $devinggo-generator 为 system_user 表生成 system 模块的用户 CRUD 代码。
 
-# 服务启动相关
-go run main.go                   # 启动HTTP服务（默认）
-go run main.go worker            # 启动Worker服务（处理异步任务和定时任务）
+使用 $devinggo-generator 在 system 模块创建名为 SendEmail 的异步 Worker 任务。
 
-# GoFrame CLI工具
-make cli                         # 安装GoFrame CLI工具
-gf gen dao                       # 生成DAO代码
-gf gen service                   # 生成Service接口
-gf build                         # 编译项目
+使用 $devinggo-generator 创建名为 blog 的新模块。
+
+使用 $devinggo-generator 导出 blog 模块。
+
+使用 $devinggo-generator 从 blog.v1.0.0.zip 导入模块。
+
+使用 $devinggo-generator 查看当前项目支持哪些代码生成能力。
 ```
+
+```text
+使用 $devinggo-project-init 帮我执行数据库迁移，先确认当前连接的是本地开发库，并在执行前说明影响范围。
+
+使用 $devinggo-project-init 帮我查看当前数据库迁移状态和版本。
+
+使用 $devinggo-project-init 帮我启动后端 HTTP 服务和 Worker 服务，并验证 Swagger、API JSON 是否可访问。
+
+使用 $devinggo-project-init 检查 GoFrame CLI 是否已安装；如果缺失，再说明安装方式并取得确认。
+
+使用 $devinggo-project-init 帮我在需要时更新 DAO、Service 接口并编译项目。
+```
+
 
 ## 开发指南
 
@@ -304,9 +279,8 @@ gf build                         # 编译项目
 
 使用代码生成器快速创建标准化的模块结构：
 
-```bash
-# 创建名为blog的新模块
-go run hack/generator/main.go module:create --name=blog
+```text
+使用 $devinggo-generator 创建名为 blog 的新模块，并在生成后告诉我新增了哪些文件以及还需要执行哪些后续检查。
 ```
 
 这将创建以下结构：
@@ -326,12 +300,8 @@ modules/blog/
 
 基于数据表快速生成完整的后端CRUD代码：
 
-```bash
-# 生成system_user表的CRUD代码
-go run hack/generator/main.go crud:generate \
-  -m=system \
-  -t=system_user \
-  -n=用户
+```text
+使用 $devinggo-generator 为 system 模块的 system_user 表生成“用户”CRUD 后端代码，并在生成后检查 service/controller 是否需要更新。
 ```
 
 将自动生成后端代码：
@@ -344,27 +314,12 @@ go run hack/generator/main.go crud:generate \
 
 创建异步任务或定时任务：
 
-```bash
-# 创建异步任务
-go run hack/generator/main.go worker:create \
-  -module=system \
-  -name=SendEmail \
-  -type=task \
-  -desc="发送邮件任务"
+```text
+使用 $devinggo-generator 在 system 模块创建名为 SendEmail 的异步任务，说明是“发送邮件任务”。
 
-# 创建定时任务
-go run hack/generator/main.go worker:create \
-  -module=system \
-  -name=CleanLog \
-  -type=cron \
-  -desc="清理日志任务"
+使用 $devinggo-generator 在 system 模块创建名为 CleanLog 的定时任务，说明是“清理日志任务”。
 
-# 创建混合任务（既可异步调用，也可定时执行）
-go run hack/generator/main.go worker:create \
-  -module=system \
-  -name=DataSync \
-  -type=both \
-  -desc="数据同步任务"
+使用 $devinggo-generator 在 system 模块创建名为 DataSync 的混合任务，说明是“数据同步任务”。
 ```
 
 ### 配置说明
@@ -440,7 +395,7 @@ asynq:
 | 启用调试模式 | 设置 `database.default.debug: true` |
 | 数据库迁移失败 | 检查PostgreSQL连接配置，查看 `logs/` 目录日志 |
 | JWT过期时间 | `manifest/config/config.yaml` 中修改 `jwt.expire`（秒） |
-| Worker任务不执行 | 确保已启动Worker服务 (`go run main.go worker`)，检查Redis连接 |
+| Worker任务不执行 | 使用 `$devinggo-project-init` 检查 Worker 服务是否已启动，并确认 Redis 连接 |
 | 跨域访问 | 已内置CORS中间件，可在配置中调整 |
 | API返回401 | 检查Token是否过期，重新登录获取Token |
 
