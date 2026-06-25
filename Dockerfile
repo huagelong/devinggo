@@ -27,8 +27,8 @@ RUN ls -la ./bin/v2.0.0/linux_amd64
 FROM alpine:3.20
 LABEL maintainer="hpuwang@gmail.com"
 
-# 安装Nginx及运行时依赖
-RUN apk add --no-cache nginx ca-certificates tzdata
+# 安装运行时依赖
+RUN apk add --no-cache ca-certificates tzdata
 
 # 设置在容器内执行时当前的目录
 ENV WORKDIR=/app
@@ -36,19 +36,13 @@ WORKDIR $WORKDIR
 
 # 添加Go应用可执行文件，并设置执行权限
 COPY --from=go-builder /app/bin/v2.0.0/linux_amd64/ ./
-COPY --from=go-builder /app/docs/docker/start.sh ./start.sh
-# 复制Nginx配置文件
-COPY --from=go-builder /app/docs/docker/nginx.conf /etc/nginx/http.d/default.conf
 # 设置权限
 RUN chmod +x $WORKDIR/devinggo
 
-# 创建启动脚本
-RUN chmod +x /app/start.sh
-
-# 暴露Nginx端口
-EXPOSE 80
+# 暴露应用端口
+EXPOSE 8070
 ###############################################################################
 #                                   START
 ###############################################################################
 
-CMD ["/app/start.sh"]
+CMD ["/app/devinggo", "--gf.gmod=develop"]
