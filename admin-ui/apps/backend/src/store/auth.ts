@@ -3,6 +3,8 @@ import type { Recordable, UserInfo } from '@vben/types';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+import CryptoJS from 'crypto-js';
+
 import { LOGIN_PATH } from '@vben/constants';
 import { preferences } from '@vben/preferences';
 import { resetAllStores, useAccessStore, useUserStore } from '@vben/stores';
@@ -14,50 +16,20 @@ import { getAccessCodesApi, getUserInfoApi, loginApi, logoutApi } from '#/api';
 import { $t } from '#/locales';
 
 /**
- * AES-ECB 加密密码（使用 SubtleCrypto 单块 CBC 模拟 ECB）
- * 与后端 secure.AESEncrypt 保持一致：ECB 模式 + PKCS7 填充 + Base64 编码
+ * AES-ECB 加密密码
+ * 与后端 secure.AESEncrypt/AESDecrypt 保持一致：ECB 模式 + PKCS7 填充 + Base64 编码
+ * 注意：不使用 crypto.subtle（Web Crypto API），因其仅在安全上下文（HTTPS/localhost）可用，
+ * 通过 HTTP 访问时 crypto.subtle 为 undefined 会导致登录失败。
  */
-export async function encryptPassword(password: string): Promise<string> {
+export function encryptPassword(password: string): string {
   const aesKey = import.meta.env.VITE_APP_AES_KEY as string;
   if (!aesKey) {
     throw new Error('VITE_APP_AES_KEY 未配置');
   }
-  const encoder = new TextEncoder();
-  const keyBytes = encoder.encode(aesKey);
-  const data = encoder.encode(password);
-
-  // PKCS7 填充到 16 字节的倍数
-  const blockSize = 16;
-  const paddingLen = blockSize - (data.length % blockSize);
-  const padded = new Uint8Array(data.length + paddingLen);
-  padded.set(data);
-  padded.fill(paddingLen, data.length);
-
-  // 导入 AES 密钥
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    keyBytes,
-    { name: 'AES-CBC' },
-    false,
-    ['encrypt'],
-  );
-
-  // ECB 模式：每个 16 字节块使用零 IV 的 AES-CBC 独立加密
-  // 单块 AES-CBC(IV=0) == AES-ECB，输出取前 16 字节
-  const result = new Uint8Array(padded.length);
-  const zeroIv = new Uint8Array(16);
-  for (let i = 0; i < padded.length; i += blockSize) {
-    const block = padded.slice(i, i + blockSize);
-    const encrypted = await crypto.subtle.encrypt(
-      { name: 'AES-CBC', iv: zeroIv },
-      cryptoKey,
-      block,
-    );
-    result.set(new Uint8Array(encrypted).slice(0, blockSize), i);
-  }
-
-  // Base64 编码
-  return btoa(String.fromCharCode(...result));
+  return CryptoJS.AES.encrypt(password, CryptoJS.enc.Utf8.parse(aesKey), {
+    mode: CryptoJS.mode.ECB,
+    padding: CryptoJS.pad.Pkcs7,
+  }).toString();
 }
 
 export const useAuthStore = defineStore('auth', () => {

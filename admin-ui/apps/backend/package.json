@@ -48,6 +48,7 @@
     "@vben/utils": "workspace:*",
     "@vueuse/core": "catalog:",
     "codemirror": "^6.0.2",
+    "crypto-js": "catalog:",
     "dayjs": "catalog:",
     "dompurify": "^3.4.0",
     "es-toolkit": "catalog:",
@@ -61,6 +62,7 @@
     "vue-router": "catalog:"
   },
   "devDependencies": {
+    "@types/crypto-js": "catalog:",
     "@types/dompurify": "^3.2.0",
     "@vben/tsconfig": "workspace:*",
     "@vben/vite-config": "workspace:*",
