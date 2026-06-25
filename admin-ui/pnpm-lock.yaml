@@ -84,6 +84,9 @@ catalogs:
     '@types/archiver':
       specifier: ^7.0.0
       version: 7.0.0
+    '@types/crypto-js':
+      specifier: ^4.2.2
+      version: 4.2.2
     '@types/html-minifier-terser':
       specifier: ^7.0.2
       version: 7.0.2
@@ -177,6 +180,9 @@ catalogs:
     cross-env:
       specifier: ^10.1.0
       version: 10.1.0
+    crypto-js:
+      specifier: ^4.2.0
+      version: 4.2.0
     cspell:
       specifier: ^9.7.0
       version: 9.8.0
@@ -660,6 +666,9 @@ importers:
       codemirror:
         specifier: ^6.0.2
         version: 6.0.2
+      crypto-js:
+        specifier: 'catalog:'
+        version: 4.2.0
       dayjs:
         specifier: 'catalog:'
         version: 1.11.20
@@ -694,6 +703,9 @@ importers:
         specifier: 'catalog:'
         version: 5.0.3(@vue/compiler-sfc@3.5.30)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3))
     devDependencies:
+      '@types/crypto-js':
+        specifier: 'catalog:'
+        version: 4.2.2
       '@types/dompurify':
         specifier: ^3.2.0
         version: 3.2.0
@@ -4827,6 +4839,9 @@ packages:
 
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
+
+  '@types/crypto-js@4.2.2':
+    resolution: {integrity: sha512-sDOLlVbHhXpAUAL0YHDUUwDZf3iN4Bwi4W6a0W0b+QcAezUbRtH4FVb+9J4h+XFPW7l/gQ9F8qC7P+Ec4k8QVQ==}
 
   '@types/deep-eql@4.0.2':
     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
@@ -13885,6 +13900,8 @@ snapshots:
     dependencies:
       '@types/deep-eql': 4.0.2
       assertion-error: 2.0.1
+
+  '@types/crypto-js@4.2.2': {}
 
   '@types/deep-eql@4.0.2': {}
 

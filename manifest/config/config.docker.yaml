@@ -82,8 +82,8 @@ database:
 redis:
   # 同时作为锚点(&redis_default), 其他分组通过 <<: *redis_default 继承, 按需覆盖
   default: &redis_default
-    address: db-redis-hzcvsm:6379
-    pass: "redis_d5KQds"
+    address: 122.152.211.127:6379
+    pass: "168wang"
     user: "default"
     cluster: false
     db: 0

@@ -236,6 +236,104 @@ devinggo/
 - 文档: http://localhost:8070/swagger
 - 测试账号: superAdmin / admin123
 
+### 二进制部署
+
+**1. 构建二进制**
+
+```bash
+make build
+```
+
+构建产物按版本号分目录输出到 `./bin`，已打包前端 admin-ui 与 `resource`、`manifest` 资源：
+
+- `bin/v2.0.0/linux_amd64/devinggo`
+- `bin/v2.0.0/windows_amd64/devinggo.exe`
+
+**2. 环境依赖**
+
+- PostgreSQL >= 13
+- Redis >= 5
+
+**3. 部署运行**
+
+将对应平台的二进制（例如 `bin/v2.0.0/linux_amd64/devinggo`）上传到服务器，进入其所在目录后依次执行：
+
+```bash
+./devinggo unpack     # 释放 manifest/config 等配置与资源文件
+# 编辑 manifest/config/config.yaml 配置 PostgreSQL、Redis、Token 等
+./devinggo migrate:up # 执行数据库迁移
+./devinggo            # 启动服务（同时启动 HTTP + Worker）
+```
+
+> `unpack` 只需首次执行一次，完成后会在当前目录生成 `.init.lock`；如需重新初始化请先删除该文件。
+
+**4. 访问验证**
+
+- 地址: http://<服务器IP>:8070
+- 文档: http://<服务器IP>:8070/swagger
+- 账号: superAdmin / admin123
+
+**5. 进程管理（生产环境推荐）**
+
+假设二进制部署在 `/opt/devinggo`，以下任选其一托管进程。
+
+**systemd（推荐）**
+
+新建 `/etc/systemd/system/devinggo.service`：
+
+```ini
+[Unit]
+Description=DevingGo Server
+After=network.target postgresql.service redis-server.service
+
+[Service]
+Type=simple
+User=devinggo
+WorkingDirectory=/opt/devinggo
+ExecStart=/opt/devinggo/devinggo
+Restart=always
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+```
+
+常用命令：
+
+```bash
+systemctl daemon-reload
+systemctl enable --now devinggo   # 开机自启并立即启动
+systemctl status devinggo         # 查看状态
+journalctl -u devinggo -f         # 实时查看日志
+```
+
+**supervisor**
+
+新建 `/etc/supervisor/conf.d/devinggo.conf`：
+
+```ini
+[program:devinggo]
+command=/opt/devinggo/devinggo
+directory=/opt/devinggo
+user=devinggo
+autostart=true
+autorestart=true
+startsecs=5
+stderr_logfile=/var/log/devinggo/err.log
+stdout_logfile=/var/log/devinggo/out.log
+```
+
+常用命令：
+
+```bash
+supervisorctl reread && supervisorctl update
+supervisorctl start devinggo
+supervisorctl status devinggo
+```
+
+> 无论采用哪种方式，生产环境都务必修改 `token.secretKey`、`settings.aesKey`、数据库与 Redis 密码等默认配置。
+
 ### Docker部署
 
 ```text
