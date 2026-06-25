@@ -19,8 +19,8 @@ type SettingCrontabLog struct {
 	Parameter     any         //
 	ExceptionInfo any         //
 	Status        any         //
-	StartTime     *gtime.Time //
-	EndTime       *gtime.Time //
-	Output        any         //
 	CreatedAt     *gtime.Time //
+	StartTime     *gtime.Time // 任务开始执行时间
+	EndTime       *gtime.Time // 任务执行结束时间
+	Output        any         // 任务执行输出
 }

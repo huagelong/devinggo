@@ -10,15 +10,15 @@ import (
 
 // SettingCrontabLog is the golang structure for table setting_crontab_log.
 type SettingCrontabLog struct {
-	Id            int64       `json:"id"            orm:"id"             description:""` //
-	CrontabId     int64       `json:"crontabId"     orm:"crontab_id"     description:""` //
-	Name          string      `json:"name"          orm:"name"           description:""` //
-	Target        string      `json:"target"        orm:"target"         description:""` //
-	Parameter     string      `json:"parameter"     orm:"parameter"      description:""` //
-	ExceptionInfo string      `json:"exceptionInfo" orm:"exception_info" description:""` //
-	Status        int         `json:"status"        orm:"status"         description:""` //
-	StartTime     *gtime.Time `json:"startTime"     orm:"start_time"     description:""` //
-	EndTime       *gtime.Time `json:"endTime"       orm:"end_time"       description:""` //
-	Output        string      `json:"output"        orm:"output"         description:""` //
-	CreatedAt     *gtime.Time `json:"createdAt"     orm:"created_at"     description:""` //
+	Id            int64       `json:"id"            orm:"id"             description:""`         //
+	CrontabId     int64       `json:"crontabId"     orm:"crontab_id"     description:""`         //
+	Name          string      `json:"name"          orm:"name"           description:""`         //
+	Target        string      `json:"target"        orm:"target"         description:""`         //
+	Parameter     string      `json:"parameter"     orm:"parameter"      description:""`         //
+	ExceptionInfo string      `json:"exceptionInfo" orm:"exception_info" description:""`         //
+	Status        int         `json:"status"        orm:"status"         description:""`         //
+	CreatedAt     *gtime.Time `json:"createdAt"     orm:"created_at"     description:""`         //
+	StartTime     *gtime.Time `json:"startTime"     orm:"start_time"     description:"任务开始执行时间"` // 任务开始执行时间
+	EndTime       *gtime.Time `json:"endTime"       orm:"end_time"       description:"任务执行结束时间"` // 任务执行结束时间
+	Output        string      `json:"output"        orm:"output"         description:"任务执行输出"`   // 任务执行输出
 }

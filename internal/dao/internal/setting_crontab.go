@@ -33,8 +33,8 @@ type SettingCrontabColumns struct {
 	UpdatedBy string //
 	CreatedAt string //
 	UpdatedAt string //
-	DeletedAt string //
 	Remark    string //
+	DeletedAt string // 删除时间
 }
 
 // settingCrontabColumns holds the columns for the table setting_crontab.
@@ -51,8 +51,8 @@ var settingCrontabColumns = SettingCrontabColumns{
 	UpdatedBy: "updated_by",
 	CreatedAt: "created_at",
 	UpdatedAt: "updated_at",
-	DeletedAt: "deleted_at",
 	Remark:    "remark",
+	DeletedAt: "deleted_at",
 }
 
 // NewSettingCrontabDao creates and returns a new DAO object for table data access.
