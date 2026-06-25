@@ -8,6 +8,8 @@ package system
 
 import (
 	"context"
+	"fmt"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -20,6 +22,7 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -38,19 +41,19 @@ func NewSystemApi() *sSystemApi {
 }
 
 func (s *sSystemApi) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemApi.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return dao.SystemApi.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemApi) GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemApiSearch) (rs []*res.SystemApi, total int, err error) {
 	m := s.handleSearch(ctx, in)
 	var entity []*entity.SystemApi
-	err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&entity, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SystemApi, 0)
 	if !g.IsEmpty(entity) {
-		if err = gconv.Structs(entity, &rs); err != nil {
+		if err = gconv.Structs(entity, &rs); utils.IsError(err) {
 			return nil, 0, err
 		}
 	}
@@ -59,11 +62,11 @@ func (s *sSystemApi) GetPageListForSearch(ctx context.Context, req *model.PageLi
 
 func (s *sSystemApi) GetList(ctx context.Context, in *req.SystemApiSearch) (out []*res.SystemApi, err error) {
 	inReq := &model.ListReq{
-		OrderBy:   dao.SystemApi.Table() + ".created_by",
+		OrderBy:   fmt.Sprintf(`"%s"."%s"`, dao.SystemApi.Table(), dao.SystemApi.Columns().CreatedBy),
 		OrderType: "desc",
 	}
 	m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
-	m = orm.GetList(m, inReq)
+	m = orm.NewQuery(m).WithListReq(inReq).Build()
 	err = m.Scan(&out)
 	if utils.IsError(err) {
 		return
@@ -106,7 +109,7 @@ func (s *sSystemApi) Save(ctx context.Context, in *req.SystemApiSave) (id int64,
 		return
 	}
 	tmpId, err := rs.LastInsertId()
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	id = gconv.Int64(tmpId)
@@ -147,10 +150,9 @@ func (s *sSystemApi) Delete(ctx context.Context, ids []int64) (err error) {
 }
 
 func (s *sSystemApi) RealDelete(ctx context.Context, ids []int64) (err error) {
-	var res []*res.SystemApi
-	err = s.Model(ctx).Unscoped().WhereIn("id", ids).Scan(&res)
+	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
-		return
+		return err
 	}
 	return
 }

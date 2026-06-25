@@ -9,14 +9,11 @@ package websocket
 import (
 	"devinggo/modules/system/pkg/websocket"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 func BindController(group *ghttp.RouterGroup) {
-	group.Group("/ws", func(group *ghttp.RouterGroup) {
-		group.Bind(
-			websocket.WsPage,
-		).Middleware(service.Middleware().WsAuth)
-	})
-
+	// Pusher标准路径：/app/{key}
+	group.ALL("/app/*", websocket.WsPage).Middleware(service.Middleware().WsAuth)
 }

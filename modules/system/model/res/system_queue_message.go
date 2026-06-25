@@ -8,6 +8,7 @@ package res
 
 import (
 	"devinggo/modules/system/model"
+
 	"github.com/gogf/gf/v2/os/gtime"
 )
 
@@ -22,6 +23,7 @@ type SystemQueueMessage struct {
 	CreatedAt   *gtime.Time      `json:"created_at"     description:"创建时间"`      // 创建时间
 	UpdatedAt   *gtime.Time      `json:"updated_at"     description:"更新时间"`      // 更新时间
 	Remark      string           `json:"remark"            description:"备注"`     // 备注
+	ReadStatus  int              `json:"read_status"   description:"阅读状态,1未读，2已读"` // 阅读状态
 	SendUser    model.UserRelate `json:"send_user"      description:"发送人信息"`     // 发送人信息
 }
 

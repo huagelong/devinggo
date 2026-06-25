@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -20,6 +21,7 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/text/gstr"
@@ -27,7 +29,7 @@ import (
 )
 
 type sSystemNotice struct {
-	base.BaseService
+	base.GenericService[res.SystemNotice]
 }
 
 func init() {
@@ -35,15 +37,22 @@ func init() {
 }
 
 func NewSystemNotice() *sSystemNotice {
-	return &sSystemNotice{}
+	s := &sSystemNotice{}
+	s.GenericService = base.GenericService[res.SystemNotice]{
+		ModelFn: func(ctx context.Context) *gdb.Model {
+			return dao.SystemNotice.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+		},
+	}
+	return s
 }
 
+// Model 返回数据库 Model
 func (s *sSystemNotice) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemNotice.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return s.GenericService.Model(ctx)
 }
 
 func (s *sSystemNotice) GetPageList(ctx context.Context, req *model.PageListReq) (res []*res.SystemNotice, total int, err error) {
-	err = orm.GetPageList(s.Model(ctx), req).ScanAndCount(&res, &total, false)
+	err = orm.NewQuery(s.Model(ctx)).WithPageListReq(req).ScanAndCount(&res, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
@@ -53,13 +62,13 @@ func (s *sSystemNotice) GetPageList(ctx context.Context, req *model.PageListReq)
 func (s *sSystemNotice) GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemNoticeSearch) (rs []*res.SystemNotice, total int, err error) {
 	m := s.handleSearch(ctx, in)
 	var entity []*entity.SystemNotice
-	err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&entity, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SystemNotice, 0)
 	if !g.IsEmpty(entity) {
-		if err = gconv.Structs(entity, &rs); err != nil {
+		if err = gconv.Structs(entity, &rs); utils.IsError(err) {
 			return nil, 0, err
 		}
 		for _, v := range entity {
@@ -79,7 +88,7 @@ func (s *sSystemNotice) GetPageListForSearch(ctx context.Context, req *model.Pag
 func (s *sSystemNotice) handleSearch(ctx context.Context, in *req.SystemNoticeSearch) (m *gdb.Model) {
 	m = s.Model(ctx)
 	if !g.IsEmpty(in.Title) {
-		m = m.Where("title", in.Title)
+		m = m.Where("title like ?", "%"+in.Title+"%")
 	}
 
 	if !g.IsEmpty(in.Type) {
@@ -111,7 +120,7 @@ func (s *sSystemNotice) Save(ctx context.Context, in *req.SystemNoticeSave, user
 	}
 
 	err, messageId := service.SystemQueueMessage().SendMessage(ctx, sendReq, userId, contentType)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	saveData := do.SystemNotice{
@@ -130,18 +139,10 @@ func (s *sSystemNotice) Save(ctx context.Context, in *req.SystemNoticeSave, user
 		return
 	}
 	tmpId, err := rs.LastInsertId()
-	if err != nil {
-		return
-	}
-	id = gconv.Int64(tmpId)
-	return
-}
-
-func (s *sSystemNotice) GetById(ctx context.Context, id int64) (res *res.SystemNotice, err error) {
-	err = s.Model(ctx).Where("id", id).Scan(&res)
 	if utils.IsError(err) {
 		return
 	}
+	id = gconv.Int64(tmpId)
 	return
 }
 
@@ -157,10 +158,10 @@ func (s *sSystemNotice) Update(ctx context.Context, in *req.SystemNoticeUpdate) 
 		return
 	}
 	info, err := s.GetById(ctx, in.Id)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
-	service.SystemQueueMessage().Model(ctx).Where("id", info.MessageId).Update(g.Map{"content": in.Content, "title": in.Title})
+	_, _ = service.SystemQueueMessage().Model(ctx).Where("id", info.MessageId).Update(g.Map{"content": in.Content, "title": in.Title})
 	return
 }
 
@@ -198,10 +199,12 @@ func (s *sSystemNotice) RealDelete(ctx context.Context, ids []int64) (err error)
 	return
 }
 
+// GetById 由 GenericService 提供，此处声明用于接口生成
+func (s *sSystemNotice) GetById(ctx context.Context, id int64) (res *res.SystemNotice, err error) {
+	return s.GenericService.GetById(ctx, id)
+}
+
+// Recovery 由 GenericService 提供，此处声明用于接口生成
 func (s *sSystemNotice) Recovery(ctx context.Context, ids []int64) (err error) {
-	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
-	if utils.IsError(err) {
-		return err
-	}
-	return
+	return s.GenericService.Recovery(ctx, ids)
 }

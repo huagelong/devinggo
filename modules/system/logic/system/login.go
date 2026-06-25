@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/entity"
 	consts2 "devinggo/modules/system/consts"
@@ -21,6 +22,7 @@ import (
 	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/pkg/utils/secure"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
@@ -65,7 +67,7 @@ func (s *sLogin) Login(ctx context.Context, username, password string) (token st
 	}
 
 	decryptedPass, err := secure.AESDecrypt(password, aesKey)
-	if err != nil {
+	if utils.IsError(err) {
 		g.Log().Errorf(ctx, "AES解密失败: %v", err)
 		err = myerror.ValidationFailed(ctx, "密码解析失败")
 		return
@@ -91,7 +93,7 @@ func (s *sLogin) Login(ctx context.Context, username, password string) (token st
 	roleIds, _ := service.SystemUser().GetRoles(ctx, userInfo.Id)
 
 	deptIds, _ := service.SystemUser().GetDepts(ctx, userInfo.Id)
-	appId := contexts.New().GetAppId(ctx)
+	appId := contexts.GetAppId(ctx)
 	token, expire, err = service.Token().GenerateUserToken(ctx, consts2.AdminScene, appId, &model.Identity{
 		Id:       userInfo.Id,
 		AppId:    appId,
@@ -100,7 +102,7 @@ func (s *sLogin) Login(ctx context.Context, username, password string) (token st
 		Username: userInfo.Username,
 	})
 
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 
@@ -112,6 +114,6 @@ func (s *sLogin) Login(ctx context.Context, username, password string) (token st
 	//更新登录信息
 	clientIp := location.GetClientIp(r)
 	loginTime := gtime.Now()
-	s.Model(ctx).Data(g.Map{dao.SystemUser.Columns().LoginIp: clientIp, dao.SystemUser.Columns().LoginTime: loginTime}).Where(dao.SystemUser.Columns().Id, userInfo.Id).Update()
+	_, _ = s.Model(ctx).Data(g.Map{dao.SystemUser.Columns().LoginIp: clientIp, dao.SystemUser.Columns().LoginTime: loginTime}).Where(dao.SystemUser.Columns().Id, userInfo.Id).Update()
 	return
 }

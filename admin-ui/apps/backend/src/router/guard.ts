@@ -1,0 +1,189 @@
+import type { Router } from 'vue-router';
+
+import { LOGIN_PATH } from '@vben/constants';
+import { preferences } from '@vben/preferences';
+import { useAccessStore, useUserStore } from '@vben/stores';
+import { startProgress, stopProgress } from '@vben/utils';
+
+import { accessRoutes, coreRouteNames } from '#/router/routes';
+import { useAuthStore } from '#/store';
+
+import { generateAccess } from './access';
+
+/**
+ * 通用守卫配置
+ * @param router
+ */
+function setupCommonGuard(router: Router) {
+  // 记录已经加载的页面
+  const loadedPaths = new Set<string>();
+
+  router.beforeEach((to) => {
+    to.meta.loaded = loadedPaths.has(to.path);
+
+    // 页面加载进度条
+    if (!to.meta.loaded && preferences.transition.progress) {
+      startProgress();
+    }
+    return true;
+  });
+
+  router.afterEach((to) => {
+    // 记录页面是否加载,如果已经加载，后续的页面切换动画等效果不在重复执行
+
+    loadedPaths.add(to.path);
+
+    // 关闭页面加载进度条
+    if (preferences.transition.progress) {
+      stopProgress();
+    }
+  });
+}
+
+/**
+ * 权限访问守卫配置
+ * @param router
+ */
+let accessGenerating: Promise<void> | null = null;
+
+function setupAccessGuard(router: Router) {
+  router.beforeEach(async (to, from) => {
+    const accessStore = useAccessStore();
+    const userStore = useUserStore();
+    const authStore = useAuthStore();
+
+    // 基本路由，这些路由不需要进入权限拦截
+    if (coreRouteNames.includes(to.name as string)) {
+      if (to.path === LOGIN_PATH && accessStore.accessToken) {
+        return decodeURIComponent(
+          (to.query?.redirect as string) ||
+            userStore.userInfo?.homePath ||
+            preferences.app.defaultHomePath,
+        );
+      }
+      return true;
+    }
+
+    // accessToken 检查
+    if (!accessStore.accessToken) {
+      // 明确声明忽略权限访问权限，则可以访问
+      if (to.meta.ignoreAccess) {
+        return true;
+      }
+
+      // 没有访问权限，跳转登录页面
+      if (to.fullPath !== LOGIN_PATH) {
+        return {
+          path: LOGIN_PATH,
+          // 如不需要，直接删除 query
+          query:
+            to.fullPath === preferences.app.defaultHomePath
+              ? {}
+              : { redirect: encodeURIComponent(to.fullPath) },
+          // 携带当前跳转的页面，登录后重新跳转该页面
+          replace: true,
+        };
+      }
+      return to;
+    }
+
+    // 是否已经生成过动态路由
+    if (accessStore.isAccessChecked) {
+      return true;
+    }
+
+    // 防止并发导航时重复生成路由
+    if (accessGenerating) {
+      await accessGenerating;
+      return true;
+    }
+
+    accessGenerating = (async () => {
+      // 生成路由表
+      // 当前登录用户拥有的角色标识列表
+      const userInfo = userStore.userInfo || (await authStore.fetchUserInfo());
+      const userRoles = userInfo.roles ?? [];
+
+      // 生成菜单和路由
+      const { accessibleMenus, accessibleRoutes } = await generateAccess({
+        roles: userRoles,
+        router,
+        // 则会在菜单中显示，但是访问会被重定向到403
+        routes: accessRoutes,
+      });
+
+      // 根据用户 dashboard 设置过滤菜单（非超级管理员只显示一个首页）
+      const filteredMenus = filterDashboardMenus(
+        accessibleMenus as any[],
+        userInfo.dashboard,
+        userRoles.includes('superAdmin'),
+      );
+
+      // 保存菜单信息和路由信息
+      accessStore.setAccessMenus(filteredMenus);
+      accessStore.setAccessRoutes(accessibleRoutes);
+      accessStore.setIsAccessChecked(true);
+    })();
+
+    try {
+      await accessGenerating;
+    } finally {
+      accessGenerating = null;
+    }
+
+    const redirectPath = (from.query.redirect ??
+      (to.path === preferences.app.defaultHomePath
+        ? userStore.userInfo?.homePath || preferences.app.defaultHomePath
+        : to.fullPath)) as string;
+
+    return {
+      ...router.resolve(decodeURIComponent(redirectPath)),
+      replace: true,
+    };
+  });
+}
+
+/**
+ * 根据用户 dashboard 设置过滤首页菜单
+ * 非超级管理员只显示一个首页（分析页或工作台）
+ */
+function filterDashboardMenus(
+  menus: any[],
+  dashboard?: string,
+  isSuperAdmin = false,
+): any[] {
+  if (isSuperAdmin || !dashboard) {
+    return menus;
+  }
+
+  const hidePath = dashboard === 'statistics' ? '/workspace' : '/analytics';
+
+  return menus.map((menu) => {
+    const filtered = { ...menu };
+    if (filtered.children?.length > 0) {
+      filtered.children = filtered.children.filter(
+        (child: any) => child.path !== hidePath,
+      );
+      // 递归处理子菜单
+      filtered.children = filterDashboardMenus(
+        filtered.children,
+        dashboard,
+        isSuperAdmin,
+      );
+    }
+    return filtered;
+  });
+}
+
+/**
+ * 项目守卫配置
+ * @param router
+ */
+function createRouterGuard(router: Router) {
+  /** 通用 */
+  setupCommonGuard(router);
+  /** 权限访问 */
+  setupAccessGuard(router);
+}
+
+export { createRouterGuard };

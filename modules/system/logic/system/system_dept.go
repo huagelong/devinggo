@@ -8,6 +8,8 @@ package system
 
 import (
 	"context"
+	"fmt"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -20,7 +22,6 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
-	"fmt"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -42,7 +43,7 @@ func NewSystemDept() *sSystemDept {
 }
 
 func (s *sSystemDept) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemDept.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return dao.SystemDept.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemDept) GetSelectTree(ctx context.Context, userId int64) (tree []*res.SystemDeptTree, err error) {
@@ -54,13 +55,12 @@ func (s *sSystemDept) GetSelectTree(ctx context.Context, userId int64) (tree []*
 
 	if !g.IsEmpty(systemDeptEntity) {
 		systemDeptEntity2 := []entity.SystemDept{}
-		deptIds := make([]int64, 0)
 		result, err := service.SystemUserDept().Model(ctx).Fields(dao.SystemUserDept.Columns().DeptId).Where(dao.SystemUserDept.Columns().UserId, userId).Array()
 		if utils.IsError(err) {
 			return nil, err
 		}
 		if !g.IsEmpty(result) {
-			deptIds = gconv.SliceInt64(result)
+			deptIds := gconv.SliceInt64(result)
 			err = s.Model(ctx).Where(dao.SystemDept.Columns().Status, 1).WhereIn(dao.SystemDept.Columns().Id, deptIds).Order("parent_id, sort desc").Scan(&systemDeptEntity2)
 			if utils.IsError(err) {
 				return nil, err
@@ -75,19 +75,7 @@ func (s *sSystemDept) GetSelectTree(ctx context.Context, userId int64) (tree []*
 		return
 	}
 	// 构建原有的部门树
-	originalTree := s.treeList(systemDeptEntity)
-
-	// 创建默认根节点
-	rootNode := &res.SystemDeptTree{
-		Id:       0,
-		ParentId: -1,
-		Value:    0,
-		Label:    "根节点",
-		Children: originalTree,
-	}
-
-	// 返回包含根节点的树结构
-	tree = []*res.SystemDeptTree{rootNode}
+	tree = s.treeList(systemDeptEntity)
 
 	return
 }
@@ -171,7 +159,7 @@ func (s *sSystemDept) GetList(ctx context.Context, in *req.SystemDeptSearch) (ou
 		OrderType: "desc",
 	}
 	m := s.handleSearch(ctx, in)
-	m = orm.GetList(m, inReq)
+	m = orm.NewQuery(m).WithListReq(inReq).Build()
 	err = m.Scan(&out)
 	if utils.IsError(err) {
 		return
@@ -184,7 +172,7 @@ func (s *sSystemDept) GetListTreeList(ctx context.Context, in *req.SystemDeptSea
 		Recycle: in.Recycle,
 	}
 	m := s.handleSearch(ctx, in)
-	m = orm.GetList(m, inReq)
+	m = orm.NewQuery(m).WithListReq(inReq).Build()
 	systemDeptEntity := []entity.SystemDept{}
 	err = m.Order("parent_id, sort desc").Scan(&systemDeptEntity)
 	if utils.IsError(err) {
@@ -202,7 +190,7 @@ func (s *sSystemDept) GetRecycleTreeList(ctx context.Context, in *req.SystemDept
 		Recycle: in.Recycle,
 	}
 	m := s.handleSearch(ctx, in)
-	m = orm.GetList(m, inReq)
+	m = orm.NewQuery(m).WithListReq(inReq).Build()
 	systemDeptEntity := []entity.SystemDept{}
 	err = m.Order("parent_id, sort desc").Scan(&systemDeptEntity)
 	if utils.IsError(err) {
@@ -244,7 +232,7 @@ func (s *sSystemDept) GetTreeList(ctx context.Context, in *req.SystemDeptSearch)
 		Recycle: in.Recycle,
 	}
 	m := s.handleSearch(ctx, in)
-	m = orm.GetList(m, inReq)
+	m = orm.NewQuery(m).WithListReq(inReq).Build()
 	systemDeptEntity := []entity.SystemDept{}
 	err = m.Order("parent_id, sort desc").Scan(&systemDeptEntity)
 	if utils.IsError(err) {
@@ -289,7 +277,7 @@ func (s *sSystemDept) handleData(ctx context.Context, data *req.SystemDeptSave) 
 
 func (s *sSystemDept) Save(ctx context.Context, in *req.SystemDeptSave) (id int64, err error) {
 	data, err := s.handleData(ctx, in)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	saveData := do.SystemDept{
@@ -307,7 +295,7 @@ func (s *sSystemDept) Save(ctx context.Context, in *req.SystemDeptSave) (id int6
 		return
 	}
 	tmpId, err := rs.LastInsertId()
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	id = gconv.Int64(tmpId)
@@ -318,14 +306,14 @@ func (s *sSystemDept) AddLeader(ctx context.Context, in *req.SystemDeptAddLeader
 	users := in.Users
 	deptId := in.Id
 	for _, user := range users {
-		count, err := service.SystemDeptLeader().Model(ctx).Where("dept_id", deptId).Where("user_id", user.Id).Count()
+		count, err := service.SystemDeptLeader().Model(ctx).Where("dept_id", deptId).Where("user_id", user.UserId).Count()
 		if utils.IsError(err) {
 			return err
 		}
 		if count == 0 {
 			saveData := do.SystemDeptLeader{
 				DeptId:    deptId,
-				UserId:    user.Id,
+				UserId:    user.UserId,
 				Username:  user.Username,
 				CreatedAt: gtime.Now(),
 			}
@@ -348,7 +336,7 @@ func (s *sSystemDept) DelLeader(ctx context.Context, id int64, userIds []int64) 
 
 func (s *sSystemDept) Update(ctx context.Context, in *req.SystemDeptSave) (err error) {
 	data, err := s.handleData(ctx, in)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	var systemDeptItem *entity.SystemDept

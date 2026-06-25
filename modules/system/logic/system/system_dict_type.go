@@ -8,7 +8,7 @@ package system
 
 import (
 	"context"
-	"dario.cat/mergo"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -21,13 +21,15 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
+	"dario.cat/mergo"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
 type sSystemDictType struct {
-	base.BaseService
+	base.GenericService[res.SystemDictType]
 }
 
 func init() {
@@ -35,23 +37,30 @@ func init() {
 }
 
 func NewSystemDictType() *sSystemDictType {
-	return &sSystemDictType{}
+	s := &sSystemDictType{}
+	s.GenericService = base.GenericService[res.SystemDictType]{
+		ModelFn: func(ctx context.Context) *gdb.Model {
+			return dao.SystemDictType.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+		},
+	}
+	return s
 }
 
+// Model 返回数据库 Model
 func (s *sSystemDictType) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemDictType.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return s.GenericService.Model(ctx)
 }
 
 func (s *sSystemDictType) GetPageList(ctx context.Context, req *model.PageListReq, in *req.SystemDictTypeSearch) (rs []*res.SystemDictType, total int, err error) {
 	m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
 	var entity []*entity.SystemDictType
-	err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&entity, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SystemDictType, 0)
 	if !g.IsEmpty(entity) {
-		if err = gconv.Structs(entity, &rs); err != nil {
+		if err = gconv.Structs(entity, &rs); utils.IsError(err) {
 			return nil, 0, err
 		}
 	}
@@ -63,9 +72,9 @@ func (s *sSystemDictType) GetList(ctx context.Context, listReq *model.ListReq, i
 		OrderBy:   "sort",
 		OrderType: "desc",
 	}
-	mergo.Merge(&listReq, inReq)
+	_ = mergo.Merge(&listReq, inReq)
 	m := s.handleSearch(ctx, in)
-	err = orm.GetList(m, listReq).Scan(&out)
+	err = orm.NewQuery(m).WithListReq(listReq).ScanAll(&out)
 	if utils.IsError(err) {
 		return nil, err
 	}
@@ -84,18 +93,10 @@ func (s *sSystemDictType) Save(ctx context.Context, in *req.SystemDictTypeSave) 
 		return
 	}
 	tmpId, err := rs.LastInsertId()
-	if err != nil {
-		return
-	}
-	id = gconv.Int64(tmpId)
-	return
-}
-
-func (s *sSystemDictType) GetById(ctx context.Context, id int64) (res *res.SystemDictType, err error) {
-	err = s.Model(ctx).Where("id", id).Scan(&res)
 	if utils.IsError(err) {
 		return
 	}
+	id = gconv.Int64(tmpId)
 	return
 }
 
@@ -142,22 +143,6 @@ func (s *sSystemDictType) RealDelete(ctx context.Context, ids []int64) (err erro
 	return
 }
 
-func (s *sSystemDictType) Recovery(ctx context.Context, ids []int64) (err error) {
-	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
-	if utils.IsError(err) {
-		return err
-	}
-	return
-}
-
-func (s *sSystemDictType) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
-	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
-	if utils.IsError(err) {
-		return err
-	}
-	return
-}
-
 func (s *sSystemDictType) handleSearch(ctx context.Context, in *req.SystemDictTypeSearch) (m *gdb.Model) {
 	m = s.Model(ctx)
 
@@ -171,4 +156,19 @@ func (s *sSystemDictType) handleSearch(ctx context.Context, in *req.SystemDictTy
 		m = m.Where("name like ? ", "%"+in.Name+"%")
 	}
 	return
+}
+
+// GetById 由 GenericService 提供，此处声明用于接口生成
+func (s *sSystemDictType) GetById(ctx context.Context, id int64) (res *res.SystemDictType, err error) {
+	return s.GenericService.GetById(ctx, id)
+}
+
+// ChangeStatus 由 GenericService 提供，此处声明用于接口生成
+func (s *sSystemDictType) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
+	return s.GenericService.ChangeStatus(ctx, id, status)
+}
+
+// Recovery 由 GenericService 提供，此处声明用于接口生成
+func (s *sSystemDictType) Recovery(ctx context.Context, ids []int64) (err error) {
+	return s.GenericService.Recovery(ctx, ids)
 }

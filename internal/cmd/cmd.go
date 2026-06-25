@@ -8,6 +8,7 @@ package cmd
 
 import (
 	"context"
+
 	"devinggo/modules/system/cmd"
 	"devinggo/modules/system/pkg/utils"
 
@@ -48,9 +49,6 @@ var (
 		  [go run main.go migrate:down [-n N]]     	应用所有或 N 个 down 迁移
 		  [go run main.go migrate:force -v 版本]  	设置版本为 V 但不运行迁移（忽略脏状态）
 		>> HTTP服务  [go run main.go http]
-		>> 消息队列&定时任务  [go run main.go worker]
-		>> 创建新模块  [go run main.go module:create -name 模块名称]
-		>> 导出新模块  [go run main.go module:export -name 模块名称]
 		>> 查看帮助  [go run main.go help]
 		>> 查看版本  [go run main.go version]
     `,
@@ -85,7 +83,7 @@ var (
 )
 
 func init() {
-	if err := Main.AddCommand(All, cmd.Http, cmd.Version, cmd.Worker, cmd.Unpack, cmd.MigrateUp, cmd.MigrateDown, cmd.MigrateGoto, cmd.MigrateCreate, cmd.MigrateForce, cmd.CreateModule, cmd.ExportModule, cmd.ImportModule, Help); err != nil {
+	if err := Main.AddCommand(All, cmd.Http, cmd.Version, cmd.Worker, cmd.Unpack, cmd.MigrateUp, cmd.MigrateDown, cmd.MigrateGoto, cmd.MigrateCreate, cmd.MigrateForce, Help); err != nil {
 		panic(err)
 	}
 }

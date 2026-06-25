@@ -9,6 +9,13 @@ package system
 import (
 	"context"
 	"crypto/rand"
+	"encoding/base64"
+	"encoding/hex"
+	"net/url"
+	"sort"
+	"strings"
+	"time"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -25,18 +32,13 @@ import (
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/service"
-	"encoding/base64"
-	"encoding/hex"
+
 	"github.com/gogf/gf/v2/crypto/gmd5"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
-	"net/url"
-	"sort"
-	"strings"
-	"time"
 )
 
 type sSystemApp struct {
@@ -52,13 +54,13 @@ func NewSystemApp() *sSystemApp {
 }
 
 func (s *sSystemApp) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemApp.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return dao.SystemApp.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemApp) GetAppId(ctx context.Context) (string, error) {
 	randomBytes := make([]byte, 5)
 	_, err := rand.Read(randomBytes)
-	if err != nil {
+	if utils.IsError(err) {
 		return "", err
 	}
 	return hex.EncodeToString(randomBytes), nil
@@ -68,7 +70,7 @@ func (s *sSystemApp) GetAppSecret(ctx context.Context) (string, error) {
 	// 生成32个字节的随机数
 	randomBytes := make([]byte, 32)
 	_, err := rand.Read(randomBytes)
-	if err != nil {
+	if utils.IsError(err) {
 		return "", err
 	}
 	// 将随机字节转换为十六进制字符串
@@ -99,15 +101,37 @@ func (s *sSystemApp) BindApp(ctx context.Context, Id int64, ApiIds []int64) (err
 
 func (s *sSystemApp) GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemAppSearch) (rs []*res.SystemApp, total int, err error) {
 	m := s.handleSearch(ctx, in)
-	var entity []*entity.SystemApp
-	err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+	var appList []*entity.SystemApp
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&appList, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SystemApp, 0)
-	if !g.IsEmpty(entity) {
-		if err = gconv.Structs(entity, &rs); err != nil {
+	if !g.IsEmpty(appList) {
+		if err = gconv.Structs(appList, &rs); utils.IsError(err) {
 			return nil, 0, err
+		}
+		// 获取分组名称
+		groupIds := make([]int64, 0)
+		for _, item := range rs {
+			if item.GroupId > 0 {
+				groupIds = append(groupIds, item.GroupId)
+			}
+		}
+		if len(groupIds) > 0 {
+			var groups []*entity.SystemAppGroup
+			err = service.SystemAppGroup().Model(ctx).WhereIn("id", groupIds).Scan(&groups)
+			if !utils.IsError(err) && !g.IsEmpty(groups) {
+				groupMap := make(map[int64]string)
+				for _, group := range groups {
+					groupMap[group.Id] = group.Name
+				}
+				for _, item := range rs {
+					if name, ok := groupMap[item.GroupId]; ok {
+						item.GroupName = name
+					}
+				}
+			}
 		}
 	}
 	return
@@ -159,7 +183,7 @@ func (s *sSystemApp) Save(ctx context.Context, in *req.SystemAppSave, userId int
 		return
 	}
 	tmpId, err := rs.LastInsertId()
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	id = gconv.Int64(tmpId)
@@ -226,7 +250,7 @@ func (s *sSystemApp) ChangeStatus(ctx context.Context, id int64, status int) (er
 
 func (s *sSystemApp) Verify(r *ghttp.Request) (bool, error) {
 	ctx := r.Context()
-	permission := contexts.New().GetPermission(ctx)
+	permission := contexts.GetPermission(ctx)
 	if g.IsEmpty(permission) {
 		return false, myerror.ValidationFailed(ctx, "权限标识未定义")
 	}
@@ -238,9 +262,9 @@ func (s *sSystemApp) Verify(r *ghttp.Request) (bool, error) {
 	}
 	authMode := api.AuthMode
 	if authMode == 1 { //简易模式   HMAC（Hash-based Message Authentication Code）签名 + 时间戳防重放攻击
-		appId := contexts.New().GetAppId(ctx)
+		appId := contexts.GetAppId(ctx)
 		check, err := s.VerifyEasyMode(ctx, appId, api.Id)
-		if err != nil {
+		if utils.IsError(err) {
 			return false, err
 		}
 		if !check {
@@ -253,7 +277,7 @@ func (s *sSystemApp) Verify(r *ghttp.Request) (bool, error) {
 			return false, myerror.MissingParameter(ctx, "参数不存在: Authorization token")
 		}
 		check, err := s.verifyNormalMode(ctx, token, api.Id)
-		if err != nil {
+		if utils.IsError(err) {
 			return false, err
 		}
 		if !check {
@@ -267,7 +291,7 @@ func (s *sSystemApp) Verify(r *ghttp.Request) (bool, error) {
 
 // getAccessToken 获取access_token
 func (s *sSystemApp) GetAccessToken(ctx context.Context) (token string, exp int64, err error) {
-	appId := contexts.New().GetAppId(ctx)
+	appId := contexts.GetAppId(ctx)
 	var app *entity.SystemApp
 	err = s.Model(ctx).Where("app_id", appId).Scan(&app)
 	if utils.IsError(err) {
@@ -280,7 +304,7 @@ func (s *sSystemApp) GetAccessToken(ctx context.Context) (token string, exp int6
 	}
 
 	check, err := s.VerifyEasyMode(ctx, appId, 0)
-	if err != nil {
+	if utils.IsError(err) {
 		err = myerror.ValidationFailed(ctx, err.Error())
 		return
 	}
@@ -307,7 +331,7 @@ func (s *sSystemApp) GetSignature(appSecret string, params map[string]interface{
 		data.Set(key, gconv.String(value))
 	}
 	// 对数据进行排序
-	var keys []string
+	keys := make([]string, 0, len(data))
 	for k := range data {
 		keys = append(keys, k)
 	}
@@ -341,7 +365,7 @@ func (s *sSystemApp) checkAppHasBindApi(ctx context.Context, appId, apiId int64)
 // 复杂模式
 func (s *sSystemApp) verifyNormalMode(ctx context.Context, token string, apiId int64) (check bool, err error) {
 	identity, err := service.Token().ParseToken(ctx, token)
-	if err != nil {
+	if utils.IsError(err) {
 		return false, err
 	}
 
@@ -362,7 +386,7 @@ func (s *sSystemApp) verifyNormalMode(ctx context.Context, token string, apiId i
 	}
 
 	check, _, err = s.VerifyPre(ctx, appId, apiId)
-	if err != nil {
+	if utils.IsError(err) {
 		return false, err
 	}
 
@@ -395,7 +419,7 @@ func (s *sSystemApp) VerifyPre(ctx context.Context, appId string, apiId int64) (
 	}
 
 	check, err = s.checkAppHasBindApi(ctx, app.Id, apiId)
-	if err != nil {
+	if utils.IsError(err) {
 		err = myerror.ValidationFailed(ctx, "接口未绑定")
 		return false, app, err
 	}
@@ -436,20 +460,20 @@ func (s *sSystemApp) VerifyEasyMode(ctx context.Context, appId string, apiId int
 	diffTime := 60
 	nowDiff := gconv.Int(gtime.Timestamp() - timestampInt)
 	if nowDiff > diffTime {
-		return false, myerror.ValidationFailed(ctx, "Request Expired!")
+		return false, myerror.ValidationFailed(ctx, "请求已过期")
 	}
 	result, err := cache.SetIfNotExist(ctx, redisKey, 1, gconv.Duration(diffTime)*time.Second)
-	if err != nil {
+	if utils.IsError(err) {
 		g.Log().Error(ctx, "err:", err)
 		return false, myerror.ValidationFailed(ctx, err.Error())
 	}
 	//g.Log().Info(ctx, "result:", result)
 	if !result {
-		return false, myerror.ValidationFailed(ctx, "Repeated requests!")
+		return false, myerror.ValidationFailed(ctx, "重复请求")
 	}
 
 	check, app, err := s.VerifyPre(ctx, appId, apiId)
-	if err != nil {
+	if utils.IsError(err) {
 		return false, err
 	}
 
@@ -458,7 +482,7 @@ func (s *sSystemApp) VerifyEasyMode(ctx context.Context, appId string, apiId int
 		return false, err
 	}
 	md5Str, err := gmd5.EncryptString(app.AppSecret + timestampStr + nonce)
-	if err != nil {
+	if utils.IsError(err) {
 		err = myerror.ValidationFailed(ctx, "接口鉴权失败")
 		return false, err
 	}

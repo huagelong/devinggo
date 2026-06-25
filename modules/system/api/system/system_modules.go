@@ -11,6 +11,7 @@ import (
 	"devinggo/modules/system/model/page"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
+
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -123,17 +124,4 @@ type ChangeStatusSystemModulesReq struct {
 
 type ChangeStatusSystemModulesRes struct {
 	g.Meta `mime:"application/json"`
-}
-
-type RemoteSystemModulesReq struct {
-	g.Meta `path:"/systemModules/remote" method:"post" tags:"modules" summary:"远程万能通用列表接口" x-exceptAuth:"true" x-permission:"system:systemModules:remote"`
-	model.AuthorHeader
-	model.PageListReq
-}
-
-type RemoteSystemModulesRes struct {
-	g.Meta `mime:"application/json"`
-	page.PageRes
-	Items []res.SystemModules `json:"items"  dc:"list" `
-	Data  []res.SystemModules `json:"data"  dc:"list" `
 }

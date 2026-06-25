@@ -19,5 +19,9 @@
   "Invalid Request": "invalid request",
   "Necessary Package Not Import": "necessary package not import",
   "Internal Panic": "internal panic",
-  "Business Validation Failed": "business validation failed"
+  "Business Validation Failed": "business validation failed",
+  "NotLogged": "Not logged in or session expired",
+  "Forbidden": "Access forbidden",
+  "ApiNotAuthorized": "API not authorized",
+  "ApiTokenIsExpire": "API token has expired"
 }

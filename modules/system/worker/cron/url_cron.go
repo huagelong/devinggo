@@ -8,27 +8,16 @@ package cron
 
 import (
 	"context"
-	"devinggo/modules/system/pkg/worker/cron"
+
+	"devinggo/modules/system/pkg/worker"
 	glob2 "devinggo/modules/system/pkg/worker/glob"
-	"devinggo/modules/system/pkg/worker/task"
 	"devinggo/modules/system/worker/consts"
+
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/hibiken/asynq"
 )
 
-var urlCron = &curlCron{
-	Type:        consts.URL_CRON,
-	Description: "执行http请求",
-	Payload:     &glob2.Payload{},
-}
-
-type curlCron struct {
-	Type        string
-	Description string
-	Payload     *glob2.Payload
-}
-
+// UrlCronData URL请求定时任务数据结构
 type UrlCronData struct {
 	Url         string                 `json:"url"`
 	Method      string                 `json:"method"`
@@ -42,33 +31,19 @@ type UrlCronData struct {
 }
 
 func init() {
-	cron.Register(urlCron)
+	// 使用新方式注册Cron
+	worker.RegisterCronFunc(consts.URL_CRON, "执行http请求", handleUrlCronParams)
 }
 
-func (s *curlCron) GetType() string {
-	return s.Type
-}
-
-func (s *curlCron) GetCronTask() *asynq.Task {
-	return task.GetTask(s)
-}
-
-func (s *curlCron) GetPayload() *glob2.Payload {
-	return s.Payload
-}
-
-func (s *curlCron) GetDescription() string {
-	return s.Description
-}
-
-func (s *curlCron) SetParams(ctx context.Context, params *gjson.Json) {
+// handleUrlCronParams 处理URL请求定时任务参数
+func handleUrlCronParams(ctx context.Context, payload *glob2.Payload, params *gjson.Json) {
 	if g.IsEmpty(params) {
 		return
 	}
 	data := new(UrlCronData)
 	if err := params.Scan(data); err != nil {
-		glob2.WithWorkLog().Errorf(ctx, "[%s] cron SetParams failed:%v", s.Type, err)
+		glob2.WithWorkLog().Errorf(ctx, "[%s] cron SetParams failed:%v", consts.URL_CRON, err)
 		return
 	}
-	s.Payload.Data = data
+	payload.Data = data
 }

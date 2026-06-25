@@ -8,13 +8,15 @@ package cmd
 
 import (
 	"context"
+	"os"
+	"sync"
+
 	"devinggo/modules/system/consts"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/pkg/utils/event"
+
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/os/gproc"
-	"os"
-	"sync"
 )
 
 var (

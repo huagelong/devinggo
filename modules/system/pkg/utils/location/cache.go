@@ -8,8 +8,9 @@ package location
 
 import (
 	"fmt"
-	"github.com/gogf/gf/v2/container/gmap"
 	"sync"
+
+	"github.com/gogf/gf/v2/container/gmap"
 )
 
 type IpCache struct {

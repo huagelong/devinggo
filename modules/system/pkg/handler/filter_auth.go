@@ -8,6 +8,9 @@ package handler
 
 import (
 	"context"
+	"reflect"
+	"time"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/entity"
 	"devinggo/modules/system/consts"
@@ -15,12 +18,11 @@ import (
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/pkg/utils/config"
 	"devinggo/modules/system/pkg/utils/slice"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
-	"reflect"
-	"time"
 )
 
 // FilterAuth 过滤数据权限
@@ -49,7 +51,7 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 		var (
 			roles []*entity.SystemRole
 			ctx   = m.GetCtx()
-			user  = contexts.New().GetUser(ctx)
+			user  = contexts.GetUser(ctx)
 		)
 
 		if user == nil {
@@ -90,7 +92,7 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 		user.DeptIds = getUserDeptIds(ctx, user.Id)
 
 		err := dao.SystemRole.Ctx(ctx).Cache(setCacheOption(ctx)).WhereIn(dao.SystemRole.Columns().Id, user.RoleIds).Scan(&roles)
-		if err != nil {
+		if utils.IsError(err) {
 			g.Log().Panicf(ctx, "failed to role information err:%+v", err)
 		}
 
@@ -141,7 +143,6 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 			deptIds := make([]int64, 0)
 			if len(in) > 0 {
 				for _, deptId := range in {
-					newDeptIds := make([]int64, 0)
 					result, err := dao.SystemDept.Ctx(ctx).Fields(dao.SystemDept.Columns().Id).Cache(setCacheOption(ctx)).Where(dao.SystemDept.Columns().Id, deptId).WhereOr("level like  ? ", "%,"+gconv.String(deptId)+",%").Array()
 					if utils.IsError(err) {
 						g.Log().Panic(ctx, "failed to get system_dept dept data")
@@ -149,7 +150,7 @@ func FilterAuthWithField(filterField string) func(m *gdb.Model) *gdb.Model {
 					if g.IsEmpty(result) {
 						continue
 					}
-					newDeptIds = gconv.SliceInt64(result)
+					newDeptIds := gconv.SliceInt64(result)
 					deptIds = append(deptIds, newDeptIds...)
 				}
 			}

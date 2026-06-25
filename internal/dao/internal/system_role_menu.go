@@ -21,8 +21,8 @@ type SystemRoleMenuDao struct {
 
 // SystemRoleMenuColumns defines and stores column names for the table system_role_menu.
 type SystemRoleMenuColumns struct {
-	RoleId string // 角色主键
-	MenuId string // 菜单主键
+	RoleId string //
+	MenuId string //
 }
 
 // systemRoleMenuColumns holds the columns for the table system_role_menu.

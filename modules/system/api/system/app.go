@@ -11,6 +11,7 @@ import (
 	"devinggo/modules/system/model/page"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
+
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -151,17 +152,4 @@ type ChangeStatusAppReq struct {
 
 type ChangeStatusAppRes struct {
 	g.Meta `mime:"application/json"`
-}
-
-type RemoteAppReq struct {
-	g.Meta `path:"/app/remote" method:"post" tags:"应用管理" summary:"远程万能通用列表接口." x-exceptLogin:"true" x-permission:"system:app:remote"`
-	model.AuthorHeader
-	model.PageListReq
-}
-
-type RemoteAppRes struct {
-	g.Meta `mime:"application/json"`
-	page.PageRes
-	Items []res.SystemApp `json:"items"  dc:"list" `
-	Data  []res.SystemApp `json:"data"  dc:"list" `
 }

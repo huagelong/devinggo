@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+
 	"devinggo/modules/system/api/system"
 	"devinggo/modules/system/controller/base"
 	"devinggo/modules/system/model/res"
@@ -15,6 +16,7 @@ import (
 	"devinggo/modules/system/pkg/worker/glob"
 	"devinggo/modules/system/service"
 	"devinggo/modules/system/worker/consts"
+
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -84,6 +86,43 @@ func (c *crontabController) Update(ctx context.Context, in *system.UpdateCrontab
 func (c *crontabController) Delete(ctx context.Context, in *system.DeleteCrontabReq) (out *system.DeleteCrontabRes, err error) {
 	out = &system.DeleteCrontabRes{}
 	err = service.SettingCrontab().Delete(ctx, in.Ids)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (c *crontabController) Recycle(ctx context.Context, in *system.RecycleCrontabReq) (out *system.RecycleCrontabRes, err error) {
+	out = &system.RecycleCrontabRes{}
+	in.Recycle = true
+	items, totalCount, err := service.SettingCrontab().GetPageListForSearch(ctx, &in.PageListReq, &in.SettingCrontabSearch)
+	if err != nil {
+		return
+	}
+
+	if !g.IsEmpty(items) {
+		for _, item := range items {
+			out.Items = append(out.Items, *item)
+		}
+	} else {
+		out.Items = make([]res.SettingCrontab, 0)
+	}
+	out.PageRes.Pack(in, totalCount)
+	return
+}
+
+func (c *crontabController) RealDelete(ctx context.Context, in *system.RealDeleteCrontabReq) (out *system.RealDeleteCrontabRes, err error) {
+	out = &system.RealDeleteCrontabRes{}
+	err = service.SettingCrontab().RealDelete(ctx, in.Ids)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (c *crontabController) Recovery(ctx context.Context, in *system.RecoveryCrontabReq) (out *system.RecoveryCrontabRes, err error) {
+	out = &system.RecoveryCrontabRes{}
+	err = service.SettingCrontab().Recovery(ctx, in.Ids)
 	if err != nil {
 		return
 	}

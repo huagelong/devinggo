@@ -8,6 +8,8 @@ package system
 
 import (
 	"context"
+	"fmt"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -19,7 +21,6 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
-	"fmt"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -40,7 +41,7 @@ func NewSystemMenu() *sSystemMenu {
 }
 
 func (s *sSystemMenu) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemMenu.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return dao.SystemMenu.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemMenu) GetRoutersByIds(ctx context.Context, menuIds []int64) (routes []*res.Router, err error) {
@@ -167,7 +168,7 @@ func (s *sSystemMenu) GetTreeList(ctx context.Context, in *req.SystemMenuSearch)
 			m = m.WhereLTE("created_at", in.CreatedAt[1]+"23:59:59")
 		}
 	}
-	m = orm.GetList(m, inReq, params)
+	m = orm.NewQuery(m).WithListReq(inReq, params).Build()
 	systemMenuEntity := []entity.SystemMenu{}
 	err = m.Order("parent_id, sort desc").Scan(&systemMenuEntity)
 	if utils.IsError(err) {
@@ -210,7 +211,7 @@ func (s *sSystemMenu) GetRecycleTreeList(ctx context.Context, in *req.SystemMenu
 			m = m.WhereLTE("created_at", in.CreatedAt[1]+"23:59:59")
 		}
 	}
-	m = orm.GetList(m, inReq, params)
+	m = orm.NewQuery(m).WithListReq(inReq, params).Build()
 	systemMenuEntity := []entity.SystemMenu{}
 	err = m.Order("parent_id, sort desc").Scan(&systemMenuEntity)
 	if utils.IsError(err) {
@@ -226,25 +227,25 @@ func (s *sSystemMenu) GetRecycleTreeList(ctx context.Context, in *req.SystemMenu
 func (s *sSystemMenu) treeItemList(ctx context.Context, nodes []entity.SystemMenu) (tree []*res.SystemMenuTree) {
 	type itemTree map[int64]*res.SystemMenuTree
 	itemList := make(itemTree)
-	
+
 	// 第一遍：创建所有节点并存储到map中
 	for _, systemMenuEntity := range nodes {
 		var item *res.SystemMenuTree
-		if err := gconv.Struct(systemMenuEntity, &item); err != nil {
+		if err := gconv.Struct(systemMenuEntity, &item); utils.IsError(err) {
 			g.Log().Error(ctx, "struct error:", err)
 			continue
 		}
 		item.Children = make([]*res.SystemMenuTree, 0)
 		itemList[systemMenuEntity.Id] = item
 	}
-	
+
 	// 第二遍：建立父子关系
 	for _, systemMenuEntity := range nodes {
 		item := itemList[systemMenuEntity.Id]
 		if item == nil {
 			continue
 		}
-		
+
 		// 如果有父节点且父节点存在，则添加到父节点的children中
 		if systemMenuEntity.ParentId != 0 && itemList[systemMenuEntity.ParentId] != nil {
 			itemList[systemMenuEntity.ParentId].Children = append(itemList[systemMenuEntity.ParentId].Children, item)
@@ -259,7 +260,7 @@ func (s *sSystemMenu) treeItemList(ctx context.Context, nodes []entity.SystemMen
 func (s *sSystemMenu) treeSelectList(nodes []entity.SystemMenu) (tree []*res.SystemDeptSelectTree) {
 	type itemTree map[int64]*res.SystemDeptSelectTree
 	itemList := make(itemTree)
-	
+
 	// 第一遍：创建所有节点并存储到map中
 	for _, systemMenuEntity := range nodes {
 		var item res.SystemDeptSelectTree
@@ -270,14 +271,14 @@ func (s *sSystemMenu) treeSelectList(nodes []entity.SystemMenu) (tree []*res.Sys
 		item.Children = make([]*res.SystemDeptSelectTree, 0)
 		itemList[systemMenuEntity.Id] = &item
 	}
-	
+
 	// 第二遍：建立父子关系
 	for _, systemMenuEntity := range nodes {
 		item := itemList[systemMenuEntity.Id]
 		if item == nil {
 			continue
 		}
-		
+
 		// 如果有父节点且父节点存在，则添加到父节点的children中
 		if systemMenuEntity.ParentId != 0 && itemList[systemMenuEntity.ParentId] != nil {
 			itemList[systemMenuEntity.ParentId].Children = append(itemList[systemMenuEntity.ParentId].Children, item)
@@ -292,19 +293,19 @@ func (s *sSystemMenu) treeSelectList(nodes []entity.SystemMenu) (tree []*res.Sys
 func (s *sSystemMenu) GetSelectTree(ctx context.Context, userId int64, onlyMenu, scope bool) (routes []*res.SystemDeptSelectTree, err error) {
 	m := s.Model(ctx).Where(dao.SystemMenu.Columns().Status, 1).Order("parent_id, sort desc")
 	isSuperAdmin, err := service.SystemUser().IsSuperAdmin(ctx, userId)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 
 	if scope && !isSuperAdmin {
-		roleIds, err := service.SystemUser().GetRoles(ctx, userId)
-		if err != nil {
-			return nil, err
+		roleIdList, roleErr := service.SystemUser().GetRoles(ctx, userId)
+		if utils.IsError(roleErr) {
+			return nil, roleErr
 		}
-		if !g.IsEmpty(roleIds) {
-			menuIds, err := service.SystemRoleMenu().GetMenuIdsByRoleIds(ctx, roleIds)
-			if err != nil {
-				return nil, err
+		if !g.IsEmpty(roleIdList) {
+			menuIds, menuErr := service.SystemRoleMenu().GetMenuIdsByRoleIds(ctx, roleIdList)
+			if utils.IsError(menuErr) {
+				return nil, menuErr
 			}
 			m = m.WhereIn(dao.SystemMenu.Columns().Id, menuIds)
 		}
@@ -320,26 +321,7 @@ func (s *sSystemMenu) GetSelectTree(ctx context.Context, userId int64, onlyMenu,
 		return
 	}
 	// 构建原有的菜单树
-	originalTree := s.treeSelectList(systemMenuEntity)
-
-	defaultNode := &res.SystemDeptSelectItem{
-		Id:       0,
-		ParentId: -1,
-		Value:    0,
-		Label:    "根节点",
-	}
-	// 创建默认根节点
-	rootNode := &res.SystemDeptSelectTree{
-		Children: originalTree,
-	}
-
-	rootNode.Id = defaultNode.Id
-	rootNode.ParentId = defaultNode.ParentId
-	rootNode.Value = defaultNode.Value
-	rootNode.Label = defaultNode.Label
-
-	// 返回包含根节点的树结构
-	routes = []*res.SystemDeptSelectTree{rootNode}
+	routes = s.treeSelectList(systemMenuEntity)
 
 	return
 }
@@ -379,7 +361,7 @@ func (s *sSystemMenu) handleData(ctx context.Context, data *req.SystemMenuSave) 
 
 func (s *sSystemMenu) Save(ctx context.Context, in *req.SystemMenuSave) (id int64, err error) {
 	data, err := s.handleData(ctx, in)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	saveData := do.SystemMenu{
@@ -402,7 +384,7 @@ func (s *sSystemMenu) Save(ctx context.Context, in *req.SystemMenuSave) (id int6
 		return
 	}
 	tmpId, err := rs.LastInsertId()
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	id = gconv.Int64(tmpId)
@@ -467,7 +449,7 @@ func (s *sSystemMenu) genButton(ctx context.Context, id int64, name, code string
 	})
 
 	for _, v := range m {
-		s.Save(ctx, &req.SystemMenuSave{
+		_, _ = s.Save(ctx, &req.SystemMenuSave{
 			Name:      gconv.String(v["name"]),
 			ParentId:  id,
 			Sort:      0,
@@ -486,7 +468,7 @@ func (s *sSystemMenu) genButton(ctx context.Context, id int64, name, code string
 
 func (s *sSystemMenu) Update(ctx context.Context, in *req.SystemMenuSave) (err error) {
 	data, err := s.handleData(ctx, in)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	var systemMenuItem *entity.SystemMenu

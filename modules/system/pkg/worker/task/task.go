@@ -7,15 +7,17 @@
 package task
 
 import (
-	glob2 "devinggo/modules/system/pkg/worker/glob"
 	"context"
+	"sync"
+
+	glob2 "devinggo/modules/system/pkg/worker/glob"
+
 	"dario.cat/mergo"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/hibiken/asynq"
-	"sync"
 )
 
 type TaskInterface interface {
@@ -46,14 +48,18 @@ func GetTask(taskItem TaskSimpleInterface) *asynq.Task {
 		TaskID:    gconv.String(gtime.TimestampNano()),
 		Time:      asynq.ProcessIn(0),
 	}
-	mergo.Merge(payload, payloadDefault)
+	_ = mergo.Merge(payload, payloadDefault)
 	var task *asynq.Task
 	var bodyBytes []byte
 	if !g.IsNil(payload) {
 		j := gjson.New(payload)
 		bodyBytes = gconv.Bytes(j.String())
 	}
-	task = asynq.NewTask(taskItem.GetType(), bodyBytes, payload.Time, asynq.Queue(payload.QueueName), asynq.TaskID(payload.TaskID))
+	opts := []asynq.Option{payload.Time, asynq.Queue(payload.QueueName), asynq.TaskID(payload.TaskID)}
+	if payload.Retention != nil {
+		opts = append(opts, payload.Retention)
+	}
+	task = asynq.NewTask(taskItem.GetType(), bodyBytes, opts...)
 
 	return task
 }

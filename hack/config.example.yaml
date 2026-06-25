@@ -22,7 +22,7 @@ gfcli:
   gen:
     dao:
       - tablesEx: "system_migrations"
-        link: "mysql:root:123456@tcp(127.0.0.1:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
+        link: "pgsql:postgres:168wang@tcp(122.152.211.127:5432)/devinggo4?sslmode=disable&TimeZone=Asia/Shanghai"
         jsonCase: "CamelLower"
         descriptionTag:  true
         noModelComment:  false

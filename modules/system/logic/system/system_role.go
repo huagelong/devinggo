@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -24,6 +25,7 @@ import (
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/pkg/utils/slice"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -31,30 +33,40 @@ import (
 )
 
 type sSystemRole struct {
-	base.BaseService
+	base.GenericService[res.SystemRole]
 }
 
 func init() {
 	service.RegisterSystemRole(NewSystemRole())
 }
 
+// NewSystemRole creates and returns a new system role service instance.
 func NewSystemRole() *sSystemRole {
-	return &sSystemRole{}
+	s := &sSystemRole{}
+	s.GenericService = base.GenericService[res.SystemRole]{
+		ModelFn: func(ctx context.Context) *gdb.Model {
+			return dao.SystemRole.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+		},
+	}
+	return s
 }
 
+// Model 返回数据库 Model
 func (s *sSystemRole) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemRole.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return s.GenericService.Model(ctx)
 }
 
+// GetByIds retrieves system roles by their IDs.
 func (s *sSystemRole) GetByIds(ctx context.Context, ids []int64) (res []*entity.SystemRole, err error) {
 	err = s.Model(ctx).WhereIn(dao.SystemRole.Columns().Id, ids).Scan(&res)
 	return
 }
 
+// Verify checks if the current user has permission to access the requested resource.
 func (s *sSystemRole) Verify(r *ghttp.Request) bool {
 	ctx := r.GetCtx()
 	var (
-		userId = contexts.New().GetUserId(ctx)
+		userId = contexts.GetUserId(ctx)
 		err    error
 	)
 
@@ -64,31 +76,31 @@ func (s *sSystemRole) Verify(r *ghttp.Request) bool {
 	}
 
 	isSuperAdmin, err := service.SystemUser().IsSuperAdmin(ctx, userId)
-	if err != nil {
+	if utils.IsError(err) {
 		g.Log().Debug(ctx, "get isSuperAdmin error", err)
 		return false
 	}
 	if isSuperAdmin {
 		return true
 	}
-	permission := contexts.New().GetPermission(ctx)
+	permission := contexts.GetPermission(ctx)
 	if g.IsEmpty(permission) {
 		g.Log().Debug(ctx, "permission is nil")
 		return false
 	}
 	roleIds, err := service.SystemUser().GetRoles(ctx, userId)
-	if err != nil {
+	if utils.IsError(err) {
 		g.Log().Debug(ctx, "GetRoles error", err)
 		return false
 	}
 	menuIds, err := service.SystemRoleMenu().GetMenuIdsByRoleIds(ctx, roleIds)
-	if err != nil {
+	if utils.IsError(err) {
 		g.Log().Debug(ctx, "menuIds error", err)
 		return false
 	}
 	var systemMenuEntity *entity.SystemMenu
 	systemMenuEntity, err = service.SystemMenu().GetMenuByPermission(ctx, permission, menuIds)
-	if err != nil {
+	if utils.IsError(err) {
 		g.Log().Debug(ctx, "systemMenuEntity error", err)
 		return false
 	}
@@ -123,19 +135,20 @@ func (s *sSystemRole) handleRoleSearch(ctx context.Context, in *req.SystemRoleSe
 			m = m.WhereGTE("created_at", in.CreatedAt[0]+" 00:00:00")
 		}
 		if len(in.CreatedAt) > 1 {
-			m = m.WhereLTE("created_at", in.CreatedAt[1]+"23:59:59")
+			m = m.WhereLTE("created_at", in.CreatedAt[1]+" 23:59:59")
 		}
 	}
 	return
 }
 
+// GetList retrieves a list of system roles with optional filtering.
 func (s *sSystemRole) GetList(ctx context.Context, in *req.SystemRoleSearch, filterAdminRole bool) (out []*res.SystemRole, err error) {
 	inReq := &model.ListReq{
 		OrderBy:   "sort",
 		OrderType: "desc",
 	}
 	m := s.handleRoleSearch(ctx, in, filterAdminRole)
-	m = orm.GetList(m, inReq)
+	m = orm.NewQuery(m).WithListReq(inReq).Build()
 	err = m.Scan(&out)
 	if utils.IsError(err) {
 		return
@@ -143,64 +156,74 @@ func (s *sSystemRole) GetList(ctx context.Context, in *req.SystemRoleSearch, fil
 	return
 }
 
+// GetPageList retrieves a paginated list of system roles with search criteria.
 func (s *sSystemRole) GetPageList(ctx context.Context, req *model.PageListReq, in *req.SystemRoleSearch, filterAdminRole bool) (rs []*res.SystemRole, total int, err error) {
 	m := s.handleRoleSearch(ctx, in, filterAdminRole).Handler(handler.FilterAuth)
 	var postEntity []*entity.SystemRole
-	err = orm.GetPageList(m, req).ScanAndCount(&postEntity, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&postEntity, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SystemRole, 0)
 	if !g.IsEmpty(postEntity) {
-		if err = gconv.Structs(postEntity, &rs); err != nil {
+		if err = gconv.Structs(postEntity, &rs); utils.IsError(err) {
 			return nil, 0, err
 		}
 	}
 	return
 }
 
+// Save creates a new system role with associated menus and departments.
 func (s *sSystemRole) Save(ctx context.Context, in *req.SystemRoleSave) (id int64, err error) {
 	if s.checkRoleCode(ctx, in.Code) {
 		return 0, myerror.ValidationFailed(ctx, "角色标识已存在")
 	}
-	saveData := do.SystemRole{
-		Name:   in.Name,
-		Sort:   in.Sort,
-		Status: in.Status,
-		Code:   in.Code,
-		Remark: in.Remark,
-	}
-	rs, err := s.Model(ctx).Data(saveData).Insert()
-	if utils.IsError(err) {
-		return
-	}
-	tmpId, err := rs.LastInsertId()
-	if err != nil {
-		return
-	}
-	id = gconv.Int64(tmpId)
-
-	superAdminId, _ := s.GetSuperAdminId(ctx)
-	if id == superAdminId {
-		return
-	}
-	if !g.IsEmpty(in.MenuIds) {
-		for _, menuId := range in.MenuIds {
-			_, err = service.SystemRoleMenu().Model(ctx).Data(do.SystemRoleMenu{
-				RoleId: id,
-				MenuId: menuId,
-			}).Save()
+	err = g.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		saveData := do.SystemRole{
+			Name:   in.Name,
+			Sort:   in.Sort,
+			Status: in.Status,
+			Code:   in.Code,
+			Remark: in.Remark,
 		}
-	}
-
-	if !g.IsEmpty(in.DeptIds) {
-		for _, deptId := range in.DeptIds {
-			_, err = service.SystemRoleDept().Model(ctx).Data(do.SystemRoleDept{
-				RoleId: id,
-				DeptId: deptId,
-			}).Save()
+		rs, err := s.Model(ctx).Data(saveData).Insert()
+		if err != nil {
+			return err
 		}
-	}
+		tmpId, err := rs.LastInsertId()
+		if err != nil {
+			return err
+		}
+		id = gconv.Int64(tmpId)
+
+		superAdminId, _ := s.GetSuperAdminId(ctx)
+		if id == superAdminId {
+			return nil
+		}
+		if !g.IsEmpty(in.MenuIds) {
+			for _, menuId := range in.MenuIds {
+				if _, err = service.SystemRoleMenu().Model(ctx).Data(do.SystemRoleMenu{
+					RoleId: id,
+					MenuId: menuId,
+				}).Save(); err != nil {
+					return err
+				}
+			}
+		}
+
+		if !g.IsEmpty(in.DeptIds) {
+			for _, deptId := range in.DeptIds {
+				if _, err = service.SystemRoleDept().Model(ctx).Data(do.SystemRoleDept{
+					RoleId: id,
+					DeptId: deptId,
+				}).Save(); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
+
 	return
 }
 
@@ -215,6 +238,7 @@ func (s *sSystemRole) checkRoleCode(ctx context.Context, code string) bool {
 	return false
 }
 
+// GetSuperAdminId retrieves the ID of the super admin role.
 func (s *sSystemRole) GetSuperAdminId(ctx context.Context) (id int64, err error) {
 	var role *entity.SystemRole
 	err = s.Model(ctx).Where("code", consts.SuperRoleKey).Scan(&role)
@@ -225,59 +249,64 @@ func (s *sSystemRole) GetSuperAdminId(ctx context.Context) (id int64, err error)
 	return
 }
 
-func (s *sSystemRole) GetById(ctx context.Context, id int64) (res *res.SystemRole, err error) {
-	err = s.Model(ctx).Where("id", id).Scan(&res)
-	if utils.IsError(err) {
-		return
-	}
-	return
-}
-
+// Update modifies an existing system role and its associated menus and departments.
 func (s *sSystemRole) Update(ctx context.Context, in *req.SystemRoleSave) (err error) {
-	updateData := do.SystemRole{
-		Name:      in.Name,
-		DataScope: in.DataScope,
-		Sort:      in.Sort,
-		Status:    in.Status,
-		Code:      in.Code,
-		Remark:    in.Remark,
-	}
-	_, err = s.Model(ctx).Data(updateData).OmitEmptyData().Where("id", in.Id).Update()
-	if utils.IsError(err) {
-		return
-	}
-	id := in.Id
-
-	superAdminId, _ := s.GetSuperAdminId(ctx)
-	if id == superAdminId {
-		return
-	}
-	if !g.IsEmpty(in.MenuIds) {
-		service.SystemRoleMenu().Model(ctx).Where("role_id", id).Delete()
-		for _, menuId := range in.MenuIds {
-			_, err = service.SystemRoleMenu().Model(ctx).Data(do.SystemRoleMenu{
-				RoleId: id,
-				MenuId: menuId,
-			}).Save()
+	err = g.DB().Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		updateData := do.SystemRole{
+			Name:      in.Name,
+			DataScope: in.DataScope,
+			Sort:      in.Sort,
+			Status:    in.Status,
+			Code:      in.Code,
+			Remark:    in.Remark,
 		}
-	}
-
-	if !g.IsEmpty(in.DeptIds) {
-		service.SystemRoleDept().Model(ctx).Where("role_id", id).Delete()
-		for _, deptId := range in.DeptIds {
-			_, err = service.SystemRoleDept().Model(ctx).Data(do.SystemRoleDept{
-				RoleId: id,
-				DeptId: deptId,
-			}).Save()
+		_, err = s.Model(ctx).Data(updateData).OmitEmptyData().Where("id", in.Id).Update()
+		if err != nil {
+			return err
 		}
-	}
+		id := in.Id
+
+		superAdminId, _ := s.GetSuperAdminId(ctx)
+		if id == superAdminId {
+			return nil
+		}
+		if !g.IsEmpty(in.MenuIds) {
+			if _, err = service.SystemRoleMenu().Model(ctx).Where("role_id", id).Delete(); err != nil {
+				return err
+			}
+			for _, menuId := range in.MenuIds {
+				if _, err = service.SystemRoleMenu().Model(ctx).Data(do.SystemRoleMenu{
+					RoleId: id,
+					MenuId: menuId,
+				}).Save(); err != nil {
+					return err
+				}
+			}
+		}
+
+		if !g.IsEmpty(in.DeptIds) {
+			if _, err = service.SystemRoleDept().Model(ctx).Where("role_id", id).Delete(); err != nil {
+				return err
+			}
+			for _, deptId := range in.DeptIds {
+				if _, err = service.SystemRoleDept().Model(ctx).Data(do.SystemRoleDept{
+					RoleId: id,
+					DeptId: deptId,
+				}).Save(); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
 
 	return
 }
 
+// Delete soft deletes system roles, excluding the super admin role.
 func (s *sSystemRole) Delete(ctx context.Context, ids []int64) (err error) {
 	superAdminId, err := s.GetSuperAdminId(ctx)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	newIds := slice.Remove(ids, superAdminId)
@@ -290,23 +319,25 @@ func (s *sSystemRole) Delete(ctx context.Context, ids []int64) (err error) {
 	return
 }
 
+// RealDelete permanently removes system roles and their associated data, excluding the super admin role.
 func (s *sSystemRole) RealDelete(ctx context.Context, ids []int64) (err error) {
 	superAdminId, err := s.GetSuperAdminId(ctx)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	for _, id := range ids {
 		if id == superAdminId {
 			continue
 		}
-		s.Model(ctx).Unscoped().Where("id", id).Delete()
-		service.SystemRoleMenu().Model(ctx).Where("role_id", id).Delete()
-		service.SystemRoleDept().Model(ctx).Where("role_id", id).Delete()
-		service.SystemUserRole().Model(ctx).Where("role_id", id).Delete()
+		_, _ = s.Model(ctx).Unscoped().Where("id", id).Delete()
+		_, _ = service.SystemRoleMenu().Model(ctx).Where("role_id", id).Delete()
+		_, _ = service.SystemRoleDept().Model(ctx).Where("role_id", id).Delete()
+		_, _ = service.SystemUserRole().Model(ctx).Where("role_id", id).Delete()
 	}
 	return
 }
 
+// Recovery restores soft-deleted system roles.
 func (s *sSystemRole) Recovery(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
@@ -315,22 +346,7 @@ func (s *sSystemRole) Recovery(ctx context.Context, ids []int64) (err error) {
 	return
 }
 
-func (s *sSystemRole) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
-	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
-	if utils.IsError(err) {
-		return err
-	}
-	return
-}
-
-func (s *sSystemRole) NumberOperation(ctx context.Context, id int64, numberName string, numberValue int) (err error) {
-	_, err = s.Model(ctx).Data(g.Map{numberName: numberValue}).Where("id", id).Update()
-	if utils.IsError(err) {
-		return err
-	}
-	return
-}
-
+// GetMenuByRoleIds retrieves menu associations for the given role IDs.
 func (s *sSystemRole) GetMenuByRoleIds(ctx context.Context, ids []int64) (out []*res.SystemRoleMenus, err error) {
 	for _, id := range ids {
 		systemRoleMenus := &res.SystemRoleMenus{}
@@ -357,6 +373,7 @@ func (s *sSystemRole) GetMenuByRoleIds(ctx context.Context, ids []int64) (out []
 	return
 }
 
+// GetDeptByRole retrieves department associations for the given role IDs.
 func (s *sSystemRole) GetDeptByRole(ctx context.Context, ids []int64) (out []*res.SystemRoleDepts, err error) {
 	for _, id := range ids {
 		systemRoleDepts := &res.SystemRoleDepts{}
@@ -382,4 +399,19 @@ func (s *sSystemRole) GetDeptByRole(ctx context.Context, ids []int64) (out []*re
 	}
 
 	return
+}
+
+// GetById 由 GenericService 提供，此处声明用于接口生成
+func (s *sSystemRole) GetById(ctx context.Context, id int64) (res *res.SystemRole, err error) {
+	return s.GenericService.GetById(ctx, id)
+}
+
+// ChangeStatus 由 GenericService 提供，此处声明用于接口生成
+func (s *sSystemRole) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
+	return s.GenericService.ChangeStatus(ctx, id, status)
+}
+
+// NumberOperation 由 GenericService 提供，此处声明用于接口生成
+func (s *sSystemRole) NumberOperation(ctx context.Context, id int64, numberName string, numberValue int) (err error) {
+	return s.GenericService.NumberOperation(ctx, id, numberName, numberValue)
 }

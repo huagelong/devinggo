@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -20,6 +21,7 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -38,19 +40,19 @@ func NewSystemAppGroup() *sSystemAppGroup {
 }
 
 func (s *sSystemAppGroup) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemAppGroup.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return dao.SystemAppGroup.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemAppGroup) GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemAppGroupSearch) (rs []*res.SystemAppGroup, total int, err error) {
 	m := s.handleSearch(ctx, in)
 	var entity []*entity.SystemAppGroup
-	err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&entity, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SystemAppGroup, 0)
 	if !g.IsEmpty(entity) {
-		if err = gconv.Structs(entity, &rs); err != nil {
+		if err = gconv.Structs(entity, &rs); utils.IsError(err) {
 			return nil, 0, err
 		}
 	}
@@ -63,7 +65,7 @@ func (s *sSystemAppGroup) GetList(ctx context.Context, in *req.SystemAppGroupSea
 		OrderType: "desc",
 	}
 	m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
-	m = orm.GetList(m, inReq)
+	m = orm.NewQuery(m).WithListReq(inReq).Build()
 	err = m.Scan(&out)
 	if utils.IsError(err) {
 		return
@@ -102,7 +104,7 @@ func (s *sSystemAppGroup) Save(ctx context.Context, in *req.SystemAppGroupSave) 
 		return
 	}
 	tmpId, err := rs.LastInsertId()
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	id = gconv.Int64(tmpId)

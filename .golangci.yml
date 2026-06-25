@@ -1,0 +1,61 @@
+linters:
+  enable:
+    - gofmt
+    - goimports
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - gosimple
+    - ineffassign
+    - typecheck
+    - gosec
+    - gocyclo
+    - dupl
+    - misspell
+    - bodyclose
+    - prealloc
+  disable:
+    - exhaustive
+
+linters-settings:
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: devinggo
+  gocyclo:
+    min-complexity: 20
+  dupl:
+    threshold: 150
+  govet:
+    enable-all: true
+  misspell:
+    locale: US
+
+run:
+  timeout: 5m
+  issues:
+    exclude-dirs:
+      - vendor
+      - internal/packed
+      - resource
+      - tmp
+    exclude-files:
+      - ".*\\.pb\\.go$"
+
+issues:
+  exclude-rules:
+    # 排除测试文件的某些检查
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - bodyclose
+    # 排除 main 函数的 errcheck
+    - path: cmd/
+      linters:
+        - errcheck
+  max-issues-per-linter: 0
+  max-same-issues: 0

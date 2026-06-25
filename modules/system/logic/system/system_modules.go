@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -20,6 +21,7 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -38,7 +40,7 @@ func NewSystemModules() *sSystemModules {
 }
 
 func (s *sSystemModules) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemModules.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return dao.SystemModules.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemModules) handleSearch(ctx context.Context, in *req.SystemModulesSearch) (m *gdb.Model) {
@@ -78,7 +80,7 @@ func (s *sSystemModules) handleSearch(ctx context.Context, in *req.SystemModules
 
 func (s *sSystemModules) GetList(ctx context.Context, inReq *model.ListReq, in *req.SystemModulesSearch) (out []*res.SystemModules, err error) {
 	m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
-	m = orm.GetList(m, inReq)
+	m = orm.NewQuery(m).WithListReq(inReq).Build()
 	err = m.Scan(&out)
 	if utils.IsError(err) {
 		return
@@ -89,13 +91,13 @@ func (s *sSystemModules) GetList(ctx context.Context, inReq *model.ListReq, in *
 func (s *sSystemModules) GetPageList(ctx context.Context, req *model.PageListReq, in *req.SystemModulesSearch) (rs []*res.SystemModules, total int, err error) {
 	m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
 	var entity []*entity.SystemModules
-	err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&entity, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SystemModules, 0)
 	if !g.IsEmpty(entity) {
-		if err = gconv.Structs(entity, &rs); err != nil {
+		if err = gconv.Structs(entity, &rs); utils.IsError(err) {
 			return nil, 0, err
 		}
 	}
@@ -104,7 +106,7 @@ func (s *sSystemModules) GetPageList(ctx context.Context, req *model.PageListReq
 
 func (s *sSystemModules) Save(ctx context.Context, in *req.SystemModulesSave) (id int64, err error) {
 	var saveData *do.SystemModules
-	if err = gconv.Struct(in, &saveData); err != nil {
+	if err = gconv.Struct(in, &saveData); utils.IsError(err) {
 		return
 	}
 	rs, err := s.Model(ctx).OmitEmptyData().Data(saveData).Insert()
@@ -112,7 +114,7 @@ func (s *sSystemModules) Save(ctx context.Context, in *req.SystemModulesSave) (i
 		return
 	}
 	tmpId, err := rs.LastInsertId()
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	id = gconv.Int64(tmpId)
@@ -129,7 +131,7 @@ func (s *sSystemModules) GetById(ctx context.Context, id int64) (res *res.System
 
 func (s *sSystemModules) Update(ctx context.Context, in *req.SystemModulesUpdate) (err error) {
 	var updateData *do.SystemModules
-	if err = gconv.Struct(in, &updateData); err != nil {
+	if err = gconv.Struct(in, &updateData); utils.IsError(err) {
 		return
 	}
 	_, err = s.Model(ctx).OmitEmptyData().Data(updateData).Where("id", in.Id).Update()

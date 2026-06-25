@@ -7,6 +7,7 @@ package api
 
 import (
 	"context"
+
 	"devinggo/modules/api/controller"
 	_ "devinggo/modules/api/logic"
 	"devinggo/modules/api/service"
@@ -23,7 +24,9 @@ type apiModule struct {
 func init() {
 	module := &apiModule{}
 	module.Name = "api"
-	modules.Register(module)
+	if err := modules.Register(module); err != nil {
+		panic(err)
+	}
 }
 
 func (m *apiModule) Start(ctx context.Context, s *ghttp.Server) error {

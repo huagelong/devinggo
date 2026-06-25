@@ -8,12 +8,14 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/modules/system/logic/base"
 	"devinggo/modules/system/pkg/hook"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -32,7 +34,7 @@ func NewSystemRoleMenu() *sSystemRoleMenu {
 }
 
 func (s *sSystemRoleMenu) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemRoleMenu.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("role_id", "menu_id")
+	return dao.SystemRoleMenu.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("role_id", "menu_id")
 }
 
 func (s *sSystemRoleMenu) GetMenuIdsByRoleIds(ctx context.Context, roleIds []int64) (rmenuIds []int64, err error) {

@@ -8,13 +8,12 @@ package system
 
 import (
 	"context"
+
 	"devinggo/modules/system/api/system"
 	"devinggo/modules/system/controller/base"
 	"devinggo/modules/system/model/res"
-	"devinggo/modules/system/pkg/orm"
-	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/service"
-	"github.com/gogf/gf/v2/container/gmap"
+
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -65,7 +64,7 @@ func (c *systemModulesController) Recycle(ctx context.Context, in *system.Recycl
 }
 
 func (c *systemModulesController) List(ctx context.Context, in *system.ListSystemModulesReq) (out *system.ListSystemModulesRes, err error) {
-	out = &system.ListSystemModulesRes{} 
+	out = &system.ListSystemModulesRes{}
 	rs, err := service.SystemModules().GetList(ctx, &in.ListReq, &in.SystemModulesSearch)
 	if err != nil {
 		return
@@ -141,37 +140,6 @@ func (c *systemModulesController) ChangeStatus(ctx context.Context, in *system.C
 	err = service.SystemModules().ChangeStatus(ctx, in.Id, in.Status)
 	if err != nil {
 		return
-	}
-	return
-}
-
-func (c *systemModulesController) Remote(ctx context.Context, in *system.RemoteSystemModulesReq) (out *system.RemoteSystemModulesRes, err error) {
-	out = &system.RemoteSystemModulesRes{}
-	r := request.GetHttpRequest(ctx)
-	params := gmap.NewStrAnyMapFrom(r.GetMap())
-	m := service.SystemModules().Model(ctx)
-	var rs res.SystemModules
-	remote := orm.NewRemote(m, rs)
-	openPage := params.GetVar("openPage")
-	items, totalCount, err := remote.GetRemote(ctx, params)
-	if err != nil {
-		return
-	}
-	if !g.IsEmpty(openPage) && openPage.Bool() {
-		if !g.IsEmpty(items) {
-			for _, item := range items {
-				out.Items = append(out.Items, item)
-			}
-		} else {
-			out.Items = make([]res.SystemModules, 0)
-		}
-		out.PageRes.Pack(in, totalCount)
-	} else {
-		if !g.IsEmpty(items) {
-			out.Data = items
-		} else {
-			out.Data = make([]res.SystemModules, 0)
-		}
 	}
 	return
 }

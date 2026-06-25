@@ -28,7 +28,13 @@ type SystemDeptSave struct {
 	Remark   string `json:"remark"`
 }
 
+type LeaderUser struct {
+	UserId   int64  `json:"user_id"`
+	Username string `json:"username"`
+	Nickname string `json:"nickname"`
+}
+
 type SystemDeptAddLeader struct {
 	Id    int64        `json:"id" v:"required"`
-	Users []SystemUser `json:"users" v:"required"`
+	Users []LeaderUser `json:"users" v:"required"`
 }

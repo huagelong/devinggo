@@ -8,6 +8,8 @@ package system
 
 import (
 	"context"
+	"fmt"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -20,6 +22,7 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -38,19 +41,19 @@ func NewSystemApiGroup() *sSystemApiGroup {
 }
 
 func (s *sSystemApiGroup) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemApiGroup.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return dao.SystemApiGroup.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemApiGroup) GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemApiGroupSearch) (rs []*res.SystemApiGroup, total int, err error) {
 	m := s.handleSearch(ctx, in)
 	var entity []*entity.SystemApiGroup
-	err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&entity, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SystemApiGroup, 0)
 	if !g.IsEmpty(entity) {
-		if err = gconv.Structs(entity, &rs); err != nil {
+		if err = gconv.Structs(entity, &rs); utils.IsError(err) {
 			return nil, 0, err
 		}
 	}
@@ -63,7 +66,7 @@ func (s *sSystemApiGroup) GetPageListForSearch(ctx context.Context, req *model.P
 					Where(dao.SystemApi.Columns().GroupId, v.Id).
 					Where(dao.SystemApi.Columns().Status, 1).
 					Scan(&apis)
-				if err != nil {
+				if utils.IsError(err) {
 					continue
 				}
 				v.Apis = apis
@@ -76,11 +79,11 @@ func (s *sSystemApiGroup) GetPageListForSearch(ctx context.Context, req *model.P
 
 func (s *sSystemApiGroup) GetList(ctx context.Context, in *req.SystemApiGroupSearch) (out []*res.SystemApiGroup, err error) {
 	inReq := &model.ListReq{
-		OrderBy:   dao.SystemApiGroup.Table() + ".created_by",
+		OrderBy:   fmt.Sprintf(`"%s"."%s"`, dao.SystemApiGroup.Table(), dao.SystemApiGroup.Columns().CreatedBy),
 		OrderType: "desc",
 	}
 	m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
-	m = orm.GetList(m, inReq)
+	m = orm.NewQuery(m).WithListReq(inReq).Build()
 	err = m.Scan(&out)
 	if utils.IsError(err) {
 		return
@@ -93,7 +96,7 @@ func (s *sSystemApiGroup) GetList(ctx context.Context, in *req.SystemApiGroupSea
 					Where(dao.SystemApi.Columns().GroupId, v.Id).
 					Where(dao.SystemApi.Columns().Status, 1).
 					Scan(&apis)
-				if err != nil {
+				if utils.IsError(err) {
 					continue
 				}
 				v.Apis = apis
@@ -126,7 +129,7 @@ func (s *sSystemApiGroup) Save(ctx context.Context, in *req.SystemApiGroupSave) 
 		return
 	}
 	tmpId, err := rs.LastInsertId()
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	id = gconv.Int64(tmpId)
@@ -163,10 +166,9 @@ func (s *sSystemApiGroup) Delete(ctx context.Context, ids []int64) (err error) {
 }
 
 func (s *sSystemApiGroup) RealDelete(ctx context.Context, ids []int64) (err error) {
-	var res []*res.SystemApiGroup
-	err = s.Model(ctx).Unscoped().WhereIn("id", ids).Scan(&res)
+	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
-		return
+		return err
 	}
 	return
 }

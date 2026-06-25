@@ -8,40 +8,42 @@ package myerror
 
 import (
 	"context"
+
 	"devinggo/modules/system/codes"
 	"devinggo/modules/system/pkg/i18n"
+
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 )
 
 func NewCode(ctx context.Context, code gcode.Code) error {
-	tfStr := i18n.Newf(ctx, code.Message())
+	tfStr := i18n.T(ctx, code.Message())
 	return gerror.NewCode(code, tfStr)
 }
 
-func NewCodef(ctx context.Context, code gcode.Code, message string, params ...string) error {
-	tfStr := i18n.Newf(ctx, message, params...)
+func NewCodef(ctx context.Context, code gcode.Code, message string, params ...interface{}) error {
+	tfStr := i18n.Tf(ctx, message, params...)
 	return gerror.NewCode(code, tfStr)
 }
 
-func NewErrorf(ctx context.Context, message string, params ...string) error {
-	tfStr := i18n.Newf(ctx, message, params...)
+func NewErrorf(ctx context.Context, message string, params ...interface{}) error {
+	tfStr := i18n.Tf(ctx, message, params...)
 	return gerror.New(tfStr)
 }
 
-func MissingParameter(ctx context.Context, message string, params ...string) error {
+func MissingParameter(ctx context.Context, message string, params ...interface{}) error {
 	return NewCodef(ctx, gcode.CodeMissingParameter, message, params...)
 }
 
-func InvalidParameter(ctx context.Context, message string, params ...string) error {
+func InvalidParameter(ctx context.Context, message string, params ...interface{}) error {
 	return NewCodef(ctx, gcode.CodeInvalidParameter, message, params...)
 }
 
-func ValidationFailed(ctx context.Context, message string, params ...string) error {
+func ValidationFailed(ctx context.Context, message string, params ...interface{}) error {
 	return NewCodef(ctx, gcode.CodeValidationFailed, message, params...)
 }
 
-func ApiTokenIsExpire(ctx context.Context, message string, params ...string) error {
+func ApiTokenIsExpire(ctx context.Context, message string, params ...interface{}) error {
 	return NewCodef(ctx, codes.ApiTokenIsExpire, message, params...)
 }
 

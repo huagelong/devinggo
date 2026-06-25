@@ -8,9 +8,12 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/modules/system/logic/base"
+	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 )
@@ -35,41 +38,41 @@ func (s *sDashboard) GetStatistics(ctx context.Context) (statistics map[string]i
 
 	// 用户统计
 	userTotal, err := dao.SystemUser.Ctx(ctx).Count()
-	if err != nil {
+	if utils.IsError(err) {
 		return nil, err
 	}
 	userNew, err := dao.SystemUser.Ctx(ctx).Where("created_at >= ?", todayStart).Count()
-	if err != nil {
+	if utils.IsError(err) {
 		return nil, err
 	}
 
 	// 附件统计
 	attachmentTotal, err := dao.SystemUploadfile.Ctx(ctx).Count()
-	if err != nil {
+	if utils.IsError(err) {
 		return nil, err
 	}
 	attachmentNew, err := dao.SystemUploadfile.Ctx(ctx).Where("created_at >= ?", todayStart).Count()
-	if err != nil {
+	if utils.IsError(err) {
 		return nil, err
 	}
 
 	// 登录统计
 	loginTotal, err := dao.SystemLoginLog.Ctx(ctx).Count()
-	if err != nil {
+	if utils.IsError(err) {
 		return nil, err
 	}
 	loginNew, err := dao.SystemLoginLog.Ctx(ctx).Where("login_time >= ?", todayStart).Count()
-	if err != nil {
+	if utils.IsError(err) {
 		return nil, err
 	}
 
 	// 操作统计
 	operationTotal, err := dao.SystemOperLog.Ctx(ctx).Count()
-	if err != nil {
+	if utils.IsError(err) {
 		return nil, err
 	}
 	operationNew, err := dao.SystemOperLog.Ctx(ctx).Where("created_at >= ?", todayStart).Count()
-	if err != nil {
+	if utils.IsError(err) {
 		return nil, err
 	}
 
@@ -112,7 +115,7 @@ func (s *sDashboard) GetLoginChart(ctx context.Context, days int) (chartData map
 	// 生成日期范围
 	for i := 0; i < days; i++ {
 		date := startDate.AddDate(0, 0, i)
-		dateStr := date.Format("Y-m-d")  // 使用 gtime 的格式字符串
+		dateStr := date.Format("Y-m-d") // 使用 gtime 的格式字符串
 		xAxis = append(xAxis, dateStr)
 	}
 
@@ -124,7 +127,7 @@ func (s *sDashboard) GetLoginChart(ctx context.Context, days int) (chartData map
 		count, err := dao.SystemLoginLog.Ctx(ctx).
 			Where("login_time >= ? AND login_time <= ?", dayStart, dayEnd).
 			Count()
-		if err != nil {
+		if utils.IsError(err) {
 			g.Log().Error(ctx, "查询登录日志失败:", err)
 			count = 0
 		}

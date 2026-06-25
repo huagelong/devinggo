@@ -21,7 +21,7 @@ internal/packed/build_pack_data.go
 /logs/
 **/*.log
 .init.lock
-
+.claude/worktrees/
 /resource/public/admin/
 /resource/public/uploads/image/
 /resource/public/uploads/text/
@@ -37,6 +37,12 @@ internal/packed/build_pack_data.go
 **/dist-ssr
 *.local
 **/.env
+docs/old_admin
+.pnpm-store
 
 manifest/config/config.yaml
 hack/config.yaml
+devinggo.exe
+.spec-workflow
+.gocache
+coverage.out

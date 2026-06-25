@@ -8,8 +8,9 @@ package slice
 
 import (
 	"fmt"
-	"github.com/gogf/gf/v2/text/gstr"
 	"strings"
+
+	"github.com/gogf/gf/v2/text/gstr"
 )
 
 // 切片去重

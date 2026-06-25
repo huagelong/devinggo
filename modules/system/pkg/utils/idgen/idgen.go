@@ -8,6 +8,7 @@ package idgen
 
 import (
 	"context"
+
 	"devinggo/modules/system/pkg/utils/config"
 
 	"github.com/gogf/gf/v2/util/gconv"

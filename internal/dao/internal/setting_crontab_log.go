@@ -21,14 +21,17 @@ type SettingCrontabLogDao struct {
 
 // SettingCrontabLogColumns defines and stores column names for the table setting_crontab_log.
 type SettingCrontabLogColumns struct {
-	Id            string // 主键
-	CrontabId     string // 任务ID
-	Name          string // 任务名称
-	Target        string // 任务调用目标字符串
-	Parameter     string // 任务调用参数
-	ExceptionInfo string // 异常信息
-	Status        string // 执行状态 (1成功 2失败)
-	CreatedAt     string // 创建时间
+	Id            string //
+	CrontabId     string //
+	Name          string //
+	Target        string //
+	Parameter     string //
+	ExceptionInfo string //
+	Status        string //
+	StartTime     string //
+	EndTime       string //
+	Output        string //
+	CreatedAt     string //
 }
 
 // settingCrontabLogColumns holds the columns for the table setting_crontab_log.
@@ -40,6 +43,9 @@ var settingCrontabLogColumns = SettingCrontabLogColumns{
 	Parameter:     "parameter",
 	ExceptionInfo: "exception_info",
 	Status:        "status",
+	StartTime:     "start_time",
+	EndTime:       "end_time",
+	Output:        "output",
 	CreatedAt:     "created_at",
 }
 

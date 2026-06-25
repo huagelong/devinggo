@@ -8,6 +8,7 @@ package base
 
 import (
 	"devinggo/modules/system/pkg/contexts"
+
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
@@ -17,5 +18,5 @@ type BaseController struct {
 
 // Init 自动执行的初始化方法
 func (c *BaseController) Init(r *ghttp.Request) {
-	c.UserId = contexts.New().GetUserId(r.Context())
+	c.UserId = contexts.GetUserId(r.Context())
 }

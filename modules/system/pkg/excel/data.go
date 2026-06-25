@@ -7,8 +7,9 @@
 package excel
 
 import (
-	"github.com/xuri/excelize/v2"
 	"strconv"
+
+	"github.com/xuri/excelize/v2"
 )
 
 func (e *Export[T]) createHead() {

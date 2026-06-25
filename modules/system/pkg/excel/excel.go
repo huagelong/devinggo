@@ -8,11 +8,12 @@ package excel
 
 import (
 	"bufio"
-	"github.com/xuri/excelize/v2"
 	"io"
 	"os"
 	"reflect"
 	"strconv"
+
+	"github.com/xuri/excelize/v2"
 )
 
 type excelModel[T any] struct {
@@ -158,12 +159,13 @@ func (e *Export[T]) setHeadStyle(style *excelize.Style) *Export[T] {
 	newStyle, err := e.f.NewStyle(style)
 	if err != nil {
 		e.err = err
+		return e
 	}
 	start, _ := excelize.ColumnNumberToName(1)
 	start += strconv.Itoa(1)
 	end, _ := excelize.ColumnNumberToName(len(*e.mod))
 	end += strconv.Itoa(1)
-	err = e.f.SetCellStyle(e.sheetName, start, end, newStyle)
+	_ = e.f.SetCellStyle(e.sheetName, start, end, newStyle)
 	return e
 }
 
@@ -176,13 +178,14 @@ func (e *excelModel[T]) paddingDataStyle() *excelModel[T] {
 	newStyle, err := e.f.NewStyle(e.totalDataStyle)
 	if err != nil {
 		e.err = err
+		return e
 	}
 	dataStart := e.headRowHeight + 1
 	start, _ := excelize.ColumnNumberToName(1)
 	start += strconv.Itoa(dataStart)
 	end, _ := excelize.ColumnNumberToName(len(*e.mod))
 	end += strconv.Itoa(e.headRowHeight + e.totalRowHeight)
-	err = e.f.SetCellStyle(e.sheetName, start, end, newStyle)
+	_ = e.f.SetCellStyle(e.sheetName, start, end, newStyle)
 	return e
 }
 

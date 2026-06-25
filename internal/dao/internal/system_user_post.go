@@ -21,8 +21,8 @@ type SystemUserPostDao struct {
 
 // SystemUserPostColumns defines and stores column names for the table system_user_post.
 type SystemUserPostColumns struct {
-	UserId string // 用户主键
-	PostId string // 岗位主键
+	UserId string //
+	PostId string //
 }
 
 // systemUserPostColumns holds the columns for the table system_user_post.

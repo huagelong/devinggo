@@ -7,37 +7,28 @@
 package server
 
 import (
+	"context"
+	"strings"
+	"time"
+
 	"devinggo/modules/system/myerror"
+	"devinggo/modules/system/pkg/worker"
 	glob2 "devinggo/modules/system/pkg/worker/glob"
-	"devinggo/modules/system/pkg/worker/server"
 	"devinggo/modules/system/worker/consts"
 	"devinggo/modules/system/worker/cron"
-	"context"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/hibiken/asynq"
-	"strings"
-	"time"
 )
 
-var urlCronWorker = &cUrlCronWorker{
-	Type: consts.URL_CRON,
-}
-
-type cUrlCronWorker struct {
-	Type string
-}
-
 func init() {
-	server.Register(urlCronWorker)
+	// 使用新方式注册Worker
+	worker.RegisterWorkerFunc(consts.URL_CRON, executeUrlCronWorker)
 }
 
-func (s *cUrlCronWorker) GetType() string {
-	return s.Type
-}
-
-// Execute 执行任务
-func (s *cUrlCronWorker) Execute(ctx context.Context, t *asynq.Task) (err error) {
+// executeUrlCronWorker 执行URL请求Worker
+func executeUrlCronWorker(ctx context.Context, t *asynq.Task) error {
 	data, err := glob2.GetParamters[cron.UrlCronData](ctx, t)
 	if err != nil {
 		return err
@@ -46,8 +37,7 @@ func (s *cUrlCronWorker) Execute(ctx context.Context, t *asynq.Task) (err error)
 
 	url := data.Url
 	if g.IsEmpty(url) {
-		err = myerror.MissingParameter(ctx, `url为空`)
-		return
+		return myerror.MissingParameter(ctx, `url为空`)
 	}
 	method := data.Method
 	if g.IsEmpty(method) {
@@ -104,5 +94,5 @@ func (s *cUrlCronWorker) Execute(ctx context.Context, t *asynq.Task) (err error)
 	}
 
 	glob2.WithWorkLog().Infof(ctx, `type:%s, response:%+v`, t.Type(), resContent)
-	return
+	return nil
 }

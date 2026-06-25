@@ -8,14 +8,13 @@ package system
 
 import (
 	"context"
+
 	"devinggo/modules/system/api/system"
 	"devinggo/modules/system/controller/base"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
-	"devinggo/modules/system/pkg/orm"
-	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/service"
-	"github.com/gogf/gf/v2/container/gmap"
+
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -66,7 +65,7 @@ func (c *roleController) Recycle(ctx context.Context, in *system.RecycleRoleReq)
 
 func (c *roleController) List(ctx context.Context, in *system.ListRoleReq) (out *system.ListRoleRes, err error) {
 	out = &system.ListRoleRes{}
-	rs, err := service.SystemRole().GetList(ctx, &req.SystemRoleSearch{}, true)
+	rs, err := service.SystemRole().GetList(ctx, &req.SystemRoleSearch{}, false)
 	if err != nil {
 		return
 	}
@@ -185,37 +184,5 @@ func (c *roleController) GetDeptByRole(ctx context.Context, in *system.GetDeptBy
 		return
 	}
 	out.Data = data
-	return
-}
-
-func (c *roleController) Remote(ctx context.Context, in *system.RemoteRoleReq) (out *system.RemoteRoleRes, err error) {
-	out = &system.RemoteRoleRes{}
-	r := request.GetHttpRequest(ctx)
-
-	params := gmap.NewStrAnyMapFrom(r.GetMap())
-	m := service.SystemRole().Model(ctx)
-	var rs res.SystemRole
-	remote := orm.NewRemote(m, rs)
-	openPage := params.GetVar("openPage")
-	items, totalCount, err := remote.GetRemote(ctx, params)
-	if err != nil {
-		return
-	}
-	if !g.IsEmpty(openPage) && openPage.Bool() {
-		if !g.IsEmpty(items) {
-			for _, item := range items {
-				out.Items = append(out.Items, item)
-			}
-		} else {
-			out.Items = make([]res.SystemRole, 0)
-		}
-		out.PageRes.Pack(in, totalCount)
-	} else {
-		if !g.IsEmpty(items) {
-			out.Data = items
-		} else {
-			out.Data = make([]res.SystemRole, 0)
-		}
-	}
 	return
 }

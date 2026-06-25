@@ -32,6 +32,7 @@ import (
 	"github.com/gogf/gf/v2/text/gstr"
 )
 
+// IsError checks if an error is a real error (not sql.ErrNoRows).
 func IsError(err error) bool {
 	if err != nil && err != sql.ErrNoRows {
 		return true
@@ -40,13 +41,13 @@ func IsError(err error) bool {
 	}
 }
 
-// 获取query参数
+// GetQueryMap parses a raw query string into a map of key-value pairs.
 func GetQueryMap(rawQuery string) (map[string]interface{}, error) {
 	queryMap, err := gstr.Parse(rawQuery)
 	return queryMap, err
 }
 
-// 获取db名称
+// GetConnectDbName extracts the database name from a DSN string.
 func GetConnectDbName(dsn string) (string, error) {
 	// 正则表达式匹配 protocol(address) 部分
 	re := regexp.MustCompile(`^(\w+):(.*)@(\w+)\(([^)]+)\)\/(\w+)`)
@@ -59,6 +60,7 @@ func GetConnectDbName(dsn string) (string, error) {
 	return matches[5], nil
 }
 
+// SafeGo executes a function in a goroutine with error handling and stack trace logging.
 func SafeGo(ctx context.Context, f func(ctx context.Context), lv ...int) {
 	g.Go(ctx, f, func(ctx context.Context, err error) {
 		var level = glog.LEVEL_ERRO
@@ -72,6 +74,7 @@ func SafeGo(ctx context.Context, f func(ctx context.Context), lv ...int) {
 	})
 }
 
+// Logf logs a formatted message at the specified log level.
 func Logf(level int, ctx context.Context, format string, v ...interface{}) {
 	switch level {
 	case glog.LEVEL_DEBU:
@@ -95,7 +98,7 @@ func Logf(level int, ctx context.Context, format string, v ...interface{}) {
 	}
 }
 
-// 获取module  system，api，websocket 等
+// GetModule extracts the module name from a URL path.
 func GetModule(path string) (module string) {
 	slice := strings.Split(path, "/")
 	if len(slice) < 2 {
@@ -110,7 +113,7 @@ func GetModule(path string) (module string) {
 	return slice[1]
 }
 
-// file md5
+// FileMd5 calculates the MD5 hash of a file.
 func FileMd5(filePath string) (string, error) {
 	f, err := gfile.Open(filePath)
 	if err != nil {
@@ -127,7 +130,7 @@ func FileMd5(filePath string) (string, error) {
 	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }
 
-// 根目录
+// GetRootPath returns the project root directory path.
 func GetRootPath() string {
 	// 如果是go run则返回temp目录 go build 则返回当前目录
 	//dir := getCurrentAbPathByExecutable()
@@ -153,7 +156,7 @@ func GetRootPath() string {
 	return dir
 }
 
-// 获取系统临时目录，兼容go run
+// GetTmpDir returns the system temporary directory path.
 func GetTmpDir() string {
 	dir := os.Getenv("TEMP")
 	if dir == "" {
@@ -183,7 +186,7 @@ func getCurrentAbPathByCaller() string {
 	return abPath
 }
 
-// 合并多个列表，并去重，使用自定义的比较函数
+// MergeAndDeduplicateWithFunc merges multiple lists and removes duplicates using a custom comparison function.
 func MergeAndDeduplicateWithFunc[T any](compareFunc func(T) string, lists ...[]T) []T {
 	var result []T
 	seen := make(map[string]bool)
@@ -199,12 +202,12 @@ func MergeAndDeduplicateWithFunc[T any](compareFunc func(T) string, lists ...[]T
 	return result
 }
 
-// level 替换
+// ReplaceSubstr replaces all occurrences of a substring with another string.
 func ReplaceSubstr(s, oldSubstr, newSubstr string) string {
 	return strings.ReplaceAll(s, oldSubstr, newSubstr)
 }
 
-// ZipDirectory 压缩目录为 ZIP 文件
+// ZipDirectory compresses a directory into a ZIP file.
 func ZipDirectory(ctx context.Context, source, target string) error {
 	// 创建目标ZIP文件
 	zipFile, err := os.Create(target)
@@ -292,36 +295,24 @@ func ZipDirectory(ctx context.Context, source, target string) error {
 	})
 }
 
+// GetDbType returns the database type (currently hardcoded to postgres).
 func GetDbType() string {
-	dbConfig := g.DB().GetConfig()
-	link := dbConfig.Link
-	dbType := "mysql" // 默认为MySQL
-	if g.IsEmpty(link) {
-		link = dbConfig.Type
-	}
-	// 判断数据库类型
-	if strings.HasPrefix(link, "postgres:") || strings.HasPrefix(link, "postgresql:") || strings.HasPrefix(link, "pgsql:") {
-		dbType = "postgres"
-	}
-	return dbType
+	_ = g.DB().GetConfig()
+	return "postgres"
 }
 
-// GetFieldQuote 根据数据库类型返回字段引用符号
+// GetFieldQuote returns the PostgreSQL field quote character.
 func GetFieldQuote() string {
-	dbType := GetDbType()
-	if dbType == "postgres" {
-		return "\"" // PostgreSQL使用双引号
-	}
-	return "`" // MySQL使用反引号
+	return "\"" // PostgreSQL使用双引号
 }
 
-// QuoteField 为字段名添加数据库兼容的引用符号
+// QuoteField wraps a field name with database-compatible quote characters.
 func QuoteField(fieldName string) string {
 	quote := GetFieldQuote()
 	return quote + fieldName + quote
 }
 
-// UnzipFile 解压ZIP文件到指定目录
+// UnzipFile extracts a ZIP file to a specified directory.
 func UnzipFile(zipPath string, destPath string) error {
 	// 打开ZIP文件
 	reader, err := zip.OpenReader(zipPath)
@@ -340,8 +331,14 @@ func UnzipFile(zipPath string, destPath string) error {
 
 	// 遍历ZIP文件中的所有文件和目录
 	for _, file := range reader.File {
+		// 使用 filepath.Clean 规范路径并阻止绝对路径
+		cleanName := filepath.Clean(file.Name)
+		if filepath.IsAbs(cleanName) || strings.HasPrefix(cleanName, "..") || strings.Contains(cleanName, ".."+string(os.PathSeparator)) {
+			return gerror.Newf("非法的文件路径: %s", file.Name)
+		}
+
 		// 构建目标路径
-		path := filepath.Join(destPath, file.Name)
+		path := filepath.Join(destPath, cleanName)
 
 		// 检查路径穿越漏洞
 		if !strings.HasPrefix(path, filepath.Clean(destPath)+string(os.PathSeparator)) {
@@ -392,6 +389,7 @@ func UnzipFile(zipPath string, destPath string) error {
 	return nil
 }
 
+// HasField checks if an object has a specific field by name.
 func HasField(obj interface{}, fieldName string) bool {
 	v := reflect.ValueOf(obj)
 	if v.Kind() == reflect.Ptr {

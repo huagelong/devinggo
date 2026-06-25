@@ -69,6 +69,9 @@ type SystemUser struct {
 	DeptIds        []int64     `json:"dept_ids"             description:"部门ID列表"`          // 部门ID列表
 	RoleIds        []int64     `json:"role_ids"             description:"角色ID列表"`          // 角色ID列表
 	PostIds        []int64     `json:"post_ids"             description:"岗位ID列表"`          // 岗位ID列表
+	DeptName       string      `json:"dept_name,omitempty"   description:"部门名称"`
+	RoleName       string      `json:"role_name,omitempty"   description:"角色名称"`
+	PostName       string      `json:"post_name,omitempty"   description:"岗位名称"`
 }
 
 type SystemUserFullInfo struct {

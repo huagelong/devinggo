@@ -8,19 +8,20 @@ package cmd
 
 import (
 	"context"
-	"devinggo/modules/system/pkg/utils"
 	"fmt"
+	"os"
+	"path/filepath"
+	"time"
+
+	"devinggo/modules/system/pkg/utils"
+
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcmd"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database"
-	"github.com/golang-migrate/migrate/v4/database/mysql"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 var (
@@ -155,12 +156,7 @@ var (
 				var version string
 				var err error
 
-				dbType := utils.GetDbType()
-
 				directory := "./resource/migrations"
-				if dbType == "postgres" {
-					directory = "./resource/migrations_pgsql"
-				}
 
 				dir := filepath.Clean(directory)
 				ext := ".sql"
@@ -220,7 +216,6 @@ func migrateDB(ctx context.Context) (m *migrate.Migrate) {
 
 	dbConfig := g.DB().GetConfig()
 	link := dbConfig.Link
-	dbType := utils.GetDbType()
 
 	dbName := ""
 	if g.IsEmpty(link) {
@@ -244,18 +239,10 @@ func migrateDB(ctx context.Context) (m *migrate.Migrate) {
 
 	var driver database.Driver
 	migrationsDir := "file://resource/migrations"
-	if dbType == "postgres" {
-		driver, err = postgres.WithConnection(ctx, conn, &postgres.Config{
-			MigrationsTable: "system_migrations",
-			DatabaseName:    dbName,
-		})
-		migrationsDir = "file://resource/migrations_pgsql"
-	} else {
-		driver, err = mysql.WithConnection(ctx, conn, &mysql.Config{
-			MigrationsTable: "system_migrations",
-			DatabaseName:    dbName,
-		})
-	}
+	driver, err = postgres.WithConnection(ctx, conn, &postgres.Config{
+		MigrationsTable: "system_migrations",
+		DatabaseName:    dbName,
+	})
 
 	if err != nil {
 		g.Log().Panic(ctx, err)

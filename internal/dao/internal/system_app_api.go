@@ -21,8 +21,8 @@ type SystemAppApiDao struct {
 
 // SystemAppApiColumns defines and stores column names for the table system_app_api.
 type SystemAppApiColumns struct {
-	AppId string // 应用ID
-	ApiId string // API—ID
+	AppId string //
+	ApiId string //
 }
 
 // systemAppApiColumns holds the columns for the table system_app_api.

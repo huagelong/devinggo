@@ -1,0 +1,13 @@
+# 批量CRUD代码生成配置
+
+# 目标模块
+module: system
+
+# 生成配置列表
+tables:
+  # 示例配置
+  # - table: users              # 数据库表名
+  #   business: User            # 业务名称（用于生成文件名和结构体）
+  #   description: 用户管理     # 描述信息
+  #   author: DevingGo         # 作者（可选）
+  #   date: 2026-03-04         # 日期（可选）

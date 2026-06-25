@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/entity"
 	"devinggo/modules/system/logic/base"
@@ -15,6 +16,7 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 )
@@ -32,7 +34,7 @@ func NewSystemUserDept() *sSystemUserDept {
 }
 
 func (s *sSystemUserDept) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemUserDept.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("user_id", "dept_id")
+	return dao.SystemUserDept.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("user_id", "dept_id")
 }
 
 func (s *sSystemUserDept) GetDeptIdsByUserId(ctx context.Context, userId int64) (deptIds []int64, err error) {

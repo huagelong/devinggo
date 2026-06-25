@@ -12,15 +12,15 @@ import (
 // SystemModules is the golang structure of table system_modules for DAO operations like Where/Data.
 type SystemModules struct {
 	g.Meta      `orm:"table:system_modules, do:true"`
-	Id          any         // 主键
-	CreatedAt   *gtime.Time // 创建时间
-	UpdatedAt   *gtime.Time // 更新时间
-	CreatedBy   any         // 创建者
-	UpdatedBy   any         // 更新者
-	Name        any         // 模块名称
-	Label       any         // 模块标记
-	Description any         // 描述
-	Installed   any         // 是否安装1-否，2-是
-	Status      any         // 状态 (1正常 2停用)
-	DeletedAt   *gtime.Time // 删除时间
+	Id          any         //
+	CreatedAt   *gtime.Time //
+	UpdatedAt   *gtime.Time //
+	CreatedBy   any         //
+	UpdatedBy   any         //
+	Name        any         //
+	Label       any         //
+	Description any         //
+	Installed   any         //
+	Status      any         //
+	DeletedAt   *gtime.Time //
 }

@@ -8,7 +8,7 @@ package system
 
 import (
 	"context"
-	"dario.cat/mergo"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -21,6 +21,8 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
+	"dario.cat/mergo"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -39,7 +41,7 @@ func NewSystemDictData() *sSystemDictData {
 }
 
 func (s *sSystemDictData) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemDictData.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return dao.SystemDictData.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemDictData) GetList(ctx context.Context, listReq *model.ListReq, in *req.SystemDictDataSearch) (out []*res.SystemDictData, err error) {
@@ -48,15 +50,10 @@ func (s *sSystemDictData) GetList(ctx context.Context, listReq *model.ListReq, i
 		OrderType: "desc",
 	}
 
-	mergo.Merge(&listReq, inReq)
-	dbType := utils.GetDbType()
-	if dbType == "mysql" {
-		listReq.Select = "id, `label` as `title`, `value` as `key`,code"
-	} else {
-		listReq.Select = "id, label as title, value as key,code"
-	}
+	_ = mergo.Merge(&listReq, inReq)
+	listReq.Select = "id, label as title, value as key, code"
 	m := s.handleSearch(ctx, in)
-	err = orm.GetList(m, listReq).Scan(&out)
+	err = orm.NewQuery(m).WithListReq(listReq).ScanAll(&out)
 	if utils.IsError(err) {
 		return nil, err
 	}
@@ -66,13 +63,13 @@ func (s *sSystemDictData) GetList(ctx context.Context, listReq *model.ListReq, i
 func (s *sSystemDictData) GetPageList(ctx context.Context, req *model.PageListReq, in *req.SystemDictDataSearch) (rs []*res.SystemDictDataFull, total int, err error) {
 	m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
 	var entity []*entity.SystemDictData
-	err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&entity, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SystemDictDataFull, 0)
 	if !g.IsEmpty(entity) {
-		if err = gconv.Structs(entity, &rs); err != nil {
+		if err = gconv.Structs(entity, &rs); utils.IsError(err) {
 			return nil, 0, err
 		}
 	}
@@ -94,7 +91,7 @@ func (s *sSystemDictData) Save(ctx context.Context, in *req.SystemDictDataSave) 
 		return
 	}
 	tmpId, err := rs.LastInsertId()
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	id = gconv.Int64(tmpId)

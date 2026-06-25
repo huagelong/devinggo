@@ -7,10 +7,12 @@
 package hook
 
 import (
+	"strings"
+
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/text/gstr"
-	"strings"
 )
 
 type sHook struct {

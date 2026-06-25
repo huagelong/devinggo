@@ -7,17 +7,19 @@
 package middleware
 
 import (
+	"reflect"
+
 	"devinggo/modules/system/model"
 	"devinggo/modules/system/pkg/contexts"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gogf/gf/v2/util/gmeta"
-	"reflect"
 )
 
 func (s *sMiddleware) Ctx(r *ghttp.Request) {
@@ -31,36 +33,37 @@ func (s *sMiddleware) Ctx(r *ghttp.Request) {
 		Module: utils.GetModule(r.URL.Path),
 		Data:   make(g.Map),
 	}
-	contexts.New().Init(r, context)
+	contexts.Init(r, context)
 	ctx := r.GetCtx()
 	appId := r.GetHeader("X-App-Id")
+	g.Log().Debug(ctx, "收到 X-App-Id header:", appId)
 	if g.IsEmpty(appId) {
-		appIdRs := r.Get("app_id")
-		if !g.IsEmpty(appIdRs) {
-			appId = appIdRs.String()
+		appIdRs := r.URL.Query().Get("app_id")
+		if appIdRs != "" {
+			appId = appIdRs
 		}
 	}
 	if !g.IsEmpty(appId) {
-		contexts.New().SetAppId(ctx, appId)
+		contexts.SetAppId(ctx, appId)
 	}
 	if !gstr.Contains(gstr.ToLower(r.GetHeader("content-type")), "multipart/form-data") {
 		gjson := gjson.New(r.GetBodyString())
 		if gjson.Contains("password") {
 			gjson.Remove("password")
-			contexts.New().SetRequestBody(ctx, gjson.String())
+			contexts.SetRequestBody(ctx, gjson.String())
 		} else {
-			contexts.New().SetRequestBody(ctx, r.GetBodyString())
+			contexts.SetRequestBody(ctx, r.GetBodyString())
 		}
 	}
 
 	tenantIdStr := r.GetHeader("X-Tenant-Id")
 	if !g.IsEmpty(tenantIdStr) {
-		contexts.New().SetTenantId(ctx, gconv.Int64(tenantIdStr))
+		contexts.SetTenantId(ctx, gconv.Int64(tenantIdStr))
 	}
 	s.meta(r)
-	error := s.userCtx(r)
-	if error != nil {
-		//g.Log().Warning(ctx, error)
+	err := s.userCtx(r)
+	if err != nil {
+		g.Log().Debug(ctx, "userCtx error:", err)
 	}
 	r.Middleware.Next()
 }
@@ -93,10 +96,10 @@ func (s *sMiddleware) meta(r *ghttp.Request) {
 			exceptAccessLog = v.Bool()
 		}
 	}
-	contexts.New().SetPermission(ctx, permission)
-	contexts.New().SetExceptAuth(ctx, exceptAuth)
-	contexts.New().SetExceptLogin(ctx, exceptLogin)
-	contexts.New().SetExceptAccessLog(ctx, exceptAccessLog)
+	contexts.SetPermission(ctx, permission)
+	contexts.SetExceptAuth(ctx, exceptAuth)
+	contexts.SetExceptLogin(ctx, exceptLogin)
+	contexts.SetExceptAccessLog(ctx, exceptAccessLog)
 
 }
 
@@ -105,19 +108,19 @@ func (s *sMiddleware) userCtx(r *ghttp.Request, appId ...string) (err error) {
 	newAppId := ""
 	if len(appId) > 0 {
 		newAppId = appId[0]
-		contexts.New().SetAppId(ctx, newAppId)
+		contexts.SetAppId(ctx, newAppId)
 	} else {
-		newAppId = contexts.New().GetAppId(ctx)
+		newAppId = contexts.GetAppId(ctx)
 	}
 	user, err := service.Token().ParseLoginUser(r, newAppId)
-	if err != nil {
-		contexts.New().DelUser(ctx)
+	if utils.IsError(err) {
+		contexts.DelUser(ctx)
 		return
 	}
 	if !g.IsEmpty(user) {
-		contexts.New().SetUser(ctx, user)
-		contexts.New().SetAppId(ctx, user.AppId)
+		contexts.SetUser(ctx, user)
+		contexts.SetAppId(ctx, user.AppId)
 	}
-	g.Log().Debug(ctx, "ctx-appId:", contexts.New().GetAppId(ctx))
+	g.Log().Debug(ctx, "ctx-appId:", contexts.GetAppId(ctx))
 	return
 }

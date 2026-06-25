@@ -1,6 +1,5 @@
 PLATFORM_RESOURCE_PATH = "./resource/public/admin"
-UI_PATH = "./web/admin"
-SITE_PATH = "./web/site"
+UI_PATH = "./admin-ui"
 
 VERSION = $(shell git describe --tags --always --match='v*')
 SED = sed
@@ -45,15 +44,3 @@ ui.build: ui.install
 	cd $(UI_PATH);\
 	yarn build;
 
-.PHONY: siteui.install
-siteui.install: cli.install
-	@set -e;\
-	cd $(SITE_PATH);\
-	yarn install;
-
-#ui build
-.PHONY: siteui.build
-siteui.build: siteui.install
-	@set -e;\
-	cd $(SITE_PATH);\
-	yarn build;

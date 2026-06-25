@@ -11,6 +11,7 @@ import (
 	"devinggo/modules/system/model/page"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
+
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -164,17 +165,4 @@ type GetDeptByRoleReq struct {
 type GetDeptByRoleRes struct {
 	g.Meta `mime:"application/json"`
 	Data   []*res.SystemRoleDepts `json:"data" dc:"dept id list" `
-}
-
-type RemoteRoleReq struct {
-	g.Meta `path:"/role/remote" method:"post" tags:"角色" summary:"远程万能通用列表接口." x-exceptAuth:"true" x-permission:"system:role:remote"`
-	model.AuthorHeader
-	model.PageListReq
-}
-
-type RemoteRoleRes struct {
-	g.Meta `mime:"application/json"`
-	page.PageRes
-	Items []res.SystemRole `json:"items"  dc:"list" `
-	Data  []res.SystemRole `json:"data"  dc:"list" `
 }
