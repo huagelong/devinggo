@@ -14,7 +14,7 @@
 
 ## AI 大模型一键初始化
 
-> **推荐使用 Codex。** 本项目已内置 Codex Skill：`.codex/skills/devinggo-project-init/SKILL.md` 和 `.codex/skills/generator/SKILL.md`。在 Codex 中直接使用下面的提示词即可；如果使用其他 AI 编程工具，请把这两个 Skill 文件的内容配置到该工具的 Skill/Rules/Agent Instructions 中，并保留 Skill 名称 `devinggo-project-init`、`devinggo-generator`，再按相同提示词调用。
+> **推荐使用 Codex。** 本项目已内置 Codex Skill：`.codex/skills/devinggo-project-init/SKILL.md` 和 `.codex/skills/devinggo-generator/SKILL.md`。在 Codex 中直接使用下面的提示词即可；如果使用其他 AI 编程工具，请把这两个 Skill 文件的内容配置到该工具的 Skill/Rules/Agent Instructions 中，并保留 Skill 名称 `devinggo-project-init`、`devinggo-generator`，再按相同提示词调用。
 
 本项目内置初始化 Skill：`.codex/skills/devinggo-project-init/SKILL.md`。在支持 Skill 的 AI 大模型工具中输入：
 
@@ -31,7 +31,7 @@
 ### 特点
 
 - 🚀 **高性能**: 基于GoFrame，发挥Go高并发优势
-- 🤖 **Vibe Coding**: AI辅助编程，通过 `.codex/skills/generator/` 一键生成前后端代码
+- 🤖 **Vibe Coding**: AI辅助编程，通过 `.codex/skills/devinggo-generator/` 一键生成前后端代码
 - 📦 **模块化**: 插件化模块系统，支持独立开发和热插拔
 - 🛠️ **代码生成**: 一键生成CRUD/Worker/Module前后端代码
 - 🔐 **安全可靠**: RBAC权限模型，JWT认证
@@ -148,13 +148,13 @@ devinggo/
 - [x] **应用管理**: 多应用管理，支持应用分组和API授权
 
 ### Vibe Coding (AI辅助编程)
-- [x] **智能代码生成**: 基于 `.codex/skills/generator/` 配置，通过自然语言描述一键生成前后端代码
+- [x] **智能代码生成**: 基于 `.codex/skills/devinggo-generator/` 配置，通过自然语言描述一键生成前后端代码
 - [x] **前后端一体化**: 在提示词中说明需要前端页面，Skill 会调用生成器同时生成后端API和前端Vue3页面
 - [x] **模块快速搭建**: 自动创建模块结构、数据库迁移、菜单配置
 - [x] **代码模板定制**: 支持自定义 `hack/generator/templates/` 下的代码模板
 
 ### 开发工具
-- [x] **代码生成器**: 基于数据表一键生成CRUD/Worker/Module代码，详见 [代码生成工具](hack/generator/README.md) 和 [Skill配置](.codex/skills/generator/SKILL.md)
+- [x] **代码生成器**: 基于数据表一键生成CRUD/Worker/Module代码，详见 [代码生成工具](hack/generator/README.md) 和 [Skill配置](.codex/skills/devinggo-generator/SKILL.md)
 - [x] **API管理**: API接口与分组管理，应用授权
 - [x] **接口文档**: 自动生成OpenAPI/Swagger文档
 
