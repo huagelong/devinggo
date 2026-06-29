@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -23,6 +24,7 @@ import (
 	"devinggo/modules/system/pkg/utils/location"
 	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -45,7 +47,7 @@ func (s *sSystemOperLog) Model(ctx context.Context) *gdb.Model {
 }
 
 func (s *sSystemOperLog) GetPageList(ctx context.Context, req *model.PageListReq, username string) (res []*res.SystemOperLog, total int, err error) {
-	err = orm.GetPageList(s.Model(ctx), req, g.Map{"username": username}).ScanAndCount(&res, &total, false)
+	err = orm.NewQuery(s.Model(ctx)).WithPageListReq(req, g.Map{"username": username}).ScanAndCount(&res, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
@@ -63,17 +65,17 @@ func (s *sSystemOperLog) Push(ctx context.Context) {
 		return
 	}
 
-	userId := contexts.New().GetUserId(ctx)
+	userId := contexts.GetUserId(ctx)
 	if g.IsEmpty(userId) {
 		return
 	}
 	userInfo, err := service.SystemUser().GetInfoById(ctx, userId)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 
 	serviceName := ""
-	permission := contexts.New().GetPermission(ctx)
+	permission := contexts.GetPermission(ctx)
 	if !g.IsEmpty(permission) {
 		var systemMenuEntity *entity.SystemMenu
 		systemMenuEntity, err = service.SystemMenu().GetMenuByPermission(ctx, permission)
@@ -104,7 +106,7 @@ func (s *sSystemOperLog) Push(ctx context.Context) {
 	if logSaveResponseData {
 		resJson = gconv.String(response.Json(r, bizCode, res))
 	}
-	postData := contexts.New().GetRequestBody(ctx)
+	postData := contexts.GetRequestBody(ctx)
 
 	systemOperLog := &do.SystemOperLog{
 		Username:     userInfo.Username,  // 用户名
@@ -120,7 +122,7 @@ func (s *sSystemOperLog) Push(ctx context.Context) {
 		UpdatedBy:    userId,             // 更新者
 		Remark:       "",                 // 备注
 	}
-	s.Model(ctx).Data(systemOperLog).Insert()
+	_, _ = s.Model(ctx).Data(systemOperLog).Insert()
 }
 
 func (s *sSystemOperLog) handleSearch(ctx context.Context, in *req.SystemOperLogSearch) (m *gdb.Model) {
@@ -156,13 +158,13 @@ func (s *sSystemOperLog) handleSearch(ctx context.Context, in *req.SystemOperLog
 func (s *sSystemOperLog) GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemOperLogSearch) (rs []*res.SystemOperLog, total int, err error) {
 	m := s.handleSearch(ctx, in)
 	var entity []*entity.SystemOperLog
-	err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&entity, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SystemOperLog, 0)
 	if !g.IsEmpty(entity) {
-		if err = gconv.Structs(entity, &rs); err != nil {
+		if err = gconv.Structs(entity, &rs); utils.IsError(err) {
 			return nil, 0, err
 		}
 	}
@@ -171,7 +173,7 @@ func (s *sSystemOperLog) GetPageListForSearch(ctx context.Context, req *model.Pa
 
 func (s *sSystemOperLog) DeleteOperLog(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
-	if err != nil {
+	if utils.IsError(err) {
 		return err
 	}
 	return

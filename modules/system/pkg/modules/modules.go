@@ -1,18 +1,22 @@
 // Package modules
 // @Link  https://github.com/huagelong/devinggo
 // @Copyright  Copyright (c) 2024 devinggo
-// @Author Kai <hpuwang@gmail.com>
+// @Author  Kai <hpuwang@gmail.com>
 // @License  https://github.com/huagelong/devinggo/blob/master/LICENSE
+
 package modules
 
 import (
 	"context"
+	"sync"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/entity"
 	"devinggo/modules/system/pkg/utils"
+
+	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
-	"sync"
 )
 
 var (
@@ -28,13 +32,13 @@ type Module interface {
 
 func StartModules(ctx context.Context, server *ghttp.Server) (err error) {
 	realModules, err := GetAllFilterModules(ctx)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	g.Log().Debug(ctx, "start modules", realModules)
 	for name, module := range realModules {
 		g.Log().Debug(ctx, name, "module start")
-		if err = module.Start(ctx, server); err != nil {
+		if err = module.Start(ctx, server); utils.IsError(err) {
 			g.Log().Error(ctx, err)
 			return
 		}
@@ -44,13 +48,13 @@ func StartModules(ctx context.Context, server *ghttp.Server) (err error) {
 
 func StopModules(ctx context.Context) (err error) {
 	realModules, err := GetAllFilterModules(ctx)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	g.Log().Debug(ctx, "stop modules", realModules)
 	for name, module := range realModules {
 		g.Log().Debug(ctx, name, "module stop")
-		if err = module.Stop(ctx); err != nil {
+		if err = module.Stop(ctx); utils.IsError(err) {
 			g.Log().Error(ctx, err)
 			return
 		}
@@ -58,15 +62,15 @@ func StopModules(ctx context.Context) (err error) {
 	return
 }
 
-func Register(m Module) Module {
+func Register(m Module) error {
 	mLock.Lock()
 	defer mLock.Unlock()
 	name := m.GetName()
 	if _, ok := modules[name]; ok {
-		panic("module already registered: " + name)
+		return gerror.New("module already registered: " + name)
 	}
 	modules[name] = m
-	return m
+	return nil
 }
 
 func GetAllFilterModules(ctx context.Context) (list map[string]Module, err error) {

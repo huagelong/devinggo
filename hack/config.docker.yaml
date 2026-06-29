@@ -10,7 +10,7 @@ gfcli:
     packDst: "internal/packed/packed.go"   # 打包后生成的Go文件路径，一般使用相对路径指定到本项目目录中
     path: "./bin"
     extra: " -ldflags \"-s -w\" "
-    version: v1.0.0
+    version: v2.0.0
     cgo: 0
   docker:
     build: "-a amd64 -s linux -p temp -ew"
@@ -19,7 +19,7 @@ gfcli:
   gen:
     dao:
       - tablesEx: "system_migrations"
-        link: "mysql:root:root@tcp(mysql:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
+        link: "pgsql:postgres:168wang@tcp(122.152.211.127:5432)/devinggo4?sslmode=disable&TimeZone=Asia/Shanghai"
         jsonCase: "CamelLower"
         descriptionTag:  true
         noModelComment:  false

@@ -7,4 +7,5 @@
     "source.fixAll.eslint": "explicit",
     "source.organizeImports": "never"
   },
+  "commentTranslate.targetLanguage": "zh-CN",
 }

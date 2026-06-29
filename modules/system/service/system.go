@@ -15,9 +15,32 @@ import (
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/os/gtime"
 )
 
 type (
+	ICodeGen interface {
+		// Model 返回数据库 Model
+		Model(ctx context.Context) *gdb.Model
+		// GetPageList 获取分页列表
+		GetPageList(ctx context.Context, req *model.PageListReq, in *req.CodeGenSearch) (rs []*res.CodeGenTable, total int, err error)
+		// Delete 删除记录
+		Delete(ctx context.Context, ids []int64) (err error)
+		// Update 更新配置
+		Update(ctx context.Context, in *req.CodeGenUpdate, userId int64) (err error)
+		// LoadTable 装载数据表
+		LoadTable(ctx context.Context, in *req.CodeGenLoadTable, userId int64) (err error)
+		// SyncTable 同步数据表结构
+		SyncTable(ctx context.Context, id int64, userId int64) (err error)
+		// GenerateCode 生成代码
+		GenerateCode(ctx context.Context, ids string) (fileBytes []byte, err error)
+		// PreviewCode 预览代码
+		PreviewCode(ctx context.Context, id int64) (preview []res.CodeGenPreview, err error)
+		// ReadTable 读取表信息
+		ReadTable(ctx context.Context, id int64) (tableInfo res.CodeGenReadTable, err error)
+		// ListSourceTables 获取数据源表列表
+		ListSourceTables(ctx context.Context, source string) (tables []res.CodeGenSourceTable, err error)
+	}
 	IDashboard interface {
 		// GetStatistics 获取仪表板统计数据
 		GetStatistics(ctx context.Context) (statistics map[string]interface{}, err error)
@@ -57,28 +80,16 @@ type (
 		Run(ctx context.Context, id int64) (err error)
 		Update(ctx context.Context, in *req.SettingCrontabUpdate) (err error)
 		Delete(ctx context.Context, ids []int64) (err error)
+		RealDelete(ctx context.Context, ids []int64) (err error)
+		Recovery(ctx context.Context, ids []int64) (err error)
+		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SettingCrontabSearch) (rs []*res.SettingCrontab, total int, err error)
 		ChangeStatus(ctx context.Context, id int64, status int) (err error)
 	}
 	ISettingCrontabLog interface {
 		Model(ctx context.Context) *gdb.Model
 		GetPageList(ctx context.Context, req *model.PageListReq, in *req.SettingCrontabLogSearch) (rs []*res.SettingCrontabLog, total int, err error)
 		Delete(ctx context.Context, ids []int64) (err error)
-		AddLog(ctx context.Context, id int64, status int, exceptionInfo string) (err error)
-	}
-	ISettingGenerateColumns interface {
-		Model(ctx context.Context) *gdb.Model
-		GetList(ctx context.Context, in *req.SettingGenerateColumnsSearch) (out []*res.SettingGenerateColumns, err error)
-	}
-	ISettingGenerateTables interface {
-		Model(ctx context.Context) *gdb.Model
-		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SettingGenerateTablesSearch) (rs []*res.SettingGenerateTables, total int, err error)
-		LoadTable(ctx context.Context, in *req.LoadTable) (err error)
-		GetById(ctx context.Context, id int64) (res *res.SettingGenerateTables, err error)
-		Delete(ctx context.Context, ids []int64) (err error)
-		SyncCode(ctx context.Context, id int64) (err error)
-		UpdateTableAndColumns(ctx context.Context, in *req.TableAndColumnsUpdate) (err error)
-		GenerateCode(ctx context.Context, ids []int64) (filePath string, err error)
-		Preview(ctx context.Context, id int64) (rs []res.PreviewTable, err error)
+		AddLog(ctx context.Context, id int64, status int, exceptionInfo string, startTime *gtime.Time, endTime *gtime.Time, output string) (err error)
 	}
 	ISystemApi interface {
 		Model(ctx context.Context) *gdb.Model
@@ -183,16 +194,20 @@ type (
 		NumberOperation(ctx context.Context, id int64, numberName string, numberValue int) (err error)
 	}
 	ISystemDictType interface {
+		// Model 返回数据库 Model
 		Model(ctx context.Context) *gdb.Model
 		GetPageList(ctx context.Context, req *model.PageListReq, in *req.SystemDictTypeSearch) (rs []*res.SystemDictType, total int, err error)
 		GetList(ctx context.Context, listReq *model.ListReq, in *req.SystemDictTypeSearch) (out []*res.SystemDictType, err error)
 		Save(ctx context.Context, in *req.SystemDictTypeSave) (id int64, err error)
-		GetById(ctx context.Context, id int64) (res *res.SystemDictType, err error)
 		Update(ctx context.Context, in *req.SystemDictTypeUpdate) (err error)
 		Delete(ctx context.Context, ids []int64) (err error)
 		RealDelete(ctx context.Context, ids []int64) (err error)
-		Recovery(ctx context.Context, ids []int64) (err error)
+		// GetById 由 GenericService 提供，此处声明用于接口生成
+		GetById(ctx context.Context, id int64) (res *res.SystemDictType, err error)
+		// ChangeStatus 由 GenericService 提供，此处声明用于接口生成
 		ChangeStatus(ctx context.Context, id int64, status int) (err error)
+		// Recovery 由 GenericService 提供，此处声明用于接口生成
+		Recovery(ctx context.Context, ids []int64) (err error)
 	}
 	ISystemLoginLog interface {
 		Model(ctx context.Context) *gdb.Model
@@ -231,14 +246,17 @@ type (
 		ChangeStatus(ctx context.Context, id int64, status int) (err error)
 	}
 	ISystemNotice interface {
+		// Model 返回数据库 Model
 		Model(ctx context.Context) *gdb.Model
 		GetPageList(ctx context.Context, req *model.PageListReq) (res []*res.SystemNotice, total int, err error)
 		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemNoticeSearch) (rs []*res.SystemNotice, total int, err error)
 		Save(ctx context.Context, in *req.SystemNoticeSave, userId int64) (id int64, err error)
-		GetById(ctx context.Context, id int64) (res *res.SystemNotice, err error)
 		Update(ctx context.Context, in *req.SystemNoticeUpdate) (err error)
 		Delete(ctx context.Context, ids []int64) (err error)
 		RealDelete(ctx context.Context, ids []int64) (err error)
+		// GetById 由 GenericService 提供，此处声明用于接口生成
+		GetById(ctx context.Context, id int64) (res *res.SystemNotice, err error)
+		// Recovery 由 GenericService 提供，此处声明用于接口生成
 		Recovery(ctx context.Context, ids []int64) (err error)
 	}
 	ISystemOperLog interface {
@@ -249,16 +267,23 @@ type (
 		DeleteOperLog(ctx context.Context, ids []int64) (err error)
 	}
 	ISystemPost interface {
+		// Model 返回数据库 Model
 		Model(ctx context.Context) *gdb.Model
 		GetList(ctx context.Context, in *req.SystemPostSearch) (out []*res.SystemPost, err error)
 		GetPageList(ctx context.Context, req *model.PageListReq, in *req.SystemPostSearch) (rs []*res.SystemPost, total int, err error)
 		Save(ctx context.Context, in *req.SystemPostSave) (id int64, err error)
-		GetById(ctx context.Context, id int64) (res *res.SystemPost, err error)
 		Update(ctx context.Context, in *req.SystemPostSave) (err error)
-		Delete(ctx context.Context, ids []int64) (err error)
-		RealDelete(ctx context.Context, ids []int64) (err error)
-		Recovery(ctx context.Context, ids []int64) (err error)
+		// GetById 由 GenericService 提供，此处声明用于接口生成
+		GetById(ctx context.Context, id int64) (res *res.SystemPost, err error)
+		// ChangeStatus 由 GenericService 提供，此处声明用于接口生成
 		ChangeStatus(ctx context.Context, id int64, status int) (err error)
+		// Recovery 由 GenericService 提供，此处声明用于接口生成
+		Recovery(ctx context.Context, ids []int64) (err error)
+		// Delete 由 GenericService 提供，此处声明用于接口生成
+		Delete(ctx context.Context, ids []int64) (err error)
+		// RealDelete 由 GenericService 提供，此处声明用于接口生成
+		RealDelete(ctx context.Context, ids []int64) (err error)
+		// NumberOperation 由 GenericService 提供，此处声明用于接口生成
 		NumberOperation(ctx context.Context, id int64, numberName string, numberValue int) (err error)
 	}
 	ISystemQueueMessage interface {
@@ -273,22 +298,38 @@ type (
 		UpdateReadStatus(ctx context.Context, ids []int64, userId int64, value int) (err error)
 	}
 	ISystemRole interface {
+		// Model 返回数据库 Model
 		Model(ctx context.Context) *gdb.Model
+		// GetByIds retrieves system roles by their IDs.
 		GetByIds(ctx context.Context, ids []int64) (res []*entity.SystemRole, err error)
+		// Verify checks if the current user has permission to access the requested resource.
 		Verify(r *ghttp.Request) bool
+		// GetList retrieves a list of system roles with optional filtering.
 		GetList(ctx context.Context, in *req.SystemRoleSearch, filterAdminRole bool) (out []*res.SystemRole, err error)
+		// GetPageList retrieves a paginated list of system roles with search criteria.
 		GetPageList(ctx context.Context, req *model.PageListReq, in *req.SystemRoleSearch, filterAdminRole bool) (rs []*res.SystemRole, total int, err error)
+		// Save creates a new system role with associated menus and departments.
 		Save(ctx context.Context, in *req.SystemRoleSave) (id int64, err error)
+		// GetSuperAdminId retrieves the ID of the super admin role.
 		GetSuperAdminId(ctx context.Context) (id int64, err error)
-		GetById(ctx context.Context, id int64) (res *res.SystemRole, err error)
+		// Update modifies an existing system role and its associated menus and departments.
 		Update(ctx context.Context, in *req.SystemRoleSave) (err error)
+		// Delete soft deletes system roles, excluding the super admin role.
 		Delete(ctx context.Context, ids []int64) (err error)
+		// RealDelete permanently removes system roles and their associated data, excluding the super admin role.
 		RealDelete(ctx context.Context, ids []int64) (err error)
+		// Recovery restores soft-deleted system roles.
 		Recovery(ctx context.Context, ids []int64) (err error)
-		ChangeStatus(ctx context.Context, id int64, status int) (err error)
-		NumberOperation(ctx context.Context, id int64, numberName string, numberValue int) (err error)
+		// GetMenuByRoleIds retrieves menu associations for the given role IDs.
 		GetMenuByRoleIds(ctx context.Context, ids []int64) (out []*res.SystemRoleMenus, err error)
+		// GetDeptByRole retrieves department associations for the given role IDs.
 		GetDeptByRole(ctx context.Context, ids []int64) (out []*res.SystemRoleDepts, err error)
+		// GetById 由 GenericService 提供，此处声明用于接口生成
+		GetById(ctx context.Context, id int64) (res *res.SystemRole, err error)
+		// ChangeStatus 由 GenericService 提供，此处声明用于接口生成
+		ChangeStatus(ctx context.Context, id int64, status int) (err error)
+		// NumberOperation 由 GenericService 提供，此处声明用于接口生成
+		NumberOperation(ctx context.Context, id int64, numberName string, numberValue int) (err error)
 	}
 	ISystemRoleDept interface {
 		Model(ctx context.Context) *gdb.Model
@@ -309,28 +350,51 @@ type (
 		Recovery(ctx context.Context, ids []int64) (err error)
 	}
 	ISystemUser interface {
+		// Model returns the database model for system user operations with caching and hook support.
 		Model(ctx context.Context) *gdb.Model
+		// GetPageList retrieves a paginated list of system users.
 		GetPageList(ctx context.Context, req *model.PageListReq) (res []*res.SystemUser, total int, err error)
+		// GetPageListForSearch retrieves a paginated list of system users with search criteria.
 		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemUserSearch) (res []*res.SystemUser, total int, err error)
+		// GetOnlineUserPageListForSearch retrieves a paginated list of currently online users with search criteria.
 		GetOnlineUserPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemUserSearch) (res []*res.SystemUser, total int, err error)
+		// GetExportList retrieves a list of system users for export purposes.
 		GetExportList(ctx context.Context, req *model.ListReq, in *req.SystemUserSearch) (res []*res.SystemUserExport, err error)
+		// GetSupserAdminId returns the super admin user ID from configuration.
 		GetSupserAdminId(ctx context.Context) int64
+		// ExistsByUsername checks if a user with the given username already exists.
 		ExistsByUsername(ctx context.Context, username string) (rs bool, err error)
+		// GetInfoById retrieves basic user information by user ID.
 		GetInfoById(ctx context.Context, userId int64) (systemUser *res.SystemUser, err error)
+		// GetInfoByIds retrieves basic user information for multiple user IDs.
 		GetInfoByIds(ctx context.Context, userIds []int64) (systemUser []*res.SystemUser, err error)
+		// GetInfo retrieves comprehensive user information including roles, permissions, and routers.
 		GetInfo(ctx context.Context, userId int64) (systemUserInfo *res.SystemUserInfo, err error)
+		// IsSuperAdmin checks if the user has super administrator privileges.
 		IsSuperAdmin(ctx context.Context, userId int64) (isSuperAdmin bool, err error)
+		// GetRoles retrieves the role IDs assigned to a user.
 		GetRoles(ctx context.Context, userId int64) (roles []int64, err error)
+		// GetDepts retrieves the department IDs assigned to a user.
 		GetDepts(ctx context.Context, userId int64) (depts []int64, err error)
+		// Update modifies user information with optional user ID override.
 		Update(ctx context.Context, req *req.SystemUser, userId ...int64) (rs sql.Result, err error)
+		// SetHomePage sets the home page dashboard for a user.
 		SetHomePage(ctx context.Context, id int64, dashboard string) (out sql.Result, err error)
+		// InitUserPassword initializes or resets a user's password with hashing.
 		InitUserPassword(ctx context.Context, id int64, password string) (out sql.Result, err error)
+		// UpdateSimple performs a simplified user update including roles, departments, and posts.
 		UpdateSimple(ctx context.Context, in *req.SystemUserUpdate) (out sql.Result, err error)
+		// Save creates a new system user with associated roles, departments, and posts.
 		Save(ctx context.Context, in *req.SystemUserSave) (id int64, err error)
+		// GetFullInfoById retrieves complete user information including associated roles, posts, and departments.
 		GetFullInfoById(ctx context.Context, id int64) (out *res.SystemUserFullInfo, err error)
+		// Delete soft deletes system users, excluding the super admin.
 		Delete(ctx context.Context, ids []int64) (err error)
+		// RealDelete permanently removes system users and their associated data, excluding the super admin.
 		RealDelete(ctx context.Context, ids []int64) (err error)
+		// Recovery restores soft-deleted system users.
 		Recovery(ctx context.Context, ids []int64) (err error)
+		// ChangeStatus updates the status of a system user.
 		ChangeStatus(ctx context.Context, id int64, status int) (err error)
 	}
 	ISystemUserDept interface {
@@ -348,6 +412,7 @@ type (
 )
 
 var (
+	localCodeGen                   ICodeGen
 	localDashboard                 IDashboard
 	localDataMaintain              IDataMaintain
 	localLogin                     ILogin
@@ -355,8 +420,6 @@ var (
 	localSettingConfigGroup        ISettingConfigGroup
 	localSettingCrontab            ISettingCrontab
 	localSettingCrontabLog         ISettingCrontabLog
-	localSettingGenerateColumns    ISettingGenerateColumns
-	localSettingGenerateTables     ISettingGenerateTables
 	localSystemApi                 ISystemApi
 	localSystemApiGroup            ISystemApiGroup
 	localSystemApiLog              ISystemApiLog
@@ -384,6 +447,17 @@ var (
 	localSystemUserPost            ISystemUserPost
 	localSystemUserRole            ISystemUserRole
 )
+
+func CodeGen() ICodeGen {
+	if localCodeGen == nil {
+		panic("implement not found for interface ICodeGen, forgot register?")
+	}
+	return localCodeGen
+}
+
+func RegisterCodeGen(i ICodeGen) {
+	localCodeGen = i
+}
 
 func Dashboard() IDashboard {
 	if localDashboard == nil {
@@ -460,28 +534,6 @@ func SettingCrontabLog() ISettingCrontabLog {
 
 func RegisterSettingCrontabLog(i ISettingCrontabLog) {
 	localSettingCrontabLog = i
-}
-
-func SettingGenerateColumns() ISettingGenerateColumns {
-	if localSettingGenerateColumns == nil {
-		panic("implement not found for interface ISettingGenerateColumns, forgot register?")
-	}
-	return localSettingGenerateColumns
-}
-
-func RegisterSettingGenerateColumns(i ISettingGenerateColumns) {
-	localSettingGenerateColumns = i
-}
-
-func SettingGenerateTables() ISettingGenerateTables {
-	if localSettingGenerateTables == nil {
-		panic("implement not found for interface ISettingGenerateTables, forgot register?")
-	}
-	return localSettingGenerateTables
-}
-
-func RegisterSettingGenerateTables(i ISettingGenerateTables) {
-	localSettingGenerateTables = i
 }
 
 func SystemApi() ISystemApi {

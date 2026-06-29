@@ -8,11 +8,13 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/modules/system/logic/base"
 	"devinggo/modules/system/pkg/hook"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 )
 
@@ -29,5 +31,5 @@ func NewSystemAppApi() *sSystemAppApi {
 }
 
 func (s *sSystemAppApi) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemAppApi.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("app_id", "api_id")
+	return dao.SystemAppApi.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("app_id", "api_id")
 }

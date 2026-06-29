@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -20,13 +21,14 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
 type sSystemPost struct {
-	base.BaseService
+	base.GenericService[res.SystemPost]
 }
 
 func init() {
@@ -34,11 +36,18 @@ func init() {
 }
 
 func NewSystemPost() *sSystemPost {
-	return &sSystemPost{}
+	s := &sSystemPost{}
+	s.GenericService = base.GenericService[res.SystemPost]{
+		ModelFn: func(ctx context.Context) *gdb.Model {
+			return dao.SystemPost.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+		},
+	}
+	return s
 }
 
+// Model 返回数据库 Model
 func (s *sSystemPost) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemPost.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return s.GenericService.Model(ctx)
 }
 
 func (s *sSystemPost) handlePostSearch(ctx context.Context, in *req.SystemPostSearch) (m *gdb.Model) {
@@ -70,7 +79,7 @@ func (s *sSystemPost) GetList(ctx context.Context, in *req.SystemPostSearch) (ou
 		OrderType: "desc",
 	}
 	m := s.handlePostSearch(ctx, in).Handler(handler.FilterAuth)
-	m = orm.GetList(m, inReq)
+	m = orm.NewQuery(m).WithListReq(inReq).Build()
 	err = m.Scan(&out)
 	if utils.IsError(err) {
 		return
@@ -81,13 +90,13 @@ func (s *sSystemPost) GetList(ctx context.Context, in *req.SystemPostSearch) (ou
 func (s *sSystemPost) GetPageList(ctx context.Context, req *model.PageListReq, in *req.SystemPostSearch) (rs []*res.SystemPost, total int, err error) {
 	m := s.handlePostSearch(ctx, in).Handler(handler.FilterAuth)
 	var postEntity []*entity.SystemPost
-	err = orm.GetPageList(m, req).ScanAndCount(&postEntity, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&postEntity, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SystemPost, 0)
 	if !g.IsEmpty(postEntity) {
-		if err = gconv.Structs(postEntity, &rs); err != nil {
+		if err = gconv.Structs(postEntity, &rs); utils.IsError(err) {
 			return nil, 0, err
 		}
 	}
@@ -107,18 +116,10 @@ func (s *sSystemPost) Save(ctx context.Context, in *req.SystemPostSave) (id int6
 		return
 	}
 	tmpId, err := rs.LastInsertId()
-	if err != nil {
-		return
-	}
-	id = gconv.Int64(tmpId)
-	return
-}
-
-func (s *sSystemPost) GetById(ctx context.Context, id int64) (res *res.SystemPost, err error) {
-	err = s.Model(ctx).Where("id", id).Scan(&res)
 	if utils.IsError(err) {
 		return
 	}
+	id = gconv.Int64(tmpId)
 	return
 }
 
@@ -137,42 +138,32 @@ func (s *sSystemPost) Update(ctx context.Context, in *req.SystemPostSave) (err e
 	return
 }
 
-func (s *sSystemPost) Delete(ctx context.Context, ids []int64) (err error) {
-	_, err = s.Model(ctx).WhereIn("id", ids).Delete()
-	if utils.IsError(err) {
-		return err
-	}
-	return
+// GetById 由 GenericService 提供，此处声明用于接口生成
+func (s *sSystemPost) GetById(ctx context.Context, id int64) (res *res.SystemPost, err error) {
+	return s.GenericService.GetById(ctx, id)
 }
 
-func (s *sSystemPost) RealDelete(ctx context.Context, ids []int64) (err error) {
-	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
-	if utils.IsError(err) {
-		return
-	}
-	return
-}
-
-func (s *sSystemPost) Recovery(ctx context.Context, ids []int64) (err error) {
-	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
-	if utils.IsError(err) {
-		return err
-	}
-	return
-}
-
+// ChangeStatus 由 GenericService 提供，此处声明用于接口生成
 func (s *sSystemPost) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
-	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
-	if utils.IsError(err) {
-		return err
-	}
-	return
+	return s.GenericService.ChangeStatus(ctx, id, status)
 }
 
+// Recovery 由 GenericService 提供，此处声明用于接口生成
+func (s *sSystemPost) Recovery(ctx context.Context, ids []int64) (err error) {
+	return s.GenericService.Recovery(ctx, ids)
+}
+
+// Delete 由 GenericService 提供，此处声明用于接口生成
+func (s *sSystemPost) Delete(ctx context.Context, ids []int64) (err error) {
+	return s.GenericService.Delete(ctx, ids)
+}
+
+// RealDelete 由 GenericService 提供，此处声明用于接口生成
+func (s *sSystemPost) RealDelete(ctx context.Context, ids []int64) (err error) {
+	return s.GenericService.RealDelete(ctx, ids)
+}
+
+// NumberOperation 由 GenericService 提供，此处声明用于接口生成
 func (s *sSystemPost) NumberOperation(ctx context.Context, id int64, numberName string, numberValue int) (err error) {
-	_, err = s.Model(ctx).Data(g.Map{numberName: numberValue}).Where("id", id).Update()
-	if utils.IsError(err) {
-		return err
-	}
-	return
+	return s.GenericService.NumberOperation(ctx, id, numberName, numberValue)
 }

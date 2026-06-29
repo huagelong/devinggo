@@ -8,14 +8,16 @@ package cmd
 
 import (
 	"context"
+
 	"devinggo/internal/router"
-	_ "devinggo/modules/_/modules"
+	_ "devinggo/modules/bootstrap/modules"
 	"devinggo/modules/system/pkg/modules"
 	"devinggo/modules/system/pkg/redis"
 	"devinggo/modules/system/pkg/response"
 	"devinggo/modules/system/pkg/upload"
 	"devinggo/modules/system/pkg/utils/config"
 	systemService "devinggo/modules/system/service"
+
 	"github.com/gogf/gf/contrib/trace/jaeger/v2"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -41,6 +43,7 @@ var (
 			}
 			s.SetSessionStorage(gsession.NewStorageRedisHashTable(redis.GetRedis()))
 			s.Use(
+				serveFrontend,
 				systemService.Middleware().I18n,
 				systemService.Middleware().Ctx,
 				systemService.Middleware().Cors,
@@ -49,13 +52,20 @@ var (
 				systemService.Middleware().ResponseHandler,
 			)
 			// static dir setting
-			uploadPath := upload.GetUploadPath(ctx)
-			s.AddStaticPath("/upload", uploadPath)
+			uploadPath, err := upload.GetUploadPath(ctx)
+			if err != nil {
+				return err
+			}
+			s.AddStaticPath("/uploads", uploadPath)
 			// doc
 			if gmode.IsDevelop() {
 				enhanceOpenAPIDoc(s)
 			}
 
+			s.BindHandler("GET:/", serveFrontend)
+			s.BindHandler("HEAD:/", serveFrontend)
+			s.BindHandler("GET:/index.html", serveFrontend)
+			s.BindHandler("HEAD:/index.html", serveFrontend)
 			modules.StartModules(ctx, s)
 			s.Group("/", func(group *ghttp.RouterGroup) {
 				router.BindController(group)

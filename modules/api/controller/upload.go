@@ -1,4 +1,4 @@
-// Package api
+// Package controller
 // @Link  https://github.com/huagelong/devinggo
 // @Copyright  Copyright (c) 2024 devinggo
 // @Author  Kai <hpuwang@gmail.com>
@@ -8,9 +8,9 @@ package controller
 
 import (
 	"context"
+
 	"devinggo/modules/api/api"
 	"devinggo/modules/system/controller/base"
-	"devinggo/modules/system/model/req"
 	upload2 "devinggo/modules/system/pkg/upload"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/pkg/utils/request"
@@ -31,11 +31,6 @@ type uploadController struct {
 }
 
 func (c *uploadController) UploadFile(ctx context.Context, in *api.UploadFileReq) (out *api.UploadFileRes, err error) {
-	//扩展验证
-	err = upload2.CheckFileMineType(ctx, in.File)
-	if err != nil {
-		return
-	}
 	// hash验证 计算文件md5值
 	md5Hash, err := upload2.CalcFileMd5(in.File)
 	if err != nil {
@@ -58,12 +53,14 @@ func (c *uploadController) UploadFile(ctx context.Context, in *api.UploadFileReq
 	}
 
 	storageModeInt := gconv.Int(storageMode)
-	inUpload := &req.FileUploadInput{
-		File:        in.File,
-		RandomName:  true,
-		StorageMode: storageModeInt,
+	upload, err := upload2.NewUploader(ctx).
+		SetStorageMode(storageModeInt).
+		SetRandomName(true).
+		SetValidateType(true).
+		UploadFile(in.File)
+	if err != nil {
+		return nil, err
 	}
-	upload, err := upload2.Upload(ctx, inUpload)
 	out.Data = *upload
 
 	_, err = service.SystemUploadfile().SaveDb(ctx, upload, c.UserId)
@@ -74,12 +71,6 @@ func (c *uploadController) UploadFile(ctx context.Context, in *api.UploadFileReq
 }
 
 func (c *uploadController) UploadImage(ctx context.Context, in *api.UploadImageReq) (out *api.UploadImageRes, err error) {
-
-	//扩展验证
-	err = upload2.CheckImageMineType(ctx, in.File)
-	if err != nil {
-		return
-	}
 	// hash验证 计算文件md5值
 	md5Hash, err := upload2.CalcFileMd5(in.File)
 	if err != nil {
@@ -102,12 +93,11 @@ func (c *uploadController) UploadImage(ctx context.Context, in *api.UploadImageR
 	}
 
 	storageModeInt := gconv.Int(storageMode)
-	inUpload := &req.FileUploadInput{
-		File:        in.File,
-		RandomName:  true,
-		StorageMode: storageModeInt,
-	}
-	upload, err := upload2.Upload(ctx, inUpload)
+	upload, err := upload2.NewUploader(ctx).
+		SetStorageMode(storageModeInt).
+		SetRandomName(true).
+		SetValidateType(true).
+		UploadImage(in.File)
 	if err != nil {
 		return nil, err
 	}
@@ -126,11 +116,6 @@ func (c *uploadController) UploadImage(ctx context.Context, in *api.UploadImageR
 }
 
 func (c *uploadController) ChunkUpload(ctx context.Context, in *api.ChunkUploadReq) (out *api.ChunkUploadRes, err error) {
-	//扩展验证
-	err = upload2.CheckChunkFileMineType(ctx, in.Ext)
-	if err != nil {
-		return
-	}
 	// hash验证 计算文件md5值
 	md5Hash, err := upload2.CalcFileMd5(in.File)
 	if err != nil {
@@ -154,19 +139,11 @@ func (c *uploadController) ChunkUpload(ctx context.Context, in *api.ChunkUploadR
 
 	storageModeInt := gconv.Int(storageMode)
 
-	inUpload := &req.ChunkUploadInput{
-		File:        in.File,
-		Total:       in.Total,
-		Index:       in.Index,
-		Hash:        in.Hash,
-		Ext:         in.Ext,
-		Type:        in.Type,
-		Name:        in.Name,
-		Size:        in.Size,
-		StorageMode: storageModeInt,
-		RandomName:  true,
-	}
-	upload, err := upload2.ChunkUpload(ctx, inUpload)
+	upload, err := upload2.NewUploader(ctx).
+		SetStorageMode(storageModeInt).
+		SetRandomName(true).
+		SetValidateType(true).
+		UploadChunk(in.File, in.Index, in.Total, in.Hash, in.Ext, in.Type, in.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +175,14 @@ func (c *uploadController) SaveNetworkImage(ctx context.Context, in *api.SaveNet
 	}
 
 	storageModeInt := gconv.Int(storageMode)
-	upload, err := upload2.SaveNetworkImage(ctx, storageModeInt, in.Url, true)
+	upload, err := upload2.NewUploader(ctx).
+		SetStorageMode(storageModeInt).
+		SetRandomName(true).
+		SetValidateType(false).
+		SaveFromURL(in.Url)
+	if err != nil {
+		return nil, err
+	}
 	out.Data = *upload
 
 	_, err = service.SystemUploadfile().SaveDb(ctx, upload, c.UserId)
@@ -215,7 +199,7 @@ func (c *uploadController) GetFileInfoById(ctx context.Context, in *api.GetFileI
 		return nil, err
 	}
 	if g.IsEmpty(fileInfo) {
-		return 
+		return
 	}
 	out.Data = *fileInfo
 	return
@@ -228,7 +212,7 @@ func (c *uploadController) GetFileInfoByHash(ctx context.Context, in *api.GetFil
 		return nil, err
 	}
 	if g.IsEmpty(fileInfo) {
-		return 
+		return
 	}
 	out.Data = *fileInfo
 	return

@@ -7,25 +7,14 @@
 package websocket
 
 import (
-	"devinggo/modules/system/pkg/websocket/glob"
 	"context"
-	"github.com/gogf/gf/v2/util/gconv"
+	"encoding/json"
+	"strings"
+
+	"devinggo/modules/system/pkg/websocket/glob"
 )
 
-const (
-	Connected        = "connected"
-	Close            = "close"
-	Subscribe        = "subscribe"
-	Unsubscribe      = "unsubscribe"
-	Ping             = "ping"
-	PingAll          = "pingAll"
-	Pong             = "pong"
-	BroadcastMessage = "broadcastMsg"
-	IdMessage        = "idMsg"
-	Publish          = "publish"
-)
-
-// ProcessData
+// ProcessData 处理客户端消息（Pusher协议）
 func ProcessData(ctx context.Context, client *Client, message []byte) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -33,38 +22,34 @@ func ProcessData(ctx context.Context, client *Client, message []byte) {
 		}
 	}()
 
-	request := &Request{}
-	err := gconv.Struct(message, request)
+	request := &PusherRequest{}
+	err := json.Unmarshal(message, request)
 	if err != nil {
-		glob.WithWsLog().Warning(ctx, "ProcessData gconv error:", err)
+		glob.WithWsLog().Warning(ctx, "ProcessData json.Unmarshal error:", err)
+		client.SendError("Invalid JSON", CodeNormalClosure)
 		return
 	}
+
 	// glob.WithWsLog().Debug(ctx, "ws request：", request)
 
+	// ⚠️ 优先检查 client- 事件前缀（Client Events）
+	if strings.HasPrefix(request.Event, ClientEventPrefix) {
+		ClientEventController(ctx, client, request)
+		return
+	}
+
+	// 路由Pusher系统事件
 	switch request.Event {
-	case Subscribe:
+	case EventSignin:
+		SigninController(ctx, client, request)
+	case EventSubscribe:
 		SubscribeController(ctx, client, request)
-		break
-	case Unsubscribe:
+	case EventUnsubscribe:
 		UnsubscribeController(ctx, client, request)
-		break
-	case Ping:
+	case EventPing:
 		PingController(ctx, client, request)
-		break
-	case Pong:
-		PongController(ctx, client, request)
-		break
-	case IdMessage:
-		IdMessageController(ctx, client, request)
-		break
-	case Publish:
-		PublishController(ctx, client, request)
-		break
-	case BroadcastMessage:
-		BroadcastMessageController(ctx, client, request)
-		break
-	case Close:
-		CloseController(ctx, client, request)
-		break
+	default:
+		glob.WithWsLog().Warning(ctx, "Unknown event:", request.Event)
+		client.SendError("Unknown event: "+request.Event, CodeNormalClosure)
 	}
 }

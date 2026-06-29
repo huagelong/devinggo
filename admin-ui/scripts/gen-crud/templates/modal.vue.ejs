@@ -1,0 +1,157 @@
+<script lang="ts" setup>
+import type { <%= pascalName %>Api } from '#/api/<%= module %>/<%= name %>';
+
+import { nextTick } from 'vue';
+
+import { useVbenModal } from '@vben/common-ui';
+
+import { MessagePlugin } from 'tdesign-vue-next';
+
+import { useVbenForm } from '#/adapter/form';
+import { save<%= pascalName %>, update<%= pascalName %> } from '#/api/<%= module %>/<%= name %>';
+
+import { create<%= pascalName %>FormDefaultValues } from '../schemas';
+
+const emit = defineEmits(['success']);
+
+const [Form, formApi] = useVbenForm({
+  showDefaultActions: false,
+  commonConfig: {
+    labelWidth: 90,
+  },
+  schema: [
+    {
+      component: 'Input',
+      dependencies: {
+        show: false,
+        triggerFields: [''],
+      },
+      fieldName: 'id',
+      label: 'ID',
+    },
+{% for field in formFields %}
+{% if field.name !== 'id' %}
+{% if field.name === 'name' %}
+    {
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入名称',
+      },
+      fieldName: '{{ field.name }}',
+      label: '名称',
+      rules: 'required',
+    },
+{% elif field.name === 'code' %}
+    {
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入编码',
+      },
+      fieldName: '{{ field.name }}',
+      label: '编码',
+{% if field.required %}
+      rules: 'required',
+{% endif %}
+    },
+{% elif field.name === 'sort' %}
+    {
+      component: 'InputNumber',
+      componentProps: {
+        max: 1000,
+        min: 0,
+      },
+      defaultValue: 1,
+      fieldName: '{{ field.name }}',
+      label: '排序',
+      rules: 'required',
+    },
+{% elif field.name === 'status' %}
+    {
+      component: 'RadioGroup',
+      componentProps: {
+        options: [
+          { label: '正常', value: 1 },
+          { label: '停用', value: 2 },
+        ],
+      },
+      defaultValue: 1,
+      fieldName: '{{ field.name }}',
+      label: '状态',
+      rules: 'required',
+    },
+{% elif field.name === 'remark' %}
+    {
+      component: 'Textarea',
+      componentProps: {
+        placeholder: '请输入备注',
+      },
+      fieldName: '{{ field.name }}',
+      label: '备注',
+    },
+{% else %}
+    {
+      component: 'Input',
+      componentProps: {
+        placeholder: '请输入',
+      },
+      fieldName: '{{ field.name }}',
+      label: '{{ field.label }}',
+    },
+{% endif %}
+{% endif %}
+{% endfor %}
+  ],
+});
+
+const [Modal, modalApi] = useVbenModal({
+  onConfirm: async () => {
+    try {
+      const { valid } = await formApi.validate();
+      if (!valid) return;
+
+      const values = await formApi.getValues<<%= pascalName %>Api.SubmitPayload>();
+      modalApi.setState({ confirmLoading: true });
+
+      if (values.id) {
+        await update<%= pascalName %>(Number(values.id), values);
+      } else {
+        await save<%= pascalName %>(values);
+      }
+
+      MessagePlugin.success(values.id ? '更新成功' : '新增成功');
+      emit('success');
+      modalApi.close();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      modalApi.setState({ confirmLoading: false });
+    }
+  },
+  class: 'w-[560px]',
+});
+
+async function open(data?: Partial<<%= pascalName %>Api.SubmitPayload>) {
+  modalApi.setState({
+    title: data?.id ? '编辑<%= cnNameResolved %>' : '新增<%= cnNameResolved %>',
+  });
+  modalApi.open();
+
+  await formApi.resetForm();
+  formApi.setValues(create<%= pascalName %>FormDefaultValues());
+  if (data) {
+    formApi.setValues(data);
+  }
+  await nextTick();
+  await formApi.resetValidate();
+}
+
+defineExpose({
+  open,
+});
+</script>
+
+<template>
+  <Modal>
+    <Form />
+  </Modal>
+</template>

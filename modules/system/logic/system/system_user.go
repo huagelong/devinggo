@@ -9,6 +9,8 @@ package system
 import (
 	"context"
 	"database/sql"
+	"strings"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/modules/system/consts"
@@ -25,6 +27,7 @@ import (
 	"devinggo/modules/system/pkg/utils/secure"
 	"devinggo/modules/system/pkg/utils/slice"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/container/garray"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
@@ -39,36 +42,42 @@ func init() {
 	service.RegisterSystemUser(NewSystemUser())
 }
 
+// NewSystemUser creates and returns a new system user service instance.
 func NewSystemUser() *sSystemUser {
 	return &sSystemUser{}
 }
 
+// Model returns the database model for system user operations with caching and hook support.
 func (s *sSystemUser) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemUser.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return dao.SystemUser.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
+// GetPageList retrieves a paginated list of system users.
 func (s *sSystemUser) GetPageList(ctx context.Context, req *model.PageListReq) (res []*res.SystemUser, total int, err error) {
-	err = orm.GetPageList(s.Model(ctx), req).ScanAndCount(&res, &total, false)
+	err = orm.NewQuery(s.Model(ctx)).WithPageListReq(req).ScanAndCount(&res, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	return
 }
 
+// GetPageListForSearch retrieves a paginated list of system users with search criteria.
 func (s *sSystemUser) GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemUserSearch) (res []*res.SystemUser, total int, err error) {
 	m := s.handleUserSearch(ctx, in)
-	err = orm.GetPageList(m, req).ScanAndCount(&res, &total, false)
+	req.OrderBy = dao.SystemUser.Columns().Id
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&res, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	return
 }
 
+// GetOnlineUserPageListForSearch retrieves a paginated list of currently online users with search criteria.
 func (s *sSystemUser) GetOnlineUserPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemUserSearch) (res []*res.SystemUser, total int, err error) {
 	m := s.handleUserSearch(ctx, in)
 	r := request.GetHttpRequest(ctx)
 	userApps, err := service.Token().GetAllUserIds(r)
-	if err != nil {
+	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	if g.IsEmpty(userApps) {
@@ -80,8 +89,9 @@ func (s *sSystemUser) GetOnlineUserPageListForSearch(ctx context.Context, req *m
 		userIds = append(userIds, userApp.UserId)
 		userAppMap[userApp.UserId] = userApp.AppId
 	}
-	m = m.WhereIn("id", userIds)
-	err = orm.GetPageList(m, req).ScanAndCount(&res, &total, false)
+	m = m.WhereIn(dao.SystemUser.Columns().Id, userIds)
+	req.OrderBy = dao.SystemUser.Columns().Id
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&res, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
@@ -93,19 +103,22 @@ func (s *sSystemUser) GetOnlineUserPageListForSearch(ctx context.Context, req *m
 	return
 }
 
+// GetExportList retrieves a list of system users for export purposes.
 func (s *sSystemUser) GetExportList(ctx context.Context, req *model.ListReq, in *req.SystemUserSearch) (res []*res.SystemUserExport, err error) {
 	m := s.handleUserSearch(ctx, in)
-	err = orm.GetList(m, req).Scan(&res)
+	err = orm.NewQuery(m).WithListReq(req).ScanAll(&res)
 	if utils.IsError(err) {
 		return
 	}
 	return
 }
 
+// GetSupserAdminId returns the super admin user ID from configuration.
 func (s *sSystemUser) GetSupserAdminId(ctx context.Context) int64 {
 	return config.GetConfigint64(ctx, "settings.superAdminId", 1)
 }
 
+// ExistsByUsername checks if a user with the given username already exists.
 func (s *sSystemUser) ExistsByUsername(ctx context.Context, username string) (rs bool, err error) {
 	count, err := s.Model(ctx).Where(dao.SystemUser.Columns().Username, username).Count()
 	if utils.IsError(err) {
@@ -117,52 +130,52 @@ func (s *sSystemUser) ExistsByUsername(ctx context.Context, username string) (rs
 func (s *sSystemUser) handleUserSearch(ctx context.Context, in *req.SystemUserSearch) (m *gdb.Model) {
 	m = s.Model(ctx)
 	if !g.IsEmpty(in.Status) {
-		m = m.Where(dao.SystemUser.Table()+".status", in.Status)
+		m = m.WherePrefix(dao.SystemUser.Table(), dao.SystemUser.Columns().Status, in.Status)
 	}
 
 	if !g.IsEmpty(in.Phone) {
-		m = m.Where(dao.SystemUser.Table()+".phone", in.Phone)
+		m = m.WherePrefix(dao.SystemUser.Table(), dao.SystemUser.Columns().Phone, in.Phone)
 	}
 
 	if !g.IsEmpty(in.Username) {
-		m = m.Where(dao.SystemUser.Table()+".username like ? ", "%"+in.Username+"%")
+		m = m.WherePrefixLike(dao.SystemUser.Table(), dao.SystemUser.Columns().Username, "%"+in.Username+"%")
 	}
 
 	if !g.IsEmpty(in.Nickname) {
-		m = m.Where(dao.SystemUser.Table()+".nickname like ? ", "%"+in.Nickname+"%")
+		m = m.WherePrefixLike(dao.SystemUser.Table(), dao.SystemUser.Columns().Nickname, "%"+in.Nickname+"%")
 	}
 
 	if !g.IsEmpty(in.Username) && in.FilterSuperAdmin {
 		supserAdminId := s.GetSupserAdminId(ctx)
-		m = m.WhereNot(dao.SystemUser.Table()+".id", supserAdminId)
+		m = m.WherePrefixNot(dao.SystemUser.Table(), dao.SystemUser.Columns().Id, supserAdminId)
 	}
 	if !g.IsEmpty(in.CreatedAt) {
 		if len(in.CreatedAt) > 0 {
-			m = m.WhereGTE(dao.SystemUser.Table()+".created_at", in.CreatedAt[0]+" 00:00:00")
+			m = m.WherePrefixGTE(dao.SystemUser.Table(), dao.SystemUser.Columns().CreatedAt, in.CreatedAt[0]+" 00:00:00")
 		}
 		if len(in.CreatedAt) > 1 {
-			m = m.WhereLTE(dao.SystemUser.Table()+".created_at", in.CreatedAt[1]+"23:59:59")
+			m = m.WherePrefixLTE(dao.SystemUser.Table(), dao.SystemUser.Columns().CreatedAt, in.CreatedAt[1]+" 23:59:59")
 		}
 	}
 
 	if !g.IsEmpty(in.UserIds) {
-		m = m.WhereIn(dao.SystemUser.Table()+".id", in.UserIds)
+		m = m.WherePrefixIn(dao.SystemUser.Table(), dao.SystemUser.Columns().Id, in.UserIds)
 	}
 
 	if !g.IsEmpty(in.RoleId) {
-		m = m.LeftJoinOnFields(dao.SystemUserRole.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserRole.Columns().UserId).Where(dao.SystemUserRole.Table()+".role_id", in.RoleId)
+		m = m.LeftJoinOnFields(dao.SystemUserRole.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserRole.Columns().UserId).WherePrefix(dao.SystemUserRole.Table(), dao.SystemUserRole.Columns().RoleId, in.RoleId)
 	}
 
 	if !g.IsEmpty(in.RoleIds) {
-		m = m.LeftJoinOnFields(dao.SystemUserRole.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserRole.Columns().UserId).WhereIn(dao.SystemUserRole.Table()+".role_id", in.RoleIds)
+		m = m.LeftJoinOnFields(dao.SystemUserRole.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserRole.Columns().UserId).WherePrefixIn(dao.SystemUserRole.Table(), dao.SystemUserRole.Columns().RoleId, in.RoleIds)
 	}
 
 	if !g.IsEmpty(in.PostId) {
-		m = m.LeftJoinOnFields(dao.SystemUserPost.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserPost.Columns().UserId).Where(dao.SystemUserPost.Table()+".post_id", in.RoleId)
+		m = m.LeftJoinOnFields(dao.SystemUserPost.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserPost.Columns().UserId).WherePrefix(dao.SystemUserPost.Table(), dao.SystemUserPost.Columns().PostId, in.PostId)
 	}
 
 	if !g.IsEmpty(in.PostIds) {
-		m = m.LeftJoinOnFields(dao.SystemUserPost.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserPost.Columns().UserId).WhereIn(dao.SystemUserPost.Table()+".post_id", in.PostIds)
+		m = m.LeftJoinOnFields(dao.SystemUserPost.Table(), dao.SystemUser.Columns().Id, "=", dao.SystemUserPost.Columns().UserId).WherePrefixIn(dao.SystemUserPost.Table(), dao.SystemUserPost.Columns().PostId, in.PostIds)
 	}
 
 	if !g.IsEmpty(in.DeptId) {
@@ -193,6 +206,7 @@ func (s *sSystemUser) handleUserSearch(ctx context.Context, in *req.SystemUserSe
 	return
 }
 
+// GetInfoById retrieves basic user information by user ID.
 func (s *sSystemUser) GetInfoById(ctx context.Context, userId int64) (systemUser *res.SystemUser, err error) {
 	err = s.Model(ctx).Where(dao.SystemUser.Columns().Id, userId).Scan(&systemUser)
 	if utils.IsError(err) {
@@ -201,6 +215,7 @@ func (s *sSystemUser) GetInfoById(ctx context.Context, userId int64) (systemUser
 	return
 }
 
+// GetInfoByIds retrieves basic user information for multiple user IDs.
 func (s *sSystemUser) GetInfoByIds(ctx context.Context, userIds []int64) (systemUser []*res.SystemUser, err error) {
 	err = s.Model(ctx).WhereIn(dao.SystemUser.Columns().Id, userIds).Scan(&systemUser)
 	if utils.IsError(err) {
@@ -209,6 +224,7 @@ func (s *sSystemUser) GetInfoByIds(ctx context.Context, userIds []int64) (system
 	return
 }
 
+// GetInfo retrieves comprehensive user information including roles, permissions, and routers.
 func (s *sSystemUser) GetInfo(ctx context.Context, userId int64) (systemUserInfo *res.SystemUserInfo, err error) {
 	systemUser := res.SystemUser{}
 	systemUserInfo = &res.SystemUserInfo{}
@@ -223,14 +239,14 @@ func (s *sSystemUser) GetInfo(ctx context.Context, userId int64) (systemUserInfo
 
 	systemUserInfo.User = systemUser
 	isSuperAdmin, err := s.IsSuperAdmin(ctx, userId)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	if isSuperAdmin {
 		systemUserInfo.Roles = gconv.Strings(garray.NewArray(true).Append("superAdmin"))
 		systemUserInfo.Codes = gconv.Strings(garray.NewArray(true).Append("*"))
 		superAdminRouters, err := service.SystemMenu().GetSuperAdminRouters(ctx)
-		if err != nil {
+		if utils.IsError(err) {
 			return systemUserInfo, err
 		}
 		systemUserInfo.Routers = superAdminRouters
@@ -239,12 +255,12 @@ func (s *sSystemUser) GetInfo(ctx context.Context, userId int64) (systemUserInfo
 		menuCodes := make([]string, 0)
 		routers := make([]*res.Router, 0)
 		roleIds, err := service.SystemUser().GetRoles(ctx, userId)
-		if err != nil {
+		if utils.IsError(err) {
 			return systemUserInfo, err
 		}
 		if !g.IsEmpty(roleIds) {
 			systemRoles, err := service.SystemRole().GetByIds(ctx, roleIds)
-			if err != nil {
+			if utils.IsError(err) {
 				return systemUserInfo, err
 			}
 
@@ -254,16 +270,16 @@ func (s *sSystemUser) GetInfo(ctx context.Context, userId int64) (systemUserInfo
 				}
 			}
 			menuIds, err := service.SystemRoleMenu().GetMenuIdsByRoleIds(ctx, roleIds)
-			if err != nil {
+			if utils.IsError(err) {
 				return systemUserInfo, err
 			}
 			menuCodes, err = service.SystemMenu().GetMenuCode(ctx, menuIds)
-			if err != nil {
+			if utils.IsError(err) {
 				return systemUserInfo, err
 			}
 
 			routers, err = service.SystemMenu().GetRoutersByIds(ctx, menuIds)
-			if err != nil {
+			if utils.IsError(err) {
 				return systemUserInfo, err
 			}
 		}
@@ -274,14 +290,15 @@ func (s *sSystemUser) GetInfo(ctx context.Context, userId int64) (systemUserInfo
 	return
 }
 
+// IsSuperAdmin checks if the user has super administrator privileges.
 func (s *sSystemUser) IsSuperAdmin(ctx context.Context, userId int64) (isSuperAdmin bool, err error) {
 	roleIds, err := service.SystemUser().GetRoles(ctx, userId)
-	if err != nil {
+	if utils.IsError(err) {
 		return false, err
 	}
 	if !g.IsEmpty(roleIds) {
 		roles, err := service.SystemRole().GetByIds(ctx, roleIds)
-		if err != nil {
+		if utils.IsError(err) {
 			return false, err
 		}
 		if !g.IsEmpty(roles) {
@@ -295,6 +312,7 @@ func (s *sSystemUser) IsSuperAdmin(ctx context.Context, userId int64) (isSuperAd
 	return false, nil
 }
 
+// GetRoles retrieves the role IDs assigned to a user.
 func (s *sSystemUser) GetRoles(ctx context.Context, userId int64) (roles []int64, err error) {
 	result, err := service.SystemUserRole().Model(ctx).Fields(dao.SystemUserRole.Columns().RoleId).Where(dao.SystemUserRole.Columns().UserId, userId).Array()
 	if utils.IsError(err) {
@@ -309,6 +327,7 @@ func (s *sSystemUser) GetRoles(ctx context.Context, userId int64) (roles []int64
 	return
 }
 
+// GetDepts retrieves the department IDs assigned to a user.
 func (s *sSystemUser) GetDepts(ctx context.Context, userId int64) (depts []int64, err error) {
 	result, err := service.SystemUserDept().Model(ctx).Fields(dao.SystemUserDept.Columns().DeptId).Where(dao.SystemUserDept.Columns().UserId, userId).Array()
 	if utils.IsError(err) {
@@ -323,9 +342,10 @@ func (s *sSystemUser) GetDepts(ctx context.Context, userId int64) (depts []int64
 	return
 }
 
+// Update modifies user information with optional user ID override.
 func (s *sSystemUser) Update(ctx context.Context, req *req.SystemUser, userId ...int64) (rs sql.Result, err error) {
 	var systemUser *do.SystemUser
-	if err = gconv.Struct(req, &systemUser); err != nil {
+	if err = gconv.Struct(req, &systemUser); utils.IsError(err) {
 		return
 	}
 	if g.IsEmpty(req.Id) {
@@ -344,7 +364,24 @@ func (s *sSystemUser) Update(ctx context.Context, req *req.SystemUser, userId ..
 	return
 }
 
+func normalizeDashboard(ctx context.Context, dashboard string) (string, error) {
+	switch strings.TrimSpace(dashboard) {
+	case "statistics", "/analytics":
+		return "statistics", nil
+	case "work", "/workspace":
+		return "work", nil
+	default:
+		return "", myerror.ValidationFailed(ctx, "invalid dashboard")
+	}
+}
+
+// SetHomePage sets the home page dashboard for a user.
 func (s *sSystemUser) SetHomePage(ctx context.Context, id int64, dashboard string) (out sql.Result, err error) {
+	dashboard, err = normalizeDashboard(ctx, dashboard)
+	if utils.IsError(err) {
+		return
+	}
+
 	systemUser := &do.SystemUser{
 		Dashboard: dashboard,
 	}
@@ -355,9 +392,10 @@ func (s *sSystemUser) SetHomePage(ctx context.Context, id int64, dashboard strin
 	return
 }
 
+// InitUserPassword initializes or resets a user's password with hashing.
 func (s *sSystemUser) InitUserPassword(ctx context.Context, id int64, password string) (out sql.Result, err error) {
 	password, err = secure.PasswordHash(password)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	systemUser := &do.SystemUser{
@@ -370,6 +408,7 @@ func (s *sSystemUser) InitUserPassword(ctx context.Context, id int64, password s
 	return
 }
 
+// UpdateSimple performs a simplified user update including roles, departments, and posts.
 func (s *sSystemUser) UpdateSimple(ctx context.Context, in *req.SystemUserUpdate) (out sql.Result, err error) {
 	if g.IsEmpty(in.Id) {
 		err = myerror.MissingParameter(ctx, "用户id为空")
@@ -377,7 +416,7 @@ func (s *sSystemUser) UpdateSimple(ctx context.Context, in *req.SystemUserUpdate
 	}
 
 	var systemUser *do.SystemUser
-	if err = gconv.Struct(in, &systemUser); err != nil {
+	if err = gconv.Struct(in, &systemUser); utils.IsError(err) {
 		return
 	}
 
@@ -387,7 +426,7 @@ func (s *sSystemUser) UpdateSimple(ctx context.Context, in *req.SystemUserUpdate
 	}
 	id := in.Id
 	if !g.IsEmpty(in.RoleIds) {
-		service.SystemUserRole().Model(ctx).Where(dao.SystemUserRole.Columns().UserId, id).Delete()
+		_, _ = service.SystemUserRole().Model(ctx).Where(dao.SystemUserRole.Columns().UserId, id).Delete()
 		for _, roleId := range in.RoleIds {
 			_, err = service.SystemUserRole().Model(ctx).Data(do.SystemUserRole{
 				RoleId: roleId,
@@ -397,7 +436,7 @@ func (s *sSystemUser) UpdateSimple(ctx context.Context, in *req.SystemUserUpdate
 	}
 
 	if !g.IsEmpty(in.DeptIds) {
-		service.SystemUserDept().Model(ctx).Where(dao.SystemUserDept.Columns().UserId, id).Delete()
+		_, _ = service.SystemUserDept().Model(ctx).Where(dao.SystemUserDept.Columns().UserId, id).Delete()
 		for _, deptId := range in.DeptIds {
 			_, err = service.SystemUserDept().Model(ctx).Data(do.SystemUserDept{
 				UserId: id,
@@ -407,7 +446,7 @@ func (s *sSystemUser) UpdateSimple(ctx context.Context, in *req.SystemUserUpdate
 	}
 
 	if !g.IsEmpty(in.PostIds) {
-		service.SystemUserPost().Model(ctx).Where(dao.SystemUserPost.Columns().UserId, id).Delete()
+		_, _ = service.SystemUserPost().Model(ctx).Where(dao.SystemUserPost.Columns().UserId, id).Delete()
 		for _, postId := range in.PostIds {
 			_, err = service.SystemUserPost().Model(ctx).Data(do.SystemUserPost{
 				UserId: id,
@@ -415,15 +454,16 @@ func (s *sSystemUser) UpdateSimple(ctx context.Context, in *req.SystemUserUpdate
 			}).Save()
 		}
 	} else {
-		service.SystemUserPost().Model(ctx).Where(dao.SystemUserPost.Columns().UserId, id).Delete()
+		_, _ = service.SystemUserPost().Model(ctx).Where(dao.SystemUserPost.Columns().UserId, id).Delete()
 	}
 
 	return
 }
 
+// Save creates a new system user with associated roles, departments, and posts.
 func (s *sSystemUser) Save(ctx context.Context, in *req.SystemUserSave) (id int64, err error) {
 	userNameExists, err := service.SystemUser().ExistsByUsername(ctx, in.Username)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	if userNameExists {
@@ -438,19 +478,19 @@ func (s *sSystemUser) Save(ctx context.Context, in *req.SystemUserSave) (id int6
 	}
 
 	var systemUser *do.SystemUser
-	if err = gconv.Struct(in, &systemUser); err != nil {
+	if err = gconv.Struct(in, &systemUser); utils.IsError(err) {
 		return
 	}
 
 	if !g.IsEmpty(in.Password) {
-		newPassword, err := secure.PasswordHash(in.Password)
-		if err != nil {
-			return 0, err
+		newPassword, hashErr := secure.PasswordHash(in.Password)
+		if utils.IsError(hashErr) {
+			return 0, hashErr
 		}
 		systemUser.Password = newPassword
 	}
 	if in.UserType == consts.TypeSysUser {
-		systemUser.Dashboard = "statistics"
+		systemUser.Dashboard = "work"
 	}
 	rs, err := s.Model(ctx).Data(systemUser).Insert()
 	if utils.IsError(err) {
@@ -458,7 +498,7 @@ func (s *sSystemUser) Save(ctx context.Context, in *req.SystemUserSave) (id int6
 	}
 
 	tmpId, err := rs.LastInsertId()
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	id = gconv.Int64(tmpId)
@@ -493,6 +533,7 @@ func (s *sSystemUser) Save(ctx context.Context, in *req.SystemUserSave) (id int6
 	return
 }
 
+// GetFullInfoById retrieves complete user information including associated roles, posts, and departments.
 func (s *sSystemUser) GetFullInfoById(ctx context.Context, id int64) (out *res.SystemUserFullInfo, err error) {
 	err = s.Model(ctx).Where("id", id).Scan(&out)
 	if utils.IsError(err) {
@@ -524,9 +565,10 @@ func (s *sSystemUser) GetFullInfoById(ctx context.Context, id int64) (out *res.S
 	return
 }
 
+// Delete soft deletes system users, excluding the super admin.
 func (s *sSystemUser) Delete(ctx context.Context, ids []int64) (err error) {
 	superAdminId := s.GetSupserAdminId(ctx)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	newIds := slice.Remove(ids, superAdminId)
@@ -539,21 +581,23 @@ func (s *sSystemUser) Delete(ctx context.Context, ids []int64) (err error) {
 	return
 }
 
+// RealDelete permanently removes system users and their associated data, excluding the super admin.
 func (s *sSystemUser) RealDelete(ctx context.Context, ids []int64) (err error) {
 	superAdminId := s.GetSupserAdminId(ctx)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	newIds := slice.Remove(ids, superAdminId)
 	for _, id := range newIds {
-		s.Model(ctx).Unscoped().Where("id", id).Delete()
-		service.SystemUserPost().Model(ctx).Where("user_id", id).Delete()
-		service.SystemUserDept().Model(ctx).Where("user_id", id).Delete()
-		service.SystemUserRole().Model(ctx).Where("user_id", id).Delete()
+		_, _ = s.Model(ctx).Unscoped().Where("id", id).Delete()
+		_, _ = service.SystemUserPost().Model(ctx).Where("user_id", id).Delete()
+		_, _ = service.SystemUserDept().Model(ctx).Where("user_id", id).Delete()
+		_, _ = service.SystemUserRole().Model(ctx).Where("user_id", id).Delete()
 	}
 	return
 }
 
+// Recovery restores soft-deleted system users.
 func (s *sSystemUser) Recovery(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
 	if utils.IsError(err) {
@@ -562,6 +606,7 @@ func (s *sSystemUser) Recovery(ctx context.Context, ids []int64) (err error) {
 	return
 }
 
+// ChangeStatus updates the status of a system user.
 func (s *sSystemUser) ChangeStatus(ctx context.Context, id int64, status int) (err error) {
 	_, err = s.Model(ctx).Data(g.Map{"status": status}).Where("id", id).Update()
 	if utils.IsError(err) {

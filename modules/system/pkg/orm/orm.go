@@ -8,19 +8,23 @@ package orm
 
 import (
 	"context"
-	"devinggo/modules/system/pkg/utils/config"
-	"devinggo/modules/system/pkg/utils/slice"
-	"github.com/gogf/gf/v2/database/gdb"
 	"reflect"
 	"time"
+
+	"devinggo/modules/system/pkg/utils/config"
+	"devinggo/modules/system/pkg/utils/slice"
+
+	"github.com/gogf/gf/v2/database/gdb"
 )
 
+// GetTableName 获取表名
 func GetTableName(m *gdb.Model) string {
 	v := reflect.ValueOf(m).Elem()
 	field := v.FieldByName("tablesInit")
 	return field.String()
 }
 
+// SetCacheOption 设置缓存选项
 func SetCacheOption(ctx context.Context, duration ...time.Duration) gdb.CacheOption {
 	globalCache := config.GetConfigBool(ctx, "settings.enableGlobalDbCache", false)
 	var dura time.Duration
@@ -40,6 +44,13 @@ func SetCacheOption(ctx context.Context, duration ...time.Duration) gdb.CacheOpt
 	return gdb.CacheOption{Duration: dura, Force: false}
 }
 
-func GetTableFieds(m *gdb.Model) []string {
+// GetTableFields 获取表字段列表
+func GetTableFields(m *gdb.Model) []string {
 	return slice.EscapeFieldsToSlice(m.GetFieldsStr())
+}
+
+// GetTableFieds 获取表字段列表（已废弃，请使用 GetTableFields）
+// Deprecated: 使用 GetTableFields 代替
+func GetTableFieds(m *gdb.Model) []string {
+	return GetTableFields(m)
 }

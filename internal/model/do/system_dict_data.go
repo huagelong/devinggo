@@ -12,17 +12,17 @@ import (
 // SystemDictData is the golang structure of table system_dict_data for DAO operations like Where/Data.
 type SystemDictData struct {
 	g.Meta    `orm:"table:system_dict_data, do:true"`
-	Id        any         // 主键
-	TypeId    any         // 字典类型ID
-	Label     any         // 字典标签
-	Value     any         // 字典值
-	Code      any         // 字典标示
-	Sort      any         // 排序
-	Status    any         // 状态 (1正常 2停用)
-	CreatedBy any         // 创建者
-	UpdatedBy any         // 更新者
+	Id        any         //
+	TypeId    any         //
+	Label     any         //
+	Value     any         //
+	Code      any         //
+	Sort      any         //
+	Status    any         //
+	CreatedBy any         //
+	UpdatedBy any         //
 	CreatedAt *gtime.Time //
 	UpdatedAt *gtime.Time //
-	DeletedAt *gtime.Time // 删除时间
-	Remark    any         // 备注
+	DeletedAt *gtime.Time //
+	Remark    any         //
 }

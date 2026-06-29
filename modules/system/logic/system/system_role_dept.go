@@ -8,11 +8,13 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/modules/system/logic/base"
 	"devinggo/modules/system/pkg/hook"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 )
 
@@ -29,5 +31,5 @@ func NewSystemRoleDept() *sSystemRoleDept {
 }
 
 func (s *sSystemRoleDept) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemRoleDept.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("role_id", "dept_id")
+	return dao.SystemRoleDept.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("role_id", "dept_id")
 }

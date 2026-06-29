@@ -59,6 +59,7 @@ type SystemUserSave struct {
 	Password string  `json:"password"     v:"required|min-length:6|max-length:20"        description:"密码"` // 密码
 	Phone    string  `json:"phone"                 description:"手机"`                                       // 手机
 	Email    string  `json:"email"                  description:"邮箱"`                                      // 邮箱
+	Avatar   string  `json:"avatar"                description:"用户头像"`                                       // 用户头像
 	Status   int     `json:"status"                  description:"状态 (1正常 2停用)"`                           // 状态 (1正常 2停用)
 	DeptIds  []int64 `json:"dept_ids" description:"部门ID列表"`
 	RoleIds  []int64 `json:"role_ids" description:"角色ID列表"`
@@ -73,6 +74,7 @@ type SystemUserUpdate struct {
 	Nickname string  `json:"nickname"            description:"用户昵称"`                   // 用户昵称
 	Phone    string  `json:"phone"                 description:"手机"`                   // 手机
 	Email    string  `json:"email"                  description:"邮箱"`                  // 邮箱
+	Avatar   string  `json:"avatar"                description:"用户头像"`                   // 用户头像
 	Status   int     `json:"status"               description:"状态 (1正常 2停用)"`          // 状态 (1正常 2停用)
 	DeptIds  []int64 `json:"dept_ids" v:"required" description:"部门ID列表"`
 	RoleIds  []int64 `json:"role_ids" v:"required" description:"角色ID列表"`

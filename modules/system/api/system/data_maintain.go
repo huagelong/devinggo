@@ -1,8 +1,9 @@
 // Package system
 // @Link  https://github.com/huagelong/devinggo
 // @Copyright  Copyright (c) 2024 devinggo
-// @Author Kai <hpuwang@gmail.com>
+// @Author  Kai <hpuwang@gmail.com>
 // @License  https://github.com/huagelong/devinggo/blob/master/LICENSE
+
 package system
 
 import (
@@ -10,6 +11,7 @@ import (
 	"devinggo/modules/system/model/page"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
+
 	"github.com/gogf/gf/v2/frame/g"
 )
 

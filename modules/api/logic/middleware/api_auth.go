@@ -11,6 +11,7 @@ import (
 	"devinggo/modules/system/pkg/contexts"
 	"devinggo/modules/system/pkg/response"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
@@ -20,8 +21,8 @@ func (s *sMiddleware) ApiAuth(r *ghttp.Request) {
 	// 不需要验证登录的路由地址
 	if !s.isExceptLogin(ctx) {
 		// 检查登录
-		if g.IsEmpty(contexts.New().GetUser(ctx)) {
-			response.JsonError(r, codes.CodeNotLogged)
+		if g.IsEmpty(contexts.GetUser(ctx)) {
+			response.Unauthorized(r)
 			return
 		}
 	}
@@ -31,11 +32,11 @@ func (s *sMiddleware) ApiAuth(r *ghttp.Request) {
 		// 验证路由访问权限
 		check, err := service.SystemApp().Verify(r)
 		if err != nil {
-			response.JsonError(r, codes.ApiNotAuthorized, err.Error())
+			response.ErrorWithCode(r, codes.ApiNotAuthorized.Code(), err.Error())
 			return
 		}
 		if !check {
-			response.JsonError(r, codes.ApiNotAuthorized, "接口鉴权失败")
+			response.ErrorWithCode(r, codes.ApiNotAuthorized.Code(), "接口鉴权失败")
 			return
 		}
 	}

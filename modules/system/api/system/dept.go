@@ -11,6 +11,7 @@ import (
 	"devinggo/modules/system/model/page"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
+
 	"github.com/gogf/gf/v2/frame/g"
 )
 
@@ -162,17 +163,4 @@ type NumberOperationReq struct {
 
 type NumberOperationRes struct {
 	g.Meta `mime:"application/json"`
-}
-
-type RemoteDeptReq struct {
-	g.Meta `path:"/dept/remote" method:"post" tags:"部门" summary:"远程万能通用列表接口." x-exceptAuth:"true" x-permission:"system:dept:remote"`
-	model.AuthorHeader
-	model.PageListReq
-}
-
-type RemoteDeptRes struct {
-	g.Meta `mime:"application/json"`
-	page.PageRes
-	Items []res.SystemDept `json:"items"  dc:"list" `
-	Data  []res.SystemDept `json:"data"  dc:"list" `
 }

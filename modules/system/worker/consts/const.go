@@ -7,8 +7,9 @@
 package consts
 
 var (
-	URL_CRON  = "url_cron"
-	CMD_CRON  = "cmd_cron"
-	TEST_TASK = "test_task" //测试任务
-	TEST_CRON = "test_cron" //测试定时任务
+	URL_CRON       = "url_cron"
+	CMD_CRON       = "cmd_cron"
+	TEST_CRON      = "test_cron"
+	TEST_TASK      = "test_task"      //测试任务
+	TEST_TASK_TASK = "test_task_task" //测试定时任务
 )

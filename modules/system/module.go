@@ -1,18 +1,21 @@
 // Package system
 // @Link  https://github.com/huagelong/devinggo
 // @Copyright  Copyright (c) 2024 devinggo
-// @Author Kai <hpuwang@gmail.com>
+// @Author  Kai <hpuwang@gmail.com>
 // @License  https://github.com/huagelong/devinggo/blob/master/LICENSE
+
 package system
 
 import (
 	"context"
+
 	"devinggo/modules/system/pkg/modules"
 	swebsocket "devinggo/modules/system/pkg/websocket"
 	"devinggo/modules/system/router/system"
 	"devinggo/modules/system/router/websocket"
 	"devinggo/modules/system/service"
 	_ "devinggo/modules/system/worker"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/genv"
@@ -27,7 +30,9 @@ type systemModule struct {
 func init() {
 	module := &systemModule{}
 	module.Name = "system"
-	modules.Register(module)
+	if err := modules.Register(module); err != nil {
+		panic(err)
+	}
 }
 
 func (m *systemModule) Start(ctx context.Context, s *ghttp.Server) error {

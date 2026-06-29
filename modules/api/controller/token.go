@@ -1,4 +1,4 @@
-// Package api
+// Package controller
 // @Link  https://github.com/huagelong/devinggo
 // @Copyright  Copyright (c) 2024 devinggo
 // @Author  Kai <hpuwang@gmail.com>
@@ -8,6 +8,7 @@ package controller
 
 import (
 	"context"
+
 	"devinggo/modules/api/api"
 	"devinggo/modules/system/controller/base"
 	"devinggo/modules/system/pkg/utils/request"

@@ -8,8 +8,10 @@ package cmd
 
 import (
 	"context"
+
 	"devinggo/modules/system/pkg/cache"
 	"devinggo/modules/system/pkg/utils/config"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcfg"
 	"github.com/gogf/gf/v2/os/gcmd"
@@ -54,6 +56,8 @@ func CmdInit(ctx context.Context, parser *gcmd.Parser) {
 		g.Log().SetFlags(glog.F_ASYNC | glog.F_TIME_STD | glog.F_FILE_LONG)
 
 		//设置缓存
-		cache.SetAdapter(ctx)
+		if err := cache.SetAdapter(ctx); err != nil {
+			g.Log().Panicf(ctx, "failed to initialize cache: %v", err)
+		}
 	})
 }

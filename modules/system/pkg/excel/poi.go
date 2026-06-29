@@ -8,15 +8,17 @@ package excel
 
 import (
 	"bufio"
-	"devinggo/modules/system/myerror"
-	"devinggo/modules/system/pkg/utils"
-	"devinggo/modules/system/pkg/utils/request"
 	"context"
 	"fmt"
-	"github.com/xuri/excelize/v2"
 	"io"
 	"net/url"
 	"os"
+
+	"devinggo/modules/system/myerror"
+	"devinggo/modules/system/pkg/utils"
+	"devinggo/modules/system/pkg/utils/request"
+
+	"github.com/xuri/excelize/v2"
 )
 
 type Export[T any] struct {
@@ -115,14 +117,14 @@ func (e *excelModel[T]) Download(ctx context.Context, fileName string) *excelMod
 
 func (e *excelModel[T]) WriteInFileName(resultFile string) *excelModel[T] {
 	file, err := os.OpenFile(resultFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.ModeDevice|os.ModePerm)
-	defer file.Close()
-
-	if err == nil {
-		writer := bufio.NewWriter(file)
-		e.WriteInWriter(writer)
-		writer.Flush()
+	if err != nil {
+		e.err = err
+		return e
 	}
-	e.err = err
+	defer file.Close()
+	writer := bufio.NewWriter(file)
+	e.WriteInWriter(writer)
+	writer.Flush()
 	return e
 }
 

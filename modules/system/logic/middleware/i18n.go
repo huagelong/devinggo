@@ -8,10 +8,12 @@ package middleware
 
 import (
 	"devinggo/modules/system/pkg/i18n"
+
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 func (s *sMiddleware) I18n(r *ghttp.Request) {
-	i18n.InitI18n(r.GetCtx())
+	ctx := i18n.InitI18n(r.GetCtx())
+	r.SetCtx(ctx)
 	r.Middleware.Next()
 }

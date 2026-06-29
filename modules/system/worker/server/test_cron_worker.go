@@ -7,36 +7,27 @@
 package server
 
 import (
+	"context"
+
+	"devinggo/modules/system/pkg/worker"
 	glob2 "devinggo/modules/system/pkg/worker/glob"
-	"devinggo/modules/system/pkg/worker/server"
 	"devinggo/modules/system/worker/consts"
 	"devinggo/modules/system/worker/cron"
-	"context"
+
 	"github.com/hibiken/asynq"
 )
 
-var testCronWorker = &ctestCronWorker{
-	Type: consts.TEST_CRON,
-}
-
-type ctestCronWorker struct {
-	Type string
-}
-
 func init() {
-	server.Register(testCronWorker)
+	// 使用新方式注册Worker
+	worker.RegisterWorkerFunc(consts.TEST_CRON, executeTestCronWorker)
 }
 
-func (s *ctestCronWorker) GetType() string {
-	return s.Type
-}
-
-// Execute 执行任务
-func (s *ctestCronWorker) Execute(ctx context.Context, t *asynq.Task) (err error) {
+// executeTestCronWorker 执行测试Cron Worker
+func executeTestCronWorker(ctx context.Context, t *asynq.Task) error {
 	data, err := glob2.GetParamters[cron.TestCronData](ctx, t)
 	if err != nil {
 		return err
 	}
 	glob2.WithWorkLog().Infof(ctx, `jsonData:%+v`, data)
-	return
+	return nil
 }

@@ -8,6 +8,8 @@ package system
 
 import (
 	"context"
+	"time"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -23,9 +25,11 @@ import (
 	"devinggo/modules/system/pkg/worker/cron"
 	"devinggo/modules/system/pkg/worker/task"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/hibiken/asynq"
 )
 
 type sSettingCrontab struct {
@@ -41,7 +45,7 @@ func NewSystemSettingCrontab() *sSettingCrontab {
 }
 
 func (s *sSettingCrontab) Model(ctx context.Context) *gdb.Model {
-	return dao.SettingCrontab.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return dao.SettingCrontab.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSettingCrontab) GetValidateCron(ctx context.Context) (rs []*res.SettingCrontabOne, err error) {
@@ -55,13 +59,13 @@ func (s *sSettingCrontab) GetValidateCron(ctx context.Context) (rs []*res.Settin
 func (s *sSettingCrontab) GetPageList(ctx context.Context, req *model.PageListReq, in *req.SettingCrontabSearch) (rs []*res.SettingCrontab, total int, err error) {
 	m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
 	var entity []*entity.SettingCrontab
-	err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&entity, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SettingCrontab, 0)
 	if !g.IsEmpty(entity) {
-		if err = gconv.Structs(entity, &rs); err != nil {
+		if err = gconv.Structs(entity, &rs); utils.IsError(err) {
 			return nil, 0, err
 		}
 	}
@@ -110,7 +114,7 @@ func (s *sSettingCrontab) Save(ctx context.Context, in *req.SettingCrontabSave) 
 		return
 	}
 	tmpId, err := rs.LastInsertId()
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	id = gconv.Int64(tmpId)
@@ -143,7 +147,9 @@ func (s *sSettingCrontab) Run(ctx context.Context, id int64) (err error) {
 	bindCron.SetParams(ctx, dbCrons.Parameter)
 	bindCron.GetPayload().CrontabId = dbCrons.Id
 	if dbCrons.Singleton == 1 {
-		bindCron.GetPayload().TaskID = dbCrons.Target + "_" + gconv.String(dbCrons.Id)
+		// 手动触发时追加时间戳，避免与已保留的任务 ID 冲突
+		bindCron.GetPayload().TaskID = dbCrons.Target + "_" + gconv.String(dbCrons.Id) + "_" + gconv.String(time.Now().UnixNano())
+		bindCron.GetPayload().Retention = asynq.Retention(0)
 	}
 	err = task.NewSimpleTask(ctx, bindCron)
 	return
@@ -171,6 +177,38 @@ func (s *sSettingCrontab) Delete(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).WhereIn("id", ids).Delete()
 	if utils.IsError(err) {
 		return err
+	}
+	return
+}
+
+func (s *sSettingCrontab) RealDelete(ctx context.Context, ids []int64) (err error) {
+	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
+	if utils.IsError(err) {
+		return err
+	}
+	return
+}
+
+func (s *sSettingCrontab) Recovery(ctx context.Context, ids []int64) (err error) {
+	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Update(g.Map{"deleted_at": nil})
+	if utils.IsError(err) {
+		return err
+	}
+	return
+}
+
+func (s *sSettingCrontab) GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SettingCrontabSearch) (rs []*res.SettingCrontab, total int, err error) {
+	m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
+	var entity []*entity.SettingCrontab
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&entity, &total)
+	if utils.IsError(err) {
+		return nil, 0, err
+	}
+	rs = make([]*res.SettingCrontab, 0)
+	if !g.IsEmpty(entity) {
+		if err = gconv.Structs(entity, &rs); utils.IsError(err) {
+			return nil, 0, err
+		}
 	}
 	return
 }

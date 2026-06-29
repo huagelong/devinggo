@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/model/entity"
 	"devinggo/modules/system/api/system"
 	"devinggo/modules/system/consts"
@@ -17,6 +18,7 @@ import (
 	"devinggo/modules/system/pkg/cache"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
 )
@@ -32,7 +34,7 @@ type commonController struct {
 func (c *commonController) GetNoticeList(ctx context.Context, req *system.GetNoticeListReq) (rs *system.GetNoticeListRes, err error) {
 	rs = &system.GetNoticeListRes{}
 	items, totalCount, err := service.SystemNotice().GetPageList(ctx, &req.PageListReq)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 
@@ -50,11 +52,11 @@ func (c *commonController) GetNoticeList(ctx context.Context, req *system.GetNot
 func (c *commonController) GetLoginLogList(ctx context.Context, req *system.GetLoginLogListReq) (rs *system.GetLoginLogListRes, err error) {
 	rs = &system.GetLoginLogListRes{}
 	systemUser, err := service.SystemUser().GetInfoById(ctx, c.UserId)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	items, totalCount, err := service.SystemLoginLog().GetPageList(ctx, &req.PageListReq, systemUser.Username)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	if !g.IsEmpty(items) {
@@ -71,11 +73,11 @@ func (c *commonController) GetLoginLogList(ctx context.Context, req *system.GetL
 func (c *commonController) GetOperationLogList(ctx context.Context, req *system.GetOperationLogListReq) (rs *system.GetOperationLogListRes, err error) {
 	rs = &system.GetOperationLogListRes{}
 	systemUser, err := service.SystemUser().GetInfoById(ctx, c.UserId)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	items, totalCount, err := service.SystemOperLog().GetPageList(ctx, &req.PageListReq, systemUser.Username)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 
@@ -101,7 +103,7 @@ func (c *commonController) ClearAllCache(ctx context.Context, in *system.ClearAl
 func (c *commonController) GetUserList(ctx context.Context, in *system.GetUserListReq) (out *system.GetUserListRes, err error) {
 	out = &system.GetUserListRes{}
 	items, totalCount, err := service.SystemUser().GetPageList(ctx, &in.PageListReq)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 
@@ -119,7 +121,7 @@ func (c *commonController) GetUserList(ctx context.Context, in *system.GetUserLi
 func (c *commonController) GetUserInfoByIds(ctx context.Context, in *system.GetUserInfoByIdsReq) (out *system.GetUserInfoByIdsRes, err error) {
 	out = &system.GetUserInfoByIdsRes{}
 	items, err := service.SystemUser().GetInfoByIds(ctx, in.Ids)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	if !g.IsEmpty(items) {
@@ -133,7 +135,7 @@ func (c *commonController) GetUserInfoByIds(ctx context.Context, in *system.GetU
 func (c *commonController) GetDeptTreeList(ctx context.Context, in *system.GetDeptTreeListReq) (out *system.GetDeptTreeListRes, err error) {
 	out = &system.GetDeptTreeListRes{}
 	items, err := service.SystemDept().GetSelectTree(ctx, c.UserId)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	if !g.IsEmpty(items) {
@@ -149,7 +151,7 @@ func (c *commonController) GetDeptTreeList(ctx context.Context, in *system.GetDe
 func (c *commonController) GetRoleList(ctx context.Context, in *system.GetRoleListReq) (out *system.GetRoleListRes, err error) {
 	out = &system.GetRoleListRes{}
 	rs, err := service.SystemRole().GetList(ctx, &req.SystemRoleSearch{}, true)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 
@@ -167,7 +169,7 @@ func (c *commonController) GetRoleList(ctx context.Context, in *system.GetRoleLi
 func (c *commonController) GetPostList(ctx context.Context, in *system.GetPostListReq) (out *system.GetPostListRes, err error) {
 	out = &system.GetPostListRes{}
 	rs, err := service.SystemPost().GetList(ctx, &req.SystemPostSearch{})
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 
@@ -185,7 +187,7 @@ func (c *commonController) GetPostList(ctx context.Context, in *system.GetPostLi
 func (c *commonController) GetResourceList(ctx context.Context, in *system.GetResourceListReq) (out *system.GetResourceListRes, err error) {
 	out = &system.GetResourceListRes{}
 	items, totalCount, err := service.SystemUploadfile().GetPageList(ctx, &in.PageListReq, &in.SystemUploadFileSearch)
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 

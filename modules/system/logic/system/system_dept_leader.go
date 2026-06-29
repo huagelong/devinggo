@@ -8,6 +8,8 @@ package system
 
 import (
 	"context"
+	"fmt"
+
 	"devinggo/internal/dao"
 	"devinggo/modules/system/logic/base"
 	"devinggo/modules/system/model"
@@ -17,6 +19,7 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 )
@@ -34,24 +37,33 @@ func NewSystemDeptLeader() *sSystemDeptLeader {
 }
 
 func (s *sSystemDeptLeader) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemDeptLeader.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("dept_id", "user_id")
+	return dao.SystemDeptLeader.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("dept_id", "user_id")
 }
 
 func (s *sSystemDeptLeader) GetPageList(ctx context.Context, req *model.PageListReq, search *req.SystemDeptLeaderSearch) (res []*res.SystemDeptLeaderInfo, total int, err error) {
-	m := service.SystemUser().Model(ctx).Fields("system_user.*", "system_dept_leader.created_at as leader_add_time")
-	m = m.InnerJoinOnFields("system_dept_leader", "id", "=", "user_id")
-	m = m.Where("system_dept_leader.dept_id =?", search.DeptId)
+	m := service.SystemUser().Model(ctx).Fields(
+		fmt.Sprintf(`"%s".*`, dao.SystemUser.Table()),
+		fmt.Sprintf(`"%s"."created_at" as leader_add_time`, dao.SystemDeptLeader.Table()),
+	)
+	m = m.InnerJoinOnFields(
+		dao.SystemDeptLeader.Table(),
+		dao.SystemUser.Columns().Id,
+		"=",
+		dao.SystemDeptLeader.Columns().UserId,
+	)
+	m = m.WherePrefix(dao.SystemDeptLeader.Table(), dao.SystemDeptLeader.Columns().DeptId, search.DeptId)
 	if !g.IsEmpty(search.Username) {
-		m = m.Where("system_user.username like ?", "%"+search.Username+"%")
+		m = m.WherePrefixLike(dao.SystemUser.Table(), dao.SystemUser.Columns().Username, "%"+search.Username+"%")
 	}
 	if !g.IsEmpty(search.Nickname) {
-		m = m.Where("system_user.nickname like ?", "%"+search.Nickname+"%")
+		m = m.WherePrefixLike(dao.SystemUser.Table(), dao.SystemUser.Columns().Nickname, "%"+search.Nickname+"%")
 	}
 
 	if !g.IsEmpty(search.Status) {
-		m = m.Where("system_user.status = ?", search.Status)
+		m = m.WherePrefix(dao.SystemUser.Table(), dao.SystemUser.Columns().Status, search.Status)
 	}
-	err = orm.GetPageList(m, req).ScanAndCount(&res, &total, false)
+	req.OrderBy = fmt.Sprintf(`"%s"."%s"`, dao.SystemUser.Table(), dao.SystemUser.Columns().Id)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&res, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}

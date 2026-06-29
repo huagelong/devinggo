@@ -1,41 +1,49 @@
-// Package db
+// Package cache
 // @Link  https://github.com/huagelong/devinggo
 // @Copyright  Copyright (c) 2024 devinggo
-// @Author Kai <hpuwang@gmail.com>
+// @Author  Kai <hpuwang@gmail.com>
 // @License  https://github.com/huagelong/devinggo/blob/master/LICENSE
+
 package cache
 
 import (
 	"context"
-	"github.com/gogf/gf/v2/container/gvar"
-	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/os/gcache"
-	"github.com/gogf/gf/v2/util/gconv"
 	"regexp"
 	"time"
+
+	"github.com/gogf/gf/v2/container/gvar"
+	"github.com/gogf/gf/v2/os/gcache"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
+// ──────────────────────────────────────────────
+// gcache.Adapter 实现
+// 用于 GoFrame ORM 查询缓存和 GetCache() 实例
+// ──────────────────────────────────────────────
+
+// Adapter 实现 gcache.Adapter 接口，为 GoFrame 框架提供缓存支持。
+// 该适配器会自动从 ORM 缓存键中提取表名作为标签。
 type Adapter struct{}
 
-func NewAdapter() gcache.Adapter {
+func newCacheAdapter() gcache.Adapter {
 	return &Adapter{}
 }
 
+// getTable 从缓存键中提取表名作为标签。
+// 用于 ORM 查询缓存的自动标签关联。
+// 例如：SelectCache:system_user@hash... -> "system_user"
 func (a Adapter) getTable(ctx context.Context, key interface{}) string {
 	keyStr := gconv.String(key)
 	pattern := "^" + regexp.QuoteMeta(cachePrefixSelectCache) + "(.*?)@"
 	re := regexp.MustCompile(pattern)
-	if re.MatchString(keyStr) {
-		tableExtracted := re.FindStringSubmatch(keyStr)[1]
-		return tableExtracted
-	} else {
+	if !re.MatchString(keyStr) {
 		return ""
 	}
+	return re.FindStringSubmatch(keyStr)[1]
 }
 
 func (a Adapter) Set(ctx context.Context, key interface{}, value interface{}, duration time.Duration) error {
-	table := a.getTable(ctx, key)
-	return Set(ctx, key, value, duration, table)
+	return set(ctx, key, value, duration, a.getTable(ctx, key))
 }
 
 func (a Adapter) SetMap(ctx context.Context, data map[interface{}]interface{}, duration time.Duration) error {
@@ -43,25 +51,18 @@ func (a Adapter) SetMap(ctx context.Context, data map[interface{}]interface{}, d
 		return nil
 	}
 	if duration < 0 {
-		var (
-			index = 0
-			keys  = make([]string, len(data))
-		)
+		keys := make([]string, 0, len(data))
 		for k := range data {
-			keys[index] = gconv.String(k)
-			index += 1
+			keys = append(keys, gconv.String(k))
 		}
 		for _, key := range keys {
-			_, err := a.Remove(ctx, key)
-			if err != nil {
+			if _, err := a.Remove(ctx, key); err != nil {
 				return err
 			}
 		}
-
 	} else {
-		var err error
 		for k, v := range data {
-			if err = a.Set(ctx, k, v, duration); err != nil {
+			if err := a.Set(ctx, k, v, duration); err != nil {
 				return err
 			}
 		}
@@ -69,90 +70,82 @@ func (a Adapter) SetMap(ctx context.Context, data map[interface{}]interface{}, d
 	return nil
 }
 
-func (a Adapter) SetIfNotExist(ctx context.Context, key interface{}, value interface{}, duration time.Duration) (ok bool, err error) {
-	table := a.getTable(ctx, key)
-	return SetIfNotExist(ctx, key, value, duration, table)
+func (a Adapter) SetIfNotExist(ctx context.Context, key interface{}, value interface{}, duration time.Duration) (bool, error) {
+	return setIfNotExist(ctx, key, value, duration, a.getTable(ctx, key))
 }
 
-func (a Adapter) SetIfNotExistFunc(ctx context.Context, key interface{}, f gcache.Func, duration time.Duration) (ok bool, err error) {
-	table := a.getTable(ctx, key)
-	return SetIfNotExistFunc(ctx, key, f, duration, table)
+func (a Adapter) SetIfNotExistFunc(ctx context.Context, key interface{}, f gcache.Func, duration time.Duration) (bool, error) {
+	return setIfNotExistFunc(ctx, key, f, duration, a.getTable(ctx, key))
 }
 
-func (a Adapter) SetIfNotExistFuncLock(ctx context.Context, key interface{}, f gcache.Func, duration time.Duration) (ok bool, err error) {
-	table := a.getTable(ctx, key)
-	return SetIfNotExistFuncLock(ctx, key, f, duration, table)
+func (a Adapter) SetIfNotExistFuncLock(ctx context.Context, key interface{}, f gcache.Func, duration time.Duration) (bool, error) {
+	return setIfNotExistFuncLock(ctx, key, f, duration, a.getTable(ctx, key))
 }
 
 func (a Adapter) Get(ctx context.Context, key interface{}) (*gvar.Var, error) {
 	return Get(ctx, key)
 }
 
-func (a Adapter) GetOrSet(ctx context.Context, key interface{}, value interface{}, duration time.Duration) (result *gvar.Var, err error) {
-	table := a.getTable(ctx, key)
-	return GetOrSet(ctx, key, value, duration, table)
+func (a Adapter) GetOrSet(ctx context.Context, key interface{}, value interface{}, duration time.Duration) (*gvar.Var, error) {
+	return getOrSet(ctx, key, value, duration, a.getTable(ctx, key))
 }
 
-func (a Adapter) GetOrSetFunc(ctx context.Context, key interface{}, f gcache.Func, duration time.Duration) (result *gvar.Var, err error) {
-	table := a.getTable(ctx, key)
-	return GetOrSetFunc(ctx, key, f, duration, table)
+func (a Adapter) GetOrSetFunc(ctx context.Context, key interface{}, f gcache.Func, duration time.Duration) (*gvar.Var, error) {
+	return getOrSetFunc(ctx, key, f, duration, a.getTable(ctx, key))
 }
 
-func (a Adapter) GetOrSetFuncLock(ctx context.Context, key interface{}, f gcache.Func, duration time.Duration) (result *gvar.Var, err error) {
+func (a Adapter) GetOrSetFuncLock(ctx context.Context, key interface{}, f gcache.Func, duration time.Duration) (*gvar.Var, error) {
 	return a.GetOrSetFunc(ctx, key, f, duration)
 }
 
 func (a Adapter) Contains(ctx context.Context, key interface{}) (bool, error) {
-	return Contains(ctx, key)
+	return contains(ctx, key)
 }
 
-func (a Adapter) Size(ctx context.Context) (size int, err error) {
-	return GetAdapterRedis().Size(ctx)
+func (a Adapter) Size(ctx context.Context) (int, error) {
+	return getAdapterRedis().Size(ctx)
 }
 
-func (a Adapter) Data(ctx context.Context) (data map[interface{}]interface{}, err error) {
-	return GetAdapterRedis().Data(ctx)
+func (a Adapter) Data(ctx context.Context) (map[interface{}]interface{}, error) {
+	return getAdapterRedis().Data(ctx)
 }
 
-func (a Adapter) Keys(ctx context.Context) (keys []interface{}, err error) {
-	return GetAdapterRedis().Keys(ctx)
+func (a Adapter) Keys(ctx context.Context) ([]interface{}, error) {
+	return getAdapterRedis().Keys(ctx)
 }
 
-func (a Adapter) Values(ctx context.Context) (values []interface{}, err error) {
-	return GetAdapterRedis().Values(ctx)
+func (a Adapter) Values(ctx context.Context) ([]interface{}, error) {
+	return getAdapterRedis().Values(ctx)
 }
 
-func (a Adapter) Update(ctx context.Context, key interface{}, value interface{}) (oldValue *gvar.Var, exist bool, err error) {
-	table := a.getTable(ctx, key)
-	return Update(ctx, key, value, table)
+func (a Adapter) Update(ctx context.Context, key interface{}, value interface{}) (*gvar.Var, bool, error) {
+	return update(ctx, key, value, a.getTable(ctx, key))
 }
 
-func (a Adapter) UpdateExpire(ctx context.Context, key interface{}, duration time.Duration) (oldDuration time.Duration, err error) {
-	table := a.getTable(ctx, key)
-	return UpdateExpire(ctx, key, duration, table)
+func (a Adapter) UpdateExpire(ctx context.Context, key interface{}, duration time.Duration) (time.Duration, error) {
+	return updateExpire(ctx, key, duration, a.getTable(ctx, key))
 }
 
 func (a Adapter) GetExpire(ctx context.Context, key interface{}) (time.Duration, error) {
-	return GetExpire(ctx, key)
+	return getExpire(ctx, key)
 }
 
-func (a Adapter) Remove(ctx context.Context, keys ...interface{}) (lastValue *gvar.Var, err error) {
-	if !g.IsEmpty(keys) && len(keys) > 0 {
-		for _, key := range keys {
-			lastValue, err = Remove(ctx, key)
-			if err != nil {
-				return nil, err
-			}
+func (a Adapter) Remove(ctx context.Context, keys ...interface{}) (*gvar.Var, error) {
+	var lastValue *gvar.Var
+	for _, key := range keys {
+		v, err := Remove(ctx, key)
+		if err != nil {
+			return nil, err
 		}
-		return lastValue, nil
+		lastValue = v
 	}
-	return nil, nil
+	return lastValue, nil
 }
 
 func (a Adapter) Clear(ctx context.Context) error {
-	return GetAdapterRedis().Clear(ctx)
+	return getAdapterRedis().Clear(ctx)
 }
 
 func (a Adapter) Close(ctx context.Context) error {
-	return GetAdapterRedis().Close(ctx)
+	return getAdapterRedis().Close(ctx)
 }

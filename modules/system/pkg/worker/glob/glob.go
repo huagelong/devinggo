@@ -8,16 +8,19 @@ package glob
 
 import (
 	"context"
+	"runtime"
+
 	"devinggo/modules/system/pkg/utils/config"
+
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/hibiken/asynq"
-	"runtime"
 )
 
 type Payload struct {
 	Data      interface{}  `json:"data"`
 	CrontabId int64        `json:"crontab_id"`
 	Time      asynq.Option `json:"time"`
+	Retention asynq.Option `json:"retention"`
 	QueueName string       `json:"queue_name"` // 队列名称, 默认为default
 	TaskID    string       `json:"task_id"`    // 任务ID, 用于唯一标识一个任务
 }

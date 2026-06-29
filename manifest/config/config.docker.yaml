@@ -75,58 +75,35 @@ database:
 
   # 默认分组
   default:
-    link: "mysql:root:root@tcp(mysql:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
+    link: "pgsql:postgres:168wang@tcp(122.152.211.127:5432)/devinggo4?sslmode=disable&TimeZone=Asia/Shanghai"
     debug: true # 默认 false
 
 # doc: https://goframe.org/pages/viewpage.action?pageId=1114217
 redis:
-  default:
-    address: redis:6379
-    pass: ""
+  # 同时作为锚点(&redis_default), 其他分组通过 <<: *redis_default 继承, 按需覆盖
+  default: &redis_default
+    address: 122.152.211.127:6379
+    pass: "168wang"
     user: "default"
-    # 是否强制设置为集群工作模式, 默认值：false.
-    # NOTE: 当address是单个endpoint的集群时，系统会自动判定为单实例模式，这时需要设置此项为true.
     cluster: false
-    # 数据库索引(0-15), 默认值: 0.
-    # NOTE: redis cluster 不支持index, 将自动忽略该配置.
     db: 0
-    # 连接最长存活时间, 默认值: 30s, 建议设置的长一些.
-    # 建立连接后, 可用此连接进行多次reids请求,
-    # 从建立连接开始计算, 只要超过这个时间就会自动断开连接,
-    # 就算此时有redis请求也会先关闭当前连接, 然后重新建一个新的连接,
-    # 除非请求是一个阻塞式请求, 比如: BLPop等, 此时连接将始终保持,
-    # 直到从队列读取到数据才会断开连接.
     maxConnLifetime: 30m
-    # 连接最大空闲时间, 默认值: 10s;
-    # 只要连接空闲(没有新请求)超过idleTimeout后, 就会断开连接.
-    # 此值应该小于maxConnLifetime, 才有实际意义.
     idleTimeout: 10m
+    minIdle: 10
+    maxIdle: 1000
+    maxActive: 5000
+    waitTimeout: 30s
+    dialTimeout: 30s
+    readTimeout: 30s
+    writeTimeout: 30s
   cache:
-    address: redis:6379
-    pass: ""
-    user: "default"
+    <<: *redis_default
     db: 1
-    minIdle: 10
-    maxIdle: 1000
-    maxActive: 5000
     idleTimeout: 600s
-    waitTimeout: 30s
-    dialTimeout: 30s
-    readTimeout: 30s
-    writeTimeout: 30s
   websocket:
-    address: redis:6379
-    pass: ""
-    user: "default"
+    <<: *redis_default
     db: 7
-    minIdle: 10
-    maxIdle: 1000
-    maxActive: 5000
     idleTimeout: 600s
-    waitTimeout: 30s
-    dialTimeout: 30s
-    readTimeout: 30s
-    writeTimeout: 30s
 
 jaeger:
   enable: false
@@ -146,13 +123,9 @@ worker:
     - default: 3
     - low: 1
   redis:
-    address: redis:6379
-    pass: ""
-    user: "default"
+    <<: *redis_default
     db: 2
-    dialTimeout: 30s
-    readTimeout: 30s
-    writeTimeout: 30s
+    idleTimeout: 600s
 
 token:
   secretKey: "devinggohello123"                  # 令牌加密秘钥，考虑安全问题生产环境中请修改默认值
@@ -164,10 +137,10 @@ token:
 
 settings:
   superAdminId: 1 # 超级管理员ID
-  initPassword: "123456" # 超级管理员初始密码
+  initPassword: "admin123" # 超级管理员初始密码
   enableGlobalDbCache: false # 是否开启全局数据库缓存，默认false
   logSaveResponseData: true # 是否记录响应数据到日志中，默认true
-  aesKey: "1234567890123456" # AES加密密钥，跟web/admin项目VITE_APP_AES_KEY保持一致
+  aesKey: "1234567890123456" # AES加密密钥，跟admin-ui项目VITE_APP_AES_KEY保持一致
   cors:
     allowDomain: "*" # 允许的域名，默认允许所有
     allowHeaders: "X-App-Id,X-Tenant-Id"

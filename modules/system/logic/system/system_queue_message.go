@@ -8,6 +8,9 @@ package system
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -17,8 +20,9 @@ import (
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
-	websocket2 "devinggo/modules/system/pkg/websocket"
+	"devinggo/modules/system/pkg/websocket"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -41,10 +45,14 @@ func (s *sSystemQueueMessage) Model(ctx context.Context) *gdb.Model {
 }
 
 func (s *sSystemQueueMessage) GetReceiveUserPageList(ctx context.Context, req *model.PageListReq, messageId int64) (rs []*res.MessageReceiveUser, total int, err error) {
-	m := service.SystemUser().Model(ctx).Fields(dao.SystemQueueMessageReceive.Table()+".read_status as read_status_int", dao.SystemUser.Table()+".username", dao.SystemUser.Table()+".nickname").InnerJoinOnFields(dao.SystemQueueMessageReceive.Table(), "id", "=", "user_id")
-	m = m.Where(dao.SystemQueueMessageReceive.Table()+".message_id", messageId)
-	m = m.OrderDesc(dao.SystemUser.Table() + ".created_at")
-	err = orm.GetPageList(m, req).ScanAndCount(&rs, &total, false)
+	m := service.SystemUser().Model(ctx).Fields(
+		fmt.Sprintf(`"%s"."read_status" as read_status_int`, dao.SystemQueueMessageReceive.Table()),
+		fmt.Sprintf(`"%s"."username"`, dao.SystemUser.Table()),
+		fmt.Sprintf(`"%s"."nickname"`, dao.SystemUser.Table()),
+	).InnerJoinOnFields(dao.SystemQueueMessageReceive.Table(), "id", "=", "user_id")
+	m = m.WherePrefix(dao.SystemQueueMessageReceive.Table(), dao.SystemQueueMessageReceive.Columns().MessageId, messageId)
+	req.OrderBy = fmt.Sprintf(`"%s"."%s"`, dao.SystemUser.Table(), dao.SystemUser.Columns().CreatedAt)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&rs, &total)
 	if utils.IsError(err) {
 		return
 	}
@@ -64,30 +72,30 @@ func (s *sSystemQueueMessage) GetPageList(ctx context.Context, req *model.PageLi
 	m := service.SystemQueueMessageReceive().Model(ctx).InnerJoinOnFields(dao.SystemQueueMessage.Table(), "message_id", "=", "id")
 
 	if !g.IsEmpty(contentType) && contentType != "all" {
-		m = m.Where(dao.SystemQueueMessage.Table()+".content_type", contentType)
+		m = m.WherePrefix(dao.SystemQueueMessage.Table(), dao.SystemQueueMessage.Columns().ContentType, contentType)
 	}
 	if !g.IsEmpty(title) {
-		m = m.WhereLike(dao.SystemQueueMessage.Table()+".title", "%"+title+"%")
+		m = m.WherePrefixLike(dao.SystemQueueMessage.Table(), dao.SystemQueueMessage.Columns().Title, "%"+title+"%")
 	}
 
 	if !g.IsEmpty(createdAtArr) {
 		if len(createdAtArr) > 0 {
-			m = m.WhereGTE(dao.SystemQueueMessage.Table()+".created_at", createdAtArr[0]+" 00:00:00")
+			m = m.WherePrefixGTE(dao.SystemQueueMessage.Table(), dao.SystemQueueMessage.Columns().CreatedAt, createdAtArr[0]+" 00:00:00")
 		}
 
 		if len(createdAtArr) > 1 {
-			m = m.WhereLTE(dao.SystemQueueMessage.Table()+".created_at", createdAtArr[1]+"23:59:59")
+			m = m.WherePrefixLTE(dao.SystemQueueMessage.Table(), dao.SystemQueueMessage.Columns().CreatedAt, createdAtArr[1]+"23:59:59")
 		}
 	}
 
-	m = m.Where(dao.SystemQueueMessageReceive.Table()+".user_id", userId)
+	m = m.WherePrefix(dao.SystemQueueMessageReceive.Table(), dao.SystemQueueMessageReceive.Columns().UserId, userId)
 	if readStatusInt != 0 {
-		m = m.Where(dao.SystemQueueMessageReceive.Table()+".read_status", readStatusInt)
+		m = m.WherePrefix(dao.SystemQueueMessageReceive.Table(), dao.SystemQueueMessageReceive.Columns().ReadStatus, readStatusInt)
 	}
 
-	m = m.OrderDesc("message_id")
+	req.OrderBy = fmt.Sprintf(`"%s"."%s"`, dao.SystemQueueMessageReceive.Table(), dao.SystemQueueMessageReceive.Columns().MessageId)
 	var receiveRes []*entity.SystemQueueMessageReceive
-	err = orm.GetPageList(m, req).ScanAndCount(&receiveRes, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&receiveRes, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
@@ -103,6 +111,8 @@ func (s *sSystemQueueMessage) GetPageList(ctx context.Context, req *model.PageLi
 				g.Log().Error(ctx, errorm)
 				continue
 			}
+			// 设置阅读状态
+			systemQueueMessageTmp.ReadStatus = v.ReadStatus
 
 			userInfo, errorm := service.SystemUser().GetInfoById(ctx, newUserId)
 			if utils.IsError(errorm) {
@@ -133,6 +143,13 @@ func (s *sSystemQueueMessage) DeletesRelated(ctx context.Context, ids []int64, u
 	return
 }
 
+const (
+	wsChannelAdminUser   = "private-adminuser-%d"
+	wsEventNotification  = "notification:new"
+	wsBatchSize          = 100
+	wsMaxConcurrentSends = 20
+)
+
 func (s *sSystemQueueMessage) SendMessage(ctx context.Context, sendReq *req.SystemQueueMessagesSend, sendUserId int64, contentType string) (err error, messageId int64) {
 	data := do.SystemQueueMessage{
 		ContentType: contentType,
@@ -148,76 +165,126 @@ func (s *sSystemQueueMessage) SendMessage(ctx context.Context, sendReq *req.Syst
 	}
 
 	messageIdTmp, err := rs.LastInsertId()
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	messageId = int64(messageIdTmp)
 	//异步处理
 	utils.SafeGo(ctx, func(ctx context.Context) {
 		if !g.IsEmpty(sendReq.Users) {
+			// 限制并发发送数量，防止对 WebSocket 服务造成瞬时压力
+			sem := make(chan struct{}, wsMaxConcurrentSends)
 			for _, v := range sendReq.Users {
-				receiveData := do.SystemQueueMessageReceive{
-					MessageId: messageId,
-					UserId:    v,
-				}
-				service.SystemQueueMessageReceive().Model(ctx).Data(receiveData).Insert()
-				s.sendWs(ctx, v)
+				sem <- struct{}{}
+				go func(userId int64) {
+					defer func() { <-sem }()
+					receiveData := do.SystemQueueMessageReceive{
+						MessageId: messageId,
+						UserId:    userId,
+					}
+					_, _ = service.SystemQueueMessageReceive().Model(ctx).Data(receiveData).Insert()
+					s.sendWs(ctx, userId, messageId)
+				}(v)
+			}
+			// 等待所有 goroutine 完成
+			for i := 0; i < cap(sem); i++ {
+				sem <- struct{}{}
 			}
 		} else {
 			//获取所有有效用户，循环插入
-			s.saveAllUserMessageReceive(ctx, messageId, 1)
+			s.saveAllUserMessageReceive(ctx, messageId)
 		}
 	})
 	return
 }
 
-func (s *sSystemQueueMessage) sendWs(ctx context.Context, userId int64) {
-	pageReq := &model.PageListReq{
-		OrderBy:   "created_at",
-		OrderType: "desc",
-	}
-	pageReq.Page = 1
-	pageReq.PageSize = 5
-	search := &req.SystemQueueMessageSearch{
-		ReadStatus: "1",
-	}
-	rs, _, err := service.SystemQueueMessage().GetPageList(ctx, pageReq, userId, search)
-	if err != nil {
-		g.Log().Error(ctx, err)
+func (s *sSystemQueueMessage) sendWs(ctx context.Context, userId int64, messageId int64) {
+	message := &entity.SystemQueueMessage{}
+	err := s.Model(ctx).Where("id", messageId).Scan(message)
+	if utils.IsError(err) || g.IsEmpty(message.Id) {
+		g.Log().Error(ctx, "sendWs: query message failed:", err)
 		return
 	}
-	toId := gconv.String(userId)
-	clientIdWResponse := &websocket2.ClientIdWResponse{
-		ID: toId,
-		WResponse: &websocket2.WResponse{
-			BindEvent: "ev_new_message",
-			Event:     websocket2.IdMessage,
-			Data:      rs,
-			Code:      200,
-			RequestId: "0",
-		},
+
+	notificationData := g.Map{
+		"id":           message.Id,
+		"title":        message.Title,
+		"content":      message.Content,
+		"content_type": message.ContentType,
+		"send_by":      message.SendBy,
 	}
-	websocket2.PublishIdMessage(ctx, toId, clientIdWResponse)
+	if message.CreatedAt != nil {
+		notificationData["created_at"] = message.CreatedAt.Format("Y-m-d H:i:s")
+	}
+
+	sendUserInfo, err := service.SystemUser().GetInfoById(ctx, message.SendBy)
+	if err == nil && !g.IsEmpty(sendUserInfo) {
+		notificationData["send_user"] = g.Map{
+			"id":       sendUserInfo.Id,
+			"nickname": sendUserInfo.Nickname,
+			"username": sendUserInfo.Username,
+		}
+	}
+
+	dataJson, err := json.Marshal(notificationData)
+	if err != nil {
+		g.Log().Error(ctx, "sendWs: marshal notification data failed:", err)
+		return
+	}
+
+	channel := fmt.Sprintf(wsChannelAdminUser, userId)
+	pusherResponse := &websocket.PusherResponse{
+		Event:   wsEventNotification,
+		Channel: channel,
+		Data:    string(dataJson),
+	}
+
+	websocket.SendToChannel(channel, pusherResponse)
+
+	topicMsg := &websocket.TopicWResponse{
+		Topic:          channel,
+		PusherResponse: pusherResponse,
+	}
+	if err := websocket.PublishChannelMessage(ctx, channel, topicMsg); err != nil {
+		g.Log().Error(ctx, "sendWs: cross-server publish failed:", err)
+	}
 }
 
-func (s *sSystemQueueMessage) saveAllUserMessageReceive(ctx context.Context, messageId int64, page int) (err error) {
-	var userList []*res.SystemUserSimple
-	pageSize := 100
-	m := service.SystemUser().Model(ctx).Where(dao.SystemUser.Columns().Status, 1).OrderDesc("id")
-	err = m.Page(page, pageSize).Scan(&userList)
-	if utils.IsError(err) {
-		return
-	}
-	if g.IsEmpty(userList) {
-		return
-	}
-	for _, v := range userList {
-		receiveData := do.SystemQueueMessageReceive{
-			MessageId: messageId,
-			UserId:    v.Id,
+func (s *sSystemQueueMessage) saveAllUserMessageReceive(ctx context.Context, messageId int64) (err error) {
+	page := 1
+	sem := make(chan struct{}, wsMaxConcurrentSends)
+
+	for {
+		var userList []*res.SystemUserSimple
+		m := service.SystemUser().Model(ctx).Where(dao.SystemUser.Columns().Status, 1).OrderDesc("id")
+		err = m.Page(page, wsBatchSize).Scan(&userList)
+		if utils.IsError(err) {
+			g.Log().Error(ctx, "saveAllUserMessageReceive: query users failed:", err)
+			return
 		}
-		service.SystemQueueMessageReceive().Model(ctx).Data(receiveData).Insert()
+		if g.IsEmpty(userList) {
+			break
+		}
+
+		for _, v := range userList {
+			sem <- struct{}{}
+			go func(userId int64) {
+				defer func() { <-sem }()
+				receiveData := do.SystemQueueMessageReceive{
+					MessageId: messageId,
+					UserId:    userId,
+				}
+				_, _ = service.SystemQueueMessageReceive().Model(ctx).Data(receiveData).Insert()
+				s.sendWs(ctx, userId, messageId)
+			}(v.Id)
+		}
+
+		page++
 	}
-	s.saveAllUserMessageReceive(ctx, messageId, page+1)
+
+	// 等待所有 goroutine 完成
+	for i := 0; i < cap(sem); i++ {
+		sem <- struct{}{}
+	}
 	return
 }

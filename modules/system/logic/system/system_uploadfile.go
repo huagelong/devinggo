@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -19,6 +20,7 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -37,7 +39,7 @@ func NewSystemUploadfile() *sSystemUploadfile {
 }
 
 func (s *sSystemUploadfile) Model(ctx context.Context) *gdb.Model {
-	return dao.SystemUploadfile.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
+	return dao.SystemUploadfile.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("id")
 }
 
 func (s *sSystemUploadfile) GetPageList(ctx context.Context, in *model.PageListReq, params *req.SystemUploadFileSearch) (out []*res.SystemUploadFile, total int, err error) {
@@ -63,7 +65,7 @@ func (s *sSystemUploadfile) GetPageList(ctx context.Context, in *model.PageListR
 		m = m.WhereBetween("created_at", params.MinDate+" 00:00:00", params.MaxDate+" 23:59:59")
 	}
 
-	err = orm.GetPageList(m, in).ScanAndCount(&out, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(in).ScanAndCount(&out, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
@@ -89,7 +91,7 @@ func (s *sSystemUploadfile) SaveDb(ctx context.Context, in *res.SystemUploadFile
 		return
 	}
 	rsTmp, err := result.LastInsertId()
-	if err != nil {
+	if utils.IsError(err) {
 		return
 	}
 	rs = gconv.Int64(rsTmp)
@@ -103,11 +105,11 @@ func (s *sSystemUploadfile) GetByHash(ctx context.Context, hash string) (rs *res
 		return
 	}
 	if g.IsEmpty(fileInfo) {
-		s.Model(ctx).Unscoped().Where("hash", hash).Delete()
+		_, _ = s.Model(ctx).Unscoped().Where("hash", hash).Delete()
 		return
 	}
 
-	if err := gconv.Struct(fileInfo, &rs); err != nil {
+	if err := gconv.Struct(fileInfo, &rs); utils.IsError(err) {
 		return nil, err
 	}
 	return
@@ -119,7 +121,7 @@ func (s *sSystemUploadfile) GetFileInfoById(ctx context.Context, id int64) (rs *
 	if utils.IsError(err) {
 		return
 	}
-	if err := gconv.Struct(fileInfo, &rs); err != nil {
+	if err := gconv.Struct(fileInfo, &rs); utils.IsError(err) {
 		return nil, err
 	}
 	return
@@ -132,11 +134,11 @@ func (s *sSystemUploadfile) GetFileInfoByHash(ctx context.Context, hash string) 
 		return
 	}
 	if g.IsEmpty(fileInfo) {
-		s.Model(ctx).Unscoped().Where("hash", hash).Delete()
+		_, _ = s.Model(ctx).Unscoped().Where("hash", hash).Delete()
 		return
 	}
 
-	if err := gconv.Struct(fileInfo, &rs); err != nil {
+	if err := gconv.Struct(fileInfo, &rs); utils.IsError(err) {
 		return nil, err
 	}
 	return

@@ -21,16 +21,16 @@ type SystemDictTypeDao struct {
 
 // SystemDictTypeColumns defines and stores column names for the table system_dict_type.
 type SystemDictTypeColumns struct {
-	Id        string // 主键
-	Name      string // 字典名称
-	Code      string // 字典标示
-	Status    string // 状态 (1正常 2停用)
-	CreatedBy string // 创建者
-	UpdatedBy string // 更新者
+	Id        string //
+	Name      string //
+	Code      string //
+	Status    string //
+	CreatedBy string //
+	UpdatedBy string //
 	CreatedAt string //
 	UpdatedAt string //
-	DeletedAt string // 删除时间
-	Remark    string // 备注
+	DeletedAt string //
+	Remark    string //
 }
 
 // systemDictTypeColumns holds the columns for the table system_dict_type.

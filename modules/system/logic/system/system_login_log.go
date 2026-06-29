@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -21,6 +22,7 @@ import (
 	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/pkg/utils/user_agent"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
@@ -44,7 +46,7 @@ func (s *sSystemLoginLog) Model(ctx context.Context) *gdb.Model {
 }
 
 func (s *sSystemLoginLog) GetPageList(ctx context.Context, req *model.PageListReq, username string) (res []*res.SystemLoginLog, total int, err error) {
-	err = orm.GetPageList(s.Model(ctx), req, g.Map{"username": username}).ScanAndCount(&res, &total, false)
+	err = orm.NewQuery(s.Model(ctx)).WithPageListReq(req, g.Map{"username": username}).ScanAndCount(&res, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
@@ -78,7 +80,7 @@ func (s *sSystemLoginLog) Push(ctx context.Context, username string, err error) 
 
 	loginStatus := 1
 	message := "登录成功"
-	if err != nil {
+	if utils.IsError(err) {
 		loginStatus = 2
 		message = err.Error()
 	}
@@ -96,7 +98,7 @@ func (s *sSystemLoginLog) Push(ctx context.Context, username string, err error) 
 		LoginTime:  gtime.Now(),       // 登录时间
 		Remark:     "",                // 备注
 	}
-	s.Model(ctx).Data(systemLoginLog).Insert()
+	_, _ = s.Model(ctx).Data(systemLoginLog).Insert()
 }
 
 func (s *sSystemLoginLog) handleSearch(ctx context.Context, in *req.SystemLoginLogSearch) (m *gdb.Model) {
@@ -128,13 +130,13 @@ func (s *sSystemLoginLog) handleSearch(ctx context.Context, in *req.SystemLoginL
 func (s *sSystemLoginLog) GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemLoginLogSearch) (rs []*res.SystemLoginLog, total int, err error) {
 	m := s.handleSearch(ctx, in)
 	var entity []*entity.SystemLoginLog
-	err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&entity, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SystemLoginLog, 0)
 	if !g.IsEmpty(entity) {
-		if err = gconv.Structs(entity, &rs); err != nil {
+		if err = gconv.Structs(entity, &rs); utils.IsError(err) {
 			return nil, 0, err
 		}
 	}
@@ -143,7 +145,7 @@ func (s *sSystemLoginLog) GetPageListForSearch(ctx context.Context, req *model.P
 
 func (s *sSystemLoginLog) DeleteLoginLog(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
-	if err != nil {
+	if utils.IsError(err) {
 		return err
 	}
 	return

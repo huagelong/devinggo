@@ -21,9 +21,9 @@ type SystemQueueMessageReceiveDao struct {
 
 // SystemQueueMessageReceiveColumns defines and stores column names for the table system_queue_message_receive.
 type SystemQueueMessageReceiveColumns struct {
-	MessageId  string // 队列消息主键
-	UserId     string // 接收用户主键
-	ReadStatus string // 已读状态 (1未读 2已读)
+	MessageId  string //
+	UserId     string //
+	ReadStatus string //
 }
 
 // systemQueueMessageReceiveColumns holds the columns for the table system_queue_message_receive.

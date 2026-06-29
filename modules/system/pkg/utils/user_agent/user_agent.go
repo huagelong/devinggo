@@ -7,8 +7,10 @@
 package user_agent
 
 import (
-	"devinggo/modules/system/pkg/utils/request"
 	"context"
+
+	"devinggo/modules/system/pkg/utils/request"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/mileusna/useragent"
 )

@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -22,6 +23,7 @@ import (
 	"devinggo/modules/system/pkg/utils/location"
 	"devinggo/modules/system/pkg/utils/request"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
@@ -73,13 +75,13 @@ func (s *sSystemApiLog) handleSearch(ctx context.Context, in *req.SystemApiLogSe
 func (s *sSystemApiLog) GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemApiLogSearch) (rs []*res.SystemApiLog, total int, err error) {
 	m := s.handleSearch(ctx, in)
 	var entity []*entity.SystemApiLog
-	err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&entity, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SystemApiLog, 0)
 	if !g.IsEmpty(entity) {
-		if err = gconv.Structs(entity, &rs); err != nil {
+		if err = gconv.Structs(entity, &rs); utils.IsError(err) {
 			return nil, 0, err
 		}
 	}
@@ -97,7 +99,7 @@ func (s *sSystemApiLog) Push(ctx context.Context) {
 		return
 	}
 
-	permission := contexts.New().GetPermission(ctx)
+	permission := contexts.GetPermission(ctx)
 	var entity *entity.SystemApi
 	if !g.IsEmpty(permission) {
 		err := service.SystemApi().Model(ctx).Where("access_name", permission).Scan(&entity)
@@ -123,7 +125,7 @@ func (s *sSystemApiLog) Push(ctx context.Context) {
 
 	res, bizCode := response.ResponseHandler(r)
 	resJson := response.Json(r, bizCode, res)
-	postData := contexts.New().GetRequestBody(ctx)
+	postData := contexts.GetRequestBody(ctx)
 
 	systemApiLog := &do.SystemApiLog{
 		ApiId:        entity.Id,         // 用户名
@@ -137,12 +139,12 @@ func (s *sSystemApiLog) Push(ctx context.Context) {
 		AccessTime:   gtime.Now(),       // 请求时间
 		Remark:       "",                // 备注
 	}
-	s.Model(ctx).Data(systemApiLog).Insert()
+	_, _ = s.Model(ctx).Data(systemApiLog).Insert()
 }
 
 func (s *sSystemApiLog) DeleteApiLog(ctx context.Context, ids []int64) (err error) {
 	_, err = s.Model(ctx).Unscoped().WhereIn("id", ids).Delete()
-	if err != nil {
+	if utils.IsError(err) {
 		return err
 	}
 	return

@@ -1,0 +1,36 @@
+import type { <%= pascalName %>ListItem } from './model';
+import type { <%= pascalName %>Api } from '#/api/<%= module %>/<%= name %>';
+
+import { get<%= pascalName %>PageList, getRecycle<%= pascalName %>List } from '#/api/<%= module %>/<%= name %>';
+import { useCrudPage } from '#/composables/crud/use-crud-page';
+
+import { create<%= pascalName %>SearchForm } from './schemas';
+
+export function use<%= pascalName %>Crud() {
+  return useCrudPage<<%= pascalName %>ListItem, ReturnType<typeof create<%= pascalName %>SearchForm>>({
+    defaultSearchForm: create<%= pascalName %>SearchForm,
+    fetchList: (params, context) =>
+      context.isRecycleBin ? getRecycle<%= pascalName %>List(params) : get<%= pascalName %>PageList(params),
+    buildParams: (form) => {
+      const params: Partial<<%= pascalName %>Api.ListQuery> = {};
+{% for field in searchFields %}
+{% if field.type === 'dateRange' %}
+      if (form.{{ field.name }}?.length === 2 && form.{{ field.name }}[0]) {
+        params.{{ field.name }} = form.{{ field.name }};
+      }
+{% elif field.type === 'number' %}
+{% if field.name === 'status' %}
+      if (form.{{ field.name }} !== undefined) params.{{ field.name }} = form.{{ field.name }};
+{% else %}
+      if (form.{{ field.name }}) params.{{ field.name }} = form.{{ field.name }};
+{% endif %}
+{% else %}
+      if (form.{{ field.name }}) params.{{ field.name }} = form.{{ field.name }};
+{% endif %}
+{% endfor %}
+      return params;
+    },
+    resolveTotal: (response) =>
+      Number(response?.pageInfo?.total || response?.total || 0),
+  });
+}

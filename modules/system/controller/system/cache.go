@@ -8,10 +8,12 @@ package system
 
 import (
 	"context"
+
 	"devinggo/modules/system/api/system"
 	"devinggo/modules/system/controller/base"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/cache"
+
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
@@ -47,18 +49,33 @@ func (c *cacheController) GetCacheInfo(ctx context.Context, in *system.GetCacheI
 		aofEnabled = "开启"
 	}
 
+	// 计算命中率
+	hits := gconv.Float64(infoStats["keyspace_hits"])
+	misses := gconv.Float64(infoStats["keyspace_misses"])
+	hitRate := float64(0)
+	if hits+misses > 0 {
+		hitRate = hits / (hits + misses) * 100
+	}
+
 	rs := res.CacheInfo{
 		Keys: keys,
 		Server: res.ServerInfo{
-			Version:      gconv.String(infoServer["redis_version"]),
-			RedisMode:    redisMode,
-			RunDays:      gconv.String(infoServer["uptime_in_days"]),
-			AofEnabled:   aofEnabled,
-			UseMemory:    gconv.String(infoMemory["used_memory_human"]),
-			Port:         gconv.String(infoServer["tcp_port"]),
-			Clients:      gconv.String(infoClients["connected_clients"]),
-			ExpiredKeys:  gconv.String(infoStats["expired_keys"]),
-			SysTotalKeys: len(keys),
+			Version:          gconv.String(infoServer["redis_version"]),
+			RedisMode:        redisMode,
+			RunDays:          gconv.String(infoServer["uptime_in_days"]),
+			AofEnabled:       aofEnabled,
+			UseMemory:        gconv.String(infoMemory["used_memory_human"]),
+			Port:             gconv.String(infoServer["tcp_port"]),
+			Clients:          gconv.String(infoClients["connected_clients"]),
+			ExpiredKeys:      gconv.String(infoStats["expired_keys"]),
+			SysTotalKeys:     len(keys),
+			Qps:              gconv.String(infoStats["instantaneous_ops_per_sec"]),
+			HitRate:          hitRate,
+			BlockedClients:   gconv.String(infoClients["blocked_clients"]),
+			RejectedConn:     gconv.String(infoStats["rejected_connections"]),
+			MemoryPeak:       gconv.String(infoMemory["used_memory_peak_human"]),
+			MemFragmentRatio: gconv.String(infoMemory["mem_fragmentation_ratio"]),
+			TotalCommands:    gconv.String(infoStats["total_commands_processed"]),
 		},
 	}
 	out.Data = rs
@@ -67,11 +84,55 @@ func (c *cacheController) GetCacheInfo(ctx context.Context, in *system.GetCacheI
 
 func (c *cacheController) ViewCache(ctx context.Context, in *system.ViewCacheReq) (out *system.ViewCacheRes, err error) {
 	out = &system.ViewCacheRes{}
-	rs, err := cache.Get(ctx, in.Key)
+
+	keyTypeResult, err := cache.GetRedisClient().Do(ctx, "TYPE", in.Key)
 	if err != nil {
 		return
 	}
-	content := rs.String()
+	keyType := keyTypeResult.String()
+
+	var content string
+	switch keyType {
+	case "string":
+		rs, err := cache.Get(ctx, in.Key)
+		if err != nil {
+			return nil, err
+		}
+		content = rs.String()
+	case "hash":
+		rs, err := cache.GetRedisClient().Do(ctx, "HGETALL", in.Key)
+		if err != nil {
+			return nil, err
+		}
+		content = rs.String()
+	case "list":
+		rs, err := cache.GetRedisClient().Do(ctx, "LRANGE", in.Key, 0, -1)
+		if err != nil {
+			return nil, err
+		}
+		content = rs.String()
+	case "set":
+		rs, err := cache.GetRedisClient().Do(ctx, "SMEMBERS", in.Key)
+		if err != nil {
+			return nil, err
+		}
+		content = rs.String()
+	case "zset":
+		rs, err := cache.GetRedisClient().Do(ctx, "ZRANGE", in.Key, 0, -1, "WITHSCORES")
+		if err != nil {
+			return nil, err
+		}
+		content = rs.String()
+	case "none":
+		content = ""
+	default:
+		rs, err := cache.Get(ctx, in.Key)
+		if err != nil {
+			return nil, err
+		}
+		content = rs.String()
+	}
+
 	out.Content = content
 	return
 }

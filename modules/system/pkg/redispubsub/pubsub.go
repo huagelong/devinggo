@@ -8,8 +8,9 @@ package redispubsub
 
 import (
 	"context"
-	"devinggo/modules/system/pkg/utils"
 	"sync"
+
+	"devinggo/modules/system/pkg/utils"
 
 	"github.com/gogf/gf/v2/database/gredis"
 	"github.com/gogf/gf/v2/frame/g"

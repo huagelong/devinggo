@@ -8,6 +8,7 @@ package middleware
 
 import (
 	"devinggo/modules/system/pkg/utils/config"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/text/gstr"

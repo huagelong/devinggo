@@ -1,1 +1,0 @@
-ALTER TABLE devinggo.setting_generate_tables ADD tpl_type varchar(100) DEFAULT 'default' NOT NULL COMMENT 'Vue模板类型: default(Arco Design) / ruoyi(RuoYi)';

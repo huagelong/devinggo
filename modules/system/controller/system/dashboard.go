@@ -8,9 +8,11 @@ package system
 
 import (
 	"context"
+
 	"devinggo/modules/system/api/system"
 	"devinggo/modules/system/controller/base"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
@@ -25,7 +27,7 @@ type dashboardController struct {
 // GetStatistics 获取仪表板统计数据
 func (c *dashboardController) GetStatistics(ctx context.Context, req *system.GetDashboardStatisticsReq) (rs *system.GetDashboardStatisticsRes, err error) {
 	rs = &system.GetDashboardStatisticsRes{}
-	
+
 	statistics, err := service.Dashboard().GetStatistics(ctx)
 	if err != nil {
 		return nil, err
@@ -45,7 +47,7 @@ func (c *dashboardController) GetStatistics(ctx context.Context, req *system.Get
 // GetLoginChart 获取仪表板登录图表数据
 func (c *dashboardController) GetLoginChart(ctx context.Context, req *system.GetDashboardLoginChartReq) (rs *system.GetDashboardLoginChartRes, err error) {
 	rs = &system.GetDashboardLoginChartRes{}
-	
+
 	days := req.Days
 	if days <= 0 || days > 30 {
 		days = 10

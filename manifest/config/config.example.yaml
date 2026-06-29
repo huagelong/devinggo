@@ -75,56 +75,35 @@ database:
 
   # 默认分组
   default:
-    link: "mysql:root:123456@tcp(127.0.0.1:3306)/devinggo?loc=Local&parseTime=true&charset=utf8mb4&multiStatements=true"
+    link: "pgsql:postgres:168wang@tcp(122.152.211.127:5432)/devinggo4?sslmode=disable&TimeZone=Asia/Shanghai"
     debug: true # 默认 false
 
 # doc: https://goframe.org/pages/viewpage.action?pageId=1114217
 redis:
   # 默认分组, 调用方式: g.Redis()
-  default:
+  # 同时作为锚点(&redis_default), 其他分组通过 <<: *redis_default 继承, 按需覆盖
+  default: &redis_default
     address: 127.0.0.1:6379
     pass: "123456"
-    # 是否强制设置为集群工作模式, 默认值：false.
-    # NOTE: 当address是单个endpoint的集群时，系统会自动判定为单实例模式，这时需要设置此项为true.
     cluster: false
-    # 数据库索引(0-15), 默认值: 0.
-    # NOTE: redis cluster 不支持index, 将自动忽略该配置.
     db: 0
-    # 连接最长存活时间, 默认值: 30s, 建议设置的长一些.
-    # 建立连接后, 可用此连接进行多次reids请求,
-    # 从建立连接开始计算, 只要超过这个时间就会自动断开连接,
-    # 就算此时有redis请求也会先关闭当前连接, 然后重新建一个新的连接,
-    # 除非请求是一个阻塞式请求, 比如: BLPop等, 此时连接将始终保持,
-    # 直到从队列读取到数据才会断开连接.
     maxConnLifetime: 30m
-    # 连接最大空闲时间, 默认值: 10s;
-    # 只要连接空闲(没有新请求)超过idleTimeout后, 就会断开连接.
-    # 此值应该小于maxConnLifetime, 才有实际意义.
     idleTimeout: 10m
+    minIdle: 10
+    maxIdle: 1000
+    maxActive: 5000
+    waitTimeout: 30s
+    dialTimeout: 30s
+    readTimeout: 30s
+    writeTimeout: 30s
   cache:
-    address: 127.0.0.1:6379
-    pass: "123456"
+    <<: *redis_default
     db: 1
-    minIdle: 10
-    maxIdle: 1000
-    maxActive: 5000
     idleTimeout: 600s
-    waitTimeout: 30s
-    dialTimeout: 30s
-    readTimeout: 30s
-    writeTimeout: 30s
   websocket:
-    address: 127.0.0.1:6379
-    pass: "123456"
+    <<: *redis_default
     db: 7
-    minIdle: 10
-    maxIdle: 1000
-    maxActive: 5000
     idleTimeout: 600s
-    waitTimeout: 30s
-    dialTimeout: 30s
-    readTimeout: 30s
-    writeTimeout: 30s
 
 jaeger:
   enable: false
@@ -144,12 +123,9 @@ worker:
     - default: 3
     - low: 1
   redis:
-    address: 127.0.0.1:6379
-    pass: "123456"
+    <<: *redis_default
     db: 2
-    dialTimeout: 30s
-    readTimeout: 30s
-    writeTimeout: 30s
+    idleTimeout: 600s
 
 token:
   secretKey: "devinggohello123"                  # 令牌加密秘钥，考虑安全问题生产环境中请修改默认值
@@ -164,9 +140,26 @@ settings:
   initPassword: "123456" # 超级管理员初始密码
   enableGlobalDbCache: false # 是否开启全局数据库缓存，默认false
   logSaveResponseData: true # 是否记录响应数据到日志中，默认true
-  aesKey: "1234567890123456" # AES加密密钥，跟web/admin项目VITE_APP_AES_KEY保持一致
+  aesKey: "1234567890123456" # AES加密密钥，跟admin-ui项目VITE_APP_AES_KEY保持一致
   cors:
     allowDomain: "*" # 允许的域名，默认允许所有
     allowHeaders: "X-App-Id,X-Tenant-Id"
   snowflake:
     workerId: 1 # 机器ID
+# Pusher WebSocket protocol configuration (v8.3.0 compatible)
+pusher:
+  appId: "devinggo-app-id"                    # App ID for HTTP Events API paths (/apps/{app_id}/events)
+  appKey: "devinggo-app-key"                  # App Key for client connection
+  appSecret: "devinggo-app-secret-change-me"  # App Secret for HMAC-SHA256 signature, MUST CHANGE in production!
+  activityTimeout: 120                        # Client activity timeout (seconds), pusher:ping interval, default 120s
+  heartbeatCheckInterval: 60                  # Backend heartbeat check interval (seconds), cleanup timeout connections, default 60s
+  presenceGracePeriod: 30                     # Presence Channel disconnect grace period (seconds), default 30s
+  maxChannelsPerConnection: 100               # Max channels per connection, prevent abuse, default 100
+  clientEventRateLimit: 10                    # Client event rate limit (events/sec/connection), Phase 4 feature, default 10
+  # 日志级别: debug, info, warning, error, none (参考 Pusher Server Library Reference Specification)
+  logLevel: "info"
+  # 端到端加密主密钥（Base64 编码的 32 字节）
+  # 生产环境生成命令: openssl rand -base64 32
+  # 如果为空，则使用 per-channel shared_secret 模式（当前实现）
+  # 配置后，所有加密频道使用主密钥派生，符合 Pusher 标准
+  encryptionMasterKey: "upJgO1NPsU2etMGCuV9TekOqYbjOlIQR+1k6CWeYEZU="

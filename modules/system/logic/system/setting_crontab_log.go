@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -19,8 +20,10 @@ import (
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
@@ -43,13 +46,13 @@ func (s *sSettingCrontabLog) Model(ctx context.Context) *gdb.Model {
 func (s *sSettingCrontabLog) GetPageList(ctx context.Context, req *model.PageListReq, in *req.SettingCrontabLogSearch) (rs []*res.SettingCrontabLog, total int, err error) {
 	m := s.handleSearch(ctx, in).Handler(handler.FilterAuth)
 	var entity []*entity.SettingCrontabLog
-	err = orm.GetPageList(m, req).ScanAndCount(&entity, &total, false)
+	err = orm.NewQuery(m).WithPageListReq(req).ScanAndCount(&entity, &total)
 	if utils.IsError(err) {
 		return nil, 0, err
 	}
 	rs = make([]*res.SettingCrontabLog, 0)
 	if !g.IsEmpty(entity) {
-		if err = gconv.Structs(entity, &rs); err != nil {
+		if err = gconv.Structs(entity, &rs); utils.IsError(err) {
 			return nil, 0, err
 		}
 	}
@@ -74,11 +77,14 @@ func (s *sSettingCrontabLog) Delete(ctx context.Context, ids []int64) (err error
 	return
 }
 
-func (s *sSettingCrontabLog) AddLog(ctx context.Context, id int64, status int, exceptionInfo string) (err error) {
+func (s *sSettingCrontabLog) AddLog(ctx context.Context, id int64, status int, exceptionInfo string, startTime *gtime.Time, endTime *gtime.Time, output string) (err error) {
 	var entity *entity.SettingCrontab
 	err = service.SettingCrontab().Model(ctx).Where("id", id).Scan(&entity)
 	if utils.IsError(err) {
 		return err
+	}
+	if entity == nil {
+		return nil
 	}
 	_, err = s.Model(ctx).Insert(do.SettingCrontabLog{
 		CrontabId:     entity.Id,
@@ -87,6 +93,9 @@ func (s *sSettingCrontabLog) AddLog(ctx context.Context, id int64, status int, e
 		Parameter:     entity.Parameter,
 		Status:        status,
 		ExceptionInfo: exceptionInfo,
+		StartTime:     startTime,
+		EndTime:       endTime,
+		Output:        output,
 	})
 	if utils.IsError(err) {
 		return err

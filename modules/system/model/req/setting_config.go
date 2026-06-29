@@ -29,7 +29,9 @@ type SettingConfigUpdate struct {
 }
 
 type SettingConfigSearch struct {
-	GroupId int64  `json:"group_id" v:"required|integer|min:1"`
-	Key     string `json:"key"`
-	Name    string `json:"name"`
+	GroupId   int64  `json:"group_id" v:"required|integer|min:1"`
+	OrderBy   string `json:"orderBy"`
+	OrderType string `json:"orderType"`
+	Key       string `json:"key"`
+	Name      string `json:"name"`
 }

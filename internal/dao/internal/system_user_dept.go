@@ -21,8 +21,8 @@ type SystemUserDeptDao struct {
 
 // SystemUserDeptColumns defines and stores column names for the table system_user_dept.
 type SystemUserDeptColumns struct {
-	UserId string // 用户主键
-	DeptId string // 部门主键
+	UserId string //
+	DeptId string //
 }
 
 // systemUserDeptColumns holds the columns for the table system_user_dept.

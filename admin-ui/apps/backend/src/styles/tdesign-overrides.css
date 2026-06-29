@@ -1,0 +1,12 @@
+/* Ensure form fields in grid/flex layouts stay full width and aligned. */
+.t-form .t-date-picker,
+.t-form .t-date-range-picker,
+.t-form .t-input,
+.t-form .t-input-number,
+.t-form .t-range-input,
+.t-form .t-select,
+.t-form .t-textarea,
+.t-form .t-time-picker,
+.t-form .t-tree-select {
+  width: 100%;
+}

@@ -8,7 +8,9 @@ package codes
 
 import (
 	"context"
+
 	"devinggo/modules/system/pkg/i18n"
+
 	"github.com/gogf/gf/v2/errors/gcode"
 )
 
@@ -20,6 +22,6 @@ var (
 )
 
 func NewCode(ctx context.Context, code gcode.Code) gcode.Code {
-	tfStr := i18n.Newf(ctx, code.Message())
+	tfStr := i18n.T(ctx, code.Message())
 	return gcode.New(code.Code(), tfStr, nil)
 }

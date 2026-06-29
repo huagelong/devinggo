@@ -8,16 +8,20 @@ package cron
 
 import (
 	"context"
+	"time"
+
 	"devinggo/internal/dao"
 	"devinggo/modules/system/model/res"
 	"devinggo/modules/system/pkg/hook"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/hibiken/asynq"
-	"time"
 )
+
+const singletonRetention = 0
 
 type ConfigProvider struct {
 	Ctx context.Context
@@ -28,15 +32,8 @@ func (p *ConfigProvider) GetConfigs() ([]*asynq.PeriodicTaskConfig, error) {
 	if g.IsEmpty(bindCron) {
 		return nil, nil
 	}
-	defaultAutoCreatedUpdatedBy := false
-	defaultCacheEvict := true
-	defaultUserRelate := false
 	var dbCrons []*res.SettingCrontabOne
-	err := dao.SettingCrontab.Ctx(p.Ctx).Hook(hook.Bind(&hook.HookOptions{
-		CacheEvict:           &defaultCacheEvict,
-		UserRelate:           &defaultUserRelate,
-		AutoCreatedUpdatedBy: &defaultAutoCreatedUpdatedBy,
-	})).Cache(orm.SetCacheOption(p.Ctx, time.Hour*24)).Where("status", 1).Scan(&dbCrons)
+	err := dao.SettingCrontab.Ctx(p.Ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(p.Ctx, time.Hour*24)).Where("status", 1).Scan(&dbCrons)
 	if utils.IsError(err) {
 		return nil, err
 	}
@@ -56,6 +53,7 @@ func (p *ConfigProvider) GetConfigs() ([]*asynq.PeriodicTaskConfig, error) {
 				cronItem.GetPayload().CrontabId = dbCron.Id
 				if singleton == 1 {
 					cronItem.GetPayload().TaskID = typeName + "_" + gconv.String(dbCron.Id)
+					cronItem.GetPayload().Retention = asynq.Retention(singletonRetention)
 				}
 				configs = append(configs, &asynq.PeriodicTaskConfig{
 					Cronspec: rule,

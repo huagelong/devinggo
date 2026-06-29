@@ -8,6 +8,8 @@ package system
 
 import (
 	"context"
+	"strings"
+
 	"devinggo/internal/dao"
 	"devinggo/internal/model/do"
 	"devinggo/internal/model/entity"
@@ -15,13 +17,14 @@ import (
 	"devinggo/modules/system/model"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
+	"devinggo/modules/system/myerror"
 	"devinggo/modules/system/pkg/hook"
 	"devinggo/modules/system/pkg/orm"
 	"devinggo/modules/system/pkg/utils"
 	"devinggo/modules/system/service"
+
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/util/gconv"
 )
 
 type sSettingConfig struct {
@@ -37,7 +40,7 @@ func NewSystemSettingConfig() *sSettingConfig {
 }
 
 func (s *sSettingConfig) Model(ctx context.Context) *gdb.Model {
-	return dao.SettingConfig.Ctx(ctx).Hook(hook.Bind()).Cache(orm.SetCacheOption(ctx)).OnConflict("key")
+	return dao.SettingConfig.Ctx(ctx).Hook(hook.Default()).Cache(orm.SetCacheOption(ctx)).OnConflict("key")
 }
 
 func (s *sSettingConfig) GetConfigByKey(ctx context.Context, key string, groupKey ...string) (rs string, err error) {
@@ -75,8 +78,14 @@ func (s *sSettingConfig) GetList(ctx context.Context, in *req.SettingConfigSearc
 		OrderBy:   "sort",
 		OrderType: "desc",
 	}
+	if !g.IsEmpty(in.OrderBy) {
+		inReq.OrderBy = in.OrderBy
+	}
+	if !g.IsEmpty(in.OrderType) {
+		inReq.OrderType = in.OrderType
+	}
 	m := s.handleSearch(ctx, in)
-	m = orm.GetList(m, inReq)
+	m = orm.NewQuery(m).WithListReq(inReq).Build()
 	err = m.Scan(&out)
 	if utils.IsError(err) {
 		return
@@ -85,6 +94,16 @@ func (s *sSettingConfig) GetList(ctx context.Context, in *req.SettingConfigSearc
 }
 
 func (s *sSettingConfig) SaveConfig(ctx context.Context, data *req.SettingConfigSave) (id int64, err error) {
+	exists, checkErr := s.checkConfigKey(ctx, data.Key)
+	if checkErr != nil {
+		err = checkErr
+		return
+	}
+	if exists {
+		err = myerror.ValidationFailed(ctx, "配置标识已存在")
+		return
+	}
+
 	saveData := do.SettingConfig{
 		Name:             data.Name,
 		GroupId:          data.GroupId,
@@ -97,18 +116,35 @@ func (s *sSettingConfig) SaveConfig(ctx context.Context, data *req.SettingConfig
 	}
 	rs, err := s.Model(ctx).Data(saveData).Insert()
 	if utils.IsError(err) {
+		if isDuplicateKeyError(err) {
+			err = myerror.ValidationFailed(ctx, "配置标识已存在")
+		}
 		return
 	}
-	tmpId, err := rs.LastInsertId()
-	if err != nil {
-		return
-	}
-	id = gconv.Int64(tmpId)
+	_, _ = rs.RowsAffected()
+	id = 0
 	return
+}
+
+func (s *sSettingConfig) checkConfigKey(ctx context.Context, key string) (exists bool, err error) {
+	count, err := dao.SettingConfig.Ctx(ctx).Where(dao.SettingConfig.Columns().Key, key).Count()
+	if utils.IsError(err) {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func isDuplicateKeyError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "duplicate key") || strings.Contains(msg, "unique constraint")
 }
 
 func (s *sSettingConfig) UpdateConfig(ctx context.Context, data *req.SettingConfigUpdate) (err error) {
 	saveData := do.SettingConfig{
+		GroupId:          data.GroupId,
 		Name:             data.Name,
 		Key:              data.Key,
 		Value:            data.Value,
@@ -117,7 +153,15 @@ func (s *sSettingConfig) UpdateConfig(ctx context.Context, data *req.SettingConf
 		Sort:             data.Sort,
 		Remark:           data.Remark,
 	}
-	_, err = s.Model(ctx).Where(dao.SettingConfig.Columns().Key, data.Key).Data(saveData).Update()
+	count, err := s.Model(ctx).Where(dao.SettingConfig.Columns().Key, data.Key).Count()
+	if utils.IsError(err) {
+		return err
+	}
+	if count > 0 {
+		_, err = s.Model(ctx).Where(dao.SettingConfig.Columns().Key, data.Key).Data(saveData).Update()
+	} else {
+		_, err = s.Model(ctx).Data(saveData).Insert()
+	}
 	if utils.IsError(err) {
 		return err
 	}

@@ -14,9 +14,9 @@ type SettingConfig struct {
 	GroupId          any // 组id
 	Key              any // 配置键名
 	Value            any // 配置值
-	Name             any // 配置名称
-	InputType        any // 数据输入类型
-	ConfigSelectData any // 配置选项数据
-	Sort             any // 排序
-	Remark           any // 备注
+	Name             any //
+	InputType        any //
+	ConfigSelectData any //
+	Sort             any //
+	Remark           any //
 }
