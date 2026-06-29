@@ -46,3 +46,4 @@ devinggo.exe
 .spec-workflow
 .gocache
 coverage.out
+sync-to-dev.sh

@@ -12,6 +12,8 @@
 <a href="https://zread.ai/huagelong/devinggo" target="_blank"><img src="https://img.shields.io/badge/Ask_Zread-_.svg?style=flat&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff" alt="zread"/></a>
 </p>
 
+> 老版本请看v1分支
+
 ## 简介
 
 `DevingGo` 是基于 **GoFrame v2.9** 的企业级前后端一体化开发框架，采用模块化架构，内置权限管理、代码生成、任务调度等功能，支持 **Vibe Coding**（AI 辅助编程）一键生成前后端代码。
@@ -46,7 +48,7 @@
 | 数据库 | PostgreSQL >= 13 | — |
 | 缓存/队列 | Redis >= 5 / Asynq v0.24.1 | — |
 | 构建 | — | Vite |
-| UI / 状态 | — | Vue Vben Admin / Pinia |
+| UI / 状态 | — | Vue Vben Admin / Tdesign Vue / Pinia |
 | 其他 | JWT、golang-migrate、excelize、OpenTelemetry、雪花算法 ID | Vue Router / Axios |
 
 ## 项目结构
@@ -71,7 +73,7 @@ devinggo/
 > **推荐使用 Codex。** 本项目内置两个 Skill：`devinggo-project-init`（环境检查与项目初始化）和 `devinggo-generator`（代码生成）。
 > 在 Codex 中直接使用下列提示词即可；使用其他 AI 工具时，请将 `.codex/skills/` 下的 Skill 文件配置到对应工具，并保留 Skill 名称。
 
-**一键初始化环境与服务：**
+**使用codex初始化环境与服务：**
 
 ```text
 使用 $devinggo-project-init 帮我检查本机环境，配置 DevingGo，初始化数据库，并启动后端、Worker 和前端服务。
@@ -87,14 +89,47 @@ Go >= 1.23.4、PostgreSQL >= 13、Redis >= 5、Make（推荐）
 
 > Windows 需安装 make，可通过 [Chocolatey](https://chocolatey.org/)、[Scoop](https://scoop.sh/) 或下载 [MinGW](https://www.mingw-w64.org/) make 并加入 PATH。
 
+**make 编译环境安装（Chocolatey 方式）：**
+
+打开 cmd（管理员权限）执行：
+
+```bat
+@powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))" && SET PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin
+```
+
+或打开 PowerShell（管理员权限）执行：
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+```
+
+安装 make、sed、golang、nodejs：
+
+```bash
+choco install make
+choco install sed
+choco install golang
+choco install nodejs
+```
+
 ### 手动步骤
 
 ```bash
-git clone <repo-url> devinggo && cd devinggo
-cp manifest/config/config.example.yaml manifest/config/config.yaml   # 配置 PostgreSQL、Redis
+git clone https://github.com/huagelong/devinggo.git && cd devinggo
+
+# 1. 配置文件准备
+# 后端配置（生产部署）
+cp manifest/config/config.example.yaml manifest/config/config.yaml   # 复制配置模板
+# 修改 manifest/config/config.yaml 中的 PostgreSQL、Redis 连接信息
+
+# 开发配置（本地开发时使用）
+cp hack/config.example.yaml hack/config.yaml   # 复制开发配置模板
+# 修改 hack/config.yaml 中的 PostgreSQL、Redis 连接信息
+
+# 2. 构建与启动
 make build                                                           # 构建
-./devinggo migrate:up                                                # 迁移数据库
-./devinggo                                                           # 启动（HTTP + Worker）
+go run main.go migrate:up                                                # 迁移数据库
+go run main.go                                                          # 启动（HTTP + Worker）
 ```
 
 **访问地址：** API http://localhost:8070 ｜ 文档 http://localhost:8070/swagger ｜ 账号 `superAdmin` / `admin123`
@@ -104,7 +139,10 @@ make build                                                           # 构建
 ### Docker
 
 ```text
-请使用 Codex 帮我基于当前项目构建 DevingGo Docker 镜像，并根据我的数据库和 Redis 地址生成部署步骤。
+# 使用codex
+
+请帮我基于当前项目构建 DevingGo Docker 镜像，并根据我的数据库和 Redis 地址生成部署步骤。
+
 ```
 
 ### 二进制部署
