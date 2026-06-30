@@ -29,11 +29,11 @@ interface BackendRouter {
  * - type=I：IFrame 路由
  */
 function transformBackendRouters(
-  routers: BackendRouter[],
+  routers: BackendRouter[] | null | undefined,
 ): RouteRecordStringComponent[] {
   const result: RouteRecordStringComponent[] = [];
 
-  for (const router of routers) {
+  for (const router of Array.isArray(routers) ? routers : []) {
     // 按钮类型仅作为权限码，不生成路由
     if (router.meta.type === 'B') {
       continue;

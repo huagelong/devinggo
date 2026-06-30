@@ -65,6 +65,7 @@ func (s *sSystemMenu) GetSuperAdminRouters(ctx context.Context) (routes []*res.R
 }
 
 func (s *sSystemMenu) treeList(nodes []entity.SystemMenu) (tree []*res.Router) {
+	tree = make([]*res.Router, 0)
 	type itemTree map[int64]*res.Router
 	itemList := make(itemTree)
 
