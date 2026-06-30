@@ -4,7 +4,7 @@ import type { VNode } from 'vue';
 import { computed, ref, useAttrs, watch, watchEffect } from 'vue';
 
 import { usePagination } from '@vben/hooks';
-import { EmptyIcon, Grip, listIcons } from '@vben/icons';
+import { EmptyIcon, Grip, listIcons, loadIconifyCollection } from '@vben/icons';
 import { $t } from '@vben/locales';
 
 import {
@@ -74,12 +74,16 @@ const currentSelect = ref('');
 const keyword = ref('');
 const keywordDebounce = refDebounced(keyword, 300);
 const innerIcons = ref<string[]>([]);
+const localCollectionVersion = ref(0);
 
 watchDebounced(
   () => props.prefix,
   async (prefix) => {
     if (prefix && prefix !== 'svg' && props.autoFetchApi) {
       innerIcons.value = await fetchIconsData(prefix);
+    } else if (prefix && prefix !== 'svg') {
+      await loadIconifyCollection(prefix);
+      localCollectionVersion.value += 1;
     }
   },
   { immediate: true, debounce: 500, maxWait: 1000 },
@@ -95,6 +99,7 @@ const currentList = computed(() => {
       ) {
         return innerIcons.value;
       }
+      void localCollectionVersion.value;
       const icons = listIcons('', props.prefix);
       if (icons.length === 0) {
         console.warn(`No icons found for prefix: ${props.prefix}`);
