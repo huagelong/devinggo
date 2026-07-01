@@ -65,7 +65,7 @@ function transformBackendRouters(
       component,
       meta: {
         title: router.meta.title,
-        icon: router.meta.icon || undefined,
+        icon: normalizeMenuIcon(router.meta.icon),
         hideInMenu: router.meta.hidden,
         hideInBreadcrumb: router.meta.hiddenBreadcrumb,
       },
@@ -82,6 +82,13 @@ function transformBackendRouters(
   }
 
   return result;
+}
+
+function normalizeMenuIcon(icon?: string) {
+  if (!icon) {
+    return undefined;
+  }
+  return icon.includes(':') ? icon : `lucide:${icon}`;
 }
 
 /**

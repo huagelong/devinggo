@@ -1,6 +1,7 @@
 ﻿<script lang="ts" setup>
 import { computed, ref } from 'vue';
 
+import { VbenIcon } from '@vben/common-ui';
 import { menuIconNames } from '@vben/icons';
 import { $t } from '@vben/locales';
 
@@ -30,6 +31,10 @@ const filteredIcons = computed(() => {
   return menuIconNames.filter((name) => name.includes(kw));
 });
 
+function toLucideIcon(name?: string) {
+  return name ? `lucide:${name}` : '';
+}
+
 function handleSelect(name: string) {
   emit('update:modelValue', name);
   popupVisible.value = false;
@@ -56,7 +61,7 @@ function handleSelect(name: string) {
         v-if="modelValue"
         class="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-gray-200"
       >
-        <i :class="`i-lucide:${modelValue}`" class="text-base" />
+        <VbenIcon :icon="toLucideIcon(modelValue)" class="size-4" />
       </span>
     </div>
     <template #content>
@@ -77,7 +82,7 @@ function handleSelect(name: string) {
             :title="name"
             @click="handleSelect(name)"
           >
-            <i :class="`i-lucide:${name}`" class="text-lg" />
+            <VbenIcon :icon="toLucideIcon(name)" class="size-5" />
           </div>
         </div>
         <div v-if="filteredIcons.length === 0" class="py-4 text-center text-xs text-muted-foreground/80">

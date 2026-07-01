@@ -27,4 +27,43 @@ describe('getAllMenusApi', () => {
 
     await expect(getAllMenusApi()).resolves.toEqual([]);
   });
+
+  it('normalizes bare menu icon names to lucide icon keys', async () => {
+    vi.mocked(getSystemInfoApi).mockResolvedValue({
+      codes: [],
+      roles: [],
+      routers: [
+        {
+          children: [],
+          component: 'system/menu/index',
+          id: 1,
+          meta: {
+            hidden: false,
+            hiddenBreadcrumb: false,
+            icon: 'user',
+            title: 'Menu',
+            type: 'M',
+          },
+          name: 'SystemMenu',
+          parent_id: 0,
+          path: '/system/menu',
+          redirect: '',
+        },
+      ],
+      user: {
+        avatar: '',
+        id: 1,
+        nickname: 'Admin',
+        username: 'admin',
+      },
+    } as any);
+
+    await expect(getAllMenusApi()).resolves.toMatchObject([
+      {
+        meta: {
+          icon: 'lucide:user',
+        },
+      },
+    ]);
+  });
 });
