@@ -1,6 +1,7 @@
 ﻿<script lang="ts" setup>
 import { computed, ref } from 'vue';
 
+import { menuIconNames } from '@vben/icons';
 import { $t } from '@vben/locales';
 
 import {
@@ -10,58 +11,6 @@ import {
   Input,
   Popup,
 } from 'tdesign-vue-next';
-
-// Common TDesign icons used in admin menus
-const iconList = [
-  'app',
-  'dashboard',
-  'user-circle',
-  'lock-on',
-  'menu-fold',
-  'setting',
-  'file',
-  'folder',
-  'browse',
-  'edit',
-  'delete',
-  'add',
-  'search',
-  'filter',
-  'download',
-  'upload',
-  'link',
-  'image',
-  'video',
-  'notification',
-  'chat',
-  'mail',
-  'calendar',
-  'time',
-  'chart-bar',
-  'chart-line',
-  'chart-pie',
-  'server',
-  'code',
-  'bug',
-  'tools',
-  'precise-monitor',
-  'root-list',
-  'assignment',
-  'save',
-  'print',
-  'share',
-  'star',
-  'heart',
-  'thumbup',
-  'home',
-  'layers',
-  'toggle-left',
-  'map',
-  'map-information',
-  'logo-wrench',
-  'control-platform',
-  ' rolled-back',
-];
 
 const props = defineProps<{
   modelValue?: string;
@@ -76,9 +25,9 @@ const popupVisible = ref(false);
 const searchKeyword = ref('');
 
 const filteredIcons = computed(() => {
-  if (!searchKeyword.value) return iconList;
+  if (!searchKeyword.value) return menuIconNames;
   const kw = searchKeyword.value.toLowerCase();
-  return iconList.filter((name) => name.includes(kw));
+  return menuIconNames.filter((name) => name.includes(kw));
 });
 
 function handleSelect(name: string) {
@@ -86,9 +35,6 @@ function handleSelect(name: string) {
   popupVisible.value = false;
 }
 
-function handleInput(val: string) {
-  emit('update:modelValue', val);
-}
 </script>
 
 <template>
@@ -103,8 +49,8 @@ function handleInput(val: string) {
         :value="modelValue"
         :placeholder="placeholder || $t('ui.placeholder.input')"
         clearable
-        @input="handleInput"
-        @clear="handleInput('')"
+        readonly
+        @clear="emit('update:modelValue', '')"
       />
       <span
         v-if="modelValue"
