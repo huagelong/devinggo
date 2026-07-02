@@ -409,6 +409,10 @@ type (
 		Model(ctx context.Context) *gdb.Model
 		GetRoleIdsByUserId(ctx context.Context, userId int64) (roleIds []int64, err error)
 	}
+	IDbMonitor interface {
+		ListGroups(ctx context.Context) (groups []res.DbMonitorGroup, err error)
+		GetMonitor(ctx context.Context, groupName string) (out *res.DbMonitorPayload, err error)
+	}
 )
 
 var (
@@ -446,6 +450,7 @@ var (
 	localSystemUserDept            ISystemUserDept
 	localSystemUserPost            ISystemUserPost
 	localSystemUserRole            ISystemUserRole
+	localDbMonitor                 IDbMonitor
 )
 
 func CodeGen() ICodeGen {
@@ -820,4 +825,15 @@ func SystemUserRole() ISystemUserRole {
 
 func RegisterSystemUserRole(i ISystemUserRole) {
 	localSystemUserRole = i
+}
+
+func DbMonitor() IDbMonitor {
+	if localDbMonitor == nil {
+		panic("implement not found for interface IDbMonitor, forgot register?")
+	}
+	return localDbMonitor
+}
+
+func RegisterDbMonitor(i IDbMonitor) {
+	localDbMonitor = i
 }

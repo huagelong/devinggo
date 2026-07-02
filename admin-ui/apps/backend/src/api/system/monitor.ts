@@ -104,6 +104,64 @@ export namespace MonitorApi {
     uptime: number;
     server_time: string;
   }
+
+  export interface DbMonitorGroup {
+    groupName: string;
+    isDefault: boolean;
+    dbType: string;
+  }
+
+  export interface DbMonitorSummary {
+    connectionStatus: string;
+    currentConn: number;
+    activeConn: number;
+    databaseSize: number;
+    hitRate: number;
+    slowQueryEnabled: boolean;
+  }
+
+  export interface DbMonitorOverview {
+    groupName: string;
+    databaseName: string;
+    version: string;
+    maxConnections: number;
+    currentConnections: number;
+    activeConnections: number;
+    idleConnections: number;
+    waitingConnections: number;
+    xactCommit: number;
+    xactRollback: number;
+    hitRate: number;
+    databaseSize: number;
+  }
+
+  export interface DbMonitorTimeseriesPoint {
+    time: string;
+    tps: number;
+    rollbackTps: number;
+    avgQueryMs?: null | number;
+    slowQueryCount?: null | number;
+  }
+
+  export interface DbMonitorCapabilities {
+    hasPgStatStatements: boolean;
+    availableMetrics: string[];
+    unavailableMetrics: string[];
+    slowQueryThreshold: number;
+  }
+
+  export interface DbMonitorAlert {
+    level: string;
+    message: string;
+  }
+
+  export interface DbMonitorResponse {
+    summary: DbMonitorSummary;
+    overview: DbMonitorOverview;
+    timeseries: DbMonitorTimeseriesPoint[];
+    capabilities: DbMonitorCapabilities;
+    alerts: DbMonitorAlert[];
+  }
 }
 
 export function getOnlineUserPageList(params: MonitorApi.OnlineUserQuery) {
@@ -140,5 +198,20 @@ export function clearAllCache() {
 export function getServerInfo() {
   return requestClient.get<MonitorApi.ServerInfoResponse>(
     '/system/server/monitor',
+  );
+}
+
+export function getDbMonitorGroups() {
+  return requestClient.get<MonitorApi.DbMonitorGroup[]>(
+    '/system/dbMonitor/groups',
+  );
+}
+
+export function getDbMonitorInfo(groupName: string) {
+  return requestClient.get<MonitorApi.DbMonitorResponse>(
+    '/system/dbMonitor/monitor',
+    {
+      params: { groupName },
+    },
   );
 }

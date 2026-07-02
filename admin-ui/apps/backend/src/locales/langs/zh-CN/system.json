@@ -493,6 +493,32 @@
       "loginTime": "登录时间",
       "searchPlaceholder": "请输入用户名",
       "forceLogout": "强制下线"
+    },
+    "db": {
+      "title": "数据库监控",
+      "group": "数据库分组",
+      "overview": "概览",
+      "timeseries": "实时指标",
+      "capabilities": "能力状态",
+      "connectionStatus": "连接状态",
+      "currentConn": "当前连接数",
+      "activeConn": "活跃连接数",
+      "databaseSize": "数据库大小",
+      "hitRate": "缓存命中率",
+      "version": "PostgreSQL 版本",
+      "databaseName": "数据库名",
+      "maxConnections": "最大连接数",
+      "idleConnections": "空闲连接数",
+      "waitingConnections": "等待连接数",
+      "xactCommit": "事务提交数",
+      "xactRollback": "事务回滚数",
+      "tps": "TPS",
+      "rollbackTps": "回滚 TPS",
+      "avgQueryMs": "平均执行耗时",
+      "slowQueryCount": "慢查询次数",
+      "dataCollecting": "数据采集中",
+      "pgStatStatementsMissing": "当前分组未启用 pg_stat_statements",
+      "lastRefreshAt": "最近刷新时间"
     }
   },
   "logs": {

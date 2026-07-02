@@ -488,6 +488,32 @@
       "loginTime": "Login Time",
       "searchPlaceholder": "Please enter username",
       "forceLogout": "Force Logout"
+    },
+    "db": {
+      "title": "Database Monitor",
+      "group": "Database Group",
+      "overview": "Overview",
+      "timeseries": "Realtime Metrics",
+      "capabilities": "Capabilities",
+      "connectionStatus": "Connection Status",
+      "currentConn": "Current Connections",
+      "activeConn": "Active Connections",
+      "databaseSize": "Database Size",
+      "hitRate": "Hit Rate",
+      "version": "PostgreSQL Version",
+      "databaseName": "Database Name",
+      "maxConnections": "Max Connections",
+      "idleConnections": "Idle Connections",
+      "waitingConnections": "Waiting Connections",
+      "xactCommit": "Committed Transactions",
+      "xactRollback": "Rolled Back Transactions",
+      "tps": "TPS",
+      "rollbackTps": "Rollback TPS",
+      "avgQueryMs": "Average Query Time",
+      "slowQueryCount": "Slow Query Count",
+      "dataCollecting": "Collecting Data",
+      "pgStatStatementsMissing": "pg_stat_statements is unavailable for this group",
+      "lastRefreshAt": "Last Refresh"
     }
   },
   "logs": {
