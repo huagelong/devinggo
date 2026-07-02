@@ -1,4 +1,4 @@
-﻿insert into "setting_config"("group_id", "key", "value", "name", "input_type", "config_select_data", "sort", "remark")
+insert into "setting_config"("group_id", "key", "value", "name", "input_type", "config_select_data", "sort", "remark")
 values (2, 'access_key', '8aF6jkyh6bEnd4fkPHDc', 'Access Key Id', 'input', '', 95, '本地存储不需要填写'),
        (2, 'bucket', 'cicadacs', '存储桶名字（Bucket）', 'input', '', 92, '本地存储不需要填写'),
        (2, 'del_local', FALSE, '是否删除本地存储', 'switch', '', 97,

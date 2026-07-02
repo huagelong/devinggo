@@ -16,7 +16,6 @@ import {
   Button,
   Card,
   Select,
-  Space,
   Switch,
   TabPanel,
   Tabs,
@@ -346,40 +345,53 @@ onUnmounted(() => {
 <template>
   <Page auto-content-height>
     <div class="flex flex-col gap-4">
-      <Card class="overflow-hidden border-0 bg-gradient-to-r from-slate-900 via-slate-800 to-cyan-900 text-white shadow-sm">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div class="text-xs uppercase tracking-[0.28em] text-white/60">
-              PostgreSQL
+      <Card class="border-border/70 bg-background/95 shadow-sm">
+        <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-muted-foreground/70">
+              <span class="h-2 w-2 rounded-full bg-emerald-500" />
+              <span>PostgreSQL</span>
             </div>
-            <div class="mt-2 text-2xl font-semibold">
+            <div class="mt-2 flex flex-wrap items-center gap-3">
+              <div class="text-2xl font-semibold text-foreground">
+                {{ $t('system.monitor.db.title') }}
+              </div>
+              <Tag theme="primary" variant="light">
+                {{ activeGroup || '-' }}
+              </Tag>
+            </div>
+            <div class="mt-2 text-sm text-muted-foreground">
               {{ $t('system.monitor.db.title') }}
-            </div>
-            <div class="mt-1 text-sm text-white/70">
-              {{ activeGroup || '-' }}
+              · PostgreSQL
             </div>
           </div>
-          <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+
+          <div class="grid gap-3 md:grid-cols-2 2xl:flex 2xl:flex-wrap 2xl:items-center 2xl:justify-end">
             <Select
               v-model="activeGroup"
-              class="w-full min-w-40 sm:w-44"
+              class="w-full min-w-52"
               :options="groupOptions"
             />
-            <Space align="center">
-              <span class="text-sm text-white/70">{{ $t('common.refresh') }}</span>
+
+            <div class="flex items-center justify-between rounded-lg border border-border/70 bg-muted/30 px-3 py-2">
+              <span class="text-sm text-muted-foreground">{{ $t('common.refresh') }}</span>
               <Switch v-model="autoRefresh" size="small" />
-            </Space>
+            </div>
+
             <Select
               v-model="refreshInterval"
-              class="w-full min-w-24 sm:w-28"
+              class="w-full min-w-32"
               :options="refreshIntervalOptions"
             />
+
             <Button theme="primary" @click="handleManualRefresh">
               {{ $t('common.refresh') }}
             </Button>
-            <Tag theme="primary" variant="light-outline">
-              {{ $t('system.monitor.db.lastRefreshAt') }}: {{ lastRefreshAt || '-' }}
-            </Tag>
+
+            <div class="rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+              <span class="mr-2">{{ $t('system.monitor.db.lastRefreshAt') }}</span>
+              <span class="font-medium text-foreground">{{ lastRefreshAt || '-' }}</span>
+            </div>
           </div>
         </div>
       </Card>
