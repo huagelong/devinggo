@@ -1,29 +1,11 @@
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 
 import Editor from '@tinymce/tinymce-vue';
 import tinymce from 'tinymce';
-
-import 'tinymce/icons/default';
-import 'tinymce/models/dom';
-import 'tinymce/plugins/advlist';
-import 'tinymce/plugins/autolink';
-import 'tinymce/plugins/charmap';
-import 'tinymce/plugins/code';
-import 'tinymce/plugins/fullscreen';
-import 'tinymce/plugins/link';
-import 'tinymce/plugins/lists';
-import 'tinymce/plugins/preview';
-import 'tinymce/plugins/table';
-import 'tinymce/plugins/wordcount';
-import 'tinymce/themes/silver';
-
-void tinymce;
-
-const { isDark } = usePreferences();
 
 const props = defineProps<{
   modelValue?: string;
@@ -32,6 +14,36 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void;
 }>();
+
+let tinymceAssetsLoader: null | Promise<void> = null;
+
+function ensureTinymceAssets() {
+  if (!tinymceAssetsLoader) {
+    const globalTinymce = globalThis as typeof globalThis & { tinymce?: typeof tinymce };
+    globalTinymce.tinymce = tinymce;
+    tinymceAssetsLoader = Promise.all([
+      import('tinymce/icons/default'),
+      import('tinymce/models/dom'),
+      import('tinymce/plugins/advlist'),
+      import('tinymce/plugins/autolink'),
+      import('tinymce/plugins/charmap'),
+      import('tinymce/plugins/code'),
+      import('tinymce/plugins/fullscreen'),
+      import('tinymce/plugins/link'),
+      import('tinymce/plugins/lists'),
+      import('tinymce/plugins/preview'),
+      import('tinymce/plugins/table'),
+      import('tinymce/plugins/wordcount'),
+      import('tinymce/themes/silver'),
+    ]).then(() => {
+      globalTinymce.tinymce = tinymce;
+    });
+  }
+
+  return tinymceAssetsLoader;
+}
+
+const { isDark } = usePreferences();
 
 const innerValue = computed({
   get: () =>
@@ -44,8 +56,17 @@ const innerValue = computed({
 });
 
 const editorVisible = ref(true);
+const editorReady = ref(false);
+
+onMounted(async () => {
+  await ensureTinymceAssets();
+  editorReady.value = true;
+});
 
 watch(isDark, () => {
+  if (!editorReady.value) {
+    return;
+  }
   editorVisible.value = false;
   try {
     tinymce.remove();
@@ -70,12 +91,12 @@ function applyEditorTheme(editor: any) {
       html.style.backgroundColor = '#1e1e1e';
       body.style.backgroundColor = '#1e1e1e';
       body.style.color = '#e0e0e0';
-      body.setAttribute('data-mce-theme', 'dark');
+      body.dataset.mceTheme = 'dark';
     } else {
       html.style.backgroundColor = '#ffffff';
       body.style.backgroundColor = '#ffffff';
       body.style.color = '#333333';
-      body.removeAttribute('data-mce-theme');
+      delete body.dataset.mceTheme;
     }
   }, 100);
 }
@@ -109,7 +130,7 @@ const initOptions = computed(() => ({
 <template>
   <div class="config-rich-text-editor">
     <Editor
-      v-if="editorVisible"
+      v-if="editorReady && editorVisible"
       v-model="innerValue"
       :init="initOptions"
       output-format="html"
