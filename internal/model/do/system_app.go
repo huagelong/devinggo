@@ -16,7 +16,6 @@ type SystemApp struct {
 	GroupId     any         //
 	AppName     any         //
 	AppId       any         //
-	AppKey      any         //
 	AppSecret   any         //
 	Status      any         //
 	Description any         //
@@ -26,4 +25,5 @@ type SystemApp struct {
 	UpdatedAt   *gtime.Time //
 	DeletedAt   *gtime.Time //
 	Remark      any         //
+	AppKey      any         //
 }

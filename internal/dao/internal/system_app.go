@@ -25,7 +25,6 @@ type SystemAppColumns struct {
 	GroupId     string //
 	AppName     string //
 	AppId       string //
-	AppKey      string //
 	AppSecret   string //
 	Status      string //
 	Description string //
@@ -35,6 +34,7 @@ type SystemAppColumns struct {
 	UpdatedAt   string //
 	DeletedAt   string //
 	Remark      string //
+	AppKey      string //
 }
 
 // systemAppColumns holds the columns for the table system_app.
@@ -43,7 +43,6 @@ var systemAppColumns = SystemAppColumns{
 	GroupId:     "group_id",
 	AppName:     "app_name",
 	AppId:       "app_id",
-	AppKey:      "app_key",
 	AppSecret:   "app_secret",
 	Status:      "status",
 	Description: "description",
@@ -53,6 +52,7 @@ var systemAppColumns = SystemAppColumns{
 	UpdatedAt:   "updated_at",
 	DeletedAt:   "deleted_at",
 	Remark:      "remark",
+	AppKey:      "app_key",
 }
 
 // NewSystemAppDao creates and returns a new DAO object for table data access.
