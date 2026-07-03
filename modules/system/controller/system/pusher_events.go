@@ -36,7 +36,7 @@ func (c *cPusherEvents) Events(ctx context.Context, req *system.PusherEventsReq)
 	r := g.RequestFromCtx(ctx)
 
 	// 1. 验证应用配置
-	config, err := getAppConfig(ctx)
+	config, err := getAppConfigByID(ctx, req.AppId)
 	if err != nil {
 		return nil, err
 	}
@@ -139,10 +139,11 @@ func (c *cPusherEvents) Events(ctx context.Context, req *system.PusherEventsReq)
 		g.Log().Debugf(ctx, "Sending to channel: %s, event: %s", channel, req.Name)
 
 		// 1) 先发送给本地服务器的客户端
-		websocket.SendToChannelWithExclude(channel, pusherResponse, req.SocketId)
+		websocket.SendToChannelWithExclude(req.AppId, channel, pusherResponse, req.SocketId)
 
 		// 2) 再发布到其他服务器（通过Redis PubSub）
 		topicMsg := &websocket.TopicWResponse{
+			AppID:           req.AppId,
 			Topic:           channel,
 			ExcludeSocketID: req.SocketId,
 			PusherResponse:  pusherResponse,
@@ -180,12 +181,7 @@ func (c *cPusherEvents) Events(ctx context.Context, req *system.PusherEventsReq)
 
 				// 只有 presence 频道才返回 user_count
 				if websocket.IsPresenceChannel(channel) {
-					members, err := websocket.GetPresenceMembers4Redis(ctx, channel)
-					if err != nil {
-						g.Log().Warning(ctx, "Events: Failed to get presence members:", err)
-					} else {
-						attr.UserCount = len(members)
-					}
+					attr.UserCount = len(websocket.GetUserIDsBySocketIDs(ctx, websocket.GetAllSocketIDByChannelForApp(ctx, req.AppId, channel)))
 				}
 
 				channelsInfo[channel] = attr
@@ -217,7 +213,7 @@ func (c *cPusherEvents) BatchEvents(ctx context.Context, req *system.PusherBatch
 	r := g.RequestFromCtx(ctx)
 
 	// 1. 验证应用配置
-	config, err := getAppConfig(ctx)
+	config, err := getAppConfigByID(ctx, req.AppId)
 	if err != nil {
 		return nil, err
 	}
@@ -299,10 +295,11 @@ func (c *cPusherEvents) BatchEvents(ctx context.Context, req *system.PusherBatch
 		}
 
 		// 1) 先发送给本地服务器的客户端
-		websocket.SendToChannelWithExclude(event.Channel, pusherResponse, event.SocketId)
+		websocket.SendToChannelWithExclude(req.AppId, event.Channel, pusherResponse, event.SocketId)
 
 		// 2) 再发布到其他服务器（通过Redis PubSub）
 		topicMsg := &websocket.TopicWResponse{
+			AppID:           req.AppId,
 			Topic:           event.Channel,
 			ExcludeSocketID: event.SocketId,
 			PusherResponse:  pusherResponse,
@@ -347,13 +344,8 @@ func (c *cPusherEvents) BatchEvents(ctx context.Context, req *system.PusherBatch
 
 				// 只有 presence 频道才返回 user_count
 				if includeUserCount && websocket.IsPresenceChannel(event.Channel) {
-					members, err := websocket.GetPresenceMembers4Redis(ctx, event.Channel)
-					if err != nil {
-						g.Log().Warning(ctx, "BatchEvents: Failed to get presence members:", err)
-					} else {
-						userCount := len(members)
-						result.UserCount = &userCount
-					}
+					userCount := len(websocket.GetUserIDsBySocketIDs(ctx, websocket.GetAllSocketIDByChannelForApp(ctx, req.AppId, event.Channel)))
+					result.UserCount = &userCount
 				}
 			}
 
@@ -372,7 +364,7 @@ func (c *cPusherEvents) SendToUser(ctx context.Context, req *system.PusherSendTo
 	r := g.RequestFromCtx(ctx)
 
 	// 1. 验证应用配置
-	config, err := getAppConfig(ctx)
+	config, err := getAppConfigByID(ctx, req.AppId)
 	if err != nil {
 		return nil, err
 	}
@@ -417,9 +409,15 @@ func (c *cPusherEvents) SendToUser(ctx context.Context, req *system.PusherSendTo
 		return nil, signatureInvalidError(r)
 	}
 
-	// 4. 通过 user_id 获取 socket_id（从 Redis 映射）
-	socketId := websocket.GetSocketIdByUserId(ctx, req.UserId)
-	if socketId == "" {
+	// 4. 通过 user_id 获取当前 app 下的 socket_id 列表
+	allSocketIDs := websocket.GetAllSocketIdsByUserId(ctx, req.UserId)
+	socketIDs := make([]string, 0, len(allSocketIDs))
+	for _, socketID := range allSocketIDs {
+		if websocket.GetAppIDBySocketId4Redis(ctx, socketID) == req.AppId {
+			socketIDs = append(socketIDs, socketID)
+		}
+	}
+	if len(socketIDs) == 0 {
 		g.Log().Warning(ctx, "Send to User: user not found or not signed in, user_id=%s", req.UserId)
 		r.Response.Status = 404
 		r.Response.WriteJson(g.Map{
@@ -429,7 +427,7 @@ func (c *cPusherEvents) SendToUser(ctx context.Context, req *system.PusherSendTo
 		return nil, nil
 	}
 
-	g.Log().Infof(ctx, "HTTP Send to User API: user_id=%s, socket_id=%s, event=%s", req.UserId, socketId, req.Name)
+	g.Log().Infof(ctx, "HTTP Send to User API: user_id=%s, connections=%d, event=%s", req.UserId, len(socketIDs), req.Name)
 
 	// 5. 构建推送消息（⚠️ 不指定 channel，直接发送给 socket_id）
 	pusherResponse := &websocket.PusherResponse{
@@ -438,19 +436,21 @@ func (c *cPusherEvents) SendToUser(ctx context.Context, req *system.PusherSendTo
 		Data:    req.Data,
 	}
 
-	// 6. 发送消息给指定 socket_id（支持跨服务器）
-	err = websocket.PublishSocketIdMessage(ctx, socketId, &websocket.ClientIdWResponse{
-		SocketID:       socketId,
-		PusherResponse: pusherResponse,
-	})
-	if err != nil {
-		g.Log().Warning(ctx, "Failed to send message to user: user_id=%s, socket_id=%s, error=%v", req.UserId, socketId, err)
-		r.Response.Status = 500
-		r.Response.WriteJson(g.Map{
-			"error": "Failed to deliver message",
+	// 6. 发送消息给当前 app 下的所有 socket_id（支持跨服务器）
+	for _, socketID := range socketIDs {
+		err = websocket.PublishSocketIdMessage(ctx, socketID, &websocket.ClientIdWResponse{
+			SocketID:       socketID,
+			PusherResponse: pusherResponse,
 		})
-		r.ExitAll()
-		return nil, nil
+		if err != nil {
+			g.Log().Warning(ctx, "Failed to send message to user: user_id=%s, socket_id=%s, error=%v", req.UserId, socketID, err)
+			r.Response.Status = 500
+			r.Response.WriteJson(g.Map{
+				"error": "Failed to deliver message",
+			})
+			r.ExitAll()
+			return nil, nil
+		}
 	}
 
 	// 7. 返回成功响应
@@ -516,20 +516,16 @@ func verifySignature(authKey string, authTimestamp int64, authVersion string, bo
 }
 
 // getAppConfig 获取应用配置（复用pusher_auth.go中的逻辑）
-func getAppConfig(ctx context.Context) (*AppConfig, error) {
-	config := g.Cfg()
-	appID := config.MustGet(ctx, "pusher.appId", "").String()
-	appKey := config.MustGet(ctx, "pusher.appKey", "").String()
-	appSecret := config.MustGet(ctx, "pusher.appSecret", "").String()
-
-	if appID == "" || appKey == "" || appSecret == "" {
-		return nil, fmt.Errorf("WebSocket Pusher configuration not found in config file")
+func getAppConfigByID(ctx context.Context, appID string) (*AppConfig, error) {
+	app, err := websocket.ResolvePusherAppByID(ctx, appID)
+	if err != nil {
+		return nil, err
 	}
 
 	return &AppConfig{
-		AppID:  appID,
-		Key:    appKey,
-		Secret: appSecret,
+		AppID:  app.AppID,
+		Key:    app.AppKey,
+		Secret: app.AppSecret,
 	}, nil
 }
 
@@ -596,7 +592,7 @@ func (c *cPusherEvents) TerminateConnections(ctx context.Context, req *system.Pu
 	r := g.RequestFromCtx(ctx)
 
 	// 1. 验证应用配置
-	config, err := getAppConfig(ctx)
+	config, err := getAppConfigByID(ctx, req.AppId)
 	if err != nil {
 		return nil, err
 	}
@@ -623,7 +619,13 @@ func (c *cPusherEvents) TerminateConnections(ctx context.Context, req *system.Pu
 	}
 
 	// 4. 获取用户的所有 socket_id（支持多设备）
-	socketIds := websocket.GetAllSocketIdsByUserId(ctx, req.UserId)
+	allSocketIDs := websocket.GetAllSocketIdsByUserId(ctx, req.UserId)
+	socketIds := make([]string, 0, len(allSocketIDs))
+	for _, socketID := range allSocketIDs {
+		if websocket.GetAppIDBySocketId4Redis(ctx, socketID) == req.AppId {
+			socketIds = append(socketIds, socketID)
+		}
+	}
 	if len(socketIds) == 0 {
 		g.Log().Infof(ctx, "TerminateConnections: user has no active connections, user_id=%s", req.UserId)
 		res = &system.PusherTerminateConnectionsRes{}

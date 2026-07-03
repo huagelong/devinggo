@@ -25,6 +25,16 @@ type GetAppIdRes struct {
 	AppId  string `json:"app_id" dc:"应用Id"`
 }
 
+type GetAppKeyReq struct {
+	g.Meta `path:"/app/getAppKey" method:"get" tags:"应用管理" summary:"获取应用Key." x-exceptAuth:"true" x-permission:"system:app:getAppKey" `
+	model.AuthorHeader
+}
+
+type GetAppKeyRes struct {
+	g.Meta `mime:"application/json"`
+	AppKey string `json:"app_key" dc:"应用Key"`
+}
+
 type GetAppSecretReq struct {
 	g.Meta `path:"/app/getAppSecret" method:"get" tags:"应用管理" summary:"获取应用秘钥." x-exceptAuth:"true" x-permission:"system:app:getAppSecret" `
 	model.AuthorHeader

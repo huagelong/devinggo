@@ -51,6 +51,15 @@ func (c *pusherAuthController) PusherAuth(ctx context.Context, req *system.Pushe
 		return
 	}
 
+	app, err := websocket.ResolvePusherAppBySocketID(ctx, req.SocketId)
+	if err != nil {
+		g.Log().Warning(ctx, "Failed to resolve pusher app by socket_id:", req.SocketId, err)
+		writeJSONOrJSONP(r, g.Map{
+			"error": "Invalid socket_id app mapping",
+		}, 403)
+		return
+	}
+
 	// ⚠️ 安全检查：验证频道类型
 	if !websocket.RequiresAuth(req.ChannelName) {
 		writeJSONOrJSONP(r, g.Map{
@@ -93,7 +102,7 @@ func (c *pusherAuthController) PusherAuth(ctx context.Context, req *system.Pushe
 		}
 
 		// 生成认证签名（不包含 channel_data）
-		auth := websocket.GenerateAuthSignature(req.SocketId, req.ChannelName, "")
+		auth := websocket.GenerateAuthSignatureWithCredentials(req.SocketId, req.ChannelName, "", *app)
 
 		g.Log().Debugf(ctx, "Generated encrypted channel auth for user:%d, socket:%s, channel:%s", c.UserId, req.SocketId, req.ChannelName)
 
@@ -128,7 +137,7 @@ func (c *pusherAuthController) PusherAuth(ctx context.Context, req *system.Pushe
 		}
 
 		// 生成认证签名（包含channel_data）
-		auth := websocket.GenerateAuthSignature(req.SocketId, req.ChannelName, channelData)
+		auth := websocket.GenerateAuthSignatureWithCredentials(req.SocketId, req.ChannelName, channelData, *app)
 
 		g.Log().Debugf(ctx, "Generated presence auth for user:%d, socket:%s, channel:%s", c.UserId, req.SocketId, req.ChannelName)
 
@@ -139,7 +148,7 @@ func (c *pusherAuthController) PusherAuth(ctx context.Context, req *system.Pushe
 		}, 200)
 	} else {
 		// Private频道认证（不包含channel_data）
-		auth := websocket.GenerateAuthSignature(req.SocketId, req.ChannelName, "")
+		auth := websocket.GenerateAuthSignatureWithCredentials(req.SocketId, req.ChannelName, "", *app)
 
 		g.Log().Debugf(ctx, "Generated private auth for user:%d, socket:%s, channel:%s", c.UserId, req.SocketId, req.ChannelName)
 
@@ -173,6 +182,14 @@ func (c *pusherAuthController) BatchAuth(ctx context.Context, req *system.Pusher
 		return
 	}
 
+	app, err := websocket.ResolvePusherAppBySocketID(ctx, req.SocketId)
+	if err != nil {
+		writeJSONOrJSONP(r, g.Map{
+			"error": "Invalid socket_id app mapping",
+		}, 403)
+		return
+	}
+
 	result := make(map[string]system.PusherBatchAuthItem, len(channelNames))
 	for _, channelName := range channelNames {
 		if !websocket.RequiresAuth(channelName) {
@@ -202,7 +219,7 @@ func (c *pusherAuthController) BatchAuth(ctx context.Context, req *system.Pusher
 				}
 			}
 
-			item.Auth = websocket.GenerateAuthSignature(req.SocketId, channelName, "")
+			item.Auth = websocket.GenerateAuthSignatureWithCredentials(req.SocketId, channelName, "", *app)
 			item.SharedSecret = sharedSecret
 			result[channelName] = item
 			continue
@@ -220,13 +237,13 @@ func (c *pusherAuthController) BatchAuth(ctx context.Context, req *system.Pusher
 				g.Log().Warning(ctx, "EncodeChannelData error:", encodeErr)
 				continue
 			}
-			item.Auth = websocket.GenerateAuthSignature(req.SocketId, channelName, channelData)
+			item.Auth = websocket.GenerateAuthSignatureWithCredentials(req.SocketId, channelName, channelData, *app)
 			item.ChannelData = channelData
 			result[channelName] = item
 			continue
 		}
 
-		item.Auth = websocket.GenerateAuthSignature(req.SocketId, channelName, "")
+		item.Auth = websocket.GenerateAuthSignatureWithCredentials(req.SocketId, channelName, "", *app)
 		result[channelName] = item
 	}
 

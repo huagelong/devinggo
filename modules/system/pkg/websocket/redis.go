@@ -22,6 +22,7 @@ const (
 	KeySocketIdHeartbeatTime = "SocketId2HeartbeatTime" // 客户端心跳时间
 	KeyClearExpireLock       = "ClearExpire4Redis"      // 清理过期数据的锁
 	KeySocketId2ServerName   = "SocketId2ServerName:"   // 客户端对应的服务器名称
+	KeySocketId2AppID        = "SocketId2AppId:"        // 客户端对应的应用ID
 	KeyServerNames           = "ServerNames"            // 所有服务器名称集合
 	KeyChannels              = "Channels"               // 所有频道集合
 	KeyChannel2SocketId      = "Channel2SocketId:"      // 频道对应的客户端集合
@@ -59,6 +60,27 @@ func UpdateSocketIdHeartbeatTime4Redis(ctx context.Context, socketId string, cur
 	return
 }
 
+func GetSocketHeartbeatTime4Redis(ctx context.Context, socketId string) int64 {
+	if g.IsEmpty(socketId) {
+		return 0
+	}
+	value, err := getRedisClient().HGet(ctx, KeySocketIdHeartbeatTime, socketId)
+	if err != nil {
+		glob.WithWsLog().Warning(ctx, "SocketId2HeartbeatTime HGET error:", err)
+		return 0
+	}
+	return gconv.Int64(value)
+}
+
+func getSocketHeartbeatMap4Redis(ctx context.Context) map[string]interface{} {
+	value, err := getRedisClient().HGetAll(ctx, KeySocketIdHeartbeatTime)
+	if err != nil {
+		glob.WithWsLog().Warning(ctx, "SocketId2HeartbeatTime HGETALL error:", err)
+		return map[string]interface{}{}
+	}
+	return value.Map()
+}
+
 // 清理心跳过期数据,清除所有客户端数据
 func ClearExpire4Redis(ctx context.Context) (err error) {
 	rs, err := getRedisClient().SetNX(ctx, KeyClearExpireLock, 1)
@@ -94,6 +116,7 @@ func ClearSocketId4Redis(ctx context.Context, socketId string) (err error) {
 	for _, channel := range GetAllChannelBySocketId(ctx, socketId) {
 		LeaveChannel4Redis(ctx, channel, socketId)
 	}
+	_ = DeleteAppIDBySocketId4Redis(ctx, socketId)
 	err = DeleteServerNameBySocketId4Redis(ctx, socketId)
 	return
 }
@@ -127,6 +150,43 @@ func AddServerNameSocketId4Redis(ctx context.Context, socketId string, serverNam
 	_, err = getRedisClient().Do(ctx, "SADD", KeyServerNames, serverName)
 	if err != nil {
 		glob.WithWsLog().Warning(ctx, "ServerNames SADD error:", err)
+	}
+	return
+}
+
+func AddAppIDSocketId4Redis(ctx context.Context, socketId string, appID string) (err error) {
+	if g.IsEmpty(socketId) || g.IsEmpty(appID) {
+		return nil
+	}
+	key := KeySocketId2AppID + socketId
+	_, err = getRedisClient().Set(ctx, key, appID)
+	if err != nil {
+		glob.WithWsLog().Warning(ctx, "AddAppIDSocketId4Redis error:", err)
+	}
+	return
+}
+
+func GetAppIDBySocketId4Redis(ctx context.Context, socketId string) string {
+	if g.IsEmpty(socketId) {
+		return ""
+	}
+	key := KeySocketId2AppID + socketId
+	appID, err := getRedisClient().Get(ctx, key)
+	if err != nil {
+		glob.WithWsLog().Warning(ctx, "GetAppIDBySocketId4Redis error:", err)
+		return ""
+	}
+	return gconv.String(appID)
+}
+
+func DeleteAppIDBySocketId4Redis(ctx context.Context, socketId string) (err error) {
+	if g.IsEmpty(socketId) {
+		return nil
+	}
+	key := KeySocketId2AppID + socketId
+	_, err = getRedisClient().Del(ctx, key)
+	if err != nil {
+		glob.WithWsLog().Warning(ctx, "DeleteAppIDBySocketId4Redis error:", err)
 	}
 	return
 }

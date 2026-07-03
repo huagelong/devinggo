@@ -10,6 +10,7 @@ import (
 	"database/sql"
 	"devinggo/internal/model/entity"
 	"devinggo/modules/system/model"
+	"devinggo/modules/system/model/page"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 
@@ -50,11 +51,32 @@ type (
 	IDataMaintain interface {
 		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.DataMaintainSearch) (rs []*res.DataMaintain, total int, err error)
 		GetColumnList(ctx context.Context, source string, tableName string) (rs map[string]*gdb.TableField, err error)
+		GetColumnDetailList(ctx context.Context, source string, tableName string) (rs []res.DataMaintainColumn, err error)
 		GetAllTableStatus(ctx context.Context, groupName string) (rs []*res.DataMaintain, err error)
+	}
+	IDbMonitor interface {
+		ListGroups(ctx context.Context) ([]res.DbMonitorGroup, error)
+		GetMonitor(ctx context.Context, groupName string) (*res.DbMonitorPayload, error)
 	}
 	ILogin interface {
 		Model(ctx context.Context) *gdb.Model
 		Login(ctx context.Context, username string, password string) (token string, expire int64, err error)
+	}
+	IPusherMonitor interface {
+		ListApps(ctx context.Context) ([]res.PusherMonitorAppItem, error)
+		GetOverview(ctx context.Context, appID string) (*res.PusherMonitorOverview, error)
+		ListChannels(ctx context.Context, appID string, keyword string, channelType string, reqPage *page.PageReq) ([]res.PusherMonitorChannelItem, int, error)
+		GetChannelDetail(ctx context.Context, appID string, channelName string) (*res.PusherMonitorChannelDetail, error)
+		ListConnections(ctx context.Context, appID string, socketID string, userID string, channel string, reqPage *page.PageReq) ([]res.PusherMonitorConnectionItem, int, error)
+		TerminateConnections(ctx context.Context, appID string, socketIDs []string) (*res.PusherMonitorTerminateResult, error)
+		TerminateUsers(ctx context.Context, appID string, userIDs []string) (*res.PusherMonitorTerminateResult, error)
+		DebugEvent(ctx context.Context, appID string, name string, channels []string, data string, socketID string) (*res.PusherMonitorDebugEventResult, error)
+	}
+	IQueueMonitor interface {
+		ListQueues(ctx context.Context) ([]res.QueueMonitorQueueItem, error)
+		GetOverview(ctx context.Context, queue string) (*res.QueueMonitorOverview, error)
+		ListTasks(ctx context.Context, queue string, state string, reqPage *page.PageReq) (items []res.QueueMonitorTaskItem, total int, err error)
+		ListSchedulerEntries(ctx context.Context) ([]res.QueueMonitorSchedulerEntry, error)
 	}
 	ISettingConfig interface {
 		Model(ctx context.Context) *gdb.Model
@@ -124,6 +146,7 @@ type (
 	ISystemApp interface {
 		Model(ctx context.Context) *gdb.Model
 		GetAppId(ctx context.Context) (string, error)
+		GetAppKey(ctx context.Context) (string, error)
 		GetAppSecret(ctx context.Context) (string, error)
 		BindApp(ctx context.Context, Id int64, ApiIds []int64) (err error)
 		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemAppSearch) (rs []*res.SystemApp, total int, err error)
@@ -415,7 +438,10 @@ var (
 	localCodeGen                   ICodeGen
 	localDashboard                 IDashboard
 	localDataMaintain              IDataMaintain
+	localDbMonitor                 IDbMonitor
 	localLogin                     ILogin
+	localPusherMonitor             IPusherMonitor
+	localQueueMonitor              IQueueMonitor
 	localSettingConfig             ISettingConfig
 	localSettingConfigGroup        ISettingConfigGroup
 	localSettingCrontab            ISettingCrontab
@@ -481,6 +507,17 @@ func RegisterDataMaintain(i IDataMaintain) {
 	localDataMaintain = i
 }
 
+func DbMonitor() IDbMonitor {
+	if localDbMonitor == nil {
+		panic("implement not found for interface IDbMonitor, forgot register?")
+	}
+	return localDbMonitor
+}
+
+func RegisterDbMonitor(i IDbMonitor) {
+	localDbMonitor = i
+}
+
 func Login() ILogin {
 	if localLogin == nil {
 		panic("implement not found for interface ILogin, forgot register?")
@@ -490,6 +527,28 @@ func Login() ILogin {
 
 func RegisterLogin(i ILogin) {
 	localLogin = i
+}
+
+func PusherMonitor() IPusherMonitor {
+	if localPusherMonitor == nil {
+		panic("implement not found for interface IPusherMonitor, forgot register?")
+	}
+	return localPusherMonitor
+}
+
+func RegisterPusherMonitor(i IPusherMonitor) {
+	localPusherMonitor = i
+}
+
+func QueueMonitor() IQueueMonitor {
+	if localQueueMonitor == nil {
+		panic("implement not found for interface IQueueMonitor, forgot register?")
+	}
+	return localQueueMonitor
+}
+
+func RegisterQueueMonitor(i IQueueMonitor) {
+	localQueueMonitor = i
 }
 
 func SettingConfig() ISettingConfig {

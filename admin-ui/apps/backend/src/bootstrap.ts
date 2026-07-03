@@ -9,7 +9,6 @@ import '@vben/styles';
 // 引入组件库的少量全局样式变量
 
 import { useTitle } from '@vueuse/core';
-import * as TDesignIcons from 'tdesign-icons-vue-next';
 
 import { $t, setupI18n } from '#/locales';
 
@@ -52,9 +51,6 @@ async function bootstrap(namespace: string) {
   // 配置 Motion 插件
   const { MotionPlugin } = await import('@vben/plugins/motion');
   app.use(MotionPlugin);
-
-  // 注册 TDesign 全局图标
-  app.use(TDesignIcons);
 
   // 动态更新标题
   watchEffect(() => {

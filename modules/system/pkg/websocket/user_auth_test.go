@@ -230,6 +230,35 @@ func BenchmarkGenerateUserAuthSignature(b *testing.B) {
 	}
 }
 
+func TestValidateUserAuthSignature_SupportsMultipleAppsByAuthKey(t *testing.T) {
+	socketID := "server1.123456"
+	userData := map[string]interface{}{
+		"id":   "user123",
+		"name": "Alice",
+	}
+	userDataJSON, _ := json.Marshal(userData)
+
+	InitPusherAuth("app-key-1", "app-secret-1")
+	authApp1, err := GenerateUserAuthSignature(socketID, userData)
+	if err != nil {
+		t.Fatalf("GenerateUserAuthSignature for app 1 failed: %v", err)
+	}
+
+	InitPusherAuth("app-key-2", "app-secret-2")
+	authApp2, err := GenerateUserAuthSignature(socketID, userData)
+	if err != nil {
+		t.Fatalf("GenerateUserAuthSignature for app 2 failed: %v", err)
+	}
+
+	if err := ValidateUserAuthSignature(socketID, authApp1, string(userDataJSON)); err != nil {
+		t.Fatalf("auth for app 1 should still validate after switching to app 2: %v", err)
+	}
+
+	if err := ValidateUserAuthSignature(socketID, authApp2, string(userDataJSON)); err != nil {
+		t.Fatalf("auth for app 2 should validate: %v", err)
+	}
+}
+
 func TestValidateUserAuthSignature(t *testing.T) {
 	InitPusherAuth("test-app-key", "test-app-secret")
 

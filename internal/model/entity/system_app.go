@@ -23,4 +23,5 @@ type SystemApp struct {
 	UpdatedAt   *gtime.Time `json:"updatedAt"   orm:"updated_at"  description:""` //
 	DeletedAt   *gtime.Time `json:"deletedAt"   orm:"deleted_at"  description:""` //
 	Remark      string      `json:"remark"      orm:"remark"      description:""` //
+	AppKey      string      `json:"appKey"      orm:"app_key"     description:""` //
 }

@@ -9,6 +9,7 @@ import { $t } from '@vben/locales';
 import { message } from '#/adapter/tdesign';
 import { getServerInfo } from '#/api/system/monitor';
 import { logger } from '#/utils/logger';
+import { formatQueueMonitorTime } from '#/utils/queue-monitor-time';
 
 import {
   CpuIcon,
@@ -146,7 +147,7 @@ onUnmounted(() => {
           <Row :gutter="24" class="mt-4">
             <Col :span="6">
               <div class="mb-2 text-sm text-muted-foreground">{{ $t('system.monitor.server.serverTime') }}</div>
-              <div class="text-base">{{ serverInfo?.server_time || '-' }}</div>
+              <div class="text-base">{{ formatQueueMonitorTime(serverInfo?.server_time) || '-' }}</div>
             </Col>
             <Col :span="6">
               <div class="mb-2 text-sm text-muted-foreground">{{ $t('system.monitor.server.goVersion') }}</div>

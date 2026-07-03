@@ -27,3 +27,15 @@ type IndexDataMaintainRes struct {
 	page.PageRes
 	Items []res.DataMaintain `json:"items"  dc:"list" `
 }
+
+type DetailedDataMaintainReq struct {
+	g.Meta `path:"/dataMaintain/detailed" method:"get" tags:"数据维护" summary:"字段详情." x-permission:"system:dataMaintain:index" `
+	model.AuthorHeader
+	GroupName string `json:"group_name"`
+	TableName string `json:"table_name" v:"required#请选择数据表"`
+}
+
+type DetailedDataMaintainRes struct {
+	g.Meta `mime:"application/json"`
+	Items  []res.DataMaintainColumn `json:"items" dc:"字段列表"`
+}

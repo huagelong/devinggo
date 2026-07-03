@@ -37,6 +37,9 @@ type Client struct {
 	HeartbeatTime  int64                  // 用户上次心跳时间
 	LoginTime      int64                  // 登录时间 登录以后才有
 	ServerName     string                 // 服务器名称
+	AppID          string                 // Pusher App ID
+	AppKey         string                 // Pusher App Key
+	AppSecret      string                 // Pusher App Secret
 	Channels       []string               // 订阅的频道列表（改名自topics）
 	UserID         string                 // Presence Channel用户ID
 	UserInfo       map[string]interface{} // Presence Channel用户信息
@@ -158,6 +161,7 @@ func (c *Client) SendPusherEvent(event, channel string, data interface{}) error 
 	response.Channel = channel
 	response.Data = dataStr
 
+	RecordAppEvent(c.AppID)
 	return c.SendMsg(response)
 }
 
@@ -174,6 +178,7 @@ func (c *Client) SendError(message string, code int) error {
 		Message: message,
 		Code:    code,
 	}
+	RecordAppError(c.AppID)
 	return c.SendPusherEvent(EventError, "", errData)
 }
 
@@ -184,6 +189,7 @@ func (c *Client) SendSubscriptionError(channel, errorType, message string, statu
 		Error:  message,
 		Status: status,
 	}
+	RecordAppError(c.AppID)
 	return c.SendPusherEvent(EventSubscriptionError, channel, errData)
 }
 
@@ -291,7 +297,7 @@ func (c *Client) close(ctx context.Context) {
 						// 移除Presence成员
 						RemovePresenceMember4Redis(newCtx, channel, c.UserID)
 						// 广播member_removed事件
-						BroadcastMemberRemoved(newCtx, channel, c.UserID)
+						BroadcastMemberRemoved(newCtx, c.AppID, channel, c.UserID)
 						glob.WithWsLog().Debugf(newCtx, "Grace period expired: removed member %s from %s", c.UserID, channel)
 					}
 					LeaveChannel4Redis(newCtx, channel, c.SocketID)

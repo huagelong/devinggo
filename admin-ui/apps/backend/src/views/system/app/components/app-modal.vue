@@ -11,7 +11,13 @@ import { Button, Input, MessagePlugin } from 'tdesign-vue-next';
 
 import { useVbenForm } from '#/adapter/form';
 import { getAppGroupPageList } from '#/api/system/app-group';
-import { getAppId, getAppSecret, saveApp, updateApp } from '#/api/system/app';
+import {
+  getAppId,
+  getAppKey,
+  getAppSecret,
+  saveApp,
+  updateApp,
+} from '#/api/system/app';
 
 import ConfigRichTextEditor from '#/views/system/config/components/config-rich-text-editor.vue';
 import { createAppFormDefaultValues } from '../schemas';
@@ -61,6 +67,16 @@ const [Form, formApi] = useVbenForm({
       },
       fieldName: 'app_id',
       label: 'APP ID',
+      rules: 'required',
+      formItemClass: 'md:col-span-2',
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        placeholder: 'pusher-app-key',
+      },
+      fieldName: 'app_key',
+      label: 'APP KEY',
       rules: 'required',
       formItemClass: 'md:col-span-2',
     },
@@ -184,6 +200,16 @@ async function handleRefreshAppSecret() {
   }
 }
 
+async function handleRefreshAppKey() {
+  try {
+    const res = await getAppKey();
+    const newKey = (res as any)?.app_key || '';
+    formApi.setFieldValue('app_key', newKey);
+  } catch (error) {
+    logger.error(error);
+  }
+}
+
 async function open(data?: Partial<AppApi.SubmitPayload>) {
   await fetchGroupOptions();
   const defaultValues = createAppFormDefaultValues();
@@ -194,11 +220,13 @@ async function open(data?: Partial<AppApi.SubmitPayload>) {
 
   if (!data?.id) {
     try {
-      const [idRes, secretRes] = await Promise.all([
+      const [idRes, keyRes, secretRes] = await Promise.all([
         getAppId(),
+        getAppKey(),
         getAppSecret(),
       ]);
       baseValues.value.app_id = (idRes as any)?.app_id || '';
+      baseValues.value.app_key = (keyRes as any)?.app_key || '';
       baseValues.value.app_secret = (secretRes as any)?.app_secret || '';
     } catch (error) {
       logger.error(error);
@@ -234,6 +262,12 @@ defineExpose({
         <div class="flex w-full items-center gap-2">
           <Input v-bind="slotProps" style="width: 100%" />
           <Button theme="primary" @click="handleRefreshAppSecret">刷新APP SECRET</Button>
+        </div>
+      </template>
+      <template #app_key="slotProps">
+        <div class="flex w-full items-center gap-2">
+          <Input v-bind="slotProps" style="width: 100%" />
+          <Button theme="primary" @click="handleRefreshAppKey">刷新APP KEY</Button>
         </div>
       </template>
     </Form>

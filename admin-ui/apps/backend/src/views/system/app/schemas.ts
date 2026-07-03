@@ -19,6 +19,7 @@ export function createAppFormDefaultValues(): AppFormModel {
   return {
     app_name: '',
     app_id: '',
+    app_key: '',
     app_secret: '',
     description: '',
     group_id: undefined,
@@ -38,6 +39,7 @@ export function createAppTableColumns(): AppTableColumn[] {
     { colKey: 'id', title: 'ID', width: 80 },
     { colKey: 'app_name', title: $t('system.app.name'), minWidth: 160 },
     { colKey: 'app_id', title: 'AppId', minWidth: 200 },
+    { colKey: 'app_key', title: 'AppKey', minWidth: 200 },
     { colKey: 'description', title: $t('system.app.description'), minWidth: 200 },
     { colKey: 'group_name', title: $t('system.app.group'), minWidth: 120 },
     { colKey: 'status', title: $t('common.status'), width: 120 },

@@ -1,6 +1,8 @@
 ﻿<script lang="ts" setup>
 import { computed, ref } from 'vue';
 
+import { VbenIcon } from '@vben/common-ui';
+import { menuIconNames } from '@vben/icons';
 import { $t } from '@vben/locales';
 
 import {
@@ -10,58 +12,6 @@ import {
   Input,
   Popup,
 } from 'tdesign-vue-next';
-
-// Common TDesign icons used in admin menus
-const iconList = [
-  'app',
-  'dashboard',
-  'user-circle',
-  'lock-on',
-  'menu-fold',
-  'setting',
-  'file',
-  'folder',
-  'browse',
-  'edit',
-  'delete',
-  'add',
-  'search',
-  'filter',
-  'download',
-  'upload',
-  'link',
-  'image',
-  'video',
-  'notification',
-  'chat',
-  'mail',
-  'calendar',
-  'time',
-  'chart-bar',
-  'chart-line',
-  'chart-pie',
-  'server',
-  'code',
-  'bug',
-  'tools',
-  'precise-monitor',
-  'root-list',
-  'assignment',
-  'save',
-  'print',
-  'share',
-  'star',
-  'heart',
-  'thumbup',
-  'home',
-  'layers',
-  'toggle-left',
-  'map',
-  'map-information',
-  'logo-wrench',
-  'control-platform',
-  ' rolled-back',
-];
 
 const props = defineProps<{
   modelValue?: string;
@@ -76,19 +26,20 @@ const popupVisible = ref(false);
 const searchKeyword = ref('');
 
 const filteredIcons = computed(() => {
-  if (!searchKeyword.value) return iconList;
+  if (!searchKeyword.value) return menuIconNames;
   const kw = searchKeyword.value.toLowerCase();
-  return iconList.filter((name) => name.includes(kw));
+  return menuIconNames.filter((name) => name.includes(kw));
 });
+
+function toLucideIcon(name?: string) {
+  return name ? `lucide:${name}` : '';
+}
 
 function handleSelect(name: string) {
   emit('update:modelValue', name);
   popupVisible.value = false;
 }
 
-function handleInput(val: string) {
-  emit('update:modelValue', val);
-}
 </script>
 
 <template>
@@ -103,14 +54,14 @@ function handleInput(val: string) {
         :value="modelValue"
         :placeholder="placeholder || $t('ui.placeholder.input')"
         clearable
-        @input="handleInput"
-        @clear="handleInput('')"
+        readonly
+        @clear="emit('update:modelValue', '')"
       />
       <span
         v-if="modelValue"
         class="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-gray-200"
       >
-        <i :class="`i-lucide:${modelValue}`" class="text-base" />
+        <VbenIcon :icon="toLucideIcon(modelValue)" class="size-4" />
       </span>
     </div>
     <template #content>
@@ -131,7 +82,7 @@ function handleInput(val: string) {
             :title="name"
             @click="handleSelect(name)"
           >
-            <i :class="`i-lucide:${name}`" class="text-lg" />
+            <VbenIcon :icon="toLucideIcon(name)" class="size-5" />
           </div>
         </div>
         <div v-if="filteredIcons.length === 0" class="py-4 text-center text-xs text-muted-foreground/80">

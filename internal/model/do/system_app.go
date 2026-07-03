@@ -25,4 +25,5 @@ type SystemApp struct {
 	UpdatedAt   *gtime.Time //
 	DeletedAt   *gtime.Time //
 	Remark      any         //
+	AppKey      any         //
 }

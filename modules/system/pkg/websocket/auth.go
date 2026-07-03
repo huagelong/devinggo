@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gctx"
@@ -26,13 +27,31 @@ import (
 var (
 	pusherAppKey              string
 	pusherAppSecret           string
+	pusherAppSecrets          = make(map[string]string)
+	pusherAuthMu              sync.RWMutex
 	pusherEncryptionMasterKey []byte // 加密主密钥（Base64 解码后的 32 字节）
 )
 
+type PusherAuthCredentials struct {
+	AppID     string
+	AppKey    string
+	AppSecret string
+}
+
+func (c PusherAuthCredentials) IsValid() bool {
+	return c.AppKey != "" && c.AppSecret != ""
+}
+
 // InitPusherAuth 初始化Pusher认证配置
 func InitPusherAuth(appKey, appSecret string) {
+	pusherAuthMu.Lock()
+	defer pusherAuthMu.Unlock()
+
 	pusherAppKey = appKey
 	pusherAppSecret = appSecret
+	if appKey != "" && appSecret != "" {
+		pusherAppSecrets[appKey] = appSecret
+	}
 }
 
 // GetPusherConfig 从配置文件读取Pusher配置
@@ -71,12 +90,8 @@ func ValidateChannelAuth(socketID, channel, auth, channelData string) error {
 	receivedAppKey := parts[0]
 	receivedSignature := parts[1]
 
-	// 验证 app_key
-	if pusherAppKey == "" {
-		GetPusherConfig() // 自动加载配置
-	}
-
-	if receivedAppKey != pusherAppKey {
+	_, appSecret := getPusherCredentialsByKey(receivedAppKey)
+	if appSecret == "" {
 		return errors.New("invalid app_key")
 	}
 
@@ -91,9 +106,40 @@ func ValidateChannelAuth(socketID, channel, auth, channelData string) error {
 	}
 
 	// 计算期望的签名
-	expectedSignature := generateHMAC(stringToSign, pusherAppSecret)
+	expectedSignature := generateHMAC(stringToSign, appSecret)
 
 	// ⚠️ 使用 constant time 比较防止时序攻击
+	if !constantTimeCompare(receivedSignature, expectedSignature) {
+		return errors.New("invalid signature")
+	}
+
+	return nil
+}
+
+func ValidateChannelAuthWithCredentials(socketID, channel, auth, channelData string, credentials PusherAuthCredentials) error {
+	if !credentials.IsValid() {
+		return errors.New("missing app credentials")
+	}
+
+	parts := strings.Split(auth, ":")
+	if len(parts) != 2 {
+		return errors.New("invalid auth format, expected: app_key:signature")
+	}
+
+	receivedAppKey := parts[0]
+	receivedSignature := parts[1]
+	if receivedAppKey != credentials.AppKey {
+		return errors.New("invalid app_key")
+	}
+
+	var stringToSign string
+	if channelData != "" {
+		stringToSign = fmt.Sprintf("%s:%s:%s", socketID, channel, channelData)
+	} else {
+		stringToSign = fmt.Sprintf("%s:%s", socketID, channel)
+	}
+
+	expectedSignature := generateHMAC(stringToSign, credentials.AppSecret)
 	if !constantTimeCompare(receivedSignature, expectedSignature) {
 		return errors.New("invalid signature")
 	}
@@ -111,15 +157,27 @@ func GenerateAuthSignature(socketID, channel, channelData string) string {
 		stringToSign = fmt.Sprintf("%s:%s", socketID, channel)
 	}
 
-	// 计算签名
-	if pusherAppKey == "" || pusherAppSecret == "" {
-		GetPusherConfig() // 自动加载配置
-	}
-
-	signature := generateHMAC(stringToSign, pusherAppSecret)
+	appKey, appSecret := getCurrentPusherCredentials()
+	signature := generateHMAC(stringToSign, appSecret)
 
 	// 返回格式：{app_key}:{signature}
-	return fmt.Sprintf("%s:%s", pusherAppKey, signature)
+	return fmt.Sprintf("%s:%s", appKey, signature)
+}
+
+func GenerateAuthSignatureWithCredentials(socketID, channel, channelData string, credentials PusherAuthCredentials) string {
+	if !credentials.IsValid() {
+		return ""
+	}
+
+	var stringToSign string
+	if channelData != "" {
+		stringToSign = fmt.Sprintf("%s:%s:%s", socketID, channel, channelData)
+	} else {
+		stringToSign = fmt.Sprintf("%s:%s", socketID, channel)
+	}
+
+	signature := generateHMAC(stringToSign, credentials.AppSecret)
+	return fmt.Sprintf("%s:%s", credentials.AppKey, signature)
 }
 
 // generateHMAC 生成HMAC-SHA256签名
@@ -258,16 +316,37 @@ func GenerateUserAuthSignature(socketID string, userData map[string]interface{})
 	// 注意：使用双冒号 "::" 作为分隔符
 	stringToSign := fmt.Sprintf("%s::user::%s", socketID, string(userDataJSON))
 
-	// 3. 加载配置（如果未加载）
-	if pusherAppKey == "" || pusherAppSecret == "" {
-		GetPusherConfig()
-	}
-
-	// 4. 计算 HMAC-SHA256 签名
-	signature := generateHMAC(stringToSign, pusherAppSecret)
+	appKey, appSecret := getCurrentPusherCredentials()
+	signature := generateHMAC(stringToSign, appSecret)
 
 	// 5. 返回格式：app_key:signature
-	return fmt.Sprintf("%s:%s", pusherAppKey, signature), nil
+	return fmt.Sprintf("%s:%s", appKey, signature), nil
+}
+
+func GenerateUserAuthSignatureWithCredentials(socketID string, userData map[string]interface{}, credentials PusherAuthCredentials) (string, error) {
+	if !credentials.IsValid() {
+		return "", fmt.Errorf("missing app credentials")
+	}
+	if userData == nil {
+		return "", fmt.Errorf("userData cannot be nil")
+	}
+
+	userID, ok := userData["id"]
+	if !ok {
+		return "", fmt.Errorf("userData must contain 'id' field")
+	}
+	if _, ok := userID.(string); !ok {
+		return "", fmt.Errorf("userData['id'] must be a string")
+	}
+
+	userDataJSON, err := json.Marshal(userData)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal user data: %w", err)
+	}
+
+	stringToSign := fmt.Sprintf("%s::user::%s", socketID, string(userDataJSON))
+	signature := generateHMAC(stringToSign, credentials.AppSecret)
+	return fmt.Sprintf("%s:%s", credentials.AppKey, signature), nil
 }
 
 // ValidateUserAuthSignature 验证用户认证签名
@@ -286,21 +365,73 @@ func ValidateUserAuthSignature(socketID, auth, userDataJSON string) error {
 		return errors.New("invalid auth format, expected: app_key:signature")
 	}
 
-	if pusherAppKey == "" || pusherAppSecret == "" {
-		GetPusherConfig()
-	}
-
 	receivedAppKey := parts[0]
 	receivedSignature := parts[1]
-	if receivedAppKey != pusherAppKey {
+	_, appSecret := getPusherCredentialsByKey(receivedAppKey)
+	if appSecret == "" {
 		return errors.New("invalid app_key")
 	}
 
 	stringToSign := fmt.Sprintf("%s::user::%s", socketID, userDataJSON)
-	expectedSignature := generateHMAC(stringToSign, pusherAppSecret)
+	expectedSignature := generateHMAC(stringToSign, appSecret)
 	if !constantTimeCompare(receivedSignature, expectedSignature) {
 		return errors.New("invalid signature")
 	}
 
 	return nil
+}
+
+func ValidateUserAuthSignatureWithCredentials(socketID, auth, userDataJSON string, credentials PusherAuthCredentials) error {
+	if socketID == "" || auth == "" || userDataJSON == "" {
+		return errors.New("missing required parameters")
+	}
+	if !credentials.IsValid() {
+		return errors.New("missing app credentials")
+	}
+
+	parts := strings.Split(auth, ":")
+	if len(parts) != 2 {
+		return errors.New("invalid auth format, expected: app_key:signature")
+	}
+
+	receivedAppKey := parts[0]
+	receivedSignature := parts[1]
+	if receivedAppKey != credentials.AppKey {
+		return errors.New("invalid app_key")
+	}
+
+	stringToSign := fmt.Sprintf("%s::user::%s", socketID, userDataJSON)
+	expectedSignature := generateHMAC(stringToSign, credentials.AppSecret)
+	if !constantTimeCompare(receivedSignature, expectedSignature) {
+		return errors.New("invalid signature")
+	}
+
+	return nil
+}
+
+func getCurrentPusherCredentials() (appKey, appSecret string) {
+	pusherAuthMu.RLock()
+	appKey = pusherAppKey
+	appSecret = pusherAppSecret
+	pusherAuthMu.RUnlock()
+	if appKey != "" && appSecret != "" {
+		return appKey, appSecret
+	}
+	return GetPusherConfig()
+}
+
+func getPusherCredentialsByKey(appKey string) (resolvedAppKey, appSecret string) {
+	pusherAuthMu.RLock()
+	appSecret = pusherAppSecrets[appKey]
+	pusherAuthMu.RUnlock()
+	if appKey != "" && appSecret != "" {
+		return appKey, appSecret
+	}
+
+	currentAppKey, currentAppSecret := getCurrentPusherCredentials()
+	if currentAppKey == appKey {
+		return currentAppKey, currentAppSecret
+	}
+
+	return "", ""
 }

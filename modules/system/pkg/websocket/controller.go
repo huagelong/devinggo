@@ -55,7 +55,11 @@ func SigninController(ctx context.Context, client *Client, req *PusherRequest) {
 		return
 	}
 
-	if err = ValidateUserAuthSignature(client.SocketID, payload.Auth, userDataJSON); err != nil {
+	if err = ValidateUserAuthSignatureWithCredentials(client.SocketID, payload.Auth, userDataJSON, PusherAuthCredentials{
+		AppID:     client.AppID,
+		AppKey:    client.AppKey,
+		AppSecret: client.AppSecret,
+	}); err != nil {
 		glob.WithWsLog().Warning(ctx, "SigninController validate signature failed:", err)
 		client.SendError("Invalid user auth signature", CodeUnauthorized)
 		return
@@ -144,7 +148,11 @@ func SubscribeController(ctx context.Context, client *Client, req *PusherRequest
 		}
 
 		// 验证认证签名
-		err = ValidateChannelAuth(client.SocketID, channel, auth, "")
+		err = ValidateChannelAuthWithCredentials(client.SocketID, channel, auth, "", PusherAuthCredentials{
+			AppID:     client.AppID,
+			AppKey:    client.AppKey,
+			AppSecret: client.AppSecret,
+		})
 		if err != nil {
 			glob.WithWsLog().Warning(ctx, "Private/Encrypted channel auth failed:", err)
 			client.SendSubscriptionError(channel, "AuthError", "Invalid auth signature", CodeUnauthorized)
@@ -186,7 +194,11 @@ func SubscribeController(ctx context.Context, client *Client, req *PusherRequest
 		}
 
 		// 验证认证签名（包含channel_data）
-		err = ValidateChannelAuth(client.SocketID, channel, auth, channelData)
+		err = ValidateChannelAuthWithCredentials(client.SocketID, channel, auth, channelData, PusherAuthCredentials{
+			AppID:     client.AppID,
+			AppKey:    client.AppKey,
+			AppSecret: client.AppSecret,
+		})
 		if err != nil {
 			glob.WithWsLog().Warning(ctx, "Presence channel auth failed:", err)
 			client.SendSubscriptionError(channel, "AuthError", "Invalid auth signature", CodeUnauthorized)
@@ -258,7 +270,7 @@ func SubscribeController(ctx context.Context, client *Client, req *PusherRequest
 			UserID:   member.UserID,
 			UserInfo: member.UserInfo,
 		}
-		BroadcastToChannel(ctx, channel, EventMemberAdded, memberAddedData, client.SocketID)
+		BroadcastToChannel(ctx, client.AppID, channel, EventMemberAdded, memberAddedData, client.SocketID)
 
 		// 使缓存失效（因为新增了成员）
 		GetPresenceCache().InvalidateChannel(channel)
@@ -394,9 +406,9 @@ func ClientEventController(ctx context.Context, client *Client, req *PusherReque
 	// ⚠️ Presence Channel 需要包含发送者的 user_id
 	if channelType == ChannelTypePresence && client.UserID != "" {
 		// 为 Presence Channel 的 Client Events 添加发送者信息
-		BroadcastToChannelWithSender(ctx, req.Channel, req.Event, req.Data, client.SocketID, client.UserID)
+		BroadcastToChannelWithSender(ctx, client.AppID, req.Channel, req.Event, req.Data, client.SocketID, client.UserID)
 	} else {
-		BroadcastToChannel(ctx, req.Channel, req.Event, req.Data, client.SocketID)
+		BroadcastToChannel(ctx, client.AppID, req.Channel, req.Event, req.Data, client.SocketID)
 	}
 
 	glob.WithWsLog().Debugf(ctx, "Client event forwarded: socket=%s, channel=%s, event=%s",
@@ -404,13 +416,13 @@ func ClientEventController(ctx context.Context, client *Client, req *PusherReque
 }
 
 // BroadcastToChannel 向频道内除了指定客户端以外的所有成员广播消息
-func BroadcastToChannel(ctx context.Context, channel, event string, data interface{}, excludeSocketID string) {
-	BroadcastToChannelWithSender(ctx, channel, event, data, excludeSocketID, "")
+func BroadcastToChannel(ctx context.Context, appID, channel, event string, data interface{}, excludeSocketID string) {
+	BroadcastToChannelWithSender(ctx, appID, channel, event, data, excludeSocketID, "")
 }
 
 // BroadcastToChannelWithSender 向频道内除了指定客户端以外的所有成员广播消息（可选包含发送者信息）
 // ⚠️ 用于 Presence Channel 的 Client Events，需要包含 user_id
-func BroadcastToChannelWithSender(ctx context.Context, channel, event string, data interface{}, excludeSocketID, senderUserID string) {
+func BroadcastToChannelWithSender(ctx context.Context, appID, channel, event string, data interface{}, excludeSocketID, senderUserID string) {
 	// 获取频道内所有socket_id
 	socketIds := GetAllSocketIdByChannel4Redis(ctx, channel)
 
@@ -423,6 +435,9 @@ func BroadcastToChannelWithSender(ctx context.Context, channel, event string, da
 		// 获取客户端并发送消息
 		targetClient := clientManager.GetClientBySocketID(socketId)
 		if targetClient != nil {
+			if appID != "" && targetClient.AppID != appID {
+				continue
+			}
 			// ⚠️ Presence Channel Client Events: 包装数据以包含发送者 user_id
 			if senderUserID != "" && strings.HasPrefix(event, "client-") {
 				// 创建包含 metadata 的包装对象
@@ -440,7 +455,7 @@ func BroadcastToChannelWithSender(ctx context.Context, channel, event string, da
 }
 
 // BroadcastMemberRemoved 广播member_removed事件
-func BroadcastMemberRemoved(ctx context.Context, channel, userID string) {
+func BroadcastMemberRemoved(ctx context.Context, appID, channel, userID string) {
 	memberRemovedData := MemberRemovedData{
 		UserID: userID,
 	}
@@ -450,6 +465,9 @@ func BroadcastMemberRemoved(ctx context.Context, channel, userID string) {
 	for _, socketId := range socketIds {
 		targetClient := clientManager.GetClientBySocketID(socketId)
 		if targetClient != nil {
+			if appID != "" && targetClient.AppID != appID {
+				continue
+			}
 			targetClient.SendPusherEvent(EventMemberRemoved, channel, memberRemovedData)
 		}
 	}

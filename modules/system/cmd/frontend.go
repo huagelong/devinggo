@@ -89,13 +89,22 @@ func acceptsHTML(r *ghttp.Request) bool {
 }
 
 func serveFrontendFile(r *ghttp.Request, filePath string) bool {
-	data, err := fs.ReadFile(frontendFS, filePath)
+	encodedFilePath, contentEncoding := frontendEncodedFilePath(
+		frontendFS,
+		r.Header.Get("Accept-Encoding"),
+		filePath,
+	)
+	data, err := fs.ReadFile(frontendFS, encodedFilePath)
 	if err != nil {
 		return false
 	}
 
 	if contentType := mime.TypeByExtension(pathpkg.Ext(filePath)); contentType != "" {
 		r.Response.Header().Set("Content-Type", contentType)
+	}
+	if contentEncoding != "" {
+		r.Response.Header().Set("Content-Encoding", contentEncoding)
+		r.Response.Header().Add("Vary", "Accept-Encoding")
 	}
 	if filePath == "index.html" {
 		r.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -106,4 +115,28 @@ func serveFrontendFile(r *ghttp.Request, filePath string) bool {
 	}
 	r.Response.Write(data)
 	return true
+}
+
+func frontendEncodedFilePath(fileSystem fs.FS, acceptEncoding, filePath string) (string, string) {
+	if acceptsFrontendEncoding(acceptEncoding, "br") && frontendFileExists(fileSystem, filePath+".br") {
+		return filePath + ".br", "br"
+	}
+	if acceptsFrontendEncoding(acceptEncoding, "gzip") && frontendFileExists(fileSystem, filePath+".gz") {
+		return filePath + ".gz", "gzip"
+	}
+	return filePath, ""
+}
+
+func acceptsFrontendEncoding(acceptEncoding, encoding string) bool {
+	for _, item := range strings.Split(acceptEncoding, ",") {
+		if strings.TrimSpace(strings.Split(item, ";")[0]) == encoding {
+			return true
+		}
+	}
+	return false
+}
+
+func frontendFileExists(fileSystem fs.FS, filePath string) bool {
+	_, err := fs.Stat(fileSystem, filePath)
+	return err == nil
 }

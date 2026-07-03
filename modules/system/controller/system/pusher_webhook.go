@@ -38,7 +38,7 @@ func (c *cPusherWebhook) Webhook(ctx context.Context, req *system.PusherWebhookR
 	r := g.RequestFromCtx(ctx)
 
 	// 1. 验证应用配置
-	config, err := getAppConfig(ctx)
+	config, err := getAppConfigByID(ctx, req.AppId)
 	if err != nil {
 		g.Log().Warning(ctx, "Webhook: Failed to get app config:", err)
 		return &system.PusherWebhookRes{

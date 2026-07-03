@@ -63,6 +63,14 @@ func (c *cPusherUserAuthController) UserAuth(ctx context.Context, req *system.Pu
 
 	g.Log().Debugf(ctx, "Pusher User Authentication: user_id=%d, socket_id=%s", c.UserId, req.SocketId)
 
+	app, err := websocket.ResolvePusherAppBySocketID(ctx, req.SocketId)
+	if err != nil {
+		writeJSONOrJSONP(r, g.Map{
+			"error": "Invalid socket_id app mapping",
+		}, 403)
+		return
+	}
+
 	userData, err := buildPusherUserData(ctx, c.UserId)
 	if err != nil {
 		g.Log().Error(ctx, "Failed to load user data for pusher user auth:", err)
@@ -73,7 +81,7 @@ func (c *cPusherUserAuthController) UserAuth(ctx context.Context, req *system.Pu
 	}
 
 	// 生成用户认证签名
-	auth, err := websocket.GenerateUserAuthSignature(req.SocketId, userData)
+	auth, err := websocket.GenerateUserAuthSignatureWithCredentials(req.SocketId, userData, *app)
 	if err != nil {
 		g.Log().Error(ctx, "Failed to generate user auth signature:", err)
 		writeJSONOrJSONP(r, g.Map{

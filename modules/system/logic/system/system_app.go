@@ -66,6 +66,15 @@ func (s *sSystemApp) GetAppId(ctx context.Context) (string, error) {
 	return hex.EncodeToString(randomBytes), nil
 }
 
+func (s *sSystemApp) GetAppKey(ctx context.Context) (string, error) {
+	randomBytes := make([]byte, 8)
+	_, err := rand.Read(randomBytes)
+	if utils.IsError(err) {
+		return "", err
+	}
+	return hex.EncodeToString(randomBytes), nil
+}
+
 func (s *sSystemApp) GetAppSecret(ctx context.Context) (string, error) {
 	// 生成32个字节的随机数
 	randomBytes := make([]byte, 32)
@@ -175,6 +184,7 @@ func (s *sSystemApp) Save(ctx context.Context, in *req.SystemAppSave, userId int
 		AppName:     in.AppName,
 		Status:      in.Status,
 		AppId:       in.AppId,
+		AppKey:      in.AppKey,
 		Description: in.Description,
 		Remark:      in.Remark,
 	}
@@ -205,6 +215,7 @@ func (s *sSystemApp) Update(ctx context.Context, in *req.SystemAppUpdate) (err e
 		AppName:     in.AppName,
 		Status:      in.Status,
 		AppId:       in.AppId,
+		AppKey:      in.AppKey,
 		Description: in.Description,
 		Remark:      in.Remark,
 	}

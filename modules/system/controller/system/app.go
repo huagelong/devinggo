@@ -37,6 +37,16 @@ func (c *appController) GetAppId(ctx context.Context, in *system.GetAppIdReq) (o
 	return
 }
 
+func (c *appController) GetAppKey(ctx context.Context, in *system.GetAppKeyReq) (out *system.GetAppKeyRes, err error) {
+	out = &system.GetAppKeyRes{}
+	rs, err := service.SystemApp().GetAppKey(ctx)
+	if err != nil {
+		return
+	}
+	out.AppKey = rs
+	return
+}
+
 func (c *appController) GetAppSecret(ctx context.Context, in *system.GetAppSecretReq) (out *system.GetAppSecretRes, err error) {
 	out = &system.GetAppSecretRes{}
 	rs, err := service.SystemApp().GetAppSecret(ctx)

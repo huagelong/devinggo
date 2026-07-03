@@ -29,11 +29,11 @@ interface BackendRouter {
  * - type=I：IFrame 路由
  */
 function transformBackendRouters(
-  routers: BackendRouter[],
+  routers: BackendRouter[] | null | undefined,
 ): RouteRecordStringComponent[] {
   const result: RouteRecordStringComponent[] = [];
 
-  for (const router of routers) {
+  for (const router of Array.isArray(routers) ? routers : []) {
     // 按钮类型仅作为权限码，不生成路由
     if (router.meta.type === 'B') {
       continue;
@@ -65,7 +65,7 @@ function transformBackendRouters(
       component,
       meta: {
         title: router.meta.title,
-        icon: router.meta.icon || undefined,
+        icon: normalizeMenuIcon(router.meta.icon),
         hideInMenu: router.meta.hidden,
         hideInBreadcrumb: router.meta.hiddenBreadcrumb,
       },
@@ -82,6 +82,13 @@ function transformBackendRouters(
   }
 
   return result;
+}
+
+function normalizeMenuIcon(icon?: string) {
+  if (!icon) {
+    return undefined;
+  }
+  return icon.includes(':') ? icon : `lucide:${icon}`;
 }
 
 /**

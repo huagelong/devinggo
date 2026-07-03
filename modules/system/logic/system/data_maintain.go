@@ -8,6 +8,7 @@ package system
 
 import (
 	"context"
+	"sort"
 	"strings"
 
 	"devinggo/modules/system/logic/base"
@@ -64,11 +65,23 @@ func (s *sDataMaintain) GetPageListForSearch(ctx context.Context, req *model.Pag
 }
 
 func (s *sDataMaintain) GetColumnList(ctx context.Context, source, tableName string) (rs map[string]*gdb.TableField, err error) {
+	if g.IsEmpty(source) {
+		source = "default"
+	}
 	db := g.DB(source)
 	rs, err = db.TableFields(ctx, tableName)
 	if utils.IsError(err) {
 		return
 	}
+	return
+}
+
+func (s *sDataMaintain) GetColumnDetailList(ctx context.Context, source string, tableName string) (rs []res.DataMaintainColumn, err error) {
+	fields, err := s.GetColumnList(ctx, source, tableName)
+	if utils.IsError(err) {
+		return
+	}
+	rs = buildColumnDetailsFromFields(fields)
 	return
 }
 
@@ -92,22 +105,28 @@ func (s *sDataMaintain) getPgsqlAllTableStatus(ctx context.Context, db gdb.DB) (
 	query := `
 		SELECT
 			tc.table_name as "Name",
+			COALESCE(st.n_live_tup, 0)::bigint as "Rows",
 			pg_total_relation_size(quote_ident(tc.table_name)) as "Data_length",
 			obj_description(quote_ident(tc.table_name)::regclass::oid, 'pg_class') as "Comment",
-			to_char(greatest(
-				COALESCE(last_vacuum, '1970-01-01'),
-				COALESCE(last_autovacuum, '1970-01-01')
-			), 'YYYY-MM-DD HH24:MI:SS') as "Update_time",
+			CASE
+				WHEN greatest(
+					COALESCE(st.last_vacuum, '1970-01-01'::timestamp),
+					COALESCE(st.last_autovacuum, '1970-01-01'::timestamp)
+				) = '1970-01-01'::timestamp THEN ''
+				ELSE to_char(greatest(
+					COALESCE(st.last_vacuum, '1970-01-01'::timestamp),
+					COALESCE(st.last_autovacuum, '1970-01-01'::timestamp)
+				), 'YYYY-MM-DD HH24:MI:SS')
+			END as "Update_time",
 			'PostgreSQL' as "Engine",
-			'UTF8' as "Collation",
-			0 as "Data_free"
-		FROM 
+			'UTF8' as "Collation"
+		FROM
 			information_schema.tables tc
 			LEFT JOIN pg_stat_user_tables st ON tc.table_name = st.relname
-		WHERE 
+		WHERE
 			tc.table_schema = 'public'
 			AND tc.table_type = 'BASE TABLE'
-		ORDER BY 
+		ORDER BY
 			tc.table_name`
 
 	tablesInfo, err := db.GetAll(ctx, query)
@@ -120,4 +139,31 @@ func (s *sDataMaintain) getPgsqlAllTableStatus(ctx context.Context, db gdb.DB) (
 		return
 	}
 	return
+}
+
+func buildColumnDetailsFromFields(fields map[string]*gdb.TableField) []res.DataMaintainColumn {
+	if len(fields) == 0 {
+		return make([]res.DataMaintainColumn, 0)
+	}
+
+	fieldList := make([]*gdb.TableField, 0, len(fields))
+	for _, field := range fields {
+		fieldList = append(fieldList, field)
+	}
+	sort.Slice(fieldList, func(i, j int) bool {
+		return fieldList[i].Index < fieldList[j].Index
+	})
+
+	details := make([]res.DataMaintainColumn, 0, len(fieldList))
+	for _, field := range fieldList {
+		details = append(details, res.DataMaintainColumn{
+			Field:        field.Name,
+			Type:         field.Type,
+			Nullable:     field.Null,
+			Key:          field.Key,
+			DefaultValue: gconv.String(field.Default),
+			Comment:      field.Comment,
+		})
+	}
+	return details
 }

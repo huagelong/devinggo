@@ -31,7 +31,7 @@ func (c *cPusherChannel) GetChannelUsers(ctx context.Context, req *system.Pusher
 	r := g.RequestFromCtx(ctx)
 
 	// 1. 验证应用配置
-	config, err := getAppConfig(ctx)
+	config, err := getAppConfigByID(ctx, req.AppId)
 	if err != nil {
 		return nil, err
 	}
@@ -66,20 +66,12 @@ func (c *cPusherChannel) GetChannelUsers(ctx context.Context, req *system.Pusher
 	}
 
 	// 5. 从 Redis 获取频道成员列表
-	members, err := websocket.GetPresenceMembers4Redis(ctx, req.ChannelName)
-	if err != nil {
-		g.Log().Warning(ctx, "GetChannelUsers: Failed to get presence members:", err)
-		r.Response.Status = 500
-		r.Response.WriteJson(g.Map{
-			"error": "Failed to retrieve channel members",
-		})
-		r.ExitAll()
-		return nil, nil
-	}
+	socketIDs := websocket.GetAllSocketIDByChannelForApp(ctx, req.AppId, req.ChannelName)
+	userIDs := websocket.GetUserIDsBySocketIDs(ctx, socketIDs)
 
 	// 6. 构建用户列表（只返回 user_id，不包含 user_info）
-	users := make([]system.PusherChannelUser, 0, len(members))
-	for userID := range members {
+	users := make([]system.PusherChannelUser, 0, len(userIDs))
+	for _, userID := range userIDs {
 		users = append(users, system.PusherChannelUser{
 			ID: userID,
 		})
@@ -101,7 +93,7 @@ func (c *cPusherChannel) GetChannelInfo(ctx context.Context, req *system.PusherC
 	r := g.RequestFromCtx(ctx)
 
 	// 1. 验证应用配置
-	config, err := getAppConfig(ctx)
+	config, err := getAppConfigByID(ctx, req.AppId)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +121,7 @@ func (c *cPusherChannel) GetChannelInfo(ctx context.Context, req *system.PusherC
 	}
 
 	// 5. 查询频道订阅者数量
-	socketIds := websocket.GetAllSocketIdByChannel4Redis(ctx, req.ChannelName)
+	socketIds := websocket.GetAllSocketIDByChannelForApp(ctx, req.AppId, req.ChannelName)
 	subscriptionCount := len(socketIds)
 	occupied := subscriptionCount > 0
 
@@ -154,12 +146,7 @@ func (c *cPusherChannel) GetChannelInfo(ctx context.Context, req *system.PusherC
 			case "user_count":
 				// 只有 presence 频道才返回 user_count
 				if websocket.IsPresenceChannel(req.ChannelName) {
-					members, err := websocket.GetPresenceMembers4Redis(ctx, req.ChannelName)
-					if err != nil {
-						g.Log().Warning(ctx, "GetChannelInfo: Failed to get presence members:", err)
-					} else {
-						res.UserCount = len(members)
-					}
+					res.UserCount = len(websocket.GetUserIDsBySocketIDs(ctx, socketIds))
 				}
 			case "subscription_count":
 				// 返回订阅数
@@ -193,7 +180,7 @@ func (c *cPusherChannel) GetChannelsList(ctx context.Context, req *system.Pusher
 	r := g.RequestFromCtx(ctx)
 
 	// 1. 验证应用配置
-	config, err := getAppConfig(ctx)
+	config, err := getAppConfigByID(ctx, req.AppId)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +206,7 @@ func (c *cPusherChannel) GetChannelsList(ctx context.Context, req *system.Pusher
 	}
 
 	// 4. 获取所有活跃频道
-	allChannels := websocket.GetAllChannels(ctx)
+	allChannels := websocket.GetAllChannelsForApp(ctx, req.AppId)
 
 	// 5. 按前缀过滤
 	filteredChannels := make([]string, 0)
@@ -255,12 +242,7 @@ func (c *cPusherChannel) GetChannelsList(ctx context.Context, req *system.Pusher
 
 		// 如果请求了 user_count 且是 presence 频道，则返回用户数
 		if includeUserCount && websocket.IsPresenceChannel(channel) {
-			members, err := websocket.GetPresenceMembers4Redis(ctx, channel)
-			if err != nil {
-				g.Log().Warning(ctx, "GetChannelsList: Failed to get presence members for", channel, err)
-			} else {
-				item.UserCount = len(members)
-			}
+			item.UserCount = len(websocket.GetUserIDsBySocketIDs(ctx, websocket.GetAllSocketIDByChannelForApp(ctx, req.AppId, channel)))
 		}
 
 		channels[channel] = item

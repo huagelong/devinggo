@@ -47,3 +47,5 @@ devinggo.exe
 .gocache
 coverage.out
 sync-to-dev.sh
+/.worktrees/
+.superpowers
