@@ -162,6 +162,82 @@ export namespace MonitorApi {
     capabilities: DbMonitorCapabilities;
     alerts: DbMonitorAlert[];
   }
+
+  export interface QueueMonitorQueueItem {
+    queue: string;
+    memoryUsage: number;
+    latency: number;
+    size: number;
+    groups: number;
+    pending: number;
+    active: number;
+    scheduled: number;
+    retry: number;
+    archived: number;
+    completed: number;
+    aggregating: number;
+    processed: number;
+    failed: number;
+    processedTotal: number;
+    failedTotal: number;
+    paused: boolean;
+    timestamp: string;
+  }
+
+  export interface QueueMonitorWorkerItem {
+    id: string;
+    host: string;
+    pid: number;
+    concurrency: number;
+    queues: Record<string, number>;
+    strictPriority: boolean;
+    started: string;
+    status: string;
+    activeWorkerCount: number;
+  }
+
+  export interface QueueMonitorOverviewResponse {
+    queue: QueueMonitorQueueItem;
+    workers: QueueMonitorWorkerItem[];
+  }
+
+  export interface QueueMonitorTaskItem {
+    id: string;
+    queue: string;
+    type: string;
+    payload: string;
+    state: string;
+    maxRetry: number;
+    retried: number;
+    lastErr: string;
+    lastFailedAt: string;
+    timeout: number;
+    deadline: string;
+    group: string;
+    nextProcessAt: string;
+    isOrphaned: boolean;
+    retention: number;
+    completedAt: string;
+    result: string;
+  }
+
+  export interface QueueMonitorTaskQuery {
+    queue: string;
+    state: string;
+    page: number;
+    pageSize: number;
+  }
+
+  export interface QueueMonitorTaskResponse extends PageResponse<QueueMonitorTaskItem> {}
+
+  export interface QueueMonitorSchedulerEntry {
+    id: string;
+    spec: string;
+    taskType: string;
+    queue: string;
+    next: string;
+    prev: string;
+  }
 }
 
 export function getOnlineUserPageList(params: MonitorApi.OnlineUserQuery) {
@@ -213,5 +289,35 @@ export function getDbMonitorInfo(groupName: string) {
     {
       params: { groupName },
     },
+  );
+}
+
+export function getQueueMonitorQueues() {
+  return requestClient.get<MonitorApi.QueueMonitorQueueItem[]>(
+    '/system/queueMonitor/queues',
+  );
+}
+
+export function getQueueMonitorOverview(queue: string) {
+  return requestClient.get<MonitorApi.QueueMonitorOverviewResponse>(
+    '/system/queueMonitor/overview',
+    {
+      params: { queue },
+    },
+  );
+}
+
+export function getQueueMonitorTasks(params: MonitorApi.QueueMonitorTaskQuery) {
+  return requestClient.get<MonitorApi.QueueMonitorTaskResponse>(
+    '/system/queueMonitor/tasks',
+    {
+      params,
+    },
+  );
+}
+
+export function getQueueMonitorSchedulerEntries() {
+  return requestClient.get<MonitorApi.QueueMonitorSchedulerEntry[]>(
+    '/system/queueMonitor/schedulerEntries',
   );
 }

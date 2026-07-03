@@ -10,6 +10,7 @@ import (
 	"database/sql"
 	"devinggo/internal/model/entity"
 	"devinggo/modules/system/model"
+	"devinggo/modules/system/model/page"
 	"devinggo/modules/system/model/req"
 	"devinggo/modules/system/model/res"
 
@@ -414,6 +415,12 @@ type (
 		ListGroups(ctx context.Context) (groups []res.DbMonitorGroup, err error)
 		GetMonitor(ctx context.Context, groupName string) (out *res.DbMonitorPayload, err error)
 	}
+	IQueueMonitor interface {
+		ListQueues(ctx context.Context) (items []res.QueueMonitorQueueItem, err error)
+		GetOverview(ctx context.Context, queue string) (out *res.QueueMonitorOverview, err error)
+		ListTasks(ctx context.Context, queue string, state string, reqPage *page.PageReq) (items []res.QueueMonitorTaskItem, total int, err error)
+		ListSchedulerEntries(ctx context.Context) (items []res.QueueMonitorSchedulerEntry, err error)
+	}
 )
 
 var (
@@ -452,6 +459,7 @@ var (
 	localSystemUserPost            ISystemUserPost
 	localSystemUserRole            ISystemUserRole
 	localDbMonitor                 IDbMonitor
+	localQueueMonitor              IQueueMonitor
 )
 
 func CodeGen() ICodeGen {
@@ -837,4 +845,15 @@ func DbMonitor() IDbMonitor {
 
 func RegisterDbMonitor(i IDbMonitor) {
 	localDbMonitor = i
+}
+
+func QueueMonitor() IQueueMonitor {
+	if localQueueMonitor == nil {
+		panic("implement not found for interface IQueueMonitor, forgot register?")
+	}
+	return localQueueMonitor
+}
+
+func RegisterQueueMonitor(i IQueueMonitor) {
+	localQueueMonitor = i
 }
