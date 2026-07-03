@@ -13,6 +13,17 @@ type DataMaintain struct {
 	Collation  string      `json:"collation"`
 	Comment    string      `json:"comment"`
 	Engine     string      `json:"engine"`
-	CreateTime *gtime.Time `json:"create_time" ` // 创建时间
-	Rows       int64       `json:"rows"`         // 行数
+	CreateTime *gtime.Time `json:"create_time"` // 创建时间
+	Rows       int64       `json:"rows"`        // 行数
+	DataLength int64       `json:"data_length"`
+	UpdateTime string      `json:"update_time"`
+}
+
+type DataMaintainColumn struct {
+	Field        string `json:"field"`
+	Type         string `json:"type"`
+	Nullable     bool   `json:"nullable"`
+	Key          string `json:"key"`
+	DefaultValue string `json:"default_value"`
+	Comment      string `json:"comment"`
 }

@@ -50,6 +50,7 @@ type (
 	IDataMaintain interface {
 		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.DataMaintainSearch) (rs []*res.DataMaintain, total int, err error)
 		GetColumnList(ctx context.Context, source string, tableName string) (rs map[string]*gdb.TableField, err error)
+		GetColumnDetailList(ctx context.Context, source string, tableName string) (rs []res.DataMaintainColumn, err error)
 		GetAllTableStatus(ctx context.Context, groupName string) (rs []*res.DataMaintain, err error)
 	}
 	ILogin interface {

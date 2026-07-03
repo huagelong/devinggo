@@ -61,8 +61,8 @@ const canFragment = computed(() =>
   hasAccessByCodes(['system:dataMaintain:fragment', 'system:dataMaintain:index']),
 );
 
-// Current backend only exposes index; detailed/optimize/fragment are prepared for future rollout.
-const hasDetailedApi = false;
+// Current backend exposes index/detailed; optimize/fragment stay reserved for future rollout.
+const hasDetailedApi = true;
 const hasOptimizeApi = false;
 const hasFragmentApi = false;
 
@@ -169,6 +169,20 @@ function toggleFullscreen() {
   tableContainerRef.value?.requestFullscreen();
 }
 
+function formatBytes(bytes?: number) {
+  if (!bytes) {
+    return '0 B';
+  }
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let value = bytes;
+  let index = 0;
+  while (value >= 1024 && index < units.length - 1) {
+    value /= 1024;
+    index++;
+  }
+  return `${value.toFixed(value >= 10 || index === 0 ? 0 : 2)} ${units[index]}`;
+}
+
 onMounted(() => {
   document.addEventListener('fullscreenchange', handleFullscreenChange);
   if (!canView.value) {
@@ -268,8 +282,11 @@ onUnmounted(() => {
             <template #comment="{ row }">
               <span :title="row.comment || '-'">{{ row.comment || '-' }}</span>
             </template>
-            <template #create_time="{ row }">
-              {{ row.create_time || '-' }}
+            <template #data_length="{ row }">
+              {{ formatBytes(row.data_length) }}
+            </template>
+            <template #update_time="{ row }">
+              {{ row.update_time || '-' }}
             </template>
             <template #action="{ row }">
               <Space>

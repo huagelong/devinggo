@@ -42,3 +42,15 @@ func (c *dataMaintainController) Index(ctx context.Context, in *system.IndexData
 	out.PageRes.Pack(in, totalCount)
 	return
 }
+
+func (c *dataMaintainController) Detailed(ctx context.Context, in *system.DetailedDataMaintainReq) (out *system.DetailedDataMaintainRes, err error) {
+	out = &system.DetailedDataMaintainRes{}
+	out.Items, err = service.DataMaintain().GetColumnDetailList(ctx, in.GroupName, in.TableName)
+	if err != nil {
+		return
+	}
+	if g.IsEmpty(out.Items) {
+		out.Items = make([]res.DataMaintainColumn, 0)
+	}
+	return
+}

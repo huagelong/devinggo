@@ -9,7 +9,9 @@ export namespace DataMaintainApi {
     comment?: string;
     engine?: string;
     create_time?: string;
+    update_time?: string;
     rows?: number;
+    data_length?: number;
   }
 
   export interface ListQuery extends Partial<PageQuery> {
@@ -25,10 +27,9 @@ export namespace DataMaintainApi {
   export interface ColumnItem {
     field: string;
     type?: string;
+    nullable?: boolean;
     key?: string;
-    null?: string;
-    default?: string;
-    extra?: string;
+    default_value?: string;
     comment?: string;
   }
 
@@ -38,7 +39,9 @@ export namespace DataMaintainApi {
   }
 
   export type ListResponse = PageResponse<ListItem>;
-  export type DetailResponse = Record<string, ColumnItem>;
+  export interface DetailResponse {
+    items?: ColumnItem[];
+  }
 }
 
 export function getDataMaintainPageList(params: DataMaintainApi.ListQuery) {

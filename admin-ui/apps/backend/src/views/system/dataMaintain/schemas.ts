@@ -20,7 +20,8 @@ export function createDataMaintainTableColumns(): DataMaintainTableColumn[] {
     { colKey: 'engine', title: $t('system.dataMaintain.engine'), width: 140 },
     { colKey: 'collation', title: $t('system.dataMaintain.collation'), width: 160 },
     { colKey: 'rows', title: $t('system.dataMaintain.rows'), width: 120 },
-    { colKey: 'create_time', title: $t('common.createTime'), minWidth: 180 },
+    { colKey: 'data_length', title: $t('system.dataMaintain.tableSize'), width: 150 },
+    { colKey: 'update_time', title: $t('common.updateTime'), minWidth: 180 },
     {
       align: 'center',
       colKey: 'action',

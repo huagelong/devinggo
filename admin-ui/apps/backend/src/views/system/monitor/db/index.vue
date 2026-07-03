@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { DataMaintainApi } from '#/api/system/data-maintain';
 import type { MonitorApi } from '#/api/system/monitor';
 
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
@@ -9,6 +10,7 @@ import { EchartsUI, useEcharts } from '@vben/plugins/echarts';
 import type { EchartsUIType } from '@vben/plugins/echarts';
 
 import { message } from '#/adapter/tdesign';
+import { getDataMaintainDetailed, getDataMaintainPageList } from '#/api/system/data-maintain';
 import { getDbMonitorGroups, getDbMonitorInfo } from '#/api/system/monitor';
 import { logger } from '#/utils/logger';
 
@@ -18,13 +20,15 @@ import {
   Select,
   Switch,
   TabPanel,
+  Table,
   Tabs,
   Tag,
 } from 'tdesign-vue-next';
+import type { TableRowData } from 'tdesign-vue-next';
 
 defineOptions({ name: 'SystemDbMonitor' });
 
-type DbMonitorTab = 'capabilities' | 'overview' | 'timeseries';
+type DbMonitorTab = 'capabilities' | 'overview' | 'tables' | 'timeseries';
 
 const refreshIntervalOptions = [10, 30, 60].map((value) => ({
   label: `${value}s`,
@@ -39,6 +43,11 @@ const autoRefresh = ref(true);
 const refreshInterval = ref(10);
 const lastRefreshAt = ref('');
 const monitorData = ref<MonitorApi.DbMonitorResponse | null>(null);
+const tableInfoLoading = ref(false);
+const tableInfoList = ref<DataMaintainApi.ListItem[]>([]);
+const expandedTableKeys = ref<Array<string | number>>([]);
+const tableDetailLoadingMap = ref<Record<string, boolean>>({});
+const tableDetailMap = ref<Record<string, DataMaintainApi.ColumnItem[]>>({});
 const refreshTimer = ref<ReturnType<typeof setInterval>>();
 
 const tpsChartRef = ref<EchartsUIType>();
@@ -117,7 +126,50 @@ const overviewItems = computed(() => {
 
 const capabilityData = computed(() => monitorData.value?.capabilities ?? null);
 const alerts = computed(() => monitorData.value?.alerts ?? []);
+const tableCount = computed(() => tableInfoList.value.length);
 const timeseries = computed(() => monitorData.value?.timeseries ?? []);
+
+const tableColumns = computed(() => [
+  {
+    colKey: 'name',
+    title: $t('system.dataMaintain.tableName'),
+    minWidth: 220,
+  },
+  {
+    colKey: 'comment',
+    title: $t('system.dataMaintain.tableComment'),
+    minWidth: 260,
+  },
+  {
+    colKey: 'engine',
+    title: $t('system.dataMaintain.engine'),
+    width: 140,
+  },
+  {
+    colKey: 'collation',
+    title: $t('system.dataMaintain.collation'),
+    width: 180,
+  },
+  {
+    colKey: 'rows',
+    title: $t('system.dataMaintain.rows'),
+    width: 120,
+  },
+  {
+    colKey: 'data_length',
+    title: $t('system.dataMaintain.tableSize'),
+    width: 150,
+  },
+]);
+
+const detailTableColumns = computed(() => [
+  { colKey: 'field', title: $t('system.dataMaintain.fieldColName'), width: 220 },
+  { colKey: 'type', title: $t('system.dataMaintain.fieldColType'), width: 180 },
+  { colKey: 'nullable', title: $t('system.dataMaintain.fieldColNullable'), width: 120 },
+  { colKey: 'default_value', title: $t('system.dataMaintain.fieldColDefault'), minWidth: 180 },
+  { colKey: 'key', title: $t('system.dataMaintain.fieldColKey'), width: 140 },
+  { colKey: 'comment', title: $t('system.dataMaintain.fieldColComment'), minWidth: 220 },
+]);
 
 function formatBytes(bytes: number): string {
   if (!bytes) {
@@ -173,6 +225,40 @@ function alertTheme(level: string) {
     }
     default: {
       return 'primary';
+    }
+  }
+}
+
+function fieldKeyLabel(key?: string) {
+  switch (key) {
+    case 'PRI': {
+      return $t('system.dataMaintain.keyPrimary');
+    }
+    case 'UNI': {
+      return $t('system.dataMaintain.keyUnique');
+    }
+    case 'MUL': {
+      return $t('system.dataMaintain.keyIndex');
+    }
+    default: {
+      return $t('system.dataMaintain.keyNone');
+    }
+  }
+}
+
+function fieldKeyTheme(key?: string) {
+  switch (key) {
+    case 'PRI': {
+      return 'danger';
+    }
+    case 'UNI': {
+      return 'success';
+    }
+    case 'MUL': {
+      return 'primary';
+    }
+    default: {
+      return 'default';
     }
   }
 }
@@ -290,6 +376,78 @@ async function fetchMonitor(options?: { reset?: boolean }) {
   }
 }
 
+async function fetchTableInfo(options?: { reset?: boolean }) {
+  if (!activeGroup.value) {
+    return;
+  }
+
+  if (options?.reset) {
+    tableInfoList.value = [];
+    expandedTableKeys.value = [];
+    tableDetailMap.value = {};
+    tableDetailLoadingMap.value = {};
+  }
+
+  tableInfoLoading.value = true;
+  try {
+    const response = await getDataMaintainPageList({
+      group_name: activeGroup.value,
+      page: 1,
+      pageSize: 500,
+    });
+    tableInfoList.value = response.items ?? [];
+  } catch (error) {
+    logger.error(error);
+    if (options?.reset) {
+      tableInfoList.value = [];
+    }
+    message.error($t('common.listLoadFailed'));
+  } finally {
+    tableInfoLoading.value = false;
+  }
+}
+
+async function loadTableDetail(tableName: string) {
+  if (!activeGroup.value || tableDetailMap.value[tableName] || tableDetailLoadingMap.value[tableName]) {
+    return;
+  }
+
+  tableDetailLoadingMap.value = {
+    ...tableDetailLoadingMap.value,
+    [tableName]: true,
+  };
+  try {
+    const response = await getDataMaintainDetailed({
+      group_name: activeGroup.value,
+      table_name: tableName,
+    });
+    tableDetailMap.value = {
+      ...tableDetailMap.value,
+      [tableName]: response.items ?? [],
+    };
+  } catch (error) {
+    logger.error(error);
+    message.error($t('common.fieldDetailFailed'));
+  } finally {
+    tableDetailLoadingMap.value = {
+      ...tableDetailLoadingMap.value,
+      [tableName]: false,
+    };
+  }
+}
+
+function handleTableExpandChange(
+  expandedRowKeys: Array<string | number>,
+  options: { currentRowData: TableRowData },
+) {
+  expandedTableKeys.value = expandedRowKeys;
+  const currentTableName = (options.currentRowData as DataMaintainApi.ListItem | undefined)?.name;
+  if (!currentTableName || !expandedRowKeys.includes(currentTableName)) {
+    return;
+  }
+  void loadTableDetail(currentTableName);
+}
+
 function stopAutoRefresh() {
   if (refreshTimer.value) {
     clearInterval(refreshTimer.value);
@@ -308,14 +466,20 @@ function restartAutoRefresh() {
 }
 
 async function handleManualRefresh() {
-  await fetchMonitor();
+  await Promise.all([
+    fetchMonitor(),
+    fetchTableInfo(),
+  ]);
 }
 
 watch(activeGroup, async () => {
   if (!initialized) {
     return;
   }
-  await fetchMonitor({ reset: true });
+  await Promise.all([
+    fetchMonitor({ reset: true }),
+    fetchTableInfo({ reset: true }),
+  ]);
 });
 
 watch([autoRefresh, refreshInterval], () => {
@@ -332,7 +496,10 @@ watch(activeTab, async (value) => {
 
 onMounted(async () => {
   await fetchGroups();
-  await fetchMonitor({ reset: true });
+  await Promise.all([
+    fetchMonitor({ reset: true }),
+    fetchTableInfo({ reset: true }),
+  ]);
   initialized = true;
   restartAutoRefresh();
 });
@@ -367,30 +534,54 @@ onUnmounted(() => {
           </div>
 
           <div class="grid gap-3 md:grid-cols-2 2xl:flex 2xl:flex-wrap 2xl:items-center 2xl:justify-end">
-            <Select
-              v-model="activeGroup"
-              class="w-full min-w-52"
-              :options="groupOptions"
-            />
-
-            <div class="flex items-center justify-between rounded-lg border border-border/70 bg-muted/30 px-3 py-2">
-              <span class="text-sm text-muted-foreground">{{ $t('common.refresh') }}</span>
-              <Switch v-model="autoRefresh" size="small" />
+            <div class="flex flex-col gap-2">
+              <div class="text-xs font-medium text-muted-foreground">
+                {{ $t('system.monitor.db.group') }}
+              </div>
+              <Select
+                v-model="activeGroup"
+                class="w-full min-w-52"
+                :options="groupOptions"
+              />
             </div>
 
-            <Select
-              v-model="refreshInterval"
-              class="w-full min-w-32"
-              :options="refreshIntervalOptions"
-            />
+            <div class="flex flex-col gap-2">
+              <div class="text-xs font-medium text-muted-foreground">
+                {{ $t('system.monitor.db.autoRefresh') }}
+              </div>
+              <div class="flex items-center justify-between rounded-lg border border-border/70 bg-muted/30 px-3 py-2">
+                <span class="text-sm text-muted-foreground">{{ $t('system.monitor.db.autoRefresh') }}</span>
+                <Switch v-model="autoRefresh" size="small" />
+              </div>
+            </div>
 
-            <Button theme="primary" @click="handleManualRefresh">
-              {{ $t('common.refresh') }}
-            </Button>
+            <div class="flex flex-col gap-2">
+              <div class="text-xs font-medium text-muted-foreground">
+                {{ $t('system.monitor.db.refreshInterval') }}
+              </div>
+              <Select
+                v-model="refreshInterval"
+                class="w-full min-w-32"
+                :options="refreshIntervalOptions"
+              />
+            </div>
 
-            <div class="rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-              <span class="mr-2">{{ $t('system.monitor.db.lastRefreshAt') }}</span>
-              <span class="font-medium text-foreground">{{ lastRefreshAt || '-' }}</span>
+            <div class="flex flex-col gap-2">
+              <div class="text-xs font-medium text-muted-foreground">
+                {{ $t('system.monitor.db.manualRefresh') }}
+              </div>
+              <Button block theme="primary" @click="handleManualRefresh">
+                {{ $t('common.refresh') }}
+              </Button>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <div class="text-xs font-medium text-muted-foreground">
+                {{ $t('system.monitor.db.lastRefreshAt') }}
+              </div>
+              <div class="rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+                <span class="font-medium text-foreground">{{ lastRefreshAt || '-' }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -548,6 +739,88 @@ onUnmounted(() => {
             </div>
             <div v-else class="py-12 text-center text-muted-foreground">
               {{ loading ? $t('common.loading') : $t('common.noData') }}
+            </div>
+          </TabPanel>
+
+          <TabPanel value="tables" :label="$t('system.monitor.db.tables')">
+            <div class="mt-4 flex flex-col gap-4">
+              <div class="flex items-center justify-between rounded-xl border border-border/70 bg-muted/20 px-4 py-3">
+                <div>
+                  <div class="text-sm font-medium text-foreground">
+                    {{ $t('system.monitor.db.tables') }}
+                  </div>
+                  <div class="mt-1 text-sm text-muted-foreground">
+                    {{ $t('system.monitor.db.group') }}: {{ activeGroup || '-' }}
+                  </div>
+                </div>
+                <Tag theme="primary" variant="light">
+                  {{ tableCount }} {{ $t('system.monitor.db.tableCountUnit') }}
+                </Tag>
+              </div>
+
+              <Table
+                row-key="name"
+                expand-on-row-click
+                hover
+                stripe
+                :columns="tableColumns"
+                :data="tableInfoList"
+                :expanded-row-keys="expandedTableKeys"
+                :loading="tableInfoLoading"
+                size="small"
+                @expand-change="handleTableExpandChange"
+              >
+                <template #comment="{ row }">
+                  <span :title="row.comment || '-'">{{ row.comment || '-' }}</span>
+                </template>
+                <template #data_length="{ row }">
+                  {{ formatBytes(row.data_length ?? 0) }}
+                </template>
+                <template #expandedRow="{ row }">
+                  <div class="rounded-xl border border-border/70 bg-muted/10 p-4">
+                    <div class="mb-3 grid grid-cols-2 gap-3 text-sm text-muted-foreground xl:grid-cols-5">
+                      <div>{{ $t('system.dataMaintain.engine') }}：{{ row.engine || '-' }}</div>
+                      <div>{{ $t('system.dataMaintain.collation') }}：{{ row.collation || '-' }}</div>
+                      <div>{{ $t('system.dataMaintain.rows') }}：{{ row.rows ?? '-' }}</div>
+                      <div>{{ $t('system.dataMaintain.tableSize') }}：{{ formatBytes(row.data_length ?? 0) }}</div>
+                      <div>{{ $t('common.updateTime') }}：{{ row.update_time || '-' }}</div>
+                    </div>
+
+                    <Table
+                      row-key="field"
+                      size="small"
+                      :bordered="false"
+                      :columns="detailTableColumns"
+                      :data="tableDetailMap[row.name] ?? []"
+                      :loading="!!tableDetailLoadingMap[row.name]"
+                    >
+                      <template #nullable="{ row: columnRow }">
+                        <Tag :theme="columnRow.nullable ? 'success' : 'default'" variant="light">
+                          {{ columnRow.nullable ? $t('system.dataMaintain.yes') : $t('system.dataMaintain.no') }}
+                        </Tag>
+                      </template>
+                      <template #default_value="{ row: columnRow }">
+                        {{ columnRow.default_value || '-' }}
+                      </template>
+                      <template #key="{ row: columnRow }">
+                        <Tag :theme="fieldKeyTheme(columnRow.key)" variant="light">
+                          {{ fieldKeyLabel(columnRow.key) }}
+                        </Tag>
+                      </template>
+                      <template #comment="{ row: columnRow }">
+                        {{ columnRow.comment || '-' }}
+                      </template>
+                    </Table>
+                  </div>
+                </template>
+              </Table>
+
+              <div
+                v-if="!tableInfoLoading && tableInfoList.length === 0"
+                class="rounded-xl border border-dashed border-border bg-muted/10 px-4 py-10 text-center text-muted-foreground"
+              >
+                {{ $t('common.noData') }}
+              </div>
             </div>
           </TabPanel>
         </Tabs>
