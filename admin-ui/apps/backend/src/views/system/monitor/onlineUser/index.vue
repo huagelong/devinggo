@@ -11,6 +11,7 @@ import { getOnlineUserPageList, kickUser } from '#/api/system/monitor';
 import { getAppPageList } from '#/api/system/app';
 import type { AppApi } from '#/api/system/app';
 import { logger } from '#/utils/logger';
+import { formatQueueMonitorTime } from '#/utils/queue-monitor-time';
 
 import { SearchIcon, DeleteIcon, FullscreenIcon, FullscreenExitIcon, RefreshIcon } from 'tdesign-icons-vue-next';
 import { Button, Form, FormItem, Input, Select, Table, Tooltip } from 'tdesign-vue-next';
@@ -204,6 +205,9 @@ onUnmounted(() => {
           >
           <template #app_id="{ row }">
             {{ row.app_id ? (appMap[row.app_id] || row.app_id) : '-' }}
+          </template>
+          <template #login_time="{ row }">
+            {{ formatQueueMonitorTime(row.login_time) || '-' }}
           </template>
           <template #action="{ row }">
             <Button

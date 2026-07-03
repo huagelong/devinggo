@@ -13,6 +13,7 @@ import { message } from '#/adapter/tdesign';
 import { getDataMaintainDetailed, getDataMaintainPageList } from '#/api/system/data-maintain';
 import { getDbMonitorGroups, getDbMonitorInfo } from '#/api/system/monitor';
 import { logger } from '#/utils/logger';
+import { formatQueueMonitorTime } from '#/utils/queue-monitor-time';
 
 import {
   Button,
@@ -186,7 +187,7 @@ function formatBytes(bytes: number): string {
 }
 
 function formatRefreshTime(date = new Date()) {
-  return date.toLocaleString();
+  return formatQueueMonitorTime(date);
 }
 
 function metricLabel(metric: string) {
@@ -783,7 +784,7 @@ onUnmounted(() => {
                       <div>{{ $t('system.dataMaintain.collation') }}：{{ row.collation || '-' }}</div>
                       <div>{{ $t('system.dataMaintain.rows') }}：{{ row.rows ?? '-' }}</div>
                       <div>{{ $t('system.dataMaintain.tableSize') }}：{{ formatBytes(row.data_length ?? 0) }}</div>
-                      <div>{{ $t('common.updateTime') }}：{{ row.update_time || '-' }}</div>
+                      <div>{{ $t('common.updateTime') }}：{{ formatQueueMonitorTime(row.update_time) || '-' }}</div>
                     </div>
 
                     <Table
