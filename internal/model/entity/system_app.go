@@ -14,6 +14,7 @@ type SystemApp struct {
 	GroupId     int64       `json:"groupId"     orm:"group_id"    description:""` //
 	AppName     string      `json:"appName"     orm:"app_name"    description:""` //
 	AppId       string      `json:"appId"       orm:"app_id"      description:""` //
+	AppKey      string      `json:"appKey"      orm:"app_key"     description:""` //
 	AppSecret   string      `json:"appSecret"   orm:"app_secret"  description:""` //
 	Status      int         `json:"status"      orm:"status"      description:""` //
 	Description string      `json:"description" orm:"description" description:""` //

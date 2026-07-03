@@ -47,6 +47,7 @@ func BindController(group *ghttp.RouterGroup) {
 			system.CacheController,
 			system.DbMonitorController,
 			system.QueueMonitorController,
+			system.PusherMonitorController,
 			system.DataMaintainController,
 			system.SystemModulesController,
 			system.DashboardController,

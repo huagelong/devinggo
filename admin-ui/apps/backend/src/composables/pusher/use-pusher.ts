@@ -18,7 +18,7 @@ export interface PusherConfig {
 
 // Default config — reads from env, falls back to sensible defaults
 const defaultConfig: PusherConfig = {
-  appKey: (import.meta.env.VITE_PUSHER_APP_KEY as string) || 'devinggo-app-key',
+  appKey: (import.meta.env.VITE_PUSHER_APP_KEY as string) || 'system',
   wsHost: (import.meta.env.VITE_PUSHER_WS_HOST as string) || window.location.hostname,
   wsPort: (import.meta.env.VITE_PUSHER_WS_PORT as number) || 8070,
   wssPort: (import.meta.env.VITE_PUSHER_WSS_PORT as number) || 8070,

@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
+	"strings"
 	"time"
 
 	"devinggo/modules/system/model"
@@ -103,6 +104,14 @@ func GetConnection(r *ghttp.Request) (conn *websocket.Conn, err error) {
 func WsPage(r *ghttp.Request) {
 	ctx := r.GetCtx()
 	currentTime := int64(gtime.Now().Unix())
+	appKey := strings.Trim(strings.TrimPrefix(r.Request.URL.Path, "/app/"), "/")
+	app, err := ResolvePusherAppByKey(ctx, appKey)
+	if err != nil {
+		glob.WithWsLog().Warning(ctx, "Invalid pusher app key:", appKey, err)
+		r.Response.WriteStatus(404)
+		r.Response.WriteJson(g.Map{"error": "Invalid app key"})
+		return
+	}
 
 	// ⚠️ v8.3.0要求：验证协议版本
 	// Pusher WebSocket 协议版本，默认为 7
@@ -139,9 +148,13 @@ func WsPage(r *ghttp.Request) {
 	client := NewClient(conn.RemoteAddr().String(), socketID, conn, currentTime)
 	client.SessionID = gconv.String(sessionId)
 	client.ServerName = serverName
+	client.AppID = app.AppID
+	client.AppKey = app.AppKey
+	client.AppSecret = app.AppSecret
 
 	// 保存客户端到Redis
 	AddServerNameSocketId4Redis(ctx, client.SocketID, serverName)
+	AddAppIDSocketId4Redis(ctx, client.SocketID, client.AppID)
 	UpdateSocketIdHeartbeatTime4Redis(ctx, client.SocketID, currentTime)
 
 	// 发送connection_established事件（⚠️ activity_timeout改为120秒）
@@ -166,7 +179,7 @@ func WsPage(r *ghttp.Request) {
 	// 用户连接事件
 	clientManager.Connect <- client
 
-	glob.WithWsLog().Infof(ctx, "Pusher client connected: socket_id=%s", socketID)
+	glob.WithWsLog().Infof(ctx, "Pusher client connected: app_id=%s, socket_id=%s", client.AppID, socketID)
 }
 
 // safeRandomInt returns a cryptographically secure random integer in [0, max).

@@ -146,3 +146,20 @@ settings:
     allowHeaders: "X-App-Id,X-Tenant-Id"
   snowflake:
     workerId: 1 # 机器ID
+  # Pusher WebSocket protocol configuration (v8.3.0 compatible)
+pusher:
+  appId: "system"                    # App ID for HTTP Events API paths (/apps/{app_id}/events)
+  appKey: "system"                  # App Key for client connection
+  appSecret: "NDkxNjIzZWE4MzRjNjM4YTE2ODAwNzg4MTljODc2YjlhMzIxZjExNmZlNWQwMzQ4NGQ5YjgwOTQyYzllZjJmNQ=="  # App Secret for HMAC-SHA256 signature, MUST CHANGE in production!
+  activityTimeout: 120                        # Client activity timeout (seconds), pusher:ping interval, default 120s
+  heartbeatCheckInterval: 60                  # Backend heartbeat check interval (seconds), cleanup timeout connections, default 60s
+  presenceGracePeriod: 30                     # Presence Channel disconnect grace period (seconds), default 30s
+  maxChannelsPerConnection: 100               # Max channels per connection, prevent abuse, default 100
+  clientEventRateLimit: 10                    # Client event rate limit (events/sec/connection), Phase 4 feature, default 10
+  # 日志级别: debug, info, warning, error, none (参考 Pusher Server Library Reference Specification)
+  logLevel: "info"
+  # 端到端加密主密钥（Base64 编码的 32 字节）
+  # 生产环境生成命令: openssl rand -base64 32
+  # 如果为空，则使用 per-channel shared_secret 模式（当前实现）
+  # 配置后，所有加密频道使用主密钥派生，符合 Pusher 标准
+  encryptionMasterKey: "upJgO1NPsU2etMGCuV9TekOqYbjOlIQR+1k6CWeYEZU="

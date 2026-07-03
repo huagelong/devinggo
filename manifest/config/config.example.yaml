@@ -148,9 +148,9 @@ settings:
     workerId: 1 # 机器ID
 # Pusher WebSocket protocol configuration (v8.3.0 compatible)
 pusher:
-  appId: "devinggo-app-id"                    # App ID for HTTP Events API paths (/apps/{app_id}/events)
-  appKey: "devinggo-app-key"                  # App Key for client connection
-  appSecret: "devinggo-app-secret-change-me"  # App Secret for HMAC-SHA256 signature, MUST CHANGE in production!
+  appId: "system"                    # App ID for HTTP Events API paths (/apps/{app_id}/events)
+  appKey: "system"                  # App Key for client connection
+  appSecret: "NDkxNjIzZWE4MzRjNjM4YTE2ODAwNzg4MTljODc2YjlhMzIxZjExNmZlNWQwMzQ4NGQ5YjgwOTQyYzllZjJmNQ=="  # App Secret for HMAC-SHA256 signature, MUST CHANGE in production!
   activityTimeout: 120                        # Client activity timeout (seconds), pusher:ping interval, default 120s
   heartbeatCheckInterval: 60                  # Backend heartbeat check interval (seconds), cleanup timeout connections, default 60s
   presenceGracePeriod: 30                     # Presence Channel disconnect grace period (seconds), default 30s

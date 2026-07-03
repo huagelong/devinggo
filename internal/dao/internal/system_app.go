@@ -25,6 +25,7 @@ type SystemAppColumns struct {
 	GroupId     string //
 	AppName     string //
 	AppId       string //
+	AppKey      string //
 	AppSecret   string //
 	Status      string //
 	Description string //
@@ -42,6 +43,7 @@ var systemAppColumns = SystemAppColumns{
 	GroupId:     "group_id",
 	AppName:     "app_name",
 	AppId:       "app_id",
+	AppKey:      "app_key",
 	AppSecret:   "app_secret",
 	Status:      "status",
 	Description: "description",

@@ -64,7 +64,7 @@ func (s *sPubSub) SubscribeMessage(ctx context.Context, serverName string) (err 
 						glob.WithWsLog().Debug(ctx, "SubscribeMessage channel:", j.String())
 						var msgData *TopicWResponse
 						if err := j.Scan(&msgData); err == nil {
-							SendToChannelWithExclude(msgData.Topic, msgData.PusherResponse, msgData.ExcludeSocketID)
+							SendToChannelWithExclude(msgData.AppID, msgData.Topic, msgData.PusherResponse, msgData.ExcludeSocketID)
 						} else {
 							glob.WithWsLog().Warning(ctx, "TopicWResponse parse error:", err)
 						}

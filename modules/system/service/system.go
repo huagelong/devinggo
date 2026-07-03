@@ -126,6 +126,7 @@ type (
 	ISystemApp interface {
 		Model(ctx context.Context) *gdb.Model
 		GetAppId(ctx context.Context) (string, error)
+		GetAppKey(ctx context.Context) (string, error)
 		GetAppSecret(ctx context.Context) (string, error)
 		BindApp(ctx context.Context, Id int64, ApiIds []int64) (err error)
 		GetPageListForSearch(ctx context.Context, req *model.PageListReq, in *req.SystemAppSearch) (rs []*res.SystemApp, total int, err error)
@@ -421,6 +422,16 @@ type (
 		ListTasks(ctx context.Context, queue string, state string, reqPage *page.PageReq) (items []res.QueueMonitorTaskItem, total int, err error)
 		ListSchedulerEntries(ctx context.Context) (items []res.QueueMonitorSchedulerEntry, err error)
 	}
+	IPusherMonitor interface {
+		ListApps(ctx context.Context) ([]res.PusherMonitorAppItem, error)
+		GetOverview(ctx context.Context, appID string) (*res.PusherMonitorOverview, error)
+		ListChannels(ctx context.Context, appID, keyword, channelType string, reqPage *page.PageReq) ([]res.PusherMonitorChannelItem, int, error)
+		GetChannelDetail(ctx context.Context, appID, channelName string) (*res.PusherMonitorChannelDetail, error)
+		ListConnections(ctx context.Context, appID, socketID, userID, channel string, reqPage *page.PageReq) ([]res.PusherMonitorConnectionItem, int, error)
+		TerminateConnections(ctx context.Context, appID string, socketIDs []string) (*res.PusherMonitorTerminateResult, error)
+		TerminateUsers(ctx context.Context, appID string, userIDs []string) (*res.PusherMonitorTerminateResult, error)
+		DebugEvent(ctx context.Context, appID, name string, channels []string, data string, socketID string) (*res.PusherMonitorDebugEventResult, error)
+	}
 )
 
 var (
@@ -460,6 +471,7 @@ var (
 	localSystemUserRole            ISystemUserRole
 	localDbMonitor                 IDbMonitor
 	localQueueMonitor              IQueueMonitor
+	localPusherMonitor             IPusherMonitor
 )
 
 func CodeGen() ICodeGen {
@@ -856,4 +868,15 @@ func QueueMonitor() IQueueMonitor {
 
 func RegisterQueueMonitor(i IQueueMonitor) {
 	localQueueMonitor = i
+}
+
+func PusherMonitor() IPusherMonitor {
+	if localPusherMonitor == nil {
+		panic("implement not found for interface IPusherMonitor, forgot register?")
+	}
+	return localPusherMonitor
+}
+
+func RegisterPusherMonitor(i IPusherMonitor) {
+	localPusherMonitor = i
 }

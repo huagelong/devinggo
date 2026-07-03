@@ -107,8 +107,8 @@ func TestEncryptedChannelServerPush(t *testing.T) {
 // TestEncryptedChannelAuthFlow 测试完整的认证流程
 func TestEncryptedChannelAuthFlow(t *testing.T) {
 	// 模拟认证端点逻辑
-	appKey := "devinggo-app-key"
-	appSecret := "devinggo-app-secret"
+	appKey := "system"
+	appSecret := "NDkxNjIzZWE4MzRjNjM4YTE2ODAwNzg4MTljODc2YjlhMzIxZjExNmZlNWQwMzQ4NGQ5YjgwOTQyYzllZjJmNQ=="
 	InitPusherAuth(appKey, appSecret)
 
 	socketID := "server1.177227498249324"
@@ -146,6 +146,25 @@ func TestEncryptedChannelAuthFlow(t *testing.T) {
 	t.Log("Step 6: 客户端使用 shared_secret 配置加密，订阅成功 ✅")
 
 	t.Log("\n✅ 完整认证流程测试通过！")
+}
+
+func TestValidateChannelAuth_SupportsMultipleAppsByAuthKey(t *testing.T) {
+	socketID := "server1.123456"
+	channel := "private-multi-app"
+
+	InitPusherAuth("app-key-1", "app-secret-1")
+	authApp1 := GenerateAuthSignature(socketID, channel, "")
+
+	InitPusherAuth("app-key-2", "app-secret-2")
+	authApp2 := GenerateAuthSignature(socketID, channel, "")
+
+	if err := ValidateChannelAuth(socketID, channel, authApp1, ""); err != nil {
+		t.Fatalf("auth for app 1 should still validate after switching to app 2: %v", err)
+	}
+
+	if err := ValidateChannelAuth(socketID, channel, authApp2, ""); err != nil {
+		t.Fatalf("auth for app 2 should validate: %v", err)
+	}
 }
 
 // TestEncryptedChannelMessagePush 测试消息推送逻辑

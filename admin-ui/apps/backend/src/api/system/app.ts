@@ -5,6 +5,7 @@ import type { PageQuery, PageResponse } from '#/types/paging';
 export namespace AppApi {
   export interface ListItem {
     app_id?: string;
+    app_key?: string;
     app_name?: string;
     app_secret?: string;
     created_at?: string;
@@ -25,6 +26,7 @@ export namespace AppApi {
 
   export interface SubmitPayload {
     app_id?: string;
+    app_key?: string;
     app_name?: string;
     app_secret?: string;
     description?: string;
@@ -101,6 +103,10 @@ export function updateAppNumber(data: AppApi.NumberOperationPayload) {
 
 export function getAppId() {
   return requestClient.get<{ app_id: string }>('/system/app/getAppId');
+}
+
+export function getAppKey() {
+  return requestClient.get<{ app_key: string }>('/system/app/getAppKey');
 }
 
 export function getAppSecret() {

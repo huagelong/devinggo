@@ -1,5 +1,5 @@
 import { requestClient } from '#/api/request';
-import type { PageResponse } from '#/types/paging';
+import type { PageQuery, PageResponse } from '#/types/paging';
 
 export namespace MonitorApi {
   export interface OnlineUserItem {
@@ -238,6 +238,99 @@ export namespace MonitorApi {
     next: string;
     prev: string;
   }
+
+  export interface PusherMonitorAppItem {
+    id: number;
+    groupId: number;
+    groupName: string;
+    appName: string;
+    appId: string;
+    appKey: string;
+    status: number;
+  }
+
+  export interface PusherMonitorOverview {
+    app: PusherMonitorAppItem;
+    connectionCount: number;
+    activeChannelCount: number;
+    subscriptionCount: number;
+    presenceChannelCount: number;
+    presenceUserCount: number;
+    recentEventCount: number;
+    recentErrorCount: number;
+  }
+
+  export interface PusherMonitorChannelItem {
+    name: string;
+    channelType: string;
+    subscriptionCount: number;
+    userCount: number;
+    serverCount: number;
+    serverNames?: string[];
+  }
+
+  export interface PusherMonitorChannelDetail {
+    channel: PusherMonitorChannelItem;
+    socketIds: string[];
+    userIds: string[];
+  }
+
+  export interface PusherMonitorConnectionItem {
+    socketId: string;
+    appId: string;
+    userId: string;
+    serverName: string;
+    addr: string;
+    channelCount: number;
+    channels: string[];
+    connectedAt: string;
+    lastHeartbeatAt: string;
+  }
+
+  export interface PusherMonitorChannelsQuery extends Partial<PageQuery> {
+    appId: string;
+    keyword?: string;
+    channelType?: string;
+  }
+
+  export interface PusherMonitorChannelsResponse extends PageResponse<PusherMonitorChannelItem> {}
+
+  export interface PusherMonitorConnectionsQuery extends Partial<PageQuery> {
+    appId: string;
+    socketId?: string;
+    userId?: string;
+    channel?: string;
+  }
+
+  export interface PusherMonitorConnectionsResponse extends PageResponse<PusherMonitorConnectionItem> {}
+
+  export interface PusherMonitorTerminateConnectionsPayload {
+    socketIds: string[];
+  }
+
+  export interface PusherMonitorTerminateUsersPayload {
+    userIds: string[];
+  }
+
+  export interface PusherMonitorTerminateResult {
+    requestedCount: number;
+    terminatedCount: number;
+    socketIds: string[];
+  }
+
+  export interface PusherMonitorDebugEventPayload {
+    name: string;
+    channels: string[];
+    data: string;
+    socketId?: string;
+  }
+
+  export interface PusherMonitorDebugEventResult {
+    appId: string;
+    triggeredCount: number;
+    channels: string[];
+    eventName: string;
+  }
 }
 
 export function getOnlineUserPageList(params: MonitorApi.OnlineUserQuery) {
@@ -319,5 +412,77 @@ export function getQueueMonitorTasks(params: MonitorApi.QueueMonitorTaskQuery) {
 export function getQueueMonitorSchedulerEntries() {
   return requestClient.get<MonitorApi.QueueMonitorSchedulerEntry[]>(
     '/system/queueMonitor/schedulerEntries',
+  );
+}
+
+export function getPusherMonitorApps() {
+  return requestClient.get<MonitorApi.PusherMonitorAppItem[]>(
+    '/system/pusherMonitor/apps',
+  );
+}
+
+export function getPusherMonitorOverview(appId: string) {
+  return requestClient.get<MonitorApi.PusherMonitorOverview>(
+    `/system/pusherMonitor/apps/${encodeURIComponent(appId)}/overview`,
+  );
+}
+
+export function getPusherMonitorChannels(
+  params: MonitorApi.PusherMonitorChannelsQuery,
+) {
+  const { appId, ...query } = params;
+  return requestClient.get<MonitorApi.PusherMonitorChannelsResponse>(
+    `/system/pusherMonitor/apps/${encodeURIComponent(appId)}/channels`,
+    {
+      params: query,
+    },
+  );
+}
+
+export function getPusherMonitorChannelDetail(appId: string, channelName: string) {
+  return requestClient.get<MonitorApi.PusherMonitorChannelDetail>(
+    `/system/pusherMonitor/apps/${encodeURIComponent(appId)}/channels/${encodeURIComponent(channelName)}/detail`,
+  );
+}
+
+export function getPusherMonitorConnections(
+  params: MonitorApi.PusherMonitorConnectionsQuery,
+) {
+  const { appId, ...query } = params;
+  return requestClient.get<MonitorApi.PusherMonitorConnectionsResponse>(
+    `/system/pusherMonitor/apps/${encodeURIComponent(appId)}/connections`,
+    {
+      params: query,
+    },
+  );
+}
+
+export function terminatePusherMonitorConnections(
+  appId: string,
+  data: MonitorApi.PusherMonitorTerminateConnectionsPayload,
+) {
+  return requestClient.post<MonitorApi.PusherMonitorTerminateResult>(
+    `/system/pusherMonitor/apps/${encodeURIComponent(appId)}/connections/terminate-batch`,
+    data,
+  );
+}
+
+export function terminatePusherMonitorUsers(
+  appId: string,
+  data: MonitorApi.PusherMonitorTerminateUsersPayload,
+) {
+  return requestClient.post<MonitorApi.PusherMonitorTerminateResult>(
+    `/system/pusherMonitor/apps/${encodeURIComponent(appId)}/users/terminate-batch`,
+    data,
+  );
+}
+
+export function debugPusherMonitorEvent(
+  appId: string,
+  data: MonitorApi.PusherMonitorDebugEventPayload,
+) {
+  return requestClient.post<MonitorApi.PusherMonitorDebugEventResult>(
+    `/system/pusherMonitor/apps/${encodeURIComponent(appId)}/events/debug`,
+    data,
   );
 }

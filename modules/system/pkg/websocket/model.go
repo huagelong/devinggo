@@ -92,6 +92,7 @@ type MemberRemovedData struct {
 
 // Redis消息传递结构
 type TopicWResponse struct {
+	AppID           string          `json:"appId,omitempty"`
 	Topic           string          `json:"topic"`
 	ExcludeSocketID string          `json:"exclude_socket_id,omitempty"`
 	PusherResponse  *PusherResponse `json:"pusherResponse"`
