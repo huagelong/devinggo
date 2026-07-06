@@ -260,15 +260,6 @@ func NotifyMemberLeft(channel string, memberID string) {
 
 ```yaml
 pusher:
-  # 客户端连接时使用的应用密钥（公开）
-  appKey: "devinggo-app-key"
-  
-  # 服务端签名密钥（私密，⚠️ 生产环境必须修改！）
-  appSecret: "devinggo-app-secret-change-me"
-  
-  # 客户端活动超时时间（秒），超时后自动断开
-  activityTimeout: 120
-  
   # 服务端心跳检查间隔（秒）
   heartbeatCheckInterval: 60
   
@@ -285,17 +276,14 @@ pusher:
 
 ### ⚠️ 生产环境安全配置
 
-#### 1. 修改appSecret
+#### 1. 修改应用密钥
 
 ```bash
 # 生成随机密钥（64字符）
 openssl rand -hex 32
 ```
 
-```yaml
-pusher:
-  appSecret: "your-random-64-char-hex-string"
-```
+在系统应用表或对应后台配置中更新 `appKey` / `appSecret`，WebSocket 建连、频道认证、Webhook、HTTP Events 会统一从数据库读取。
 
 #### 2. 启用TLS/SSL
 
@@ -691,4 +679,3 @@ log.Printf("当前在线: %d", count)
 **最后更新**: 2026-02-28  
 **版本**: v1.0.0  
 **状态**: ✅ 生产就绪
-

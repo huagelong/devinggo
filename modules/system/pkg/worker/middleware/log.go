@@ -21,23 +21,25 @@ func LoggingMiddleware(h asynq.Handler) asynq.Handler {
 	return asynq.HandlerFunc(func(ctx context.Context, t *asynq.Task) error {
 		name := t.Type()
 		startTime := gtime.Now()
+		ctx = glob2.WithTaskOutput(ctx)
 		payload, err := glob2.GetPayload(ctx, t)
-		crontabId := payload.CrontabId
 		if err != nil {
 			return err
 		}
+		crontabId := payload.CrontabId
 		glob2.WithWorkLog().Debugf(ctx, "Start processing [%s]", name)
 		err = h.ProcessTask(ctx, t)
 		endTime := gtime.Now()
+		output := glob2.GetTaskOutput(ctx)
 		if err != nil {
 			glob2.WithWorkLog().Warningf(ctx, "Failure processing [%s],Error: %s", name, err)
 			if !g.IsEmpty(crontabId) {
-				_ = service.SettingCrontabLog().AddLog(ctx, crontabId, 2, err.Error(), startTime, endTime, "")
+				_ = service.SettingCrontabLog().AddLog(ctx, crontabId, 2, err.Error(), startTime, endTime, output)
 			}
 			return err
 		}
 		if !g.IsEmpty(crontabId) {
-			_ = service.SettingCrontabLog().AddLog(ctx, crontabId, 1, "", startTime, endTime, "")
+			_ = service.SettingCrontabLog().AddLog(ctx, crontabId, 1, "", startTime, endTime, output)
 		}
 		glob2.WithWorkLog().Debugf(ctx, "Finished processing [%s]: Elapsed Time = %v", name, endTime.Time.Sub(startTime.Time))
 		return nil

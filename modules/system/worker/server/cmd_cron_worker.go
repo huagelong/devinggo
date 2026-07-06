@@ -37,6 +37,7 @@ func executeCmdCronWorker(ctx context.Context, t *asynq.Task) error {
 		return err
 	}
 	glob2.WithWorkLog().Infof(ctx, `type:%s, response:%+v`, t.Type(), r)
+	glob2.SetTaskOutput(ctx, r)
 
 	return nil
 }

@@ -54,26 +54,6 @@ func InitPusherAuth(appKey, appSecret string) {
 	}
 }
 
-// GetPusherConfig 从配置文件读取Pusher配置
-func GetPusherConfig() (appKey, appSecret string) {
-	ctx := gctx.GetInitCtx()
-
-	// 从配置文件读取
-	appKey = g.Cfg().MustGet(ctx, "pusher.appKey", "default-app-key").String()
-	appSecret = g.Cfg().MustGet(ctx, "pusher.appSecret", "default-app-secret").String()
-
-	// 初始化认证
-	InitPusherAuth(appKey, appSecret)
-
-	// 初始化加密主密钥（如果配置了）
-	masterKey := g.Cfg().MustGet(ctx, "pusher.encryptionMasterKey", "").String()
-	if err := InitPusherEncryption(masterKey); err != nil {
-		g.Log().Error(ctx, "Failed to initialize encryption master key:", err)
-	}
-
-	return appKey, appSecret
-}
-
 // ValidateChannelAuth 验证频道认证签名
 // ⚠️ v8.3.0安全要求：防止时序攻击和重放攻击
 func ValidateChannelAuth(socketID, channel, auth, channelData string) error {
@@ -414,10 +394,7 @@ func getCurrentPusherCredentials() (appKey, appSecret string) {
 	appKey = pusherAppKey
 	appSecret = pusherAppSecret
 	pusherAuthMu.RUnlock()
-	if appKey != "" && appSecret != "" {
-		return appKey, appSecret
-	}
-	return GetPusherConfig()
+	return appKey, appSecret
 }
 
 func getPusherCredentialsByKey(appKey string) (resolvedAppKey, appSecret string) {

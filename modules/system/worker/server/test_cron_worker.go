@@ -8,6 +8,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	"devinggo/modules/system/pkg/worker"
 	glob2 "devinggo/modules/system/pkg/worker/glob"
@@ -29,5 +30,6 @@ func executeTestCronWorker(ctx context.Context, t *asynq.Task) error {
 		return err
 	}
 	glob2.WithWorkLog().Infof(ctx, `jsonData:%+v`, data)
+	glob2.SetTaskOutput(ctx, fmt.Sprintf("jsonData:%+v", data))
 	return nil
 }

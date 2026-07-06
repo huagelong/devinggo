@@ -94,5 +94,6 @@ func executeUrlCronWorker(ctx context.Context, t *asynq.Task) error {
 	}
 
 	glob2.WithWorkLog().Infof(ctx, `type:%s, response:%+v`, t.Type(), resContent)
+	glob2.SetTaskOutput(ctx, resContent)
 	return nil
 }
