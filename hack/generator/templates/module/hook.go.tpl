@@ -8,6 +8,8 @@ package hook
 
 import (
 	"devinggo/modules/{{.moduleName}}/service"
+
+	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 type sHook struct{}
@@ -18,4 +20,11 @@ func New() *sHook {
 
 func init() {
 	service.RegisterHook(New())
+}
+
+func (s *sHook) BeforeServe(r *ghttp.Request) {
+}
+
+func (s *sHook) AfterOutput(r *ghttp.Request) {
+	s.apiAccessLog(r)
 }

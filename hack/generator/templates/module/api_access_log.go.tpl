@@ -7,13 +7,10 @@
 package hook
 
 import (
-	"context"
-
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/ghttp"
 )
 
-// ApiAccessLog API访问日志钩子
-func (s *sHook) ApiAccessLog(ctx context.Context) error {
-	g.Log().Debug(ctx, "{{.moduleName}} ApiAccessLog hook called")
-	return nil
+func (s *sHook) apiAccessLog(r *ghttp.Request) {
+	g.Log().Debug(r.GetCtx(), "{{.moduleName}} api access log hook called")
 }

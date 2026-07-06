@@ -27,6 +27,11 @@ type ModuleCreator struct {
 	ctx context.Context
 }
 
+type moduleTemplateFile struct {
+	tplPath  string
+	filePath string
+}
+
 // NewModuleCreator 创建模块创建器
 func NewModuleCreator(ctx context.Context) *ModuleCreator {
 	return &ModuleCreator{ctx: ctx}
@@ -46,11 +51,15 @@ func (c *ModuleCreator) Create(moduleName string) error {
 	dirs := []string{
 		filepath.Join("modules", moduleName),
 		filepath.Join("modules", moduleName, "api"),
+		filepath.Join("modules", moduleName, "api", moduleName),
 		filepath.Join("modules", moduleName, "controller"),
+		filepath.Join("modules", moduleName, "controller", moduleName),
 		filepath.Join("modules", moduleName, "logic"),
 		filepath.Join("modules", moduleName, "logic", "hook"),
 		filepath.Join("modules", moduleName, "logic", "middleware"),
 		filepath.Join("modules", moduleName, "logic", moduleName),
+		filepath.Join("modules", moduleName, "router"),
+		filepath.Join("modules", moduleName, "router", moduleName),
 		filepath.Join("modules", moduleName, "service"),
 		filepath.Join("modules", moduleName, "worker"),
 	}
@@ -83,13 +92,51 @@ func (c *ModuleCreator) createModuleFiles(moduleName string) error {
 	}
 
 	// 定义需要生成的文件
-	files := []struct {
-		tplPath  string
-		filePath string
-	}{
+	files := moduleTemplateFiles(moduleName)
+
+	// 使用g.View渲染模板并生成文件
+	view := g.View()
+	// 设置模板目录
+	templatePath := filepath.Join("hack", "generator", "templates", "module")
+	view.SetPath(templatePath)
+
+	// 渲染并生成每个文件
+	for _, file := range files {
+		content, err := view.Parse(c.ctx, file.tplPath, tplData)
+		if err != nil {
+			return fmt.Errorf("渲染模板 '%s' 失败: %w", file.tplPath, err)
+		}
+
+		if err := gfile.PutContents(file.filePath, content); err != nil {
+			return fmt.Errorf("创建文件 '%s' 失败: %w", file.filePath, err)
+		}
+		g.Log().Debugf(c.ctx, "创建文件: %s", file.filePath)
+	}
+
+	// 生成SQL迁移文件
+	sqlFiles, err := c.createModuleMigrationFiles(moduleName, tplData)
+	if err != nil {
+		return err
+	}
+
+	// 创建模块配置文件
+	err = c.createModuleConfigFile(moduleName, sqlFiles)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func moduleTemplateFiles(moduleName string) []moduleTemplateFile {
+	return []moduleTemplateFile{
 		{
 			tplPath:  "module.go.tpl",
 			filePath: filepath.Join("modules", moduleName, "module.go"),
+		},
+		{
+			tplPath:  "router.go.tpl",
+			filePath: filepath.Join("modules", moduleName, "router", moduleName, "router.go"),
 		},
 		{
 			tplPath:  "logic.tpl",
@@ -129,11 +176,11 @@ func (c *ModuleCreator) createModuleFiles(moduleName string) error {
 		},
 		{
 			tplPath:  "test_api.go.tpl",
-			filePath: filepath.Join("modules", moduleName, "api", "test.go"),
+			filePath: filepath.Join("modules", moduleName, "api", moduleName, "test.go"),
 		},
 		{
 			tplPath:  "test_controller.go.tpl",
-			filePath: filepath.Join("modules", moduleName, "controller", "test.go"),
+			filePath: filepath.Join("modules", moduleName, "controller", moduleName, "test.go"),
 		},
 		{
 			tplPath:  "worker.tpl",
@@ -148,39 +195,6 @@ func (c *ModuleCreator) createModuleFiles(moduleName string) error {
 			filePath: filepath.Join("modules", "bootstrap", "logic", moduleName+".go"),
 		},
 	}
-
-	// 使用g.View渲染模板并生成文件
-	view := g.View()
-	// 设置模板目录
-	templatePath := filepath.Join("hack", "generator", "templates", "module")
-	view.SetPath(templatePath)
-
-	// 渲染并生成每个文件
-	for _, file := range files {
-		content, err := view.Parse(c.ctx, file.tplPath, tplData)
-		if err != nil {
-			return fmt.Errorf("渲染模板 '%s' 失败: %w", file.tplPath, err)
-		}
-
-		if err := gfile.PutContents(file.filePath, content); err != nil {
-			return fmt.Errorf("创建文件 '%s' 失败: %w", file.filePath, err)
-		}
-		g.Log().Debugf(c.ctx, "创建文件: %s", file.filePath)
-	}
-
-	// 生成SQL迁移文件
-	sqlFiles, err := c.createModuleMigrationFiles(moduleName, tplData)
-	if err != nil {
-		return err
-	}
-
-	// 创建模块配置文件
-	err = c.createModuleConfigFile(moduleName, sqlFiles)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // createModuleMigrationFiles 创建模块的SQL迁移文件

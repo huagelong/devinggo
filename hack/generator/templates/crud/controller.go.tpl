@@ -10,9 +10,9 @@ import (
 	"context"
 	"devinggo/internal/dao"
 	"devinggo/modules/{{.ModuleName}}/api/{{.PackageName}}"
-	"devinggo/modules/{{.ModuleName}}/controller/base"
 	"devinggo/modules/{{.ModuleName}}/model/req"
 	"devinggo/modules/{{.ModuleName}}/model/res"
+	"devinggo/modules/system/controller/base"
 	"devinggo/modules/{{.ModuleName}}/service"
 
 	"github.com/gogf/gf/v2/database/gdb"
