@@ -1,27 +1,26 @@
-// Package controller
+// Package {{.moduleName}}
 // @Link  https://github.com/huagelong/devinggo
 // @Copyright  Copyright (c) 2024 devinggo
 // @Author  Kai <hpuwang@gmail.com>
 // @License  https://github.com/huagelong/devinggo/blob/master/LICENSE
 
-package controller
+package {{.moduleName}}
 
 import (
 	"context"
 
-	"devinggo/modules/{{.moduleName}}/api"
-	"devinggo/modules/{{.moduleName}}/logic/{{.moduleName}}"
+	{{.moduleName}}api "devinggo/modules/{{.moduleName}}/api/{{.moduleName}}"
+	{{.moduleName}}logic "devinggo/modules/{{.moduleName}}/logic/{{.moduleName}}"
 )
 
-// Test 测试控制器
-type Test struct{}
+var (
+	TestController = testController{}
+)
 
-func NewTest() *Test {
-	return &Test{}
-}
+type testController struct{}
 
 // Test 测试方法
-func (c *Test) Test(ctx context.Context, req *api.TestReq) (res *api.TestRes, err error) {
-	message := {{.moduleName}}.New().Test(ctx)
-	return &api.TestRes{Message: message}, nil
+func (c *testController) Test(ctx context.Context, req *{{.moduleName}}api.TestReq) (res *{{.moduleName}}api.TestRes, err error) {
+	message := {{.moduleName}}logic.New().Test(ctx)
+	return &{{.moduleName}}api.TestRes{Message: message}, nil
 }

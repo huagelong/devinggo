@@ -38,10 +38,10 @@ type FrontendField struct {
 	Width    string // 宽度
 	Title    string // 列标题（i18n键）
 	// 搜索表单相关
-	Component      string // 组件类型（Input, Select, DateRangePicker）- 用于编辑表单
+	Component       string // 组件类型（Input, Select, DateRangePicker）- 用于编辑表单
 	SearchComponent string // 搜索表单组件类型
-	LabelKey       string // 标签i18n键
-	Placeholder    string // 占位符
+	LabelKey        string // 标签i18n键
+	Placeholder     string // 占位符
 	// 表单相关
 	Rules         string // 验证规则
 	FormItemClass string // 表单项类名
@@ -218,19 +218,19 @@ func getColumnWidth(fieldName string) string {
 // buildFrontendFields 构建前端字段列表
 func (g *CRUDGenerator) buildFrontendFields() []FrontendField {
 	fields := make([]FrontendField, 0)
-	
+
 	// 排除的系统字段
 	excludeSystemFields := map[string]bool{
 		"created_by": true,
 		"updated_by": true,
 		"deleted_at": true,
 	}
-	
+
 	for _, f := range g.Fields {
 		if excludeSystemFields[f.JSONName] {
 			continue
 		}
-		
+
 		tsType := mapGoTypeToTSType(f.Type)
 		// 一般文本、时间、选择(status)类型可搜索
 		isSearchable := f.IsSearchable && f.Name != "Id"
@@ -239,21 +239,21 @@ func (g *CRUDGenerator) buildFrontendFields() []FrontendField {
 		}
 		isEditable := f.Name != "Id"
 		isList := true
-		
+
 		// 搜索表单默认值
 		searchDefault := getDefaultValue(tsType, true)
 		if f.JSONName == "created_at" || f.JSONName == "updated_at" {
 			searchDefault = "[]"
 		}
-		
+
 		// 跳过Id字段的编辑
 		if f.Name == "Id" {
 			continue
 		}
-		
+
 		// 确定搜索表单组件类型
 		searchComponent := getSearchComponent(tsType, f.JSONName)
-		
+
 		// 确定编辑表单组件类型
 		formComponent := "Input"
 		if f.JSONName == "status" {
@@ -265,7 +265,7 @@ func (g *CRUDGenerator) buildFrontendFields() []FrontendField {
 		} else if tsType == "number" {
 			formComponent = "InputNumber"
 		}
-		
+
 		field := FrontendField{
 			Name:            f.JSONName,
 			Type:            tsType,
@@ -293,32 +293,32 @@ func (g *CRUDGenerator) buildFrontendFields() []FrontendField {
 		if f.Name == "remark" || f.Name == "content" {
 			field.FormItemClass = "md:col-span-2"
 		}
-		
+
 		if field.Component == "Select" {
 			field.Placeholder = fmt.Sprintf("$t('ui.placeholder.select')")
 		}
-		
+
 		if field.Width == "" {
 			field.MinWidth = "140"
 		}
-		
+
 		fields = append(fields, field)
 	}
-	
+
 	return fields
 }
 
 // buildFrontendTemplateData 构建前端模板数据
 func (g *CRUDGenerator) buildFrontendTemplateData() map[string]interface{} {
 	frontendFields := g.buildFrontendFields()
-	
+
 	// 分类字段
 	searchFields := make([]FrontendField, 0)
 	listFields := make([]FrontendField, 0)
 	editableFields := make([]FrontendField, 0)
 	tableColumns := make([]FrontendField, 0)
 	searchFormItems := make([]FrontendField, 0)
-	
+
 	for _, f := range frontendFields {
 		if f.IsSearchable {
 			searchFields = append(searchFields, f)
@@ -339,12 +339,12 @@ func (g *CRUDGenerator) buildFrontendTemplateData() map[string]interface{} {
 			editableFields = append(editableFields, editField)
 		}
 	}
-	
+
 	componentName := g.ModuleName + g.EntityName
 	if g.ModuleName == "system" {
 		componentName = "System" + g.EntityName
 	}
-	
+
 	// 生成基于时间戳的菜单ID，避免冲突
 	menuId := int(time.Now().Unix())
 
@@ -1152,8 +1152,8 @@ func (g *CRUDGenerator) renderAndSaveTemplate(templatePath string, outputPath st
 // RegisterServiceInterface 自动在 service/system.go 中注册接口
 func (g *CRUDGenerator) RegisterServiceInterface() error {
 	serviceFile := filepath.Join(g.WorkDir, "modules", g.ModuleName, "service", "system.go")
-	if !utils.PathExists(serviceFile) {
-		return fmt.Errorf("service 文件不存在: %s", serviceFile)
+	if err := g.ensureServiceInterfaceFile(serviceFile); err != nil {
+		return err
 	}
 
 	content, err := os.ReadFile(serviceFile)
@@ -1169,7 +1169,6 @@ func (g *CRUDGenerator) RegisterServiceInterface() error {
 		return nil
 	}
 
-	// 1. 插入接口定义（在 ISystemUser 之前）
 	en := g.EntityName
 	vn := g.VarName
 	interfaceDef := fmt.Sprintf(`	// I%s defines the interface for %s operations.
@@ -1198,16 +1197,7 @@ func (g *CRUDGenerator) RegisterServiceInterface() error {
 		UpdateNumber(ctx context.Context, id int64, numberName string, numberValue int) (err error)
 	}
 	`, en, vn, en, vn, vn, en, en, vn, en, en, vn, en, vn, en, vn, en, vn, en, vn, vn, vn)
-
-	contentStr = strings.Replace(contentStr, "\t// ISystemUser defines the interface for user management operations.",
-		interfaceDef+"\t// ISystemUser defines the interface for user management operations.", 1)
-
-	// 2. 插入局部变量（在 localSystemUser 之前）
 	localVar := fmt.Sprintf("\tlocal%s\t\t\t\t   I%s\n", g.EntityName, g.EntityName)
-	contentStr = strings.Replace(contentStr, "\tlocalSystemUser                ISystemUser",
-		localVar+"\tlocalSystemUser                ISystemUser", 1)
-
-	// 3. 插入 getter 和 register 函数（在 SystemUser() 之前）
 	getterFunc := fmt.Sprintf(`func %s() I%s {
 	if local%s == nil {
 		panic("implement not found for interface I%s, forgot register?")
@@ -1221,8 +1211,10 @@ func Register%s(i I%s) {
 
 `, g.EntityName, g.EntityName, g.EntityName, g.EntityName, g.EntityName, g.EntityName, g.EntityName, g.EntityName)
 
-	contentStr = strings.Replace(contentStr, "func SystemUser() ISystemUser {",
-		getterFunc+"func SystemUser() ISystemUser {", 1)
+	contentStr, err = registerServiceInterfaceInContent(contentStr, interfaceDef, localVar, getterFunc)
+	if err != nil {
+		return err
+	}
 
 	if err := os.WriteFile(serviceFile, []byte(contentStr), 0644); err != nil {
 		return fmt.Errorf("写入 service 文件失败: %v", err)
@@ -1234,7 +1226,7 @@ func Register%s(i I%s) {
 
 // RegisterRouter 自动在 router/system/router.go 中注册路由
 func (g *CRUDGenerator) RegisterRouter() error {
-	routerFile := filepath.Join(g.WorkDir, "modules", g.ModuleName, "router", "system", "router.go")
+	routerFile := filepath.Join(g.WorkDir, "modules", g.ModuleName, "router", g.ModuleName, "router.go")
 	if !utils.PathExists(routerFile) {
 		return fmt.Errorf("router 文件不存在: %s", routerFile)
 	}
@@ -1247,16 +1239,16 @@ func (g *CRUDGenerator) RegisterRouter() error {
 	contentStr := string(content)
 
 	// 检查是否已注册
-	controllerName := fmt.Sprintf("system.%sController", g.EntityName)
+	controllerName := fmt.Sprintf("%s.%sController", g.PackageName, g.EntityName)
 	if strings.Contains(contentStr, controllerName) {
 		fmt.Printf("  ℹ️ 路由已存在，跳过\n")
 		return nil
 	}
 
-	// 在 DashboardController 之前插入新的 controller
-	newController := fmt.Sprintf("\t\t\tsystem.%sController,\n", g.EntityName)
-	contentStr = strings.Replace(contentStr, "\t\t\tsystem.DashboardController,",
-		newController+"\t\t\tsystem.DashboardController,", 1)
+	contentStr, err = registerControllerInRouterContent(contentStr, g.PackageName, g.EntityName)
+	if err != nil {
+		return err
+	}
 
 	if err := os.WriteFile(routerFile, []byte(contentStr), 0644); err != nil {
 		return fmt.Errorf("写入 router 文件失败: %v", err)
@@ -1264,4 +1256,59 @@ func (g *CRUDGenerator) RegisterRouter() error {
 
 	fmt.Printf("  ✓ 已注册路由：%s\n", g.EntityName)
 	return nil
+}
+
+func registerControllerInRouterContent(content, packageName, entityName string) (string, error) {
+	controllerLine := fmt.Sprintf("%s.%sController", packageName, entityName)
+	if strings.Contains(content, controllerLine) {
+		return content, nil
+	}
+
+	anchor := fmt.Sprintf("\t\t%s.TestController,\n", packageName)
+	newController := fmt.Sprintf("\t\t%s.%sController,\n", packageName, entityName)
+	updated := strings.Replace(content, anchor, newController+anchor, 1)
+	if updated == content {
+		return "", fmt.Errorf("router 文件缺少 TestController 锚点")
+	}
+	return updated, nil
+}
+
+func (g *CRUDGenerator) ensureServiceInterfaceFile(serviceFile string) error {
+	if utils.PathExists(serviceFile) {
+		return nil
+	}
+
+	templatePath := filepath.Join(g.WorkDir, "hack", "generator", "templates", "module", "service_system.go.tpl")
+	content, err := RenderTemplate(templatePath, map[string]string{
+		"moduleName":    g.ModuleName,
+		"moduleNameCap": gstr.UcFirst(g.ModuleName),
+	})
+	if err != nil {
+		return fmt.Errorf("渲染 service 模板失败: %v", err)
+	}
+	if err := os.WriteFile(serviceFile, []byte(content), 0644); err != nil {
+		return fmt.Errorf("创建 service 文件失败: %v", err)
+	}
+	return nil
+}
+
+func registerServiceInterfaceInContent(content, interfaceDef, localVar, getterFunc string) (string, error) {
+	updated := strings.Replace(content, "\t// codegen:interfaces", interfaceDef+"\t// codegen:interfaces", 1)
+	if updated == content {
+		return "", fmt.Errorf("service 文件缺少 codegen:interfaces 标记")
+	}
+
+	content = updated
+	updated = strings.Replace(content, "\t// codegen:variables", localVar+"\t// codegen:variables", 1)
+	if updated == content {
+		return "", fmt.Errorf("service 文件缺少 codegen:variables 标记")
+	}
+
+	content = updated
+	updated = strings.Replace(content, "// codegen:functions", getterFunc+"// codegen:functions", 1)
+	if updated == content {
+		return "", fmt.Errorf("service 文件缺少 codegen:functions 标记")
+	}
+
+	return updated, nil
 }

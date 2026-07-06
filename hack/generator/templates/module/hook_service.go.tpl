@@ -7,11 +7,12 @@
 package service
 
 import (
-	"context"
+	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 type IHook interface {
-	ApiAccessLog(ctx context.Context) error
+	BeforeServe(r *ghttp.Request)
+	AfterOutput(r *ghttp.Request)
 }
 
 var localHook IHook

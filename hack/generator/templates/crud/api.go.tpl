@@ -7,8 +7,8 @@
 package {{.PackageName}}
 
 import (
-	"devinggo/modules/{{.ModuleName}}/model"
-	"devinggo/modules/{{.ModuleName}}/model/page"
+	"devinggo/modules/system/model"
+	"devinggo/modules/system/model/page"
 	"devinggo/modules/{{.ModuleName}}/model/req"
 	"devinggo/modules/{{.ModuleName}}/model/res"
 

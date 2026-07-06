@@ -7,15 +7,13 @@
 package {{.moduleName}}
 
 import (
-	"github.com/gogf/gf/v2/frame/g"
+	"devinggo/modules/{{.moduleName}}/controller/{{.moduleName}}"
+
+	"github.com/gogf/gf/v2/net/ghttp"
 )
 
-// TestReq 测试请求
-type TestReq struct {
-	g.Meta `path:"/test" method:"get" tags:"{{.moduleName}}" summary:"测试接口"`
-}
-
-// TestRes 测试响应
-type TestRes struct {
-	Message string `json:"message" dc:"返回消息"`
+func BindController(group *ghttp.RouterGroup) {
+	group.Bind(
+		{{.moduleName}}.TestController,
+	)
 }

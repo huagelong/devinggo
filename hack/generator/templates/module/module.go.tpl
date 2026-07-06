@@ -8,12 +8,21 @@ package {{.moduleName}}
 
 import (
 	"context"
+
+	_ "devinggo/modules/{{.moduleName}}/logic"
+	"devinggo/modules/{{.moduleName}}/router/{{.moduleName}}"
 	"devinggo/modules/{{.moduleName}}/service"
+	"devinggo/modules/system/pkg/modules"
 
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/ghttp"
 )
 
-type s{{.moduleNameCap}} struct {
+type s{{.moduleNameCap}} struct{}
+
+type {{.moduleName}}Module struct {
+	Name   string
+	Server *ghttp.Server
 }
 
 func New() *s{{.moduleNameCap}} {
@@ -22,6 +31,31 @@ func New() *s{{.moduleNameCap}} {
 
 func init() {
 	service.Register{{.moduleNameCap}}(New())
+
+	module := &{{.moduleName}}Module{}
+	module.Name = "{{.moduleName}}"
+	if err := modules.Register(module); err != nil {
+		panic(err)
+	}
+}
+
+func (m *{{.moduleName}}Module) Start(ctx context.Context, s *ghttp.Server) error {
+	m.Server = s
+	s.BindHookHandler("/{{.moduleName}}/*", ghttp.HookBeforeServe, service.Hook().BeforeServe)
+	s.BindHookHandler("/{{.moduleName}}/*", ghttp.HookAfterOutput, service.Hook().AfterOutput)
+	s.Group("/{{.moduleName}}", func(group *ghttp.RouterGroup) {
+		group.Middleware(service.Middleware().ApiAuth)
+		{{.moduleName}}.BindController(group)
+	})
+	return nil
+}
+
+func (m *{{.moduleName}}Module) Stop(ctx context.Context) error {
+	return nil
+}
+
+func (m *{{.moduleName}}Module) GetName() string {
+	return m.Name
 }
 
 // GetModuleName 获取模块名称
