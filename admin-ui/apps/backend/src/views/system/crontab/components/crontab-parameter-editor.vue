@@ -4,7 +4,9 @@ import type { CrontabParameterFormValue, KeyValueRow } from '../utils/crontab-pa
 import { computed, ref, watch } from 'vue';
 
 import { DeleteIcon, PlusIcon } from 'tdesign-icons-vue-next';
-import { Button, Input, Select, Switch, Textarea } from 'tdesign-vue-next';
+import { Button, Input, Select, Switch } from 'tdesign-vue-next';
+
+import CodeEditor from '#/components/code-editor/code-editor.vue';
 
 import {
   buildCrontabParameter,
@@ -86,11 +88,10 @@ function handleRawJsonChange(useRawJson: boolean) {
       </label>
     </div>
 
-    <Textarea
+    <CodeEditor
       v-if="parameterValue.useRawJson"
       v-model="parameterValue.rawJson"
       placeholder='例如：{"name":"name1","value":"shuju1"}'
-      :autosize="{ minRows: 6, maxRows: 10 }"
     />
 
     <template v-else-if="mode === 'url'">
