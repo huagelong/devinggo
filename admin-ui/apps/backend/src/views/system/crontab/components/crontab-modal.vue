@@ -18,6 +18,7 @@ import {
   crontabStatusOptions,
   crontabTypeOptions,
 } from '../schemas';
+import CrontabParameterEditor from './crontab-parameter-editor.vue';
 
 const emit = defineEmits(['success']);
 
@@ -98,12 +99,10 @@ const [Form, formApi] = useVbenForm({
       rules: 'required',
     },
     {
-      component: 'CodeEditor',
-      componentProps: {
-        placeholder: $t('ui.placeholder.input', [$t('system.crontab.parameter')]),
-      },
-      description:
-        '必须json格式,例子: {"name":"name1", "value":"shuju1"} URL任务参数例子: {"url":"http://www.example.com","method":"get", "header":{},"params":{}}',
+      component: CrontabParameterEditor,
+      componentProps: (values) => ({
+        taskType: Number(values.type || 1),
+      }),
       fieldName: 'parameter',
       label: $t('system.crontab.parameter'),
     },
