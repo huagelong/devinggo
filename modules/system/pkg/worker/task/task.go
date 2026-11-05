@@ -9,6 +9,7 @@ package task
 import (
 	"context"
 	"sync"
+	"time"
 
 	glob2 "devinggo/modules/system/pkg/worker/glob"
 
@@ -34,6 +35,8 @@ type TaskSimpleInterface interface {
 var clientInstance *asynq.Client
 var once sync.Once
 
+const defaultRetention = 24 * time.Hour
+
 func GetClient(ctx context.Context) *asynq.Client {
 	once.Do(func() {
 		clientInstance = asynq.NewClient(glob2.GetConnConfig(ctx))
@@ -55,9 +58,17 @@ func GetTask(taskItem TaskSimpleInterface) *asynq.Task {
 		j := gjson.New(payload)
 		bodyBytes = gconv.Bytes(j.String())
 	}
-	opts := []asynq.Option{payload.Time, asynq.Queue(payload.QueueName), asynq.TaskID(payload.TaskID)}
+	opts := []asynq.Option{payload.Time, asynq.Queue(payload.QueueName)}
+	if !payload.AutoTaskID {
+		opts = append(opts, asynq.TaskID(payload.TaskID))
+	}
+	if payload.Unique != nil {
+		opts = append(opts, payload.Unique)
+	}
 	if payload.Retention != nil {
 		opts = append(opts, payload.Retention)
+	} else {
+		opts = append(opts, asynq.Retention(defaultRetention))
 	}
 	task = asynq.NewTask(taskItem.GetType(), bodyBytes, opts...)
 
