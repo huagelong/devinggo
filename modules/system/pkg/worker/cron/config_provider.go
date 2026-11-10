@@ -21,7 +21,7 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-const singletonRetention = 0
+const singletonUniqueTTL = 24 * time.Hour
 
 type ConfigProvider struct {
 	Ctx context.Context
@@ -51,9 +51,12 @@ func (p *ConfigProvider) GetConfigs() ([]*asynq.PeriodicTaskConfig, error) {
 			if target == typeName {
 				cronItem.SetParams(p.Ctx, dbCron.Parameter)
 				cronItem.GetPayload().CrontabId = dbCron.Id
+				cronItem.GetPayload().AutoTaskID = true
+				cronItem.GetPayload().TaskID = typeName + "_" + gconv.String(dbCron.Id)
 				if singleton == 1 {
-					cronItem.GetPayload().TaskID = typeName + "_" + gconv.String(dbCron.Id)
-					cronItem.GetPayload().Retention = asynq.Retention(singletonRetention)
+					cronItem.GetPayload().Unique = asynq.Unique(singletonUniqueTTL)
+				} else {
+					cronItem.GetPayload().Unique = nil
 				}
 				configs = append(configs, &asynq.PeriodicTaskConfig{
 					Cronspec: rule,

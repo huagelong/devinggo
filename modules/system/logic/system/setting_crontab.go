@@ -29,7 +29,6 @@ import (
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
-	"github.com/hibiken/asynq"
 )
 
 type sSettingCrontab struct {
@@ -146,11 +145,10 @@ func (s *sSettingCrontab) Run(ctx context.Context, id int64) (err error) {
 	}
 	bindCron.SetParams(ctx, dbCrons.Parameter)
 	bindCron.GetPayload().CrontabId = dbCrons.Id
-	if dbCrons.Singleton == 1 {
-		// 手动触发时追加时间戳，避免与已保留的任务 ID 冲突
-		bindCron.GetPayload().TaskID = dbCrons.Target + "_" + gconv.String(dbCrons.Id) + "_" + gconv.String(time.Now().UnixNano())
-		bindCron.GetPayload().Retention = asynq.Retention(0)
-	}
+	// 手动触发使用独立任务 ID，避免与周期调度的单例任务互相去重
+	bindCron.GetPayload().TaskID = dbCrons.Target + "_" + gconv.String(dbCrons.Id) + "_" + gconv.String(time.Now().UnixNano())
+	bindCron.GetPayload().AutoTaskID = false
+	bindCron.GetPayload().Unique = nil
 	err = task.NewSimpleTask(ctx, bindCron)
 	return
 }
