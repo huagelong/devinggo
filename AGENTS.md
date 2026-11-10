@@ -1,65 +1,65 @@
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
-
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
-
-Pay attention to using Chinese for all outputs - Do not create temporary files or summary documents without confirmation or explicit instructions.
-
-## 1. Think Before Coding
-
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
-
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
-
-## 2. Simplicity First
-
-**Minimum code that solves the problem. Nothing speculative.**
-
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
-
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
-
-## 3. Surgical Changes
-
-**Touch only what you must. Clean up only your own mess.**
-
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
-
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
-
-The test: Every changed line should trace directly to the user's request.
-
-## 4. Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
-
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+# 工程开发原则
 
 ---
 
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+## 核心思想
+
+- 以第一性原理思考问题。理解需求背后的真实目标，而不是直接套用已有模式或技术方案。
+- 优先解决本质问题，避免为假设中的未来需求提前设计复杂系统。
+- 在保证长期可维护性的前提下，选择当前最简单、可靠、清晰的实现方案。
+
+## 会话工作流程
+
+- 新会话收到首次开发需求时，只分析需求、现有实现和可行方案，不编写或修改代码；等待用户后续明确要求再实施。
+- 新会话中如果需求的关键内容不明确，进入“你问我答”模式：按目标、范围、行为、约束、验收等类别逐条编号输出必要问题，等待用户回答；根据回答继续澄清，直到关键需求明确。
+- 每次完成任务后，在回复结果前再复查一次，确认需求已满足、修改无遗漏，且验证结果支持结论。
+
+## 简洁与设计原则
+
+- 遵循 KISS（Keep It Simple, Stupid）原则：优先选择简单直接的实现，避免不必要的复杂度。
+- 遵循 DRY（Don't Repeat Yourself）原则：避免重复逻辑，但不要为了消除少量重复而创建过度抽象。
+- 遵循 SOLID 思想：保持职责清晰、降低模块耦合，提高代码可维护性和扩展能力。
+
+## 架构原则
+
+- 不要为了保持向后兼容而长期保留废弃方案。优先删除过时代码，而不是增加兼容层、fallback 或临时迁移逻辑。
+- 不要进行未经验证的架构设计。避免提前引入抽象、配置和间接层。
+- 从最小可工作的版本开始，逐步演进系统。每次修改都应该建立在已有可运行系统之上。
+- 永远不要用未来可能需要的复杂性，牺牲当前产品的可用性。
+
+## 代码质量原则
+
+- 保持模块职责明确，避免一个模块承担过多职责。
+- 优先使用成熟、稳定、维护良好的第三方库，而不是重复造轮子。
+- 使用项目已有依赖解决问题之前，不要随意新增依赖。
+- 在引入新方案前，先检查已有代码、依赖、文档和能力。
+- 避免为了"看起来更优雅"而增加实际复杂度。
+- 如果当前项目有代码，代码结构, 代码风格要参考现有代码结构，规则。
+- 代码不要过度防御
+- 如果代码修改了，对应的文档也要同步修改
+
+## 通用功能开发
+
+- 开始开发前，先检查 `.codex/skills/` 是否有覆盖当前任务的 Skill。创建模块、CRUD 或 Worker 时优先使用 `devinggo-generator`；搭建环境、执行迁移或启动服务时优先使用 `devinggo-project-init`。
+- 新功能沿用项目现有模块和 API、Controller、Logic、Service、DAO 分层。业务代码放在所属模块；只有通用能力才放入 `system`，不为单一功能增加新的框架层。
+- 新接口同时落实请求校验、服务端权限和所需的菜单权限，不能只依赖前端控制入口。
+- 数据表或权限数据变更使用成对的 `up/down` 迁移，并检查对现有数据的影响。
+- Worker 任务沿用现有注册、入队和调度机制；涉及去重、重试或保留时间时，明确运行行为并验证关键场景。
+- 后台页面沿用 `admin-ui/apps/backend` 的组件、API 和中英文文案组织方式，保持与现有页面一致。
+- 使用 Skill 或生成器产生代码后，检查生成结果、路由、权限、迁移和翻译，并运行与改动范围对应的编译、类型检查或测试。
+
+## 前端/ui
+
+- 各组件前端展示要有一致性
+- 布局风格保持一致性
+- 涉及 UI 时，在分析或方案说明中用简单示意图画出界面布局和主要交互，让方案更直观。
+
+## 工程决策原则
+
+- 优先选择长期可维护的方案，而不是只能临时运行的解决方案。
+- 代码应该服务于业务目标，而不是为了展示技术复杂度。
+- 如果简单方案已经满足需求，不要主动升级为复杂方案。
+
+## 分支管理
+
+- 开发、修复和文档修改均在 `dev` 分支进行；`master` 仅保留经过验证、用于正式环境发布的最终代码。除发布脚本生成的版本提交外，不直接在 `master` 上开发或提交修改。
